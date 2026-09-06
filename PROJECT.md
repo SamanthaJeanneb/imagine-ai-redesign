@@ -1,5 +1,11 @@
 # Imagine AI — UI & Component Redesign
 
+Imagine AI ([useimagine.ai](https://useimagine.ai)) is a LinkedIn content agent for
+high-growth B2B companies. It drafts and schedules posts for a team, maps who
+engages back to the CRM, and traces deals to a first content touch so marketing
+and founders can treat LinkedIn as a revenue channel, not a posting chore. This
+repo redesigns that product's UI; the live app is `imagine-app`.
+
 ## What this project is
 
 A redesign of the UI and component structure for an existing application. Every page,
@@ -29,7 +35,7 @@ make a deliberate choice consistent with the rules below.
 - Tailwind CSS
 - shadcn/ui as the component base
 - Motion for animation
-- Font Awesome **Sharp** icon set
+- Material Symbols **Sharp** icon set
 
 ## Design system rules
 
@@ -80,11 +86,9 @@ bar.
 
 ### Icons
 
-Font Awesome Sharp only. **No Lucide icons anywhere.**
-
-> Setup note: the Sharp icon packs (`@fortawesome/sharp-*-svg-icons`) are Font Awesome Pro
-> packages and are not on the public npm registry. Installing them requires a Font Awesome
-> Pro token configured against the `@fortawesome` registry scope in `.npmrc`.
+Material Symbols Sharp only ([Google Fonts Icons](https://fonts.google.com/icons), Sharp
+style). **No Lucide, no Font Awesome.** Use the same Sharp cut everywhere — not Rounded
+or Outlined as a second family.
 
 ### Visual references
 
@@ -212,4 +216,3 @@ npx skills update
 
 - Wireframes for all pages and interactions
 - Schema reference: see `SCHEMA.md` (snapshot of `imagine-app` Postgres)
-- Font Awesome Pro credentials for the Sharp icon packs
