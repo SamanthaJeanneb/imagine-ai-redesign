@@ -1,7 +1,7 @@
 "use client";
 
 // Imagine: a hairline progress bar that animates to its value. Accent fill by
-// default (onboarding step progress); `neutral` for usage meters.
+// default (onboarding step progress); `neutral` where accent would compete.
 
 import { cn } from "cn";
 import { motion, useReducedMotion } from "motion/react";

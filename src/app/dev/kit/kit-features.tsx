@@ -88,7 +88,6 @@ import {
   ProfileList,
   type ProfileSummary,
 } from "@/components/features/settings/profile-list";
-import { UsageMeter } from "@/components/features/settings/usage-meter";
 import { FilesPanel } from "@/components/layout/files-panel";
 import { Sidebar, type SidebarNavKey } from "@/components/layout/sidebar";
 import { LogoLoader } from "@/components/motion/logo-loader";
@@ -695,7 +694,6 @@ export function FilesPanelDemo() {
             logoUrl={ACME_LOGO}
             sections={FILE_SECTIONS}
             skills={skills}
-            storageLabel="2.1 GB of 10 GB"
             activeFileId={activeFile}
             openSkillId={activeSkill ?? undefined}
             onOpenFile={setActiveFile}
@@ -709,9 +707,6 @@ export function FilesPanelDemo() {
             }}
             onClose={() => {
               toast("Close panel");
-            }}
-            onManage={() => {
-              toast("Manage storage");
             }}
           />
         </OnBackground>
@@ -1707,7 +1702,7 @@ export function AccountDemo() {
   );
 
   return (
-    <div className="grid gap-xl lg:grid-cols-2">
+    <div className="max-w-2xl">
       <Demo label="API key">
         <ApiKeySection
           secret={secret}
@@ -1723,37 +1718,6 @@ export function AccountDemo() {
           onRevoke={() => {
             setSecret(null);
             toast.error("Key revoked");
-          }}
-        />
-      </Demo>
-      <Demo label="Usage meter">
-        <UsageMeter
-          planName="Growth plan"
-          lines={[
-            {
-              id: "posts",
-              label: "Posts this month",
-              used: 42,
-              limit: 100,
-              format: (u, l) => `${String(u)} of ${String(l)}`,
-            },
-            {
-              id: "profiles",
-              label: "Profiles",
-              used: 5,
-              limit: 5,
-              format: (u, l) => `${String(u)} of ${String(l)}`,
-            },
-            {
-              id: "storage",
-              label: "Storage",
-              used: 2.1,
-              limit: 10,
-              format: (u, l) => `${String(u)} GB of ${String(l)} GB`,
-            },
-          ]}
-          onManagePlan={() => {
-            toast("Manage plan");
           }}
         />
       </Demo>

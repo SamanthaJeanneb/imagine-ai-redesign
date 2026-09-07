@@ -26,8 +26,6 @@ interface FilesPanelProps {
   logoUrl?: string;
   sections: readonly FileSection[];
   skills: readonly Skill[];
-  /** "2.1 GB of 10 GB used". */
-  storageLabel: string;
   activeFileId?: string;
   onOpenFile?: (id: string) => void;
   onEditFile?: (id: string) => void;
@@ -37,7 +35,6 @@ interface FilesPanelProps {
   onOpenSkillFile?: (id: string) => void;
   openSkillId?: string;
   onClose?: () => void;
-  onManage?: () => void;
   className?: string;
 }
 
@@ -58,14 +55,13 @@ function filterSections(
 
 /**
  * The right column that pushes the workspace when open: search, Files and
- * Skills tabs, the tree, and a storage footer. In-flow, never an overlay.
+ * Skills tabs, and the tree. In-flow, never an overlay.
  */
 export function FilesPanel({
   title,
   logoUrl,
   sections,
   skills,
-  storageLabel,
   activeFileId,
   onOpenFile,
   onEditFile,
@@ -74,7 +70,6 @@ export function FilesPanel({
   onOpenSkillFile,
   openSkillId,
   onClose,
-  onManage,
   className,
 }: FilesPanelProps) {
   const [query, setQuery] = useState("");
@@ -156,14 +151,6 @@ export function FilesPanel({
           </ScrollArea>
         </TabsContent>
       </Tabs>
-      <div className="flex items-center justify-between px-xs type-small text-imagine-foreground-muted">
-        <span>{storageLabel}</span>
-        {onManage ? (
-          <Button variant="link" size="xs" className="px-0" onClick={onManage}>
-            Manage
-          </Button>
-        ) : null}
-      </div>
     </motion.aside>
   );
 }

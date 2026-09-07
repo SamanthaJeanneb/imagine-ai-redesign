@@ -312,7 +312,7 @@ export function Kit({ radiusScale = "default" }: KitProps) {
           <IntegrationsDemo />
         </Section>
 
-        <Section title="API key, usage">
+        <Section title="API key">
           <AccountDemo />
         </Section>
 
