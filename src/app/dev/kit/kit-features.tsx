@@ -569,14 +569,6 @@ function OnBackground({
 }
 
 /**
- * Breaks a demo out of the kit's centered column so it spans the viewport.
- * Chrome like the sidebar only reads correctly at the width it really gets.
- */
-function FullBleed({ children }: { children: React.ReactNode }) {
-  return <div className="mx-[calc(50%-50vw)] w-screen">{children}</div>;
-}
-
-/**
  * Stand-in for the main surface. Fills the frame beside the rail and rounds
  * only the corners that meet it, the way the page rounds into the sidebar.
  * `children` stand in for the page's own header controls.
@@ -631,71 +623,67 @@ export function SidebarDemo() {
   return (
     <div className="flex flex-col gap-xl">
       <Demo label="Expanded. The chevron in the rail collapses it">
-        <FullBleed>
-          <OnBackground className="h-[720px] rounded-none">
-            <Sidebar
-              orgName="Acme"
-              orgLogoUrl={ACME_LOGO}
-              active={active}
-              collapsed={expandedCollapsed}
-              onCollapsedChange={setExpandedCollapsed}
-              threads={THREADS}
-              activeThreadId="t1"
-              user={SIDEBAR_USER}
-              onNavigate={setActive}
-              onNewPost={() => {
-                toast("New post");
-              }}
-              onOpenThread={(id) => {
-                toast(`Open thread ${id}`);
-              }}
-              onOpenUser={() => {
-                toast("Account");
-              }}
-            />
-            <PageStub>
-              <AnimatePresence initial={false}>
-                {expandedCollapsed ? (
-                  <SidebarExpandButton
-                    key="expand"
-                    onExpand={() => {
-                      setExpandedCollapsed(false);
-                    }}
-                  />
-                ) : null}
-              </AnimatePresence>
-            </PageStub>
-          </OnBackground>
-        </FullBleed>
+        <OnBackground className="h-[900px]">
+          <Sidebar
+            orgName="Acme"
+            orgLogoUrl={ACME_LOGO}
+            active={active}
+            collapsed={expandedCollapsed}
+            onCollapsedChange={setExpandedCollapsed}
+            threads={THREADS}
+            activeThreadId="t1"
+            user={SIDEBAR_USER}
+            onNavigate={setActive}
+            onNewPost={() => {
+              toast("New post");
+            }}
+            onOpenThread={(id) => {
+              toast(`Open thread ${id}`);
+            }}
+            onOpenUser={() => {
+              toast("Account");
+            }}
+          />
+          <PageStub>
+            <AnimatePresence initial={false}>
+              {expandedCollapsed ? (
+                <SidebarExpandButton
+                  key="expand"
+                  onExpand={() => {
+                    setExpandedCollapsed(false);
+                  }}
+                />
+              ) : null}
+            </AnimatePresence>
+          </PageStub>
+        </OnBackground>
       </Demo>
       <Demo label="Collapsed. The chevron moves to the page and expands it">
-        <FullBleed>
-          <OnBackground className="h-[720px] rounded-none">
-            <Sidebar
-              orgName="Acme"
-              orgLogoUrl={ACME_LOGO}
-              active={active}
-              collapsed={railCollapsed}
-              onCollapsedChange={setRailCollapsed}
-              threads={THREADS}
-              activeThreadId="t1"
-              user={SIDEBAR_USER}
-              onNavigate={setActive}
-            />
-            <PageStub>
-              <AnimatePresence initial={false}>
-                {railCollapsed ? (
-                  <SidebarExpandButton
-                    key="expand"
-                    onExpand={() => {
-                      setRailCollapsed(false);
-                    }}
-                  />
-                ) : null}
-              </AnimatePresence>
-            </PageStub>
-          </OnBackground>
-        </FullBleed>
+        <OnBackground className="h-[900px]">
+          <Sidebar
+            orgName="Acme"
+            orgLogoUrl={ACME_LOGO}
+            active={active}
+            collapsed={railCollapsed}
+            onCollapsedChange={setRailCollapsed}
+            threads={THREADS}
+            activeThreadId="t1"
+            user={SIDEBAR_USER}
+            onNavigate={setActive}
+          />
+          <PageStub>
+            <AnimatePresence initial={false}>
+              {railCollapsed ? (
+                <SidebarExpandButton
+                  key="expand"
+                  onExpand={() => {
+                    setRailCollapsed(false);
+                  }}
+                />
+              ) : null}
+            </AnimatePresence>
+          </PageStub>
+        </OnBackground>
       </Demo>
     </div>
   );

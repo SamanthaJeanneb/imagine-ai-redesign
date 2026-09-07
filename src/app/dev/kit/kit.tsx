@@ -105,8 +105,7 @@ export function Kit({ radiusScale = "default" }: KitProps) {
   const scale = sharp ? radiusSharp : radius;
 
   return (
-    // `overflow-x-clip` so full-bleed demos can be 100vw without a scrollbar.
-    <main className="flex flex-1 justify-center overflow-x-clip bg-imagine-background p-xl">
+    <main className="flex flex-1 justify-center bg-imagine-background p-xl">
       <div className="flex w-full max-w-6xl flex-col gap-section rounded-surface bg-imagine-surface p-xxl">
         <header className="flex items-start justify-between gap-l">
           <div className="flex flex-col gap-xs">
