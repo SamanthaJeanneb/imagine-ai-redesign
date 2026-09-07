@@ -251,6 +251,34 @@
   }
 }
 
+/*
+ * logo-shimmer: the wordmark as a mask with a light band sweeping through it.
+ * Used by `LogoLoader` for page loads. Set the width; the aspect is the logo's.
+ */
+@utility logo-shimmer {
+  aspect-ratio: 138 / 43;
+  mask-image: url("/brand/imagine-logo.png");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  background-color: var(--imagine-foreground-faint);
+  background-image: linear-gradient(
+    100deg,
+    var(--imagine-foreground-faint) 0%,
+    var(--imagine-foreground-faint) 38%,
+    var(--imagine-foreground) 50%,
+    var(--imagine-foreground-faint) 62%,
+    var(--imagine-foreground-faint) 100%
+  );
+  background-size: 200% 100%;
+  animation: imagine-shimmer 1.8s ease-in-out infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background-image: none;
+    background-color: var(--imagine-foreground-muted);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

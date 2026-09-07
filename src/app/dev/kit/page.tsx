@@ -28,6 +28,7 @@ import {
   EditorDemo,
   FilesPanelDemo,
   IntegrationsDemo,
+  LoadingDemo,
   MessagesDemo,
   OnboardingPartsDemo,
   PostChipDemo,
@@ -208,6 +209,10 @@ export default function KitPage() {
 
         <Section title="Avatars">
           <AvatarDemo />
+        </Section>
+
+        <Section title="Loading">
+          <LoadingDemo />
         </Section>
 
         <Section title="Sidebar">

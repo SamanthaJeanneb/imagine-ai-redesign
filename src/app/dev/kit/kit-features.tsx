@@ -94,6 +94,7 @@ import {
 import { UsageMeter } from "@/components/features/settings/usage-meter";
 import { FilesPanel } from "@/components/layout/files-panel";
 import { Sidebar, type SidebarNavKey } from "@/components/layout/sidebar";
+import { LogoLoader } from "@/components/motion/logo-loader";
 import { Button } from "@/components/ui/button";
 
 /* Mock data. Phase 2 replaces these with selectors over src/mocks/db.json. */
@@ -551,6 +552,24 @@ const SIDEBAR_USER = {
   avatarUrl: AVATAR(47),
   note: "Growth plan",
 };
+
+export function LoadingDemo() {
+  return (
+    <div className="flex flex-wrap items-start gap-xl">
+      <Demo
+        label="Page loading (route loading.tsx)"
+        className="w-full max-w-md"
+      >
+        <OnBackground className="h-64 items-center justify-center">
+          <LogoLoader />
+        </OnBackground>
+      </Demo>
+      <Demo label="Inline, small">
+        <LogoLoader width={72} />
+      </Demo>
+    </div>
+  );
+}
 
 export function SidebarDemo() {
   const [active, setActive] = useState<SidebarNavKey>("agent");
