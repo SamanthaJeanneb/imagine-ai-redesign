@@ -11,22 +11,22 @@ import { motion } from "motion/react";
 import { Slot } from "radix-ui";
 
 import { type MotionCompatibleProps } from "@/components/motion/types";
-import { press } from "@/styles/motion";
+import { hoverLift, press } from "@/styles/motion";
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-control border border-transparent bg-clip-padding text-sm font-semibold whitespace-nowrap transition-colors outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-control border border-transparent bg-clip-padding text-sm font-semibold whitespace-nowrap transition-[color,background-color,box-shadow] outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive",
   {
     variants: {
       variant: {
         default:
-          "bg-imagine-primary text-imagine-primary-foreground shadow-control inset-shadow-highlight hover:bg-imagine-primary/90",
-        soft: "bg-imagine-surface text-imagine-foreground shadow-control hover:bg-imagine-surface-raised aria-expanded:bg-imagine-surface-raised",
+          "bg-imagine-primary text-imagine-primary-foreground shadow-control inset-shadow-highlight hover:bg-imagine-primary/90 hover:shadow-raised",
+        soft: "bg-imagine-surface text-imagine-foreground shadow-control hover:bg-imagine-surface-raised hover:shadow-raised aria-expanded:bg-imagine-surface-raised",
         ghost:
           "text-imagine-foreground-muted hover:bg-imagine-surface-raised hover:text-imagine-foreground aria-expanded:bg-imagine-surface-raised aria-expanded:text-imagine-foreground",
         outline:
           "border-imagine-border bg-transparent text-imagine-foreground hover:bg-imagine-surface-raised aria-expanded:bg-imagine-surface-raised",
         destructive:
-          "bg-destructive text-white shadow-control inset-shadow-highlight hover:bg-destructive/90 focus-visible:ring-destructive/30",
+          "bg-destructive text-white shadow-control inset-shadow-highlight hover:bg-destructive/90 hover:shadow-raised focus-visible:ring-destructive/30",
         link: "text-imagine-foreground underline-offset-4 hover:underline",
       },
       size: {
@@ -62,6 +62,8 @@ function Button({
   ...props
 }: ButtonProps) {
   const classes = cn(buttonVariants({ variant, size }), className);
+  // Raised buttons lift on hover; flat ones (ghost, link) only press.
+  const raised = variant !== "ghost" && variant !== "link";
 
   if (asChild) {
     return (
@@ -81,7 +83,8 @@ function Button({
       data-variant={variant}
       data-size={size}
       className={classes}
-      whileTap={props.disabled ? undefined : press.whileTap}
+      whileHover={props.disabled || !raised ? undefined : hoverLift.whileHover}
+      whileTap={props.disabled ? undefined : { ...press.whileTap, y: 0 }}
       transition={press.transition}
       {...props}
     />

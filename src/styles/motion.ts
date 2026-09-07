@@ -36,14 +36,35 @@ export const fade = {
 
 /** Tactile press: scale down on tap, spring back on release. */
 export const press = {
-  whileTap: { scale: 0.97 },
+  whileTap: { scale: 0.96 },
   transition: spring.snappy,
 } as const;
 
-/** Subtle lift for hoverable rows and tiles. */
+/** Same press for full-width rows, where 4% would visibly shift the text. */
+export const pressRow = {
+  whileTap: { scale: 0.985 },
+  transition: spring.snappy,
+} as const;
+
+/** Subtle lift for hoverable rows, tiles, and raised buttons. */
 export const hoverLift = {
   whileHover: { y: -1 },
   transition: spring.snappy,
+} as const;
+
+/** Something small arriving: the send button, a badge, a count. */
+export const pop = {
+  initial: { opacity: 0, scale: 0.8 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.8 },
+  transition: spring.snappy,
+} as const;
+
+/** A value that was replaced: slides up and out, the new one slides in. */
+export const swapUp = {
+  initial: { opacity: 0, y: 6 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -6 },
 } as const;
 
 /** Staggered entrance for lists and grids. Use with `Stagger`. */

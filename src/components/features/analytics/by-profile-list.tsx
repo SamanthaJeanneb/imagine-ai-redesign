@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from "motion/react";
 
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { spring } from "@/styles/motion";
+import { pressRow, spring } from "@/styles/motion";
 
 export interface ProfileMetric {
   id: string;
@@ -60,10 +60,12 @@ export function ByProfileList({
           const ratio = max > 0 ? item.value / max : 0;
           return (
             <StaggerItem key={item.id}>
-              <button
+              <motion.button
                 type="button"
                 onClick={() => onOpen?.(item)}
                 disabled={!onOpen}
+                whileTap={onOpen ? pressRow.whileTap : undefined}
+                transition={pressRow.transition}
                 className="flex w-full items-center gap-m rounded-control text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-default"
               >
                 <Avatar size="sm">
@@ -86,7 +88,7 @@ export function ByProfileList({
                 <span className="w-12 shrink-0 text-right type-small text-imagine-foreground-muted tabular-nums">
                   {item.valueLabel}
                 </span>
-              </button>
+              </motion.button>
             </StaggerItem>
           );
         })}

@@ -289,11 +289,6 @@ export default function KitPage() {
               <p className="type-small">
                 <Shimmer>Streaming a reply</Shimmer>
               </p>
-              <div className="flex items-center gap-m text-imagine-foreground-muted">
-                <Spinner size="s" />
-                <Spinner />
-                <Spinner size="l" />
-              </div>
             </div>
           </div>
         </Section>

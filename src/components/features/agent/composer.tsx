@@ -183,14 +183,22 @@ export function Composer({
             !isDock && "min-h-9 py-2 type-heading font-normal",
           )}
         />
-        <Button
-          size={isDock ? "icon-sm" : "icon"}
-          aria-label="Send"
-          disabled={!canSend}
-          onClick={submit}
+        {/* Sits back at rest and springs forward once there is something to send. */}
+        <motion.span
+          className="flex"
+          animate={{ scale: canSend ? 1 : 0.88, opacity: canSend ? 1 : 0.45 }}
+          transition={spring.snappy}
         >
-          <Icon name="arrow-up" />
-        </Button>
+          <Button
+            size={isDock ? "icon-sm" : "icon"}
+            aria-label="Send"
+            disabled={!canSend}
+            onClick={submit}
+            className="disabled:opacity-100"
+          >
+            <Icon name="arrow-up" />
+          </Button>
+        </motion.span>
       </div>
       <AnimatePresence initial={false}>
         {isDock ? null : (

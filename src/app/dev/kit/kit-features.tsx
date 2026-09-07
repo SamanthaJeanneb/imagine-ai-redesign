@@ -32,6 +32,7 @@ import {
   type ChartDatum,
 } from "@/components/features/analytics/chart-block";
 import { StatGroup, StatTile } from "@/components/features/analytics/stat-tile";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { TopPosts } from "@/components/features/analytics/top-posts";
 import {
   type CalendarDay,
@@ -64,7 +65,6 @@ import {
   type Skill,
   SkillsList,
 } from "@/components/features/files/skills-list";
-import { BrandPanel } from "@/components/features/onboarding/brand-panel";
 import { ConnectLinkedIn } from "@/components/features/onboarding/connect-linkedin";
 import { JoinOrganization } from "@/components/features/onboarding/join-organization";
 import {
@@ -846,30 +846,66 @@ export function StatTileDemo() {
           <StatTile value="4" label="Scheduled" size="compact" />
         </Demo>
       </div>
-      <Demo label="Stat group, four across">
-        <StatGroup>
-          <StatTile
-            value="12.4k"
-            label="Impressions"
-            delta={{ label: "+12%", direction: "up" }}
-          />
-          <StatTile
-            value="1,208"
-            label="Engagements"
-            delta={{ label: "+4%", direction: "up" }}
-          />
-          <StatTile
-            value="4.2%"
-            label="Engagement rate"
-            delta={{ label: "-0.3", direction: "down" }}
-          />
-          <StatTile
-            value="318"
-            label="New followers"
-            delta={{ label: "+41", direction: "up" }}
-          />
-        </StatGroup>
+      <Demo label="Stat group, four across. Switch the range to see values swap">
+        <StatGroupDemo />
       </Demo>
+    </div>
+  );
+}
+
+const STATS_BY_RANGE = {
+  "7d": [
+    { label: "Impressions", value: "12.4k", delta: "+12%", direction: "up" },
+    { label: "Engagements", value: "1,208", delta: "+4%", direction: "up" },
+    {
+      label: "Engagement rate",
+      value: "4.2%",
+      delta: "-0.3",
+      direction: "down",
+    },
+    { label: "New followers", value: "318", delta: "+41", direction: "up" },
+  ],
+  "30d": [
+    { label: "Impressions", value: "48.9k", delta: "+8%", direction: "up" },
+    { label: "Engagements", value: "5,014", delta: "+2%", direction: "up" },
+    { label: "Engagement rate", value: "4.5%", delta: "+0.1", direction: "up" },
+    { label: "New followers", value: "1,102", delta: "0", direction: "flat" },
+  ],
+} as const satisfies Record<
+  string,
+  readonly {
+    label: string;
+    value: string;
+    delta: string;
+    direction: "up" | "down" | "flat";
+  }[]
+>;
+
+function StatGroupDemo() {
+  const [range, setRange] = useState<keyof typeof STATS_BY_RANGE>("7d");
+
+  return (
+    <div className="flex flex-col gap-m">
+      <ToggleGroup
+        size="sm"
+        value={range}
+        onValueChange={(next) => {
+          if (next === "7d" || next === "30d") setRange(next);
+        }}
+      >
+        <ToggleGroupItem value="7d">7d</ToggleGroupItem>
+        <ToggleGroupItem value="30d">30d</ToggleGroupItem>
+      </ToggleGroup>
+      <StatGroup>
+        {STATS_BY_RANGE[range].map((stat) => (
+          <StatTile
+            key={stat.label}
+            value={stat.value}
+            label={stat.label}
+            delta={{ label: stat.delta, direction: stat.direction }}
+          />
+        ))}
+      </StatGroup>
     </div>
   );
 }
@@ -1604,9 +1640,6 @@ export function OnboardingPartsDemo() {
         </Demo>
         <Demo label="Step heading">
           <StepHeading title="Invite your team" step={step} total={3} />
-        </Demo>
-        <Demo label="Brand panel" className="w-72">
-          <BrandPanel className="h-48" />
         </Demo>
       </div>
       <div className="grid gap-xl lg:grid-cols-2">

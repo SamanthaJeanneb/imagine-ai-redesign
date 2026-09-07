@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { SearchField } from "@/components/ui/search-field";
-import { spring } from "@/styles/motion";
+import { pressRow, spring } from "@/styles/motion";
 
 export type ConnectionStatus = "connected" | "expired" | "disconnected";
 
@@ -80,12 +80,14 @@ export function ProfileList({
           const selected = profile.id === selectedId;
           return (
             <StaggerItem key={profile.id}>
-              <button
+              <motion.button
                 type="button"
                 aria-pressed={selected}
                 onClick={() => {
                   onSelect(profile.id);
                 }}
+                whileTap={pressRow.whileTap}
+                transition={pressRow.transition}
                 className={cn(
                   "relative flex w-full items-center gap-m rounded-control px-m py-s text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
                   selected
@@ -131,7 +133,7 @@ export function ProfileList({
                       "bg-imagine-foreground-faint",
                   )}
                 />
-              </button>
+              </motion.button>
             </StaggerItem>
           );
         })}

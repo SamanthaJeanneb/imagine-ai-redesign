@@ -9,7 +9,7 @@ import { type AssetTileData } from "@/components/features/files/asset-tile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import { fade, spring, stagger } from "@/styles/motion";
+import { fade, pressRow, spring, stagger } from "@/styles/motion";
 
 export type FileNode =
   | { type: "file"; id: string; name: string }
@@ -198,7 +198,7 @@ function Nodes({
             />
           ) : node.type === "folder" ? (
             <>
-              <button
+              <motion.button
                 type="button"
                 aria-expanded={!closed.has(node.id)}
                 onClick={() => {
@@ -209,6 +209,8 @@ function Nodes({
                     return next;
                   });
                 }}
+                whileTap={pressRow.whileTap}
+                transition={pressRow.transition}
                 className="flex h-8 w-full items-center gap-s rounded-control px-s text-left text-imagine-foreground-muted transition-colors outline-none hover:bg-imagine-surface-raised hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
               >
                 <Chevron open={!closed.has(node.id)} />
@@ -218,7 +220,7 @@ function Nodes({
                   className="text-imagine-foreground-faint"
                 />
                 <span className="truncate type-small">{node.name}</span>
-              </button>
+              </motion.button>
               <Disclosure open={!closed.has(node.id)}>
                 <Nodes
                   nodes={node.children}
@@ -281,7 +283,7 @@ export function FileTree({
         const open = !closed.has(section.id);
         return (
           <section key={section.id} className="flex flex-col gap-xxs">
-            <button
+            <motion.button
               type="button"
               aria-expanded={open}
               onClick={() => {
@@ -292,7 +294,9 @@ export function FileTree({
                   return next;
                 });
               }}
-              className="flex h-9 w-full items-center gap-s rounded-control px-s text-left outline-none hover:bg-imagine-surface-raised focus-visible:ring-2 focus-visible:ring-ring/40"
+              whileTap={pressRow.whileTap}
+              transition={pressRow.transition}
+              className="flex h-9 w-full items-center gap-s rounded-control px-s text-left transition-colors outline-none hover:bg-imagine-surface-raised focus-visible:ring-2 focus-visible:ring-ring/40"
             >
               <Chevron open={open} />
               {section.kind === "organization" ? (
@@ -312,7 +316,7 @@ export function FileTree({
               <span className="truncate type-body font-medium">
                 {section.title}
               </span>
-            </button>
+            </motion.button>
             <Disclosure open={open}>
               <div className="ml-m border-l border-imagine-border pl-s">
                 <Nodes

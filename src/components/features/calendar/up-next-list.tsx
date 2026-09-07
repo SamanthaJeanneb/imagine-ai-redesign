@@ -1,9 +1,11 @@
 "use client";
 
 import { cn } from "cn";
+import { motion } from "motion/react";
 
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";
+import { pressRow } from "@/styles/motion";
 
 export interface UpNextItem {
   id: string;
@@ -38,9 +40,11 @@ export function UpNextList({
         <Stagger kind="list" className="flex flex-col">
           {items.map((item) => (
             <StaggerItem key={item.id}>
-              <button
+              <motion.button
                 type="button"
                 onClick={() => onOpen?.(item)}
+                whileTap={pressRow.whileTap}
+                transition={pressRow.transition}
                 className="group/row -mx-s flex w-[calc(100%+var(--spacing-l))] items-start gap-m rounded-control px-s py-s text-left transition-colors outline-none hover:bg-imagine-surface-raised focus-visible:ring-2 focus-visible:ring-ring/40"
               >
                 <span className="w-14 shrink-0 pt-px type-small text-imagine-foreground-muted tabular-nums">
@@ -52,7 +56,7 @@ export function UpNextList({
                     {item.profileName}
                   </span>
                 </span>
-              </button>
+              </motion.button>
             </StaggerItem>
           ))}
         </Stagger>
