@@ -924,7 +924,7 @@ export function CalendarToolbarDemo() {
           onSearchChange={setSearch}
         />
       </Demo>
-      <Demo label="Up next (right rail)" className="max-w-xs">
+      <Demo label="Up next (right rail)" className="max-w-80">
         <UpNextList
           items={[
             {
@@ -1149,7 +1149,7 @@ export function AssetsDemo() {
           />
         </Demo>
       </div>
-      <Demo label="Asset picker (agent offers images)" className="max-w-xl">
+      <Demo label="Asset picker (agent offers images)" className="max-w-lg">
         <AssetPicker
           prompt="Want a different image for it?"
           assets={ASSETS}
@@ -1278,46 +1278,48 @@ export function EditorDemo() {
   const dirty = value !== saved;
 
   return (
-    <div className="flex flex-col gap-xl">
-      <Demo label="Editor tab strip (dirty dot on the persona file)">
-        <OnBackground className="p-s">
-          <EditorTabStrip
-            tabs={tabs.map((tab) =>
-              tab.id === "f6" ? { ...tab, dirty } : tab,
-            )}
-            activeId={activeTab}
-            onActivate={setActiveTab}
-            onClose={(id) => {
-              setTabs((current) => current.filter((tab) => tab.id !== id));
-              if (activeTab === id) setActiveTab("thread");
-            }}
-            className="w-full"
-          >
-            <div className="h-16" />
-          </EditorTabStrip>
-        </OnBackground>
-      </Demo>
-      <Demo label="Markdown editor" className="max-w-2xl">
-        <MarkdownEditor
-          meta={{
-            title: "sarah-persona.md",
-            edited: "Edited by Sarah Chen, yesterday",
-            editorName: "Sarah Chen",
-            editorAvatarUrl: AVATAR(47),
+    <Demo label="Editor tab strip with the markdown editor open (dirty dot on the persona file)">
+      <OnBackground className="p-s">
+        <EditorTabStrip
+          tabs={tabs.map((tab) => (tab.id === "f6" ? { ...tab, dirty } : tab))}
+          activeId={activeTab}
+          onActivate={setActiveTab}
+          onClose={(id) => {
+            setTabs((current) => current.filter((tab) => tab.id !== id));
+            if (activeTab === id) setActiveTab("thread");
           }}
-          value={value}
-          savedValue={saved}
-          onValueChange={setValue}
-          onSave={() => {
-            setSaved(value);
-            toast.success("Saved sarah-persona.md");
-          }}
-          onRevert={() => {
-            setValue(saved);
-          }}
-        />
-      </Demo>
-    </div>
+          className="w-full"
+        >
+          {activeTab === "f6" ? (
+            <MarkdownEditor
+              meta={{
+                title: "sarah-persona.md",
+                edited: "Edited by Sarah Chen, yesterday",
+                editorName: "Sarah Chen",
+                editorAvatarUrl: AVATAR(47),
+              }}
+              value={value}
+              savedValue={saved}
+              onValueChange={setValue}
+              onSave={() => {
+                setSaved(value);
+                toast.success("Saved sarah-persona.md");
+              }}
+              onRevert={() => {
+                setValue(saved);
+              }}
+              className="p-l"
+            />
+          ) : (
+            <p className="p-l type-small text-imagine-foreground-muted">
+              {activeTab === "thread"
+                ? "The agent thread lives here."
+                : "brand-voice.md"}
+            </p>
+          )}
+        </EditorTabStrip>
+      </OnBackground>
+    </Demo>
   );
 }
 
