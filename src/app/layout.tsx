@@ -36,13 +36,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           dangerouslySetInnerHTML={{ __html: tokenCss }}
         />
         {/*
-          Font Awesome Pro 7 Kit (SVG + JS). `nest` keeps the <i> React renders
-          and puts the <svg> inside it, so React never loses a node it owns.
+          Font Awesome Pro 7 Kit (SVG + JS). Loaded after hydration so the kit
+          never mutates DOM that React is still matching against server HTML.
+          `nest` keeps the <i> React renders and puts the <svg> inside it.
         */}
         <Script
           src="https://kit.fontawesome.com/70369a3baa.js"
           crossOrigin="anonymous"
-          strategy="beforeInteractive"
+          strategy="afterInteractive"
           data-auto-replace-svg="nest"
         />
       </head>

@@ -89,7 +89,7 @@ export function ProfileList({
                 className={cn(
                   "relative flex w-full items-center gap-m rounded-control px-m py-s text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
                   selected
-                    ? "bg-imagine-surface-raised"
+                    ? "selection-gradient-soft"
                     : "hover:bg-imagine-surface-raised/50",
                 )}
               >
@@ -98,7 +98,7 @@ export function ProfileList({
                     layoutId={indicatorId}
                     aria-hidden="true"
                     transition={spring.snappy}
-                    className="absolute inset-y-s left-0 w-0.5 rounded-full bg-imagine-foreground"
+                    className="absolute inset-y-s left-0 w-0.5 rounded-full bg-imagine-secondary"
                   />
                 ) : null}
                 <Avatar>

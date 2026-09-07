@@ -493,7 +493,11 @@ function OnBackground({
   );
 }
 
-const SIDEBAR_USER = { name: "Sarah Chen", avatarUrl: AVATAR(47) };
+const SIDEBAR_USER = {
+  name: "Sarah Chen",
+  avatarUrl: AVATAR(47),
+  note: "Growth plan",
+};
 
 export function SidebarDemo() {
   const [active, setActive] = useState<SidebarNavKey>("agent");
@@ -1062,11 +1066,12 @@ export function PostDraftDemo() {
 export function ScheduledGraphicDemo() {
   return (
     <div className="flex flex-wrap gap-xl">
-      <Demo label="With quick actions">
+      <Demo label="With quick actions" className="w-full max-w-md">
         <ScheduledGraphic
           dayNumber={9}
           monthLabel="Sep"
           whenLabel="Tue, 9 Sep at 9:00"
+          timeLabel="9:00"
           profileName="Sarah Chen"
           weekdayIndex={1}
           occupied={[3]}
@@ -1080,11 +1085,12 @@ export function ScheduledGraphicDemo() {
           }}
         />
       </Demo>
-      <Demo label="Busy week">
+      <Demo label="Busy week" className="w-full max-w-md">
         <ScheduledGraphic
           dayNumber={12}
           monthLabel="Sep"
           whenLabel="Fri, 12 Sep at 10:00"
+          timeLabel="10:00"
           profileName="Acme"
           weekdayIndex={4}
           occupied={[0, 1, 2]}

@@ -33,6 +33,8 @@ export interface SidebarThread {
 export interface SidebarUser {
   name: string;
   avatarUrl?: string;
+  /** Second line under the name, e.g. the plan or role. */
+  note?: string;
 }
 
 export const SIDEBAR_NAV: readonly SidebarNavItem[] = [
@@ -67,7 +69,8 @@ function initials(name: string): string {
 
 /**
  * Workspace sidebar. Sits on `imagine-background`; the main surface rounds
- * into it. Selection is one accent pill that slides between nav items.
+ * into it. The selected nav item carries the accent gradient and a bar in the
+ * gutter; both slide together when the selection moves.
  */
 export function Sidebar({
   orgName,
@@ -83,6 +86,7 @@ export function Sidebar({
   className,
 }: SidebarProps) {
   const indicatorId = useId();
+  const threadIndicatorId = useId();
 
   return (
     <motion.aside
@@ -90,18 +94,19 @@ export function Sidebar({
       transition={spring.soft}
       data-collapsed={collapsed || undefined}
       className={cn(
-        "flex h-full shrink-0 flex-col gap-xl bg-imagine-background py-l text-imagine-foreground",
-        collapsed ? "w-14 items-center px-s" : "w-56 px-m",
+        "flex h-full shrink-0 flex-col gap-l bg-imagine-background py-l text-imagine-foreground",
+        collapsed ? "w-14 items-center px-s" : "w-60 px-m",
         className,
       )}
     >
+      {/* Organization */}
       <div
         className={cn(
-          "flex items-center gap-s",
+          "flex h-9 items-center gap-s",
           collapsed ? "justify-center" : "px-xs",
         )}
       >
-        <span className="flex size-7 shrink-0 items-center justify-center rounded-control bg-imagine-secondary-soft text-imagine-secondary">
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-control accent-gradient text-imagine-secondary-foreground shadow-control inset-shadow-highlight">
           <Icon name="sparkles" size="s" active />
         </span>
         <AnimatePresence initial={false}>
@@ -112,9 +117,16 @@ export function Sidebar({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={fade.fast}
-              className="truncate type-body font-semibold"
+              className="flex min-w-0 flex-1 items-center gap-xs"
             >
-              {orgName}
+              <span className="truncate type-body font-semibold">
+                {orgName}
+              </span>
+              <Icon
+                name="chevron-down"
+                size="s"
+                className="text-imagine-foreground-faint"
+              />
             </motion.span>
           )}
         </AnimatePresence>
@@ -136,6 +148,7 @@ export function Sidebar({
         </Button>
       )}
 
+      {/* Primary navigation */}
       <nav aria-label="Workspace" className="flex flex-col gap-xxs">
         {SIDEBAR_NAV.map((item) => {
           const selected = item.key === active;
@@ -146,11 +159,11 @@ export function Sidebar({
               aria-current={selected ? "page" : undefined}
               onClick={() => onNavigate?.(item.key)}
               className={cn(
-                "group/nav relative flex h-9 items-center gap-m rounded-control px-s text-left transition-colors outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/40",
-                collapsed && "w-9 justify-center px-0",
+                "group/nav relative flex h-9 items-center gap-s rounded-control text-left transition-colors outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/40",
+                collapsed ? "w-9 justify-center" : "pr-s pl-xs",
                 selected
-                  ? "text-imagine-secondary"
-                  : "text-imagine-foreground-muted hover:text-imagine-foreground",
+                  ? "text-imagine-secondary-foreground"
+                  : "text-imagine-foreground-muted hover:bg-imagine-surface hover:text-imagine-foreground",
               )}
             >
               {selected ? (
@@ -158,11 +171,26 @@ export function Sidebar({
                   layoutId={indicatorId}
                   aria-hidden="true"
                   transition={spring.snappy}
-                  className="absolute inset-0 rounded-control bg-imagine-secondary-soft"
-                />
+                  className="absolute inset-0 rounded-control selection-gradient shadow-control inset-shadow-highlight"
+                >
+                  {/* Gutter bar: sits in the sidebar padding, outside the pill. */}
+                  <span
+                    className={cn(
+                      "absolute inset-y-2 w-[3px] rounded-full bg-imagine-secondary-strong",
+                      collapsed ? "-left-1.5" : "-left-2",
+                    )}
+                  />
+                </motion.span>
               ) : null}
-              <span className="relative z-10 flex w-4 justify-center">
-                <Icon name={item.icon} size="l" active={selected} />
+              <span
+                className={cn(
+                  "relative z-10 flex size-7 shrink-0 items-center justify-center rounded-[4px] transition-colors",
+                  selected
+                    ? "bg-white/20"
+                    : "group-hover/nav:bg-imagine-surface-raised",
+                )}
+              >
+                <Icon name={item.icon} size="m" active={selected} />
               </span>
               {collapsed ? null : (
                 <span className="relative z-10 type-body font-medium">
@@ -182,11 +210,17 @@ export function Sidebar({
         })}
       </nav>
 
+      {/* Recent posts */}
       {collapsed ? null : (
-        <div className="flex min-h-0 flex-1 flex-col gap-s">
-          <span className="px-s type-small text-imagine-foreground-muted">
-            Posts
-          </span>
+        <div className="flex min-h-0 flex-1 flex-col gap-xs">
+          <div className="flex h-7 items-center justify-between px-s">
+            <span className="type-small font-medium text-imagine-foreground-muted">
+              Posts
+            </span>
+            <span className="type-small text-imagine-foreground-faint tabular-nums">
+              {threads.length}
+            </span>
+          </div>
           <Stagger kind="list" className="flex flex-col gap-xxs">
             {threads.map((thread) => {
               const selected = thread.id === activeThreadId;
@@ -194,26 +228,42 @@ export function Sidebar({
                 <StaggerItem key={thread.id}>
                   <button
                     type="button"
+                    aria-current={selected ? "true" : undefined}
                     onClick={() => onOpenThread?.(thread.id)}
                     className={cn(
-                      "flex h-8 w-full items-center gap-m rounded-control px-s text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+                      "relative flex h-8 w-full items-center gap-s rounded-control pr-s pl-xs text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
                       selected
-                        ? "bg-imagine-surface text-imagine-foreground"
-                        : "text-imagine-foreground-muted hover:text-imagine-foreground",
+                        ? "text-imagine-foreground"
+                        : "text-imagine-foreground-muted hover:bg-imagine-surface hover:text-imagine-foreground",
                     )}
                   >
-                    <span className="flex w-4 justify-center">
+                    {selected ? (
+                      <motion.span
+                        layoutId={threadIndicatorId}
+                        aria-hidden="true"
+                        transition={spring.snappy}
+                        className="absolute inset-0 rounded-control selection-gradient-soft"
+                      />
+                    ) : null}
+                    <span className="relative z-10 flex size-7 shrink-0 items-center justify-center">
                       <span
                         aria-hidden="true"
                         className={cn(
                           "size-1.5 rounded-full",
                           thread.unread
-                            ? "bg-imagine-secondary"
-                            : "bg-imagine-foreground-faint",
+                            ? "bg-imagine-secondary ring-[3px] ring-imagine-secondary-soft"
+                            : "bg-imagine-foreground-faint/70",
                         )}
                       />
                     </span>
-                    <span className="truncate type-small">{thread.title}</span>
+                    <span
+                      className={cn(
+                        "relative z-10 truncate type-small",
+                        thread.unread && "font-medium",
+                      )}
+                    >
+                      {thread.title}
+                    </span>
                   </button>
                 </StaggerItem>
               );
@@ -222,15 +272,16 @@ export function Sidebar({
         </div>
       )}
 
+      {/* Account */}
       <button
         type="button"
         onClick={onOpenUser}
         className={cn(
-          "mt-auto flex items-center gap-m rounded-control p-xs text-left transition-colors outline-none hover:bg-imagine-surface focus-visible:ring-2 focus-visible:ring-ring/40",
-          collapsed && "justify-center",
+          "mt-auto flex items-center gap-s rounded-control text-left transition-[background-color,box-shadow] outline-none hover:bg-imagine-surface hover:shadow-control focus-visible:ring-2 focus-visible:ring-ring/40",
+          collapsed ? "size-9 justify-center" : "h-11 pr-s pl-xs",
         )}
       >
-        <Avatar size="sm">
+        <Avatar size="sm" className="ring-2 ring-imagine-surface">
           {user.avatarUrl ? (
             <AvatarImage src={user.avatarUrl} alt={user.name} />
           ) : null}
@@ -238,8 +289,15 @@ export function Sidebar({
         </Avatar>
         {collapsed ? null : (
           <>
-            <span className="flex-1 truncate type-small font-medium">
-              {user.name}
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate type-small font-medium">
+                {user.name}
+              </span>
+              {user.note ? (
+                <span className="truncate type-small text-imagine-foreground-faint">
+                  {user.note}
+                </span>
+              ) : null}
             </span>
             <Icon
               name="chevron-right"

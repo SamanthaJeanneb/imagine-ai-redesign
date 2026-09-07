@@ -53,6 +53,7 @@ export type MessagePart =
       postId: string;
       dayNumber: number;
       monthLabel: string;
+      timeLabel: string;
       whenLabel: string;
       profileName: string;
       weekdayIndex: number;
@@ -161,6 +162,7 @@ function Part({
         <ScheduledGraphic
           dayNumber={part.dayNumber}
           monthLabel={part.monthLabel}
+          timeLabel={part.timeLabel}
           whenLabel={part.whenLabel}
           profileName={part.profileName}
           weekdayIndex={part.weekdayIndex}

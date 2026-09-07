@@ -105,13 +105,13 @@ function FileRow({
     <div
       className={cn(
         "group/file relative flex h-8 items-center gap-s rounded-control pr-xs pl-s transition-colors hover:bg-imagine-surface-raised",
-        active && "bg-imagine-surface-raised",
+        active && "selection-gradient-soft hover:bg-transparent",
       )}
     >
       {active ? (
         <span
           aria-hidden="true"
-          className="absolute inset-y-1.5 -left-m w-0.5 rounded-full bg-imagine-foreground"
+          className="absolute inset-y-1.5 -left-m w-0.5 rounded-full bg-imagine-secondary"
         />
       ) : null}
       <button
