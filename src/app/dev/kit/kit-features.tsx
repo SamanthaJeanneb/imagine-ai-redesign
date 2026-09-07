@@ -587,7 +587,9 @@ function PageStub({
         side === "right" ? "rounded-l-surface" : "rounded-r-surface",
       )}
     >
-      <div className="flex h-16 items-center gap-s px-m">{children}</div>
+      {/* Matches the rail's org row: `py-xl` then a 40px row, so the collapse
+          control keeps its baseline when it crosses over. */}
+      <div className="mt-xl flex h-10 items-center gap-s px-m">{children}</div>
     </div>
   );
 }
