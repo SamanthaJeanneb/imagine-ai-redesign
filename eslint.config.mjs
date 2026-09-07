@@ -11,7 +11,7 @@ export default defineConfig([
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
   {
-    files: ["**/*.{ts,tsx,mts}"],
+    files: ["**/*.{ts,tsx}"],
     languageOptions: {
       parserOptions: {
         projectService: true,
@@ -98,22 +98,12 @@ export default defineConfig([
     },
   },
 
-  // Test files may use assertions to build fixtures.
-  {
-    files: ["**/*.test.ts"],
-    rules: {
-      "@typescript-eslint/consistent-type-assertions": "off",
-      "@typescript-eslint/no-non-null-assertion": "off",
-    },
-  },
-
   globalIgnores([
     ".next/**",
     "out/**",
     "build/**",
-    "coverage/**",
     "next-env.d.ts",
-    "*.config.{js,mjs,ts,mts}",
+    "*.config.{js,mjs,ts}",
     // Agent skills and editor config are not application code.
     ".agents/**",
     ".cursor/**",

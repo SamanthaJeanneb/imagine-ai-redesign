@@ -46,7 +46,8 @@ interface SidebarProps {
   orgName: string;
   /** The organization's mark. Falls back to the Imagine sparkle. */
   orgLogoUrl?: string;
-  active: SidebarNavKey;
+  /** Omitted on routes outside the nav, like settings, where nothing is selected. */
+  active?: SidebarNavKey;
   threads: readonly SidebarThread[];
   user: SidebarUser;
   /** Icon rail. Used while the files panel is open. */

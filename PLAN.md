@@ -422,18 +422,24 @@ component beside them, which owns the form state and the navigation.
 - The `(auth)` group has no layout of its own. Sign-in and the steps share nothing but a
 background, and the group already keeps them out of the workspace shell.
 
-### Phase 4 — Workspace shell
+### Phase 4 — Workspace shell ✅
 
 Wireframes: `landing/landing(agent).png`, `agent/agent.png`,
 `file-system/file system - right sidebar.png`, `pink-application.png`.
 
-- `(workspace)/layout.tsx` with `WorkspaceProvider`, `LayoutGroup`, `Sidebar`,
-`MainSurface`, and slots for `ChatColumn`, `FilesPanel`, and `RightRail`.
-- Sidebar reads threads and the current user from the selectors; main surface rounds into
-it; `template.tsx` handles the page transition.
-- Placeholder pages for every route so navigation can be tested early.
-- Done when: the nav indicator morphs, routes fade and slide, the sidebar collapses, both
-themes hold.
+- `(workspace)/layout.tsx` is a server component: it reads the workspace, the threads, and
+the current user from the selectors and hands them to `WorkspaceShell`.
+- `WorkspaceShell` is the only client piece. It holds the collapsed flag, derives the
+selected nav item and thread from `usePathname`, and routes every sidebar action. No
+provider: nothing outside the shell reads this yet, so a context would be furniture.
+- One `LayoutGroup` wraps the rail and the page, so shared `layoutId`s survive a route
+change. The rail sits on the background and the page rounds into it with `rounded-l-surface`;
+the header row is where the collapsed rail's chevron lives.
+- `template.tsx` fades and slides each page. Placeholder pages cover `/agent`,
+`/agent/[threadId]`, `/calendar`, `/analytics`, `/files`, and `/settings`; each phase
+below deletes the one it replaces, and `page-placeholder.tsx` goes with the last of them.
+- Columns for the chat, the files panel, and the right rail are added as siblings of the
+page by the phases that build them.
 
 ### Phase 5 — Agent: landing and thread
 
