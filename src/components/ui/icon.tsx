@@ -1,13 +1,15 @@
 import { cn } from "cn";
 
+import { BrandMark, isLocalBrand } from "@/components/ui/brand-mark";
+
 /**
  * Font Awesome Pro 7 Sharp, loaded once from the Kit script (SVG + JS) in the
  * root layout. The kit nests an <svg> inside each <i>. This is the only place
  * `fa-` classes are written.
  *
- * The kit is subset: only the icons enabled in the kit's settings load, and
- * anything else renders as the "missing" glyph. Keep this union to names that
- * exist in the kit (Sharp Regular, Sharp Solid, and the enabled Brands).
+ * The kit is subset. Sharp names must exist in the kit. Brands that the kit
+ * does not ship (Google, X, HubSpot, Slack, Salesforce) render from local
+ * SVGs in brand-mark.tsx so they never show the missing glyph.
  */
 export const ICON_NAMES = [
   "arrow-down",
@@ -105,6 +107,20 @@ export function Icon({
   className,
   ...props
 }: IconProps) {
+  if (isLocalBrand(name)) {
+    return (
+      <i
+        data-slot="icon"
+        data-size={size}
+        aria-hidden="true"
+        className={cn(className)}
+        {...props}
+      >
+        <BrandMark name={name} className="size-[1em]" />
+      </i>
+    );
+  }
+
   const family = BRAND_ICONS.has(name)
     ? "fa-brands"
     : active
