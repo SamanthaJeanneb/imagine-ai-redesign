@@ -22,9 +22,11 @@ and make it look great.
 - Animation library is Motion (`motion` package, imported from `motion/react`). Framer
 Motion is the same library under its old name; never install or import `framer-motion`
 alongside it. Motion drives every interaction in this plan.
-- Icons are Material Symbols in the **Sharp** style from
-[fonts.google.com/icons](https://fonts.google.com/icons), shipped via the official
-`material-symbols` npm package. No `lucide-react`, no Font Awesome.
+- Icons are Font Awesome Pro 7, **Sharp** family, Regular style, loaded once via the Kit
+CSS embed in `src/app/layout.tsx` (see `PROJECT.md`). Sharp Regular is the default;
+Sharp Solid is for active/selected only; Brands is for the LinkedIn logo only. No Lucide,
+no Material Symbols. Feature code uses the centralized `Icon` component, never raw
+`fa-` classes.
 - No inline styles, no raw color values outside the token file.
 - Every element, click and transition has motion animations
 - **Stop at the end of every phase and wait for review.** Do not start the next phase
@@ -35,8 +37,7 @@ every review stop, confirm `http://localhost:3000` responds and the pages for th
 render without console errors. If the server has died, restart it before handing off.
 - **Always commit and push.** After every phase (and after any other completed chunk of
 work), commit on `main` with a short message that says why, then `git push` to origin.
-Do this before the review stop so the user can see the work on GitHub. Never skip
-hooks. Do not force-push.
+Do this before the review stop so the user can see the work on GitHub. Do not force-push.
 
 ---
 
@@ -229,7 +230,7 @@ in `services/*` with unit tests.
 ### Folder additions to `PROJECT.md`'s tree
 
 - `src/mocks/db.json`, `src/mocks/db.ts` (schema + parse + `React.cache` loaders)
-- `src/components/ui/icon.tsx` (Material Symbols Sharp wrapper)
+- `src/components/ui/icon.tsx` (Font Awesome Pro Sharp wrapper)
 - `src/components/features/analytics/*`, `src/components/features/onboarding/*`
 - `src/components/layout/*` (Sidebar, MainSurface, ChatColumn, FilesPanel, RightRail)
 - `src/components/motion/*` (PageTransition, Stagger, Pressable, Shimmer, Thinking)
@@ -304,13 +305,20 @@ spacing for the calendar column headers. One family, no eyebrows.
 
 ### Icons
 
-Material Symbols, Sharp style, from [fonts.google.com/icons](https://fonts.google.com/icons)
-(filter Style → Sharp when picking names). Loaded through the official `material-symbols`
-npm package, importing only its Sharp variable font. A single `Icon` component takes a
-typed `name` (string literal union of the icons actually used), `size`, `fill`, `weight`.
-shadcn components that ship with `lucide-react` are rewritten to use `Icon` during
-customization. An ESLint `no-restricted-imports` rule blocks `lucide-react`,
-`@fortawesome/*`, and the legacy `framer-motion` package name (use `motion/react`).
+Follow `PROJECT.md` exactly. Font Awesome Pro 7 Sharp via the Kit stylesheet
+(`https://kit.fontawesome.com/70369a3baa.css`) loaded once in `src/app/layout.tsx`. Names
+come from [Sharp Regular](https://fontawesome.com/search?ip=sharp&s=regular).
+
+- One `Icon` component: typed `name` (string literal union of icons actually used), plus
+`size` from tokens. It renders `fa-sharp fa-regular` by default, `fa-sharp fa-solid` when
+`active`, and `fa-brands` only for LinkedIn.
+- Feature code never writes `fa-` classes. Size and color come from `imagine-*` tokens,
+never `fa-lg` / `fa-2x` or a hardcoded color. Animation is Motion, not `fa-spin` /
+`fa-beat`.
+- The Kit only carries Sharp Regular, Sharp Solid, and Brands. Do not use other FA styles.
+- shadcn components that ship with `lucide-react` are rewritten to use `Icon`. An ESLint
+`no-restricted-imports` rule blocks `lucide-react`, `material-symbols`, and the legacy
+`framer-motion` package name (use `motion/react`).
 
 ### Components
 
@@ -527,7 +535,8 @@ shadcn (from the shadcn skill):
 for squares; `Field`/`FieldGroup` for forms; `ToggleGroup` for option sets; icons via
 `data-icon`; `MessageScroller` owns thread scrolling; `Skeleton`, `Empty`, `Alert`,
 `Badge` instead of custom markup; `Dialog` and `AlertDialog` always have titles.
-- After `npx shadcn@latest add`, read each file, replace `lucide-react` with `Icon`,
+- After `npx shadcn@latest add`, read each file, replace `lucide-react` with `Icon` (Font
+Awesome Sharp),
 strip default colors and radii in favor of tokens, and record the change in a short
 comment header so upstream diffs stay reviewable.
 
@@ -549,10 +558,11 @@ open, and wait for the user before continuing.
 set `packageManager` to pnpm.
 - Apply the strict `tsconfig` and ESLint flat config from the TypeScript skill assets;
 add Prettier and Vitest.
-- Install `motion`, `material-symbols`, `swr`, `zod`, `recharts` (via shadcn `chart`).
+- Install `motion`, `swr`, `zod`, `recharts` (via shadcn `chart`). Do not install
+`material-symbols` or `lucide-react`. Font Awesome comes from the Kit CSS embed.
 - `npx shadcn@latest init` (Radix base, Tailwind v4, CSS variables). Do not add
 components yet.
-- Add the `no-restricted-imports` rule for `lucide-react`, `@fortawesome/*`, and the
+- Add the `no-restricted-imports` rule for `lucide-react`, `material-symbols`, and the
 legacy `framer-motion` name (all animation imports come from `motion/react`).
 - Start `pnpm dev` and leave it running for the rest of the build.
 - Done when: `http://localhost:3000` renders the empty app, lints clean, a smoke test
@@ -569,7 +579,8 @@ hex values from the first two; the third fixes how much pink is allowed).
 `globals.css` under `@theme` for light and dark via `data-theme`; map Tailwind state
 colors.
 - DM Sans via `next/font`; type scale utilities.
-- `Icon` component and the typed icon-name union.
+- Kit CSS embed in the root layout; `Icon` component (Sharp Regular default, Solid for
+active, Brands for LinkedIn) and the typed icon-name union.
 - `styles/motion.ts` presets and `components/motion/*` (`PageTransition`, `Stagger`,
 `Pressable`, `Shimmer`, `ThinkingIndicator`).
 - Add and customize: `button`, `input`, `textarea`, `input-group`, `field`, `tabs`,
@@ -579,8 +590,9 @@ colors.
 - Theme switch with the no-flicker inline script.
 - A hidden `/dev/kit` route (excluded from production) that renders every primitive in
 every variant, both themes, for review.
-- Done when: no component references a raw color, radius, or `lucide-react`; the kit
-route passes a visual check against `pink-application.png` density.
+- Done when: no component references a raw color, radius, `lucide-react`, or Material
+Symbols; icons render via `Icon` in Sharp Regular; the kit route passes a visual check
+against `pink-application.png` density.
 
 
 
@@ -610,7 +622,6 @@ slides the form.
 landing entrance animation is added there.
 - Done when: opening `http://localhost:3000` walks sign-in → three steps → `/agent` on
 mock state and matches the wireframes.
-
 
 
 
@@ -741,8 +752,8 @@ running app, screen by screen.
 - Keyboard and screen-reader pass: focus order through the composer, previews, panel,
 editor; `aria` on the thinking state; dialog titles.
 - Dark mode sweep against `pallete-dark.png`.
-- Remove `/dev/kit` from production builds; confirm no `lucide-react`, `framer-motion`,
-inline `style`, or raw hex outside `tokens.ts` via lint and a grep test.
+- Remove `/dev/kit` from production builds; confirm no `lucide-react`, `material-symbols`,
+`framer-motion`, inline `style`, or raw hex outside `tokens.ts` via lint and a grep test.
 - Update `PROJECT.md` "Open items" and add a short README for running the app.
 
 ---
@@ -752,8 +763,9 @@ inline `style`, or raw hex outside `tokens.ts` via lint and a grep test.
 ## 9. Verification checklist
 
 - `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` all pass.
-- Grep gates: no `lucide-react`, `framer-motion`, `style={{`, or `#[0-9a-f]{3,6}` outside
-`src/styles/tokens.ts` and `globals.css`.
+- Grep gates: no `lucide-react`, `material-symbols`, `framer-motion`, `style={{`, or
+`#[0-9a-f]{3,6}` outside `src/styles/tokens.ts` and `globals.css`. Feature files contain
+no raw `fa-` class strings (only `Icon`).
 - Every page renders in light and dark from the single theme switch.
 - Landing → thread, preview → page, chat → sidebar, files panel open → editor tab are
 each a single continuous morph with no blank frame.
