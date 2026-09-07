@@ -271,11 +271,21 @@
     var(--imagine-foreground-faint) 100%
   );
   background-size: 200% 100%;
-  animation: imagine-shimmer 1.8s ease-in-out infinite;
+  animation: imagine-logo-shimmer 3.2s ease-in-out infinite;
   @media (prefers-reduced-motion: reduce) {
     animation: none;
     background-image: none;
     background-color: var(--imagine-foreground-muted);
+  }
+}
+/* Shorter travel than the skeleton sweep, so the band crosses the wordmark in
+   about 1.6s and rests for as long between passes. */
+@keyframes imagine-logo-shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
   }
 }
 
