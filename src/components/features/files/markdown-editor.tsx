@@ -20,7 +20,6 @@ interface MarkdownEditorProps {
   savedValue: string;
   onValueChange: (value: string) => void;
   onSave: () => void;
-  onRevert: () => void;
   className?: string;
 }
 
@@ -87,7 +86,6 @@ export function MarkdownEditor({
   savedValue,
   onValueChange,
   onSave,
-  onRevert,
   className,
 }: MarkdownEditorProps) {
   const [editing, setEditing] = useState(false);
@@ -118,14 +116,6 @@ export function MarkdownEditor({
               </motion.span>
             ) : null}
           </AnimatePresence>
-          <Button
-            size="sm"
-            variant="ghost"
-            disabled={!dirty}
-            onClick={onRevert}
-          >
-            Revert
-          </Button>
           <Button
             size="sm"
             disabled={!dirty}

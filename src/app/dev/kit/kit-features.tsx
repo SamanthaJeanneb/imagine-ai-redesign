@@ -800,12 +800,6 @@ export function FilesPanelDemo() {
                     }));
                     toast.success(`Saved ${openSkill.fileName}`);
                   }}
-                  onRevert={() => {
-                    setText((current) => ({
-                      ...current,
-                      [openSkill.id]: savedText[openSkill.id] ?? "",
-                    }));
-                  }}
                   className="p-l"
                 />
               </EditorTabStrip>
@@ -1579,9 +1573,6 @@ export function EditorDemo() {
               onSave={() => {
                 setSaved(value);
                 toast.success("Saved sarah-persona.md");
-              }}
-              onRevert={() => {
-                setValue(saved);
               }}
               className="p-l"
             />
