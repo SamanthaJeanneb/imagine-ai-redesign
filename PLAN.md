@@ -226,16 +226,28 @@ shared `layoutId`s resolve across route changes. Pages stay thin: select data, c
 Built in Phase 1. `src/styles/tokens.ts` is the source of truth and emits CSS variables
 into `globals.css`; this section records intent, not values.
 
+Tailwind's own scales are folded onto the tokens, so a plain utility resolves to a token
+rather than to Tailwind's defaults: `--spacing` comes from `spacingBase`, which makes
+every numeric utility (`p-4`, `gap-1.5`, `h-9`, `size-8`) a multiple of one number;
+`--text-xs|sm|base|lg` come from the type scale, so the vendored shadcn primitives move
+with it; `--radius-*`, `--color-*`, and the state colors come from here too. Changing a
+number in `tokens.ts` changes every component that uses it. Picking a size, color, or font
+size anywhere else is a bug, and the grep gates in section 10 look for it.
+
 - **Color.** Semantic names only, never hues: `imagine-background`, `imagine-surface`,
 `imagine-surface-raised`, `imagine-border`, `imagine-foreground` and its `-muted` /
 `-faint` steps, `imagine-primary` (+ `-foreground`), `imagine-secondary` (+ `-soft`,
 `-strong`, `-foreground`). Light and dark resolve from one `data-theme` switch. Sampled
 from `pallete-light.png` and `pallete-dark.png`. `destructive`, `warning`, and `success`
-map once from Tailwind's red, amber, and emerald.
+are tokens on the same switch, so no component reaches into Tailwind's palette.
 - **Accent budget** (from `pink-application.png`): logo tile, active nav, unread timeline
 dots, avatar tile, chart fills, the "or" rule on sign-in, the sign-in brand panel.
 Nowhere else.
-- **Spacing.** `xxs` 2 through `section` 64, aliased as Tailwind utilities (`gap-l`).
+- **Spacing.** One base unit behind every numeric utility, plus named steps `xxs` 2
+through `section` 64, aliased as Tailwind utilities (`gap-l`).
+- **Control sizing.** `control` heights `xs` 28, `sm` 32, `base` 36, `lg` 40, used as
+`h-control-*` and `size-control-*`. Buttons, inputs, selects, tab strips, and toggle
+groups all read them, so controls stay one family and retune together.
 - **Radius.** `control` 6, `panel` 12, `surface` 20. A `data-radius="sharp"` variant
 halves them; `/dev/kit-sharp` renders the whole kit through it.
 - **Elevation instead of borders.** `shadow-control`, `shadow-raised`, `shadow-floating`,
@@ -567,7 +579,9 @@ the port maps them deliberately.
 
 - `pnpm typecheck`, `pnpm lint`, and `pnpm build` pass.
 - Grep gates: no `lucide-react`, `material-symbols`, `framer-motion`, or raw hex outside
-`src/styles/tokens.ts` and `globals.css`. No raw `fa-` strings outside `Icon`. No em dash
+`src/styles/tokens.ts` and `globals.css`. No Tailwind palette colors (`text-red-600`), no
+arbitrary type sizes (`text-[13px]`), and no control heights outside `h-control-*`: those
+belong in `tokens.ts`. No raw `fa-` strings outside `Icon`. No em dash
 anywhere under `src/`. No `style={{` except `ui/chart.tsx`, where Recharts needs series
 colors as values.
 - Every page renders in light and dark from the single theme switch.

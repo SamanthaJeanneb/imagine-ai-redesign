@@ -53,7 +53,7 @@ const CHIP = {
     color: "var(--imagine-foreground)",
     contrast: "var(--imagine-surface)",
   },
-  failed: { color: "var(--destructive)", contrast: "#ffffff" },
+  failed: { color: "var(--destructive)", contrast: "var(--imagine-secondary-foreground)" },
 } as const satisfies Record<
   PostChipStatus,
   { color: string; contrast: string }

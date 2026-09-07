@@ -59,7 +59,7 @@ function ToggleGroup({
         onValueChange?.(next);
       }}
       className={cn(
-        "group/toggle-group inline-flex w-fit items-center gap-xxs rounded-control bg-imagine-surface-raised p-xxs data-[size=default]:h-8 data-[size=sm]:h-7",
+        "group/toggle-group inline-flex w-fit items-center gap-xxs rounded-control bg-imagine-surface-raised p-xxs data-[size=default]:h-control-base data-[size=sm]:h-control-sm",
         className,
       )}
       {...props}

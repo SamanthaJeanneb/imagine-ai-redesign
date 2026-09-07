@@ -145,7 +145,7 @@ export function MarkdownEditor({
             onBlur={() => {
               if (!dirty) setEditing(false);
             }}
-            className="field-sizing-content min-h-64 w-full resize-none rounded-panel bg-imagine-surface-raised/60 p-l font-mono text-[13px] leading-6 outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+            className="field-sizing-content min-h-64 w-full resize-none rounded-panel bg-imagine-surface-raised/60 p-l font-mono type-small leading-6 outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
           />
         ) : (
           <button

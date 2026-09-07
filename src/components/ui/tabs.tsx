@@ -69,7 +69,7 @@ const tabsListVariants = cva(
     variants: {
       variant: {
         default:
-          "rounded-control bg-imagine-surface-raised p-xxs group-data-horizontal/tabs:h-8",
+          "rounded-control bg-imagine-surface-raised p-xxs group-data-horizontal/tabs:h-control-lg",
         line: "gap-xs",
       },
     },

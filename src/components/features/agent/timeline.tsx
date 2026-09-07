@@ -71,7 +71,7 @@ export function Timeline({ entries, onAction, className }: TimelineProps) {
             <span
               aria-hidden="true"
               className={cn(
-                "mt-[15px] size-[7px] shrink-0 rounded-full",
+                "mt-[15px] size-2 shrink-0 rounded-full",
                 entry.unread
                   ? "bg-imagine-secondary ring-4 ring-imagine-secondary-soft"
                   : "bg-imagine-foreground-faint/60 ring-2 ring-imagine-surface",

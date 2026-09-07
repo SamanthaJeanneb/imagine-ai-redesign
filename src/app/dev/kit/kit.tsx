@@ -10,10 +10,16 @@ import { Spinner } from "@/components/ui/spinner";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
   colors,
+  control,
   radius,
   radiusSharp,
+  spacing,
+  typeScale,
   type ColorToken,
+  type ControlToken,
   type RadiusToken,
+  type SpacingToken,
+  type TypeToken,
 } from "@/styles/tokens";
 
 import {
@@ -62,6 +68,9 @@ const SWATCH_CLASSES = {
   "secondary-soft": "bg-imagine-secondary-soft",
   "secondary-strong": "bg-imagine-secondary-strong",
   "secondary-foreground": "bg-imagine-secondary-foreground",
+  destructive: "bg-destructive",
+  warning: "bg-warning",
+  success: "bg-success",
 } as const satisfies Record<ColorToken, string>;
 
 const RADIUS_SWATCH = {
@@ -69,6 +78,52 @@ const RADIUS_SWATCH = {
   panel: "rounded-panel",
   surface: "rounded-surface",
 } as const satisfies Record<RadiusToken, string>;
+
+const SPACING_SWATCH = {
+  xxs: "size-xxs",
+  xs: "size-xs",
+  s: "size-s",
+  m: "size-m",
+  l: "size-l",
+  xl: "size-xl",
+  xxl: "size-xxl",
+  xxxl: "size-xxxl",
+  section: "size-section",
+} as const satisfies Record<SpacingToken, string>;
+
+const CONTROL_SWATCH = {
+  xs: "h-control-xs",
+  sm: "h-control-sm",
+  base: "h-control-base",
+  lg: "h-control-lg",
+} as const satisfies Record<ControlToken, string>;
+
+/** Sizes come from the tokens, so the specimen can never drift from the scale. */
+const TYPE_SPECIMENS: readonly {
+  token: TypeToken;
+  className: string;
+  sample: string;
+}[] = [
+  { token: "display", className: "type-display", sample: "LinkedIn, solved" },
+  { token: "title", className: "type-title", sample: "While you were away" },
+  { token: "heading", className: "type-heading", sample: "Next two weeks" },
+  {
+    token: "body",
+    className: "type-body",
+    sample:
+      "Our system drafts and schedules LinkedIn content for your entire team. You only need to review, approve, or edit.",
+  },
+  {
+    token: "small",
+    className: "type-small text-imagine-foreground-muted",
+    sample: "Scheduled for Tue, 3 Sep at 9:00",
+  },
+  {
+    token: "micro",
+    className: "type-micro text-imagine-foreground-muted",
+    sample: "Mon Tue Wed",
+  },
+];
 
 const THINKING_STATUSES = [
   "Reading your calendar",
@@ -159,19 +214,41 @@ export function Kit({ radiusScale = "default" }: KitProps) {
 
         <Section title="Type">
           <div className="flex flex-col gap-s">
-            <p className="type-display">Display 28/34. LinkedIn, solved</p>
-            <p className="type-title">Title 20/28. While you were away</p>
-            <p className="type-heading">Heading 16/24. Next two weeks</p>
-            <p className="type-body">
-              Body 14/22. Our system drafts and schedules LinkedIn content for
-              your entire team. You only need to review, approve, or edit.
-            </p>
-            <p className="type-small text-imagine-foreground-muted">
-              Small 12/16. Scheduled for Tue, 3 Sep at 9:00
-            </p>
-            <p className="type-micro text-imagine-foreground-muted">
-              Micro 11/14. Mon Tue Wed
-            </p>
+            {TYPE_SPECIMENS.map(({ token, className, sample }) => (
+              <p key={token} className={className}>
+                {`${token} ${String(typeScale[token].size)}/${String(typeScale[token].lineHeight)}. ${sample}`}
+              </p>
+            ))}
+          </div>
+        </Section>
+
+        <Section title="Spacing">
+          <div className="flex flex-wrap items-end gap-l">
+            {(Object.keys(spacing) as SpacingToken[]).map((token) => (
+              <div key={token} className="flex flex-col gap-xs">
+                <div
+                  className={`${SPACING_SWATCH[token]} bg-imagine-secondary`}
+                />
+                <span className="type-micro text-imagine-foreground-muted">
+                  {token} {spacing[token]}
+                </span>
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        <Section title="Control heights: every button, input, and tab strip">
+          <div className="flex flex-wrap items-end gap-l">
+            {(Object.keys(control) as ControlToken[]).map((token) => (
+              <div key={token} className="flex flex-col gap-xs">
+                <div
+                  className={`${CONTROL_SWATCH[token]} w-24 rounded-control bg-imagine-surface-raised shadow-control`}
+                />
+                <span className="type-micro text-imagine-foreground-muted">
+                  {token} {control[token]}
+                </span>
+              </div>
+            ))}
           </div>
         </Section>
 

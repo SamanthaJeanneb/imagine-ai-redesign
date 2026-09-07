@@ -1,7 +1,21 @@
 /**
- * Imagine design tokens: the single source of truth for color, spacing, radius,
- * and type. `tokensToCss()` emits them as `--imagine-*` CSS variables, which
- * `globals.css` maps into Tailwind utilities via `@theme inline`.
+ * Imagine design tokens: the single source of truth for color, spacing, sizing,
+ * radius, and type. `tokensToCss()` emits them as `--imagine-*` CSS variables,
+ * which `globals.css` maps into Tailwind utilities via `@theme inline`.
+ *
+ * Nothing downstream picks its own values. Tailwind's own scales are folded onto
+ * these tokens, so the plain utilities resolve here too:
+ *
+ * - `--spacing` comes from `spacingBase`, so every numeric utility (`p-4`,
+ *   `gap-1.5`, `h-9`, `size-8`, `w-64`) is a multiple of one token.
+ * - `--text-xs|sm|base|lg` come from `typeScale`, so the vendored shadcn
+ *   primitives track the type scale instead of sitting a step behind.
+ * - `--radius-*` and `--color-*`, including the state colors, come from here.
+ * - Control heights live in `control` and are used as `h-control-*`, so buttons,
+ *   inputs, selects, tab strips, and toggle groups stay one family.
+ *
+ * Changing a number here changes every component that uses it. Editing a size,
+ * color, or font anywhere else is a bug.
  *
  * Color values were sampled from `pallete-light.png`, `pallete-dark.png`, and
  * `pink-application.png`. Names describe the role, never the hue.
@@ -24,7 +38,10 @@ export type ColorToken =
   | "secondary"
   | "secondary-soft"
   | "secondary-strong"
-  | "secondary-foreground";
+  | "secondary-foreground"
+  | "destructive"
+  | "warning"
+  | "success";
 
 export const colors = {
   light: {
@@ -41,6 +58,9 @@ export const colors = {
     "secondary-soft": "#d4707c29",
     "secondary-strong": "#c2606c",
     "secondary-foreground": "#ffffff",
+    destructive: "#dc2626",
+    warning: "#d97706",
+    success: "#059669",
   },
   dark: {
     background: "#1a1817",
@@ -56,6 +76,9 @@ export const colors = {
     "secondary-soft": "#d4707c3d",
     "secondary-strong": "#e0838d",
     "secondary-foreground": "#ffffff",
+    destructive: "#f87171",
+    warning: "#fbbf24",
+    success: "#34d399",
   },
 } as const satisfies Record<Theme, Record<ColorToken, string>>;
 
@@ -86,10 +109,17 @@ export const shadows = {
   },
 } as const satisfies Record<Theme, Record<ShadowToken, string>>;
 
+/**
+ * The unit every numeric Tailwind utility multiplies: `p-2` is two of these,
+ * `h-9` is nine. `globals.css` feeds it to Tailwind's `--spacing`, so changing
+ * this one number changes the density of the whole app.
+ */
+export const spacingBase = 4;
+
 export type SpacingToken =
   "xxs" | "xs" | "s" | "m" | "l" | "xl" | "xxl" | "xxxl" | "section";
 
-/** Pixels. */
+/** Named steps for layout, on top of `spacingBase`. Pixels. */
 export const spacing = {
   xxs: 2,
   xs: 4,
@@ -111,6 +141,20 @@ export const radius = {
   surface: 20,
 } as const satisfies Record<RadiusToken, number>;
 
+export type ControlToken = "xs" | "sm" | "base" | "lg";
+
+/**
+ * Control heights, in pixels. Buttons, inputs, selects, tab strips, and toggle
+ * groups all size from these, so controls stay one family and one edit here
+ * retunes every one of them. Sized to sit comfortably around the type scale.
+ */
+export const control = {
+  xs: 28,
+  sm: 32,
+  base: 36,
+  lg: 40,
+} as const satisfies Record<ControlToken, number>;
+
 /** Half the default scale. Used by `/dev/kit-sharp` via `[data-radius="sharp"]`. */
 export const radiusSharp = {
   control: 2,
@@ -130,13 +174,15 @@ interface TypeStyle {
   letterSpacing?: number;
 }
 
-export const type = {
-  display: { size: 28, lineHeight: 34 },
-  title: { size: 20, lineHeight: 28 },
-  heading: { size: 16, lineHeight: 24 },
-  body: { size: 14, lineHeight: 22 },
-  small: { size: 12, lineHeight: 16 },
-  micro: { size: 11, lineHeight: 14, letterSpacing: 0.04 },
+/** Named `typeScale`, not `type`, so it can be imported without colliding with
+ *  TypeScript's `import { type X }` modifier. */
+export const typeScale = {
+  display: { size: 32, lineHeight: 40 },
+  title: { size: 24, lineHeight: 32 },
+  heading: { size: 18, lineHeight: 26 },
+  body: { size: 16, lineHeight: 24 },
+  small: { size: 14, lineHeight: 20 },
+  micro: { size: 12, lineHeight: 16, letterSpacing: 0.04 },
 } as const satisfies Record<TypeToken, TypeStyle>;
 
 function declarations(entries: readonly (readonly [string, string])[]): string {
@@ -164,11 +210,16 @@ function radiusDeclarations(scale: Record<RadiusToken, number>): string {
 }
 
 function scaleDeclarations(): string {
-  const entries: (readonly [string, string])[] = [];
+  const entries: (readonly [string, string])[] = [
+    ["spacing-base", `${String(spacingBase)}px`],
+  ];
   for (const [name, px] of Object.entries(spacing)) {
     entries.push([`spacing-${name}`, `${String(px)}px`]);
   }
-  for (const [name, style] of Object.entries(type)) {
+  for (const [name, px] of Object.entries(control)) {
+    entries.push([`control-${name}`, `${String(px)}px`]);
+  }
+  for (const [name, style] of Object.entries(typeScale)) {
     entries.push([`text-${name}-size`, `${String(style.size)}px`]);
     entries.push([`text-${name}-line-height`, `${String(style.lineHeight)}px`]);
     entries.push([

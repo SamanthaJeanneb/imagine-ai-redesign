@@ -16,6 +16,18 @@
   --font-heading: var(--font-sans);
   --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
 
+  /* Tailwind's font sizes are folded onto the type scale the same way the radii
+     are, so the vendored shadcn primitives, which reach for `text-sm` and
+     `text-xs`, move with it instead of staying a step behind. */
+  --text-xs: var(--imagine-text-small-size);
+  --text-xs--line-height: var(--imagine-text-small-line-height);
+  --text-sm: var(--imagine-text-body-size);
+  --text-sm--line-height: var(--imagine-text-body-line-height);
+  --text-base: var(--imagine-text-body-size);
+  --text-base--line-height: var(--imagine-text-body-line-height);
+  --text-lg: var(--imagine-text-heading-size);
+  --text-lg--line-height: var(--imagine-text-heading-line-height);
+
   /* Imagine palette, exposed as bg-imagine-*, text-imagine-*, border-imagine-* */
   --color-imagine-background: var(--imagine-background);
   --color-imagine-surface: var(--imagine-surface);
@@ -31,10 +43,10 @@
   --color-imagine-secondary-strong: var(--imagine-secondary-strong);
   --color-imagine-secondary-foreground: var(--imagine-secondary-foreground);
 
-  /* Non-palette states from Tailwind's scales, mapped once. */
-  --color-destructive: var(--destructive);
-  --color-warning: var(--warning);
-  --color-success: var(--success);
+  /* States. Same tokens, so they theme with everything else. */
+  --color-destructive: var(--imagine-destructive);
+  --color-warning: var(--imagine-warning);
+  --color-success: var(--imagine-success);
 
   /*
    * shadcn semantic names resolve to Imagine tokens so every primitive is
@@ -69,6 +81,17 @@
   --shadow-raised: var(--imagine-shadow-raised);
   --shadow-floating: var(--imagine-shadow-floating);
   --inset-shadow-highlight: var(--imagine-shadow-highlight);
+
+  /* The unit behind every numeric utility: p-2, gap-1.5, h-9, size-8, w-64.
+     Folding it onto the token makes density a single number in tokens.ts. */
+  --spacing: var(--imagine-spacing-base);
+
+  /* Control heights: h-control-base, size-control-sm, min-h-control-lg. Every
+     primitive sizes from these instead of picking its own h-8 or h-9. */
+  --spacing-control-xs: var(--imagine-control-xs);
+  --spacing-control-sm: var(--imagine-control-sm);
+  --spacing-control-base: var(--imagine-control-base);
+  --spacing-control-lg: var(--imagine-control-lg);
 
   /* Spacing: gap-l, p-xl, etc. Numeric spacing (p-4) still works.
      Because these are spacing keys, size utilities resolve them first:
@@ -110,16 +133,7 @@
   --muted: var(--imagine-surface-raised);
   --border: var(--imagine-border);
   --radius: var(--imagine-radius-control);
-
-  --destructive: var(--color-red-600);
-  --warning: var(--color-amber-600);
-  --success: var(--color-emerald-600);
-}
-
-[data-theme="dark"] {
-  --destructive: var(--color-red-400);
-  --warning: var(--color-amber-400);
-  --success: var(--color-emerald-400);
+  --destructive: var(--imagine-destructive);
 }
 
 /*
