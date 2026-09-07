@@ -43,7 +43,7 @@ export function ConnectLinkedIn({
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={fade.base}
-        className="flex items-center gap-m rounded-panel bg-imagine-surface-raised p-l"
+        className="flex items-center gap-m rounded-panel bg-imagine-surface p-l shadow-raised"
       >
         <span className="flex size-10 shrink-0 items-center justify-center rounded-control bg-imagine-secondary-soft text-imagine-secondary">
           <Icon name="linkedin-in" size="l" />

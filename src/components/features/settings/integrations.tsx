@@ -119,7 +119,7 @@ export function IntegrationGrid({
             whileTap={press.whileTap}
             transition={press.transition}
             onClick={() => onAdd?.(item.id)}
-            className="flex h-full w-full flex-col gap-m rounded-panel bg-imagine-surface p-l text-left shadow-control transition-shadow outline-none hover:shadow-raised focus-visible:ring-2 focus-visible:ring-ring/40"
+            className="flex h-full w-full flex-col gap-m rounded-panel bg-imagine-surface p-l text-left shadow-raised transition-shadow outline-none hover:shadow-floating focus-visible:ring-2 focus-visible:ring-ring/40"
           >
             <span className="flex h-9 items-center text-imagine-foreground">
               <Icon name={item.icon} size="xl" />

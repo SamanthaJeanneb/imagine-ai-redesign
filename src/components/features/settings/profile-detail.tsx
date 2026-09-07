@@ -108,7 +108,7 @@ export function ProfileDetail({
         transition={fade.base}
         data-slot="profile-detail"
         className={cn(
-          "flex h-full flex-col gap-xl rounded-panel bg-imagine-surface-raised p-l",
+          "flex h-full flex-col gap-xl rounded-panel bg-imagine-surface p-l shadow-raised",
           className,
         )}
       >

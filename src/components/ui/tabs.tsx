@@ -120,7 +120,7 @@ function TabsTrigger({
           transition={spring.snappy}
           className={cn(
             context.variant === "default"
-              ? "absolute inset-0 rounded-control bg-imagine-surface shadow-sm"
+              ? "absolute inset-0 rounded-control bg-imagine-surface shadow-raised"
               : "absolute inset-x-0 -bottom-xs h-0.5 rounded-full bg-imagine-foreground",
           )}
         />

@@ -35,7 +35,7 @@ export function UsageMeter({
     <div
       data-slot="usage-meter"
       className={cn(
-        "flex flex-col gap-l rounded-panel bg-imagine-surface-raised p-l",
+        "flex flex-col gap-l rounded-panel bg-imagine-surface p-l shadow-raised",
         className,
       )}
     >

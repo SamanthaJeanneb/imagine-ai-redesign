@@ -66,7 +66,7 @@ export function CalendarGrid({
       data-density={density}
       role="grid"
       className={cn(
-        "flex w-full flex-col overflow-hidden rounded-panel bg-imagine-surface-raised shadow-control",
+        "flex w-full flex-col overflow-hidden rounded-panel bg-imagine-surface-raised shadow-raised",
         className,
       )}
     >

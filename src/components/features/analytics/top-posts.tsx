@@ -37,7 +37,7 @@ export function TopPosts({
     <div
       data-slot="top-posts"
       className={cn(
-        "flex flex-col gap-m rounded-panel bg-imagine-surface-raised p-l",
+        "flex flex-col gap-m rounded-panel bg-imagine-surface p-l shadow-raised",
         className,
       )}
     >

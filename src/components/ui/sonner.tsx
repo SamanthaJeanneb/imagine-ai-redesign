@@ -30,7 +30,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            "cn-toast rounded-panel! border-imagine-border! bg-imagine-surface! text-imagine-foreground! shadow-md!",
+            "cn-toast rounded-panel! border-transparent! bg-imagine-surface! text-imagine-foreground! shadow-floating!",
           description: "text-imagine-foreground-muted!",
         },
       }}

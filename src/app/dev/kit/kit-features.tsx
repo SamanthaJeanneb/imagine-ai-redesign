@@ -1268,20 +1268,17 @@ export function EditorDemo() {
   return (
     <div className="flex flex-col gap-xl">
       <Demo label="Editor tab strip (dirty dot on the persona file)">
-        <div className="rounded-panel bg-imagine-surface-raised">
-          <EditorTabStrip
-            tabs={tabs.map((tab) =>
-              tab.id === "f6" ? { ...tab, dirty } : tab,
-            )}
-            activeId={activeTab}
-            onActivate={setActiveTab}
-            onClose={(id) => {
-              setTabs((current) => current.filter((tab) => tab.id !== id));
-              if (activeTab === id) setActiveTab("thread");
-            }}
-          />
-          <div className="h-3 rounded-b-panel bg-imagine-surface" />
-        </div>
+        <EditorTabStrip
+          tabs={tabs.map((tab) => (tab.id === "f6" ? { ...tab, dirty } : tab))}
+          activeId={activeTab}
+          onActivate={setActiveTab}
+          onClose={(id) => {
+            setTabs((current) => current.filter((tab) => tab.id !== id));
+            if (activeTab === id) setActiveTab("thread");
+          }}
+        >
+          <div className="h-3" />
+        </EditorTabStrip>
       </Demo>
       <Demo label="Markdown editor" className="max-w-2xl">
         <MarkdownEditor

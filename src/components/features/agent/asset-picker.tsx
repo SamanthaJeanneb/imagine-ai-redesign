@@ -42,7 +42,7 @@ export function AssetPicker({
     <div
       data-slot="asset-picker"
       className={cn(
-        "flex w-full max-w-lg flex-col gap-m rounded-panel bg-imagine-surface-raised p-l",
+        "flex w-full max-w-lg flex-col gap-m rounded-panel bg-imagine-surface p-l shadow-raised",
         className,
       )}
     >

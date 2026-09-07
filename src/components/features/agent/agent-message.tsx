@@ -244,7 +244,7 @@ export function UserMessage({
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={fade.base}
-        className="max-w-[80%] rounded-panel bg-imagine-surface-raised px-l py-m type-body"
+        className="max-w-[80%] rounded-panel bg-imagine-surface px-l py-m type-body shadow-raised"
       >
         {text}
       </motion.p>

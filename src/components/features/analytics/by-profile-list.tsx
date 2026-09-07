@@ -50,7 +50,7 @@ export function ByProfileList({
     <div
       data-slot="by-profile"
       className={cn(
-        "flex flex-col gap-l rounded-panel bg-imagine-surface-raised p-l",
+        "flex flex-col gap-l rounded-panel bg-imagine-surface p-l shadow-raised",
         className,
       )}
     >
