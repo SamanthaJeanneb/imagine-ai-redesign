@@ -346,10 +346,7 @@ export function AvatarDemo() {
 export function ChartDemo() {
   return (
     <div className="grid gap-xl sm:grid-cols-2">
-      <div className="flex flex-col gap-s rounded-panel bg-imagine-surface-raised p-l">
-        <span className="type-small text-imagine-foreground-muted">
-          Impressions, last 7 days
-        </span>
+      <div className="flex flex-col rounded-panel bg-imagine-surface-raised p-l">
         <ChartContainer
           config={chartConfig}
           className="aspect-auto h-48 w-full"
@@ -383,10 +380,7 @@ export function ChartDemo() {
           </AreaChart>
         </ChartContainer>
       </div>
-      <div className="flex flex-col gap-s rounded-panel bg-imagine-surface-raised p-l">
-        <span className="type-small text-imagine-foreground-muted">
-          Posts by type
-        </span>
+      <div className="flex flex-col rounded-panel bg-imagine-surface-raised p-l">
         <ChartContainer
           config={chartConfig}
           className="aspect-auto h-48 w-full"

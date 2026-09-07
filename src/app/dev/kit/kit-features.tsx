@@ -528,22 +528,17 @@ const STEPS = [
 
 /* Demos. Each shows one component in isolation, in the states it has. */
 
-/** A labeled slot inside a kit section. */
+/** A slot inside a kit section. `label` is accepted so call sites can name the
+ *  state they are showing, but it is not rendered. */
 export function Demo({
-  label,
   children,
   className,
 }: {
-  label: string;
+  label?: string;
   children: React.ReactNode;
   className?: string;
 }) {
-  return (
-    <div className={cn("flex min-w-0 flex-col gap-s", className)}>
-      <span className="type-small text-imagine-foreground-faint">{label}</span>
-      {children}
-    </div>
-  );
+  return <div className={cn("min-w-0", className)}>{children}</div>;
 }
 
 /** Frame for components that normally sit on the page background. */
@@ -1101,9 +1096,6 @@ export function ChartBlockDemo() {
 export function PostChipDemo() {
   return (
     <div className="flex flex-wrap gap-xl">
-      <p className="w-full type-small text-imagine-foreground-muted">
-        Hover any chip to preview the post as it will appear on LinkedIn.
-      </p>
       {[POST_LAUNCH, POST_FOUNDERS, POST_HIRING, POST_NORTHWIND].map((post) => (
         <Demo key={post.id} label={post.status} className="w-44">
           <PostChip
