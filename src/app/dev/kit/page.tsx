@@ -13,7 +13,6 @@ import { colors, type ColorToken } from "@/styles/tokens";
 import {
   AvatarDemo,
   ChartDemo,
-  ChatDemo,
   FormDemo,
   OverlayDemo,
   SelectionDemo,
@@ -209,10 +208,6 @@ export default function KitPage() {
 
         <Section title="Avatars">
           <AvatarDemo />
-        </Section>
-
-        <Section title="Chat primitives">
-          <ChatDemo />
         </Section>
 
         <Section title="Sidebar">

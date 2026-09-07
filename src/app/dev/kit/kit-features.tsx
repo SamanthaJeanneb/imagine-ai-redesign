@@ -531,10 +531,18 @@ function OnBackground({
   );
 }
 
-/** Stand-in for the main surface that rounds into the sidebar. */
-function PageStub() {
+/**
+ * Stand-in for the main surface. Fills the frame beside the rail and rounds
+ * only the corners that meet it, the way the page rounds into the sidebar.
+ */
+function PageStub({ side = "right" }: { side?: "left" | "right" }) {
   return (
-    <div className="my-s mr-s w-24 rounded-surface bg-imagine-surface shadow-raised" />
+    <div
+      className={cn(
+        "min-w-28 flex-1 bg-imagine-surface shadow-raised",
+        side === "right" ? "rounded-l-surface" : "rounded-r-surface",
+      )}
+    />
   );
 }
 
@@ -550,7 +558,7 @@ export function SidebarDemo() {
   return (
     <div className="flex flex-wrap gap-xl">
       <Demo label="Expanded">
-        <OnBackground className="h-[520px]">
+        <OnBackground className="h-[520px] rounded-r-none">
           <Sidebar
             orgName="Acme"
             active={active}
@@ -572,7 +580,7 @@ export function SidebarDemo() {
         </OnBackground>
       </Demo>
       <Demo label="Collapsed">
-        <OnBackground className="h-[520px]">
+        <OnBackground className="h-[520px] rounded-r-none">
           <Sidebar
             orgName="Acme"
             active={active}
@@ -596,8 +604,8 @@ export function FilesPanelDemo() {
   return (
     <div className="flex flex-wrap gap-xl">
       <Demo label="Files panel">
-        <OnBackground className="h-[520px]">
-          <div className="my-s ml-s w-10 rounded-surface bg-imagine-surface shadow-raised" />
+        <OnBackground className="h-[520px] rounded-l-none">
+          <PageStub side="left" />
           <FilesPanel
             title="Acme"
             sections={FILE_SECTIONS}

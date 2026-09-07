@@ -69,7 +69,8 @@ function initials(name: string): string {
 
 /**
  * Workspace sidebar. Fills the height of its parent on `imagine-background`;
- * the main surface beside it carries `rounded-surface` so the page rounds in.
+ * the main surface beside it rounds its left corners (`rounded-l-surface`) so
+ * the page rounds into the rail.
  * The selected nav item has a light accent wash and a bar in the gutter, and
  * both slide together when the selection moves.
  */

@@ -14,15 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Attachment,
-  AttachmentContent,
-  AttachmentDescription,
-  AttachmentMedia,
-  AttachmentTitle,
-} from "@/components/ui/attachment";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import { Button } from "@/components/ui/button";
 import {
   type ChartConfig,
@@ -30,14 +22,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 import {
   Dialog,
   DialogContent,
@@ -69,19 +53,6 @@ import {
   InputGroupButton,
   InputGroupTextarea,
 } from "@/components/ui/input-group";
-import { Marker, MarkerContent, MarkerIcon } from "@/components/ui/marker";
-import {
-  Message,
-  MessageAvatar,
-  MessageContent,
-} from "@/components/ui/message";
-import {
-  MessageScroller,
-  MessageScrollerContent,
-  MessageScrollerItem,
-  MessageScrollerProvider,
-  MessageScrollerViewport,
-} from "@/components/ui/message-scroller";
 import {
   Popover,
   PopoverContent,
@@ -90,7 +61,6 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -131,12 +101,6 @@ const chartConfig = {
   impressions: { label: "Impressions", color: "var(--color-chart-1)" },
   posts: { label: "Posts", color: "var(--color-chart-1)" },
 } satisfies ChartConfig;
-
-const SCROLLER_LINES = Array.from(
-  { length: 12 },
-  (_, i) =>
-    `Draft ${String(i + 1)}: what we learned shipping the new onboarding`,
-);
 
 export function FormDemo() {
   return (
@@ -451,110 +415,6 @@ export function ChartDemo() {
             />
           </BarChart>
         </ChartContainer>
-      </div>
-    </div>
-  );
-}
-
-export function ChatDemo() {
-  return (
-    <div className="grid gap-xl sm:grid-cols-[2fr_1fr]">
-      <div className="flex h-72 flex-col rounded-panel bg-imagine-surface-raised p-l">
-        <MessageScrollerProvider>
-          <MessageScroller>
-            <MessageScrollerViewport>
-              <MessageScrollerContent>
-                <MessageScrollerItem>
-                  <Marker>
-                    <MarkerIcon>
-                      <Icon name="calendar" size="s" />
-                    </MarkerIcon>
-                    <MarkerContent>Today</MarkerContent>
-                  </Marker>
-                </MessageScrollerItem>
-                <MessageScrollerItem>
-                  <Message align="end">
-                    <MessageContent>
-                      <Bubble align="end">
-                        <BubbleContent>
-                          Draft a post about the onboarding launch for Tuesday.
-                        </BubbleContent>
-                      </Bubble>
-                    </MessageContent>
-                  </Message>
-                </MessageScrollerItem>
-                <MessageScrollerItem>
-                  <Message>
-                    <MessageAvatar>
-                      <Avatar>
-                        <AvatarFallback>
-                          <Icon name="sparkles" size="s" />
-                        </AvatarFallback>
-                      </Avatar>
-                    </MessageAvatar>
-                    <MessageContent>
-                      <Bubble variant="ghost">
-                        <BubbleContent>
-                          Here is a first draft. I pulled the numbers from last
-                          week and kept the hook short.
-                        </BubbleContent>
-                      </Bubble>
-                      <Attachment>
-                        <AttachmentMedia>
-                          <Icon name="image" />
-                        </AttachmentMedia>
-                        <AttachmentContent>
-                          <AttachmentTitle>onboarding-hero.png</AttachmentTitle>
-                          <AttachmentDescription>1.2 MB</AttachmentDescription>
-                        </AttachmentContent>
-                      </Attachment>
-                    </MessageContent>
-                  </Message>
-                </MessageScrollerItem>
-                <MessageScrollerItem>
-                  <Message align="end">
-                    <MessageContent>
-                      <Bubble variant="tinted" align="end">
-                        <BubbleContent>Schedule it.</BubbleContent>
-                      </Bubble>
-                    </MessageContent>
-                  </Message>
-                </MessageScrollerItem>
-              </MessageScrollerContent>
-            </MessageScrollerViewport>
-          </MessageScroller>
-        </MessageScrollerProvider>
-      </div>
-
-      <div className="flex flex-col gap-s">
-        <span className="type-small text-imagine-foreground-muted">
-          Scroll area and command
-        </span>
-        <ScrollArea className="h-28 rounded-control bg-imagine-surface-raised p-s">
-          <div className="flex flex-col gap-xs">
-            {SCROLLER_LINES.map((line) => (
-              <span key={line} className="truncate type-small">
-                {line}
-              </span>
-            ))}
-          </div>
-        </ScrollArea>
-        <Command className="rounded-panel bg-imagine-surface-raised">
-          <CommandInput placeholder="Search files" />
-          <CommandList>
-            <CommandEmpty>No files match.</CommandEmpty>
-            <CommandGroup heading="Organization">
-              <CommandItem>
-                <Icon name="file-lines" />
-                Brand voice
-              </CommandItem>
-              <CommandItem>
-                <Icon name="file-lines" />
-                Content pillars
-              </CommandItem>
-            </CommandGroup>
-          </CommandList>
-        </Command>
       </div>
     </div>
   );
