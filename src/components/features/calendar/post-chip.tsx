@@ -28,24 +28,43 @@ interface PostChipProps {
   className?: string;
 }
 
-const CHIP_COLOR = {
-  draft: "var(--imagine-foreground-muted)",
-  scheduled: "var(--imagine-secondary)",
-  published: "var(--imagine-foreground)",
-  failed: "var(--destructive)",
-} as const satisfies Record<PostChipStatus, string>;
+/** Status color, and the text color that reads on it when the chip is solid. */
+const CHIP = {
+  draft: {
+    color: "var(--imagine-foreground-muted)",
+    contrast: "var(--imagine-surface)",
+  },
+  scheduled: {
+    color: "var(--imagine-secondary)",
+    contrast: "var(--imagine-secondary-foreground)",
+  },
+  published: {
+    color: "var(--imagine-foreground)",
+    contrast: "var(--imagine-surface)",
+  },
+  failed: { color: "var(--destructive)", contrast: "#ffffff" },
+} as const satisfies Record<
+  PostChipStatus,
+  { color: string; contrast: string }
+>;
 
-/** Exposes the status color to `chip-wash` and the rail as `--chip-color`. */
+/** Exposes the status colors to `chip-wash`, `chip-solid`, and the rail. */
 function chipStyle(status: PostChipStatus): CSSProperties {
-  const style: CSSProperties & { "--chip-color": string } = {
-    "--chip-color": CHIP_COLOR[status],
+  const style: CSSProperties & {
+    "--chip-color": string;
+    "--chip-contrast": string;
+  } = {
+    "--chip-color": CHIP[status].color,
+    "--chip-contrast": CHIP[status].contrast,
   };
   return style;
 }
 
 /**
  * A post inside a calendar cell. Every status uses a solid left rail and a
- * wash that fades to the surface. Color is the only status signal. No badges.
+ * light wash that fades to the surface, with regular text on top. Selecting a
+ * chip fills it solid in its status color and lifts it. Color is the only
+ * status signal. No badges.
  */
 export function PostChip({
   post,
@@ -63,25 +82,33 @@ export function PostChip({
       onClick={() => onOpen?.(post)}
       data-slot="post-chip"
       data-status={post.status}
+      data-selected={selected || undefined}
+      aria-current={selected ? "true" : undefined}
       aria-label={`${post.title}, ${post.time}, ${post.profile}, ${post.status}`}
       style={chipStyle(post.status)}
       className={cn(
-        "relative flex w-full min-w-0 flex-col gap-xxs overflow-hidden rounded-control text-left shadow-control outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
-        "chip-wash text-imagine-secondary-foreground",
+        "relative flex w-full min-w-0 flex-col gap-xxs overflow-hidden rounded-control text-left transition-[box-shadow,color] outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-imagine-surface",
+        selected
+          ? "chip-solid text-[var(--chip-contrast)] shadow-raised"
+          : "chip-wash text-imagine-foreground shadow-control",
         dense ? "px-s py-xs pl-m" : "px-s py-s pl-m",
-        selected && "ring-2 ring-imagine-secondary/50",
         className,
       )}
     >
-      <span
-        aria-hidden="true"
-        className="absolute inset-y-0 left-0 w-1.5 bg-[var(--chip-color)]"
-      />
-      <span className={cn("truncate font-medium", "type-small")}>
-        {post.title}
-      </span>
+      {selected ? null : (
+        <span
+          aria-hidden="true"
+          className="absolute inset-y-0 left-0 w-1.5 bg-[var(--chip-color)]"
+        />
+      )}
+      <span className="truncate type-small font-medium">{post.title}</span>
       {dense ? null : (
-        <span className="flex items-center gap-xs type-small text-imagine-secondary-foreground/75">
+        <span
+          className={cn(
+            "flex items-center gap-xs type-small",
+            selected ? "opacity-80" : "text-imagine-foreground-muted",
+          )}
+        >
           <span className="tabular-nums">{post.time}</span>
           <span aria-hidden="true">·</span>
           <span className="truncate">{post.profile}</span>

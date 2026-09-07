@@ -160,9 +160,18 @@
   background-color: var(--imagine-surface);
   background-image: linear-gradient(
     90deg,
-    color-mix(in oklab, var(--chip-color) 70%, var(--imagine-surface)) 0%,
-    color-mix(in oklab, var(--chip-color) 22%, var(--imagine-surface)) 48%,
+    color-mix(in oklab, var(--chip-color) 34%, var(--imagine-surface)) 0%,
+    color-mix(in oklab, var(--chip-color) 12%, var(--imagine-surface)) 50%,
     var(--imagine-surface) 100%
+  );
+}
+/* Selected chip: the wash becomes a solid fill of the status color. */
+@utility chip-solid {
+  background-color: var(--chip-color);
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--chip-color) 86%, black) 0%,
+    var(--chip-color) 40%
   );
 }
 
