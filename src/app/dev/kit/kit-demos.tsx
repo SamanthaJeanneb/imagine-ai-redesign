@@ -204,7 +204,7 @@ export function SelectionDemo() {
             Files
           </TabsTrigger>
           <TabsTrigger value="skills">
-            <Icon name="sparkles" data-icon="inline-start" />
+            <Icon name="puzzle-piece" data-icon="inline-start" />
             Skills
           </TabsTrigger>
         </TabsList>
