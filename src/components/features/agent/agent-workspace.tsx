@@ -168,8 +168,10 @@ export function AgentWorkspace({
       onValueChange={setDraft}
       onSend={sendDraft}
       animateLayout={!reduceMotion}
+      // On the landing it spans the column, so it lines up with the calendar
+      // under it. In the thread it narrows to the message column.
       className={
-        onLanding ? "max-w-2xl" : "sticky bottom-l z-10 mx-auto mt-l max-w-3xl"
+        onLanding ? undefined : "sticky bottom-l z-10 mx-auto mt-l max-w-3xl"
       }
       {...(attached === null
         ? {}

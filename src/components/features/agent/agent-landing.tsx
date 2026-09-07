@@ -23,10 +23,10 @@ import {
   UpNextList,
   type UpNextItem,
 } from "@/components/features/calendar/up-next-list";
-import { Disclosure } from "@/components/motion/disclosure";
 import { Stagger } from "@/components/motion/stagger";
+import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import { pressRow, spring } from "@/styles/motion";
+import { spring } from "@/styles/motion";
 
 /**
  * The landing, in three pieces so the composer can sit between them and slide
@@ -38,6 +38,9 @@ export interface LandingStat {
   value: string;
   label: string;
 }
+
+/** How many activities show before the list has to be opened. */
+const PREVIEW = 2;
 
 export function LandingIntro({
   greeting,
@@ -68,12 +71,44 @@ export function LandingBelow({
   selectedPostId?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const unread = entries.some((entry) => entry.unread);
+  const rest = entries.length - PREVIEW;
 
   return (
     <div className="flex flex-col gap-xxl pt-xl pb-xxl">
-      {/* The week is the reason to be here, so it stays put. What happened while
-          the user was away waits behind its header. */}
+      {entries.length === 0 ? null : (
+        <section className="flex flex-col gap-l">
+          <h2 className="type-heading">While you were away</h2>
+          {/* The first two are the preview. The timeline animates the rest in,
+              so opening it grows the list rather than swapping it. */}
+          <Timeline
+            entries={open ? entries : entries.slice(0, PREVIEW)}
+            onAction={onAction}
+            className="pl-xs"
+          />
+          {rest > 0 ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-expanded={open}
+              onClick={() => {
+                setOpen((current) => !current);
+              }}
+              className="self-start"
+            >
+              {open ? "Show less" : `Show ${String(rest)} more`}
+              <motion.span
+                aria-hidden="true"
+                animate={{ rotate: open ? -90 : 90 }}
+                transition={spring.snappy}
+                className="flex text-imagine-foreground-faint"
+                data-icon="inline-end"
+              >
+                <Icon name="chevron-right" size="s" />
+              </motion.span>
+            </Button>
+          ) : null}
+        </section>
+      )}
       <section className="flex flex-col gap-l">
         <h2 className="type-heading">Next two weeks</h2>
         <CalendarGrid
@@ -83,41 +118,6 @@ export function LandingBelow({
           {...(selectedPostId === undefined ? {} : { selectedPostId })}
         />
       </section>
-      {entries.length === 0 ? null : (
-        <section className="flex flex-col gap-l">
-          <h2 className="flex">
-            <motion.button
-              type="button"
-              aria-expanded={open}
-              onClick={() => {
-                setOpen((current) => !current);
-              }}
-              whileTap={pressRow.whileTap}
-              transition={pressRow.transition}
-              className="-mx-s flex items-center gap-s rounded-control px-s py-xs type-heading transition-colors outline-none hover:bg-imagine-surface-raised focus-visible:ring-2 focus-visible:ring-ring/40"
-            >
-              While you were away
-              {unread && !open ? (
-                <span
-                  aria-hidden="true"
-                  className="size-2 rounded-full bg-imagine-secondary ring-4 ring-imagine-secondary-soft"
-                />
-              ) : null}
-              <motion.span
-                aria-hidden="true"
-                animate={{ rotate: open ? 90 : 0 }}
-                transition={spring.snappy}
-                className="flex text-imagine-foreground-faint"
-              >
-                <Icon name="chevron-right" size="s" />
-              </motion.span>
-            </motion.button>
-          </h2>
-          <Disclosure open={open}>
-            <Timeline entries={entries} onAction={onAction} className="pl-xs" />
-          </Disclosure>
-        </section>
-      )}
     </div>
   );
 }
