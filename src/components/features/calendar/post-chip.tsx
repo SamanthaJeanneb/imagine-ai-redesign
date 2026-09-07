@@ -2,6 +2,7 @@
 
 import { cn } from "cn";
 import { motion } from "motion/react";
+import type { CSSProperties } from "react";
 
 import { Icon } from "@/components/ui/icon";
 import { hoverLift, press } from "@/styles/motion";
@@ -27,9 +28,16 @@ interface PostChipProps {
   className?: string;
 }
 
+const CHIP_COLOR = {
+  draft: "var(--imagine-foreground-muted)",
+  scheduled: "var(--imagine-secondary)",
+  published: "var(--imagine-foreground)",
+  failed: "var(--destructive)",
+} as const satisfies Record<PostChipStatus, string>;
+
 /**
- * A post inside a calendar cell. Scheduled chips carry the accent gradient.
- * Other statuses stay on the surface with a left-edge mark. No badges.
+ * A post inside a calendar cell. Every status uses a solid left rail and a
+ * wash that fades to the surface. Color is the only status signal. No badges.
  */
 export function PostChip({
   post,
@@ -38,8 +46,6 @@ export function PostChip({
   onOpen,
   className,
 }: PostChipProps) {
-  const scheduled = post.status === "scheduled";
-
   return (
     <motion.button
       type="button"
@@ -50,34 +56,28 @@ export function PostChip({
       data-slot="post-chip"
       data-status={post.status}
       aria-label={`${post.title}, ${post.time}, ${post.profile}, ${post.status}`}
+      style={
+        {
+          "--chip-color": CHIP_COLOR[post.status],
+        } as CSSProperties
+      }
       className={cn(
-        "relative flex w-full min-w-0 flex-col gap-xxs overflow-hidden rounded-control text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
-        dense ? "px-s py-xs" : "px-s py-s pl-m",
-        scheduled
-          ? "chip-gradient text-imagine-foreground shadow-control"
-          : post.status === "draft"
-            ? "bg-imagine-surface-raised/80 text-imagine-foreground-muted"
-            : "bg-imagine-surface shadow-control",
+        "relative flex w-full min-w-0 flex-col gap-xxs overflow-hidden rounded-control text-left shadow-control outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+        "chip-wash text-imagine-secondary-foreground",
+        dense ? "px-s py-xs pl-m" : "px-s py-s pl-m",
         selected && "ring-2 ring-imagine-secondary/50",
         className,
       )}
     >
-      {scheduled ? null : (
-        <span
-          aria-hidden="true"
-          className={cn(
-            "absolute inset-y-xs left-0 w-0.5 rounded-full",
-            post.status === "draft" && "bg-imagine-foreground-faint",
-            post.status === "published" && "bg-imagine-foreground",
-            post.status === "failed" && "bg-destructive",
-          )}
-        />
-      )}
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-0 left-0 w-1.5 bg-[var(--chip-color)]"
+      />
       <span className={cn("truncate font-medium", "type-small")}>
         {post.title}
       </span>
       {dense ? null : (
-        <span className="flex items-center gap-xs type-small text-imagine-foreground-muted">
+        <span className="flex items-center gap-xs type-small text-imagine-secondary-foreground/75">
           <span className="tabular-nums">{post.time}</span>
           <span aria-hidden="true">·</span>
           <span className="truncate">{post.profile}</span>
@@ -85,11 +85,7 @@ export function PostChip({
             <Icon name="check" size="s" className="ml-auto" />
           ) : null}
           {post.status === "failed" ? (
-            <Icon
-              name="triangle-exclamation"
-              size="s"
-              className="ml-auto text-destructive"
-            />
+            <Icon name="triangle-exclamation" size="s" className="ml-auto" />
           ) : null}
         </span>
       )}
