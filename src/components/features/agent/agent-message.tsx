@@ -73,21 +73,6 @@ interface AgentMessageProps {
 
 const DEFAULT_STATUSES = ["Thinking"] as const;
 
-/** Pink-tinted tile that marks the agent's turn. */
-export function AgentAvatar({ className }: { className?: string }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        "flex size-7 shrink-0 items-center justify-center rounded-control bg-imagine-secondary-soft text-imagine-secondary",
-        className,
-      )}
-    >
-      <Icon name="sparkles" size="s" active />
-    </span>
-  );
-}
-
 function assertNever(value: never): never {
   throw new Error(`Unhandled message part: ${JSON.stringify(value)}`);
 }
@@ -187,8 +172,8 @@ function Part({
 }
 
 /**
- * One agent turn: parts stream in one after another. No bubble; the agent
- * speaks on the surface, the user speaks in a raised bubble.
+ * One agent turn: parts stream in one after another. No avatar and no
+ * bubble; the agent speaks on the surface, the user speaks in a raised bubble.
  */
 export function AgentMessage({
   parts,
@@ -200,22 +185,19 @@ export function AgentMessage({
   return (
     <div
       data-slot="agent-message"
-      className={cn("flex w-full min-w-0 gap-m", className)}
+      className={cn("flex w-full min-w-0 flex-col gap-l", className)}
     >
-      <AgentAvatar className="mt-xxs" />
-      <div className="flex min-w-0 flex-1 flex-col gap-l">
-        {parts.map((part, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...fade.base, delay: index * stagger.list }}
-          >
-            <Part part={part} onIntent={onIntent} />
-          </motion.div>
-        ))}
-        {thinking ? <ThinkingIndicator statuses={thinkingStatuses} /> : null}
-      </div>
+      {parts.map((part, index) => (
+        <motion.div
+          key={index}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...fade.base, delay: index * stagger.list }}
+        >
+          <Part part={part} onIntent={onIntent} />
+        </motion.div>
+      ))}
+      {thinking ? <ThinkingIndicator statuses={thinkingStatuses} /> : null}
     </div>
   );
 }

@@ -111,6 +111,13 @@ export const radius = {
   surface: 20,
 } as const satisfies Record<RadiusToken, number>;
 
+/** Half the default scale. Used by `/dev/kit-sharp` via `[data-radius="sharp"]`. */
+export const radiusSharp = {
+  control: 2,
+  panel: 4,
+  surface: 8,
+} as const satisfies Record<RadiusToken, number>;
+
 export type TypeToken =
   "display" | "title" | "heading" | "body" | "small" | "micro";
 
@@ -148,13 +155,18 @@ function shadowDeclarations(theme: Theme): string {
   );
 }
 
+function radiusDeclarations(scale: Record<RadiusToken, number>): string {
+  return declarations(
+    Object.entries(scale).map(
+      ([name, px]) => [`radius-${name}`, `${String(px)}px`] as const,
+    ),
+  );
+}
+
 function scaleDeclarations(): string {
   const entries: (readonly [string, string])[] = [];
   for (const [name, px] of Object.entries(spacing)) {
     entries.push([`spacing-${name}`, `${String(px)}px`]);
-  }
-  for (const [name, px] of Object.entries(radius)) {
-    entries.push([`radius-${name}`, `${String(px)}px`]);
   }
   for (const [name, style] of Object.entries(type)) {
     entries.push([`text-${name}-size`, `${String(style.size)}px`]);
@@ -173,7 +185,8 @@ function scaleDeclarations(): string {
  */
 export function tokensToCss(): string {
   return [
-    `:root{${scaleDeclarations()};${colorDeclarations("light")};${shadowDeclarations("light")}}`,
+    `:root{${scaleDeclarations()};${radiusDeclarations(radius)};${colorDeclarations("light")};${shadowDeclarations("light")}}`,
     `[data-theme="dark"]{${colorDeclarations("dark")};${shadowDeclarations("dark")}}`,
+    `[data-radius="sharp"]{${radiusDeclarations(radiusSharp)}}`,
   ].join("\n");
 }

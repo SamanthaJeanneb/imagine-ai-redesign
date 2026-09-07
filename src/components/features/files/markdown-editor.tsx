@@ -4,17 +4,12 @@ import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { fade, spring } from "@/styles/motion";
 
 export interface DocumentMeta {
   title: string;
-  /** "Edited by Sarah Chen, 2h ago". */
-  edited: string;
-  editorName: string;
-  editorAvatarUrl?: string;
 }
 
 interface MarkdownEditorProps {
@@ -81,18 +76,10 @@ function parseBlocks(source: string): Block[] {
   return blocks;
 }
 
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-}
-
 /**
  * The document view that opens in a tab beside the thread. Reads as a page:
- * title, meta line, then headings as small caps labels. Click into the body to
- * edit the source; Save and Revert only light up when there are changes.
+ * title, then headings as small caps labels. Click into the body to edit the
+ * source; Save and Revert only light up when there are changes.
  */
 export function MarkdownEditor({
   meta,
@@ -114,20 +101,7 @@ export function MarkdownEditor({
       className={cn("flex w-full max-w-2xl flex-col gap-xl", className)}
     >
       <header className="flex items-start justify-between gap-l">
-        <div className="flex min-w-0 flex-col gap-s">
-          <h1 className="truncate type-title">{meta.title}</h1>
-          <div className="flex items-center gap-s type-small text-imagine-foreground-muted">
-            <Avatar size="sm" className="size-5">
-              {meta.editorAvatarUrl ? (
-                <AvatarImage src={meta.editorAvatarUrl} alt={meta.editorName} />
-              ) : null}
-              <AvatarFallback className="text-[10px]">
-                {initials(meta.editorName)}
-              </AvatarFallback>
-            </Avatar>
-            <span>{meta.edited}</span>
-          </div>
-        </div>
+        <h1 className="min-w-0 truncate type-title">{meta.title}</h1>
         <div className="flex shrink-0 items-center gap-xs">
           <AnimatePresence initial={false}>
             {savedFlash ? (

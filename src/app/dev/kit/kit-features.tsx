@@ -556,7 +556,6 @@ function PageStub({ side = "right" }: { side?: "left" | "right" }) {
 const SIDEBAR_USER = {
   name: "Sarah Chen",
   avatarUrl: AVATAR(47),
-  note: "Growth plan",
 };
 
 export function LoadingDemo() {

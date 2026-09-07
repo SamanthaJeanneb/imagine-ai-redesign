@@ -138,9 +138,6 @@ export function ProfileList({
           );
         })}
       </Stagger>
-      <span className="px-m type-small text-imagine-foreground-muted">
-        {visible.length} of {profiles.length} profiles
-      </span>
     </div>
   );
 }

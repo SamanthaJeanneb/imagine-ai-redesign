@@ -19,11 +19,8 @@ export interface ProfileDetailData {
   avatarUrl?: string;
   kind: "person" | "company";
   status: ConnectionStatus;
-  /** "Expires in 12 days" or "Reconnect to keep posting". */
-  statusNote?: string;
-  postsIndexed: number;
   company?: { name: string; logoUrl?: string; url: string };
-  persona?: { fileName: string; updated: string };
+  persona?: { fileName: string };
 }
 
 interface ProfileDetailProps {
@@ -157,14 +154,6 @@ export function ProfileDetail({
               </Button>
             ) : null}
           </Row>
-          {profile.statusNote ? (
-            <span className="pb-xs type-small text-imagine-foreground-muted">
-              {profile.statusNote}
-            </span>
-          ) : null}
-          <Row label="Posts indexed">
-            <span className="tabular-nums">{profile.postsIndexed}</span>
-          </Row>
         </div>
 
         {profile.kind === "person" ? (
@@ -233,13 +222,8 @@ export function ProfileDetail({
                 size="s"
                 className="text-imagine-foreground-faint"
               />
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate type-small font-medium">
-                  {profile.persona.fileName}
-                </span>
-                <span className="truncate type-small text-imagine-foreground-muted">
-                  {profile.persona.updated}
-                </span>
+              <span className="min-w-0 flex-1 truncate type-small font-medium">
+                {profile.persona.fileName}
               </span>
               <Button size="xs" variant="ghost" onClick={onViewPersona}>
                 View in Files

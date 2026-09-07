@@ -33,12 +33,10 @@ export interface SidebarThread {
 export interface SidebarUser {
   name: string;
   avatarUrl?: string;
-  /** Second line under the name, e.g. the plan or role. */
-  note?: string;
 }
 
 export const SIDEBAR_NAV: readonly SidebarNavItem[] = [
-  { key: "agent", label: "Agent", icon: "comment" },
+  { key: "agent", label: "Agent", icon: "message" },
   { key: "calendar", label: "Calendar", icon: "calendar" },
   { key: "analytics", label: "Analytics", icon: "chart-simple" },
   { key: "files", label: "Files", icon: "folder" },
@@ -53,6 +51,7 @@ interface SidebarProps {
   user: SidebarUser;
   /** Icon rail. Used while the files panel is open. */
   collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
   activeThreadId?: string;
   onNavigate?: (key: SidebarNavKey) => void;
   onNewPost?: () => void;
@@ -83,6 +82,7 @@ export function Sidebar({
   threads,
   user,
   collapsed = false,
+  onCollapsedChange,
   activeThreadId,
   onNavigate,
   onNewPost,
@@ -95,12 +95,13 @@ export function Sidebar({
 
   return (
     <motion.aside
-      layout
+      initial={false}
+      animate={{ width: collapsed ? 64 : 256 }}
       transition={spring.soft}
       data-collapsed={collapsed || undefined}
       className={cn(
-        "flex h-full shrink-0 flex-col bg-imagine-background text-imagine-foreground",
-        collapsed ? "w-16 items-center px-s py-xl" : "w-64 px-m py-xl",
+        "flex h-full shrink-0 flex-col overflow-x-hidden bg-imagine-background text-imagine-foreground",
+        collapsed ? "items-center px-s py-xl" : "px-m py-xl",
         className,
       )}
     >
@@ -108,8 +109,8 @@ export function Sidebar({
         {/* Organization */}
         <div
           className={cn(
-            "flex h-10 items-center gap-s",
-            collapsed ? "justify-center" : "px-xs",
+            "flex items-center gap-s",
+            collapsed ? "flex-col justify-center" : "h-10 px-xs",
           )}
         >
           {orgLogoUrl ? (
@@ -144,6 +145,37 @@ export function Sidebar({
               </motion.span>
             )}
           </AnimatePresence>
+          {onCollapsedChange ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon-xs"
+                  variant="ghost"
+                  aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                  aria-expanded={!collapsed}
+                  onClick={() => {
+                    onCollapsedChange(!collapsed);
+                  }}
+                  className={cn(
+                    "text-imagine-foreground-faint hover:text-imagine-foreground",
+                    !collapsed && "ml-auto",
+                  )}
+                >
+                  <motion.span
+                    className="flex"
+                    initial={false}
+                    animate={{ rotate: collapsed ? 180 : 0 }}
+                    transition={spring.snappy}
+                  >
+                    <Icon name="chevron-left" size="s" />
+                  </motion.span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                {collapsed ? "Expand" : "Collapse"}
+              </TooltipContent>
+            </Tooltip>
+          ) : null}
         </div>
 
         {collapsed ? (
@@ -208,7 +240,11 @@ export function Sidebar({
                   selected && "text-imagine-secondary",
                 )}
               >
-                <Icon name={item.icon} size="m" active={selected} />
+                <Icon
+                  name={item.icon}
+                  size="m"
+                  active={selected && item.key !== "agent"}
+                />
               </span>
               {collapsed ? null : (
                 <span
@@ -234,71 +270,84 @@ export function Sidebar({
       </nav>
 
       {/* Recent posts. Collapsed keeps the spacer so the account stays pinned. */}
-      {collapsed ? (
-        <div className="flex-1" />
-      ) : (
-        <div className="mt-xl flex min-h-0 flex-1 flex-col">
-          <div className="flex h-8 shrink-0 items-center justify-between px-s">
-            <span className="type-micro font-medium text-imagine-foreground-muted">
-              Posts
-            </span>
-            <span className="type-micro text-imagine-foreground-faint tabular-nums">
-              {threads.length}
-            </span>
-          </div>
-          <Stagger
-            kind="list"
-            className="flex min-h-0 flex-1 flex-col gap-xxs overflow-y-auto"
+      <AnimatePresence initial={false} mode="popLayout">
+        {collapsed ? (
+          <motion.div
+            key="spacer"
+            className="flex-1"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={fade.fast}
+          />
+        ) : (
+          <motion.div
+            key="posts"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={fade.base}
+            className="mt-xl flex min-h-0 flex-1 flex-col"
           >
-            {threads.map((thread) => {
-              const selected = thread.id === activeThreadId;
-              return (
-                <StaggerItem key={thread.id}>
-                  <button
-                    type="button"
-                    aria-current={selected ? "true" : undefined}
-                    onClick={() => onOpenThread?.(thread.id)}
-                    className={cn(
-                      "relative flex h-9 w-full items-center gap-s rounded-control pr-s pl-xs text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
-                      selected
-                        ? "text-imagine-foreground"
-                        : "text-imagine-foreground-muted hover:bg-imagine-surface hover:text-imagine-foreground",
-                    )}
-                  >
-                    {selected ? (
-                      <motion.span
-                        layoutId={threadIndicatorId}
-                        aria-hidden="true"
-                        transition={spring.snappy}
-                        className="absolute inset-0 rounded-control selection-gradient-soft"
-                      />
-                    ) : null}
-                    <span className="relative z-10 flex size-7 shrink-0 items-center justify-center">
-                      <span
-                        aria-hidden="true"
-                        className={cn(
-                          "size-1.5 rounded-full",
-                          thread.unread
-                            ? "bg-imagine-secondary ring-[3px] ring-imagine-secondary-soft"
-                            : "bg-imagine-foreground-faint/70",
-                        )}
-                      />
-                    </span>
-                    <span
+            <div className="flex h-8 shrink-0 items-center px-s">
+              <span className="type-micro font-medium text-imagine-foreground-muted">
+                Posts
+              </span>
+            </div>
+            <Stagger
+              kind="list"
+              className="flex min-h-0 flex-1 flex-col overflow-y-auto"
+            >
+              {threads.map((thread) => {
+                const selected = thread.id === activeThreadId;
+                return (
+                  <StaggerItem key={thread.id}>
+                    <button
+                      type="button"
+                      aria-current={selected ? "true" : undefined}
+                      onClick={() => onOpenThread?.(thread.id)}
                       className={cn(
-                        "relative z-10 truncate type-small",
-                        thread.unread && "font-medium",
+                        "relative flex h-7 w-full items-center gap-s rounded-control pr-s pl-xs text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+                        selected
+                          ? "text-imagine-foreground"
+                          : "text-imagine-foreground-muted hover:bg-imagine-surface hover:text-imagine-foreground",
                       )}
                     >
-                      {thread.title}
-                    </span>
-                  </button>
-                </StaggerItem>
-              );
-            })}
-          </Stagger>
-        </div>
-      )}
+                      {selected ? (
+                        <motion.span
+                          layoutId={threadIndicatorId}
+                          aria-hidden="true"
+                          transition={spring.snappy}
+                          className="absolute inset-0 rounded-control selection-gradient-soft"
+                        />
+                      ) : null}
+                      <span className="relative z-10 flex size-7 shrink-0 items-center justify-center">
+                        <span
+                          aria-hidden="true"
+                          className={cn(
+                            "size-1.5 rounded-full",
+                            thread.unread
+                              ? "bg-imagine-secondary ring-[3px] ring-imagine-secondary-soft"
+                              : "bg-imagine-foreground-faint/70",
+                          )}
+                        />
+                      </span>
+                      <span
+                        className={cn(
+                          "relative z-10 truncate type-small",
+                          thread.unread && "font-medium",
+                        )}
+                      >
+                        {thread.title}
+                      </span>
+                    </button>
+                  </StaggerItem>
+                );
+              })}
+            </Stagger>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Account */}
       <button
@@ -317,15 +366,8 @@ export function Sidebar({
         </Avatar>
         {collapsed ? null : (
           <>
-            <span className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate type-small font-semibold">
-                {user.name}
-              </span>
-              {user.note ? (
-                <span className="truncate type-small text-imagine-foreground-faint">
-                  {user.note}
-                </span>
-              ) : null}
+            <span className="min-w-0 flex-1 truncate type-small font-semibold">
+              {user.name}
             </span>
             <Icon
               name="chevron-right"

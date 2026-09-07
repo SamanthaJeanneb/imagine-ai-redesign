@@ -16,8 +16,6 @@ export interface UsageLine {
 
 interface UsageMeterProps {
   planName: string;
-  /** "Renews 1 Oct". */
-  renewal: string;
   lines: readonly UsageLine[];
   onManagePlan?: () => void;
   className?: string;
@@ -26,7 +24,6 @@ interface UsageMeterProps {
 /** Settings, General: the plan and what has been used this period. */
 export function UsageMeter({
   planName,
-  renewal,
   lines,
   onManagePlan,
   className,
@@ -40,12 +37,7 @@ export function UsageMeter({
       )}
     >
       <div className="flex items-start justify-between gap-l">
-        <div className="flex flex-col">
-          <span className="type-heading">{planName}</span>
-          <span className="type-small text-imagine-foreground-muted">
-            {renewal}
-          </span>
-        </div>
+        <span className="type-heading">{planName}</span>
         {onManagePlan ? (
           <Button
             size="sm"

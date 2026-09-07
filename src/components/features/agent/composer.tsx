@@ -82,9 +82,6 @@ export function Composer({
     >
       {isDock ? (
         <div className="flex items-center gap-xs px-xs pt-xxs pb-xs">
-          <span className="mr-xxs type-small text-imagine-foreground-faint">
-            Show
-          </span>
           <AnimatePresence initial={false} mode="popLayout">
             {PREVIEW_OPTIONS.filter(
               (option) => preview === null || option.key === preview,
