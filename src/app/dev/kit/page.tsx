@@ -271,7 +271,7 @@ export default function KitPage() {
           <AccountDemo />
         </Section>
 
-        <Section title="Onboarding parts">
+        <Section title="Onboarding">
           <OnboardingPartsDemo />
         </Section>
 

@@ -68,15 +68,10 @@ import { BrandPanel } from "@/components/features/onboarding/brand-panel";
 import { ConnectLinkedIn } from "@/components/features/onboarding/connect-linkedin";
 import { JoinOrganization } from "@/components/features/onboarding/join-organization";
 import {
-  InviteLinkField,
   InviteTeamForm,
-  TeamMemberRow,
   type TeamMember,
 } from "@/components/features/onboarding/invite-team-form";
-import {
-  LogoUpload,
-  OrganizationForm,
-} from "@/components/features/onboarding/organization-form";
+import { OrganizationForm } from "@/components/features/onboarding/organization-form";
 import { SignInForm } from "@/components/features/onboarding/sign-in-form";
 import { StepHeading } from "@/components/features/onboarding/step-heading";
 import { Stepper } from "@/components/features/onboarding/stepper";
@@ -1600,11 +1595,10 @@ export function AccountDemo() {
 
 export function OnboardingPartsDemo() {
   const [step, setStep] = useState(2);
-  const [logo, setLogo] = useState<string | undefined>();
 
   return (
     <div className="flex flex-col gap-xl">
-      <div className="flex flex-wrap gap-xl">
+      <div className="flex flex-wrap items-start gap-xl">
         <Demo label="Stepper" className="w-56">
           <Stepper steps={STEPS} current={step} onSelect={setStep} />
         </Demo>
@@ -1616,7 +1610,7 @@ export function OnboardingPartsDemo() {
         </Demo>
       </div>
       <div className="grid gap-xl lg:grid-cols-2">
-        <Demo label="Sign in form">
+        <Demo label="1. Sign in">
           <SignInForm
             onGoogle={() => {
               toast("Google");
@@ -1629,39 +1623,14 @@ export function OnboardingPartsDemo() {
             }}
           />
         </Demo>
-        <Demo label="Organization form">
+        <Demo label="2. Set up organization">
           <OrganizationForm
             onContinue={(values) => {
               toast(`Organization: ${values.name}`);
             }}
           />
         </Demo>
-        <Demo label="Logo upload, invite link, team member rows">
-          <div className="flex flex-col gap-l">
-            <LogoUpload
-              value={logo}
-              onChange={(file) => {
-                setLogo(file ? URL.createObjectURL(file) : undefined);
-              }}
-            />
-            <InviteLinkField url="https://imagine.ai/join/acme-7f3k" />
-            <div className="flex flex-col">
-              {TEAM.map((member) => (
-                <TeamMemberRow
-                  key={member.id}
-                  member={member}
-                  onRoleChange={(id, role) => {
-                    toast(`${id}: ${role}`);
-                  }}
-                  onResend={() => {
-                    toast("Invite resent");
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        </Demo>
-        <Demo label="Invite team form">
+        <Demo label="3. Invite team">
           <InviteTeamForm
             inviteUrl="https://imagine.ai/join/acme-7f3k"
             members={TEAM}
@@ -1676,7 +1645,24 @@ export function OnboardingPartsDemo() {
             }}
           />
         </Demo>
-        <Demo label="Join organization (invite landing)">
+        <Demo label="4. Connect LinkedIn">
+          <ConnectLinkedIn
+            accountName="Sarah Chen"
+            accountNote="sarah@acme.com, admin"
+            permissions={[
+              "Publish posts you approve, on the schedule you set",
+              "Read post analytics to plan what to write next",
+              "Never send messages or connection requests",
+            ]}
+            onConnect={() => {
+              toast.success("LinkedIn connected");
+            }}
+            onSkip={() => {
+              toast("Skipped");
+            }}
+          />
+        </Demo>
+        <Demo label="Invite link landing, replaces 2 and 3">
           <JoinOrganization
             orgName="Acme"
             orgNote="12 members · 3 LinkedIn profiles"
@@ -1693,23 +1679,6 @@ export function OnboardingPartsDemo() {
             }}
             onDecline={() => {
               toast("Not now");
-            }}
-          />
-        </Demo>
-        <Demo label="Connect LinkedIn">
-          <ConnectLinkedIn
-            accountName="Sarah Chen"
-            accountNote="sarah@acme.com, admin"
-            permissions={[
-              "Publish posts you approve, on the schedule you set",
-              "Read post analytics to plan what to write next",
-              "Never send messages or connection requests",
-            ]}
-            onConnect={() => {
-              toast.success("LinkedIn connected");
-            }}
-            onSkip={() => {
-              toast("Skipped");
             }}
           />
         </Demo>
