@@ -57,7 +57,7 @@ export function toAssetTile(asset: Asset): AssetTileData {
   };
 }
 
-export function toAuthor(client: Client): PostAuthor {
+function toAuthor(client: Client): PostAuthor {
   return {
     name: client.name,
     headline: client.description ?? (client.isCompany ? "Company page" : ""),
@@ -68,7 +68,7 @@ export function toAuthor(client: Client): PostAuthor {
 }
 
 /** "Acme" for a page, "Sarah" for a person — the calendar chip has one line. */
-export function toProfileLabel(client: Client): string {
+function toProfileLabel(client: Client): string {
   if (client.isCompany) return client.name;
   return client.name.split(" ", 1)[0] ?? client.name;
 }

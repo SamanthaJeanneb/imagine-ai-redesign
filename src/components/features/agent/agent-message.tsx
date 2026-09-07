@@ -26,8 +26,8 @@ import { Icon } from "@/components/ui/icon";
 import { fade, stagger } from "@/styles/motion";
 
 /**
- * Discriminated content parts, mirroring `mastra_messages.content`. The
- * entity layer will own this type in Phase 2; the renderer is exhaustive.
+ * Discriminated content parts, mirroring `mastra_messages.content`. Built by
+ * `services/agent`; the renderer is exhaustive.
  */
 export type MessagePart =
   | { type: "text"; text: string }

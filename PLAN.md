@@ -534,7 +534,7 @@ contradicting them:
 What makes the port cheap:
 
 - Domain types are copies of theirs where they exist: `Asset`, `Client`, `Post`,
-`ClientPostStatus`, `MediaFile`, `AnalyticsSummary`, `TimeRange`. Components typed against
+`ClientPostStatus`, `MediaFile`, `AnalyticsTotals`, `TimeRange`. Components typed against
 these keep compiling when the data source changes.
 - Snake_case never escapes `src/entities`. On arrival, their generated
 `services/supabase/schemas` replaces `rows.ts` and the transforms stay.

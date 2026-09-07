@@ -7,7 +7,6 @@ import type {
 import type { StatDelta } from "@/components/features/analytics/stat-tile";
 import type { TopPost } from "@/components/features/analytics/top-posts";
 import {
-  type AnalyticsSummary,
   type AnalyticsTotals,
   RANGE_DAYS,
   type TimeRange,
@@ -40,8 +39,7 @@ export interface AnalyticsChart {
 }
 
 export interface AnalyticsOverview {
-  summary: AnalyticsSummary;
-  /** The same summary, formatted for the stat tiles. */
+  /** Totals for the window, formatted against the window before it. */
   stats: readonly AnalyticsStat[];
   /** Toolbar options: `all` plus every profile. */
   profiles: readonly ProfileOption[];
@@ -176,7 +174,6 @@ export function getAnalyticsOverview(
     });
 
   return {
-    summary: { ...currentTotals, previousPeriod: previousTotals },
     stats: [
       toStat(
         "Impressions",

@@ -9,15 +9,12 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "vitest run",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "pnpm typecheck && pnpm lint && pnpm test"
+    "check": "pnpm typecheck && pnpm lint"
   },
   "dependencies": {
-    "@shadcn/react": "^0.3.1",
     "class-variance-authority": "^0.7.1",
-    "cmdk": "^1.1.1",
     "cn": "^0.2.5",
     "motion": "^13.2.0",
     "next": "16.3.4",
@@ -41,7 +38,6 @@
     "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "typescript-eslint": "^8.69.0",
-    "vitest": "^5.0.0"
+    "typescript-eslint": "^8.69.0"
   }
 }

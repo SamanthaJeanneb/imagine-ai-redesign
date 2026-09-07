@@ -13,10 +13,6 @@ export interface AnalyticsTotals {
   totalPosts: number;
 }
 
-export interface AnalyticsSummary extends AnalyticsTotals {
-  previousPeriod?: AnalyticsTotals;
-}
-
 /** Days behind "now" each range covers. `all` reaches back far enough to hold everything. */
 export const RANGE_DAYS: Record<TimeRange, number> = {
   "7d": 7,
