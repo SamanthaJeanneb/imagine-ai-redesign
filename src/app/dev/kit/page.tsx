@@ -211,10 +211,6 @@ export default function KitPage() {
           <AvatarDemo />
         </Section>
 
-        <Section title="Charts">
-          <ChartDemo />
-        </Section>
-
         <Section title="Chat primitives">
           <ChatDemo />
         </Section>
@@ -263,18 +259,6 @@ export default function KitPage() {
           <CalendarToolbarDemo />
         </Section>
 
-        <Section title="Stat tiles">
-          <StatTileDemo />
-        </Section>
-
-        <Section title="Chart block">
-          <ChartBlockDemo />
-        </Section>
-
-        <Section title="Analytics toolbar, by profile, top posts">
-          <AnalyticsPartsDemo />
-        </Section>
-
         <Section title="Editor tab strip, markdown editor">
           <EditorDemo />
         </Section>
@@ -315,6 +299,22 @@ export default function KitPage() {
               </div>
             </div>
           </div>
+        </Section>
+
+        <Section title="Charts">
+          <ChartDemo />
+        </Section>
+
+        <Section title="Stat tiles">
+          <StatTileDemo />
+        </Section>
+
+        <Section title="Chart block">
+          <ChartBlockDemo />
+        </Section>
+
+        <Section title="Analytics toolbar, by profile, top posts">
+          <AnalyticsPartsDemo />
         </Section>
       </div>
     </main>
