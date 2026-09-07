@@ -126,27 +126,25 @@
  * Selection and accent gradients. Named without a `bg-` prefix so class
  * merging never drops them in favor of a background color.
  *
- * selection-gradient: the chosen item in primary navigation. Solid accent at
- * the leading edge (where the label sits) fading out to the right.
- * selection-gradient-soft: the chosen row in a list. Same shape, quiet enough
- * for foreground text.
+ * selection-gradient: the chosen item in primary navigation. A light wash of
+ * accent at the leading edge, fading out so foreground text stays readable.
+ * selection-gradient-soft: the chosen row in a list. Same shape, quieter.
  * accent-gradient: small accent tiles (logo, the scheduled day).
  */
 @utility selection-gradient {
   background-image: linear-gradient(
     90deg,
-    var(--imagine-secondary-strong) 0%,
-    var(--imagine-secondary) 38%,
-    color-mix(in oklab, var(--imagine-secondary) 42%, transparent) 78%,
-    color-mix(in oklab, var(--imagine-secondary) 22%, transparent) 100%
+    color-mix(in oklab, var(--imagine-secondary) 18%, transparent) 0%,
+    color-mix(in oklab, var(--imagine-secondary) 8%, transparent) 52%,
+    color-mix(in oklab, var(--imagine-secondary) 0%, transparent) 100%
   );
 }
 @utility selection-gradient-soft {
   background-image: linear-gradient(
     90deg,
-    color-mix(in oklab, var(--imagine-secondary) 26%, transparent) 0%,
-    color-mix(in oklab, var(--imagine-secondary) 12%, transparent) 55%,
-    color-mix(in oklab, var(--imagine-secondary) 4%, transparent) 100%
+    color-mix(in oklab, var(--imagine-secondary) 12%, transparent) 0%,
+    color-mix(in oklab, var(--imagine-secondary) 5%, transparent) 55%,
+    color-mix(in oklab, var(--imagine-secondary) 0%, transparent) 100%
   );
 }
 @utility accent-gradient {

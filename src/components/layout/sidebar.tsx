@@ -38,7 +38,7 @@ export interface SidebarUser {
 }
 
 export const SIDEBAR_NAV: readonly SidebarNavItem[] = [
-  { key: "agent", label: "Agent", icon: "sparkles" },
+  { key: "agent", label: "Agent", icon: "comment" },
   { key: "calendar", label: "Calendar", icon: "calendar" },
   { key: "analytics", label: "Analytics", icon: "chart-simple" },
   { key: "files", label: "Files", icon: "folder" },
@@ -68,9 +68,9 @@ function initials(name: string): string {
 }
 
 /**
- * Workspace sidebar. Sits on `imagine-background`; the main surface rounds
- * into it. The selected nav item carries the accent gradient and a bar in the
- * gutter; both slide together when the selection moves.
+ * Workspace sidebar. Full viewport height on `imagine-background`; the main
+ * surface rounds into it. The selected nav item carries a light accent wash
+ * and a bar in the gutter; both slide together when the selection moves.
  */
 export function Sidebar({
   orgName,
@@ -94,62 +94,73 @@ export function Sidebar({
       transition={spring.soft}
       data-collapsed={collapsed || undefined}
       className={cn(
-        "flex h-full shrink-0 flex-col gap-l bg-imagine-background py-l text-imagine-foreground",
-        collapsed ? "w-14 items-center px-s" : "w-60 px-m",
+        "flex h-dvh shrink-0 flex-col bg-imagine-background text-imagine-foreground",
+        collapsed ? "w-16 items-center px-s py-xl" : "w-64 px-m py-xl",
         className,
       )}
     >
-      {/* Organization */}
       <div
         className={cn(
-          "flex h-9 items-center gap-s",
-          collapsed ? "justify-center" : "px-xs",
+          "flex flex-col",
+          collapsed ? "items-center gap-l" : "gap-l",
         )}
       >
-        <span className="flex size-7 shrink-0 items-center justify-center rounded-control accent-gradient text-imagine-secondary-foreground shadow-control">
-          <Icon name="sparkles" size="s" active />
-        </span>
-        <AnimatePresence initial={false}>
-          {collapsed ? null : (
-            <motion.span
-              key="org"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={fade.fast}
-              className="flex min-w-0 flex-1 items-center gap-xs"
-            >
-              <span className="truncate type-body font-semibold">
-                {orgName}
-              </span>
-              <Icon
-                name="chevron-down"
-                size="s"
-                className="text-imagine-foreground-faint"
-              />
-            </motion.span>
+        {/* Organization */}
+        <div
+          className={cn(
+            "flex h-10 items-center gap-s",
+            collapsed ? "justify-center" : "px-xs",
           )}
-        </AnimatePresence>
+        >
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-control accent-gradient text-imagine-secondary-foreground">
+            <Icon name="sparkles" size="s" active />
+          </span>
+          <AnimatePresence initial={false}>
+            {collapsed ? null : (
+              <motion.span
+                key="org"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={fade.fast}
+                className="flex min-w-0 flex-1 items-center gap-xs"
+              >
+                <span className="truncate type-heading">{orgName}</span>
+                <Icon
+                  name="chevron-down"
+                  size="s"
+                  className="text-imagine-foreground-faint"
+                />
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {collapsed ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="icon" aria-label="New post" onClick={onNewPost}>
+                <Icon name="plus" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">New post</TooltipContent>
+          </Tooltip>
+        ) : (
+          <Button className="w-full" size="lg" onClick={onNewPost}>
+            <Icon name="plus" data-icon="inline-start" />
+            New post
+          </Button>
+        )}
       </div>
 
-      {collapsed ? (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button size="icon" aria-label="New post" onClick={onNewPost}>
-              <Icon name="plus" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="right">New post</TooltipContent>
-        </Tooltip>
-      ) : (
-        <Button className="w-full" onClick={onNewPost}>
-          <Icon name="plus" data-icon="inline-start" />
-          New post
-        </Button>
-      )}
-
       {/* Primary navigation */}
-      <nav aria-label="Workspace" className="flex flex-col gap-xxs">
+      <nav
+        aria-label="Workspace"
+        className={cn(
+          "mt-xl flex flex-col gap-xxs",
+          collapsed && "items-center",
+        )}
+      >
         {SIDEBAR_NAV.map((item) => {
           const selected = item.key === active;
           const button = (
@@ -159,10 +170,10 @@ export function Sidebar({
               aria-current={selected ? "page" : undefined}
               onClick={() => onNavigate?.(item.key)}
               className={cn(
-                "group/nav relative flex h-9 items-center gap-s rounded-control text-left transition-colors outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/40",
-                collapsed ? "w-9 justify-center" : "pr-s pl-xs",
+                "group/nav relative flex h-10 items-center gap-s rounded-control text-left transition-colors outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/40",
+                collapsed ? "w-10 justify-center" : "pr-s pl-xs",
                 selected
-                  ? "text-imagine-secondary-foreground"
+                  ? "text-imagine-foreground"
                   : "text-imagine-foreground-muted hover:bg-imagine-surface hover:text-imagine-foreground",
               )}
             >
@@ -171,22 +182,31 @@ export function Sidebar({
                   layoutId={indicatorId}
                   aria-hidden="true"
                   transition={spring.snappy}
-                  className="absolute inset-0 rounded-control selection-gradient shadow-control inset-shadow-highlight"
+                  className="absolute inset-0 rounded-control selection-gradient"
                 >
-                  {/* Gutter bar: sits in the sidebar padding, outside the pill. */}
                   <span
                     className={cn(
-                      "absolute inset-y-2 w-[3px] rounded-full bg-imagine-secondary-strong",
+                      "absolute inset-y-2.5 w-0.5 rounded-full bg-imagine-secondary",
                       collapsed ? "-left-1.5" : "-left-2",
                     )}
                   />
                 </motion.span>
               ) : null}
-              <span className="relative z-10 flex size-7 shrink-0 items-center justify-center">
+              <span
+                className={cn(
+                  "relative z-10 flex size-7 shrink-0 items-center justify-center",
+                  selected && "text-imagine-secondary",
+                )}
+              >
                 <Icon name={item.icon} size="m" active={selected} />
               </span>
               {collapsed ? null : (
-                <span className="relative z-10 type-body font-medium">
+                <span
+                  className={cn(
+                    "relative z-10 type-body",
+                    selected ? "font-semibold" : "font-medium",
+                  )}
+                >
                   {item.label}
                 </span>
               )}
@@ -204,17 +224,22 @@ export function Sidebar({
       </nav>
 
       {/* Recent posts */}
-      {collapsed ? null : (
-        <div className="flex min-h-0 flex-1 flex-col gap-xs">
-          <div className="flex h-7 items-center justify-between px-s">
-            <span className="type-small font-medium text-imagine-foreground-muted">
+      {collapsed ? (
+        <div className="min-h-0 flex-1" />
+      ) : (
+        <div className="mt-xl flex min-h-0 flex-1 flex-col">
+          <div className="flex h-8 shrink-0 items-center justify-between px-s">
+            <span className="type-micro font-medium text-imagine-foreground-muted">
               Posts
             </span>
-            <span className="type-small text-imagine-foreground-faint tabular-nums">
+            <span className="type-micro text-imagine-foreground-faint tabular-nums">
               {threads.length}
             </span>
           </div>
-          <Stagger kind="list" className="flex flex-col gap-xxs">
+          <Stagger
+            kind="list"
+            className="flex min-h-0 flex-1 flex-col gap-xxs overflow-y-auto"
+          >
             {threads.map((thread) => {
               const selected = thread.id === activeThreadId;
               return (
@@ -224,7 +249,7 @@ export function Sidebar({
                     aria-current={selected ? "true" : undefined}
                     onClick={() => onOpenThread?.(thread.id)}
                     className={cn(
-                      "relative flex h-8 w-full items-center gap-s rounded-control pr-s pl-xs text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+                      "relative flex h-9 w-full items-center gap-s rounded-control pr-s pl-xs text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
                       selected
                         ? "text-imagine-foreground"
                         : "text-imagine-foreground-muted hover:bg-imagine-surface hover:text-imagine-foreground",
@@ -270,11 +295,11 @@ export function Sidebar({
         type="button"
         onClick={onOpenUser}
         className={cn(
-          "mt-auto flex items-center gap-s rounded-control text-left transition-[background-color,box-shadow] outline-none hover:bg-imagine-surface hover:shadow-control focus-visible:ring-2 focus-visible:ring-ring/40",
-          collapsed ? "size-9 justify-center" : "h-11 pr-s pl-xs",
+          "mt-l flex items-center gap-s rounded-control text-left transition-colors outline-none hover:bg-imagine-surface focus-visible:ring-2 focus-visible:ring-ring/40",
+          collapsed ? "size-10 justify-center" : "h-12 pr-s pl-xs",
         )}
       >
-        <Avatar size="sm" className="ring-2 ring-imagine-surface">
+        <Avatar size="sm">
           {user.avatarUrl ? (
             <AvatarImage src={user.avatarUrl} alt={user.name} />
           ) : null}
@@ -283,7 +308,7 @@ export function Sidebar({
         {collapsed ? null : (
           <>
             <span className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate type-small font-medium">
+              <span className="truncate type-small font-semibold">
                 {user.name}
               </span>
               {user.note ? (

@@ -124,6 +124,9 @@ const THREADS = [
   { id: "t1", title: "Onboarding launch post", unread: true },
   { id: "t2", title: "Why founders should post weekly" },
   { id: "t3", title: "Hiring: senior designer" },
+  { id: "t4", title: "Q3 product recap" },
+  { id: "t5", title: "Customer story: Northwind" },
+  { id: "t6", title: "Thoughts on founder-led sales" },
 ];
 
 const TIMELINE: TimelineEntry[] = [
@@ -503,40 +506,38 @@ export function SidebarDemo() {
   const [active, setActive] = useState<SidebarNavKey>("agent");
 
   return (
-    <div className="flex flex-wrap gap-xl">
-      <Demo label="Expanded">
-        <OnBackground className="h-[520px]">
-          <Sidebar
-            orgName="Acme"
-            active={active}
-            threads={THREADS}
-            activeThreadId="t1"
-            user={SIDEBAR_USER}
-            onNavigate={setActive}
-            onNewPost={() => {
-              toast("New post");
-            }}
-            onOpenThread={(id) => {
-              toast(`Open thread ${id}`);
-            }}
-          />
-          <div className="w-16 rounded-surface bg-imagine-surface" />
-        </OnBackground>
-      </Demo>
-      <Demo label="Collapsed (files panel open)">
-        <OnBackground className="h-[520px]">
-          <Sidebar
-            orgName="Acme"
-            active={active}
-            collapsed
-            threads={THREADS}
-            activeThreadId="t1"
-            user={SIDEBAR_USER}
-            onNavigate={setActive}
-          />
-          <div className="w-16 rounded-surface bg-imagine-surface" />
-        </OnBackground>
-      </Demo>
+    <div className="relative left-1/2 w-screen -translate-x-1/2">
+      <div className="flex gap-xl px-xl pb-s type-small text-imagine-foreground-faint">
+        <span className="w-64">Expanded</span>
+        <span>Collapsed</span>
+      </div>
+      <div className="flex h-dvh bg-imagine-background">
+        <Sidebar
+          orgName="Acme"
+          active={active}
+          threads={THREADS}
+          activeThreadId="t1"
+          user={SIDEBAR_USER}
+          onNavigate={setActive}
+          onNewPost={() => {
+            toast("New post");
+          }}
+          onOpenThread={(id) => {
+            toast(`Open thread ${id}`);
+          }}
+        />
+        <div className="w-36 self-stretch bg-imagine-surface" />
+        <Sidebar
+          orgName="Acme"
+          active={active}
+          collapsed
+          threads={THREADS}
+          activeThreadId="t1"
+          user={SIDEBAR_USER}
+          onNavigate={setActive}
+        />
+        <div className="min-w-0 flex-1 self-stretch bg-imagine-surface" />
+      </div>
     </div>
   );
 }
