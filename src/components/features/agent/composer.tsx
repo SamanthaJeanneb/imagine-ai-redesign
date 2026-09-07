@@ -31,6 +31,8 @@ interface ComposerProps {
   onPreviewChange?: (preview: ComposerPreview | null) => void;
   /** The open preview surface, rendered above the input. */
   children?: React.ReactNode;
+  /** Context attached to the next message (e.g. `PostContext`). Sits above the input. */
+  attachments?: React.ReactNode;
   onAttach?: () => void;
   /** Shared layout id so the hero can morph into the dock. */
   layoutId?: string;
@@ -50,6 +52,7 @@ export function Composer({
   preview = null,
   onPreviewChange,
   children,
+  attachments,
   onAttach,
   layoutId,
   className,
@@ -126,6 +129,14 @@ export function Composer({
       ) : null}
 
       {children}
+
+      {attachments ? (
+        <div
+          className={cn("empty:hidden", isDock ? "px-xs pt-xs" : "px-s pt-s")}
+        >
+          {attachments}
+        </div>
+      ) : null}
 
       <div
         className={cn("flex items-end gap-xs", isDock ? "p-xs" : "p-xs pl-s")}

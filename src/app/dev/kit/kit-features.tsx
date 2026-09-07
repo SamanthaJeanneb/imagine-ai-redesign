@@ -15,6 +15,7 @@ import {
 } from "@/components/features/agent/composer";
 import { AssetPicker } from "@/components/features/agent/asset-picker";
 import { LinkedInPostDraft } from "@/components/features/agent/linkedin-post-draft";
+import { PostContext } from "@/components/features/agent/post-context";
 import { PreviewSurface } from "@/components/features/agent/preview-surface";
 import { ScheduledGraphic } from "@/components/features/agent/scheduled-graphic";
 import {
@@ -676,6 +677,7 @@ export function ComposerDemo() {
   const [dock, setDock] = useState("");
   const [withPreview, setWithPreview] = useState("");
   const [preview, setPreview] = useState<ComposerPreview | null>("calendar");
+  const [attached, setAttached] = useState<PostChipData | null>(null);
 
   return (
     <div className="flex flex-col gap-xl">
@@ -712,17 +714,33 @@ export function ComposerDemo() {
             />
           </OnBackground>
         </Demo>
-        <Demo label="Dock with a preview surface open">
+        <Demo label="Dock with a preview open. Select a post to attach it to the message.">
           <OnBackground className="items-end p-l">
             <Composer
               value={withPreview}
               onValueChange={setWithPreview}
               onSend={(text) => {
-                toast(`Sent: ${text}`);
+                toast(
+                  attached
+                    ? `Sent about "${attached.title}": ${text}`
+                    : `Sent: ${text}`,
+                );
                 setWithPreview("");
+                setAttached(null);
               }}
+              placeholder={
+                attached ? `Ask about "${attached.title}"` : undefined
+              }
               preview={preview}
               onPreviewChange={setPreview}
+              attachments={
+                <PostContext
+                  posts={attached ? [attached] : []}
+                  onRemove={() => {
+                    setAttached(null);
+                  }}
+                />
+              }
               onAttach={() => {
                 toast("Attach");
               }}
@@ -734,7 +752,16 @@ export function ComposerDemo() {
                   toast("Expands to /calendar");
                 }}
               >
-                <CalendarGrid days={TWO_WEEKS} density="preview" />
+                <CalendarGrid
+                  days={TWO_WEEKS}
+                  density="preview"
+                  selectedPostId={attached?.id}
+                  onOpenPost={(post) => {
+                    setAttached((current) =>
+                      current?.id === post.id ? null : post,
+                    );
+                  }}
+                />
               </PreviewSurface>
               <PreviewSurface
                 open={preview === "analytics"}

@@ -59,8 +59,11 @@ const CHIP = {
   { color: string; contrast: string }
 >;
 
-/** Exposes the status colors to `chip-wash`, `chip-solid`, and the rail. */
-function chipStyle(status: PostChipStatus): CSSProperties {
+/**
+ * Exposes the status colors as `--chip-color` and `--chip-contrast` for
+ * `chip-wash`, `chip-solid`, the rail, and anything else that echoes a post.
+ */
+export function postChipStyle(status: PostChipStatus): CSSProperties {
   const style: CSSProperties & {
     "--chip-color": string;
     "--chip-contrast": string;
@@ -96,7 +99,7 @@ export function PostChip({
       data-selected={selected || undefined}
       aria-current={selected ? "true" : undefined}
       aria-label={`${post.title}, ${post.time}, ${post.profile}, ${post.status}`}
-      style={chipStyle(post.status)}
+      style={postChipStyle(post.status)}
       className={cn(
         "relative flex w-full min-w-0 flex-col gap-xxs overflow-hidden rounded-control text-left transition-[box-shadow,color] outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-imagine-surface",
         selected
