@@ -109,8 +109,8 @@ export function Sidebar({
         {/* Organization */}
         <div
           className={cn(
-            "flex items-center gap-s",
-            collapsed ? "flex-col justify-center" : "h-10 px-xs",
+            "flex h-10 items-center gap-s",
+            collapsed ? "justify-center" : "px-xs",
           )}
         >
           {orgLogoUrl ? (
@@ -145,37 +145,37 @@ export function Sidebar({
               </motion.span>
             )}
           </AnimatePresence>
-          {onCollapsedChange ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="icon-xs"
-                  variant="ghost"
-                  aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                  aria-expanded={!collapsed}
-                  onClick={() => {
-                    onCollapsedChange(!collapsed);
-                  }}
-                  className={cn(
-                    "text-imagine-foreground-faint hover:text-imagine-foreground",
-                    !collapsed && "ml-auto",
-                  )}
-                >
-                  <motion.span
-                    className="flex"
-                    initial={false}
-                    animate={{ rotate: collapsed ? 180 : 0 }}
-                    transition={spring.snappy}
-                  >
-                    <Icon name="chevron-left" size="s" />
-                  </motion.span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                {collapsed ? "Expand" : "Collapse"}
-              </TooltipContent>
-            </Tooltip>
-          ) : null}
+          {/* Only while expanded. Collapsed, the rail is icons alone and the
+              page carries the control; see `SidebarExpandButton`. */}
+          <AnimatePresence initial={false}>
+            {onCollapsedChange && !collapsed ? (
+              <motion.span
+                key="collapse"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={fade.fast}
+                className="ml-auto flex"
+              >
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon-xs"
+                      variant="ghost"
+                      aria-label="Collapse sidebar"
+                      onClick={() => {
+                        onCollapsedChange(true);
+                      }}
+                      className="text-imagine-foreground-faint hover:text-imagine-foreground"
+                    >
+                      <Icon name="chevron-left" size="s" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Collapse</TooltipContent>
+                </Tooltip>
+              </motion.span>
+            ) : null}
+          </AnimatePresence>
         </div>
 
         {collapsed ? (
@@ -378,5 +378,44 @@ export function Sidebar({
         )}
       </button>
     </motion.aside>
+  );
+}
+
+/**
+ * The other half of the collapse control. While the rail is collapsed it holds
+ * only icons, so the way back out lives on the page instead: render this in the
+ * page's own header, where the chevron points at the rail it will reopen.
+ */
+export function SidebarExpandButton({
+  onExpand,
+  className,
+}: {
+  onExpand: () => void;
+  className?: string;
+}) {
+  return (
+    <motion.span
+      initial={{ opacity: 0, x: -4 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -4 }}
+      transition={spring.snappy}
+      className={cn("flex", className)}
+    >
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            aria-label="Expand sidebar"
+            aria-expanded={false}
+            onClick={onExpand}
+            className="text-imagine-foreground-faint hover:text-imagine-foreground"
+          >
+            <Icon name="chevron-right" size="s" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="right">Expand</TooltipContent>
+      </Tooltip>
+    </motion.span>
   );
 }
