@@ -27,8 +27,8 @@ export interface AvailableIntegration {
 
 function IntegrationMark({ icon }: { icon: IconName }) {
   return (
-    <span className="flex size-9 shrink-0 items-center justify-center rounded-control bg-imagine-surface-raised text-imagine-foreground">
-      <Icon name={icon} size="l" />
+    <span className="flex size-9 shrink-0 items-center justify-center text-imagine-foreground">
+      <Icon name={icon} size="xl" />
     </span>
   );
 }
@@ -121,8 +121,8 @@ export function IntegrationGrid({
             onClick={() => onAdd?.(item.id)}
             className="flex h-full w-full flex-col gap-m rounded-panel bg-imagine-surface p-l text-left shadow-control transition-shadow outline-none hover:shadow-raised focus-visible:ring-2 focus-visible:ring-ring/40"
           >
-            <span className="flex size-9 items-center justify-center rounded-control bg-imagine-surface-raised text-imagine-foreground">
-              <Icon name={item.icon} size="l" />
+            <span className="flex h-9 items-center text-imagine-foreground">
+              <Icon name={item.icon} size="xl" />
             </span>
             <span className="flex flex-col gap-xxs">
               <span className="type-body font-medium">{item.name}</span>
@@ -142,7 +142,7 @@ export function IntegrationGrid({
           onClick={onBrowseAll}
           className="flex h-full min-h-32 w-full items-center justify-center gap-s rounded-panel border border-dashed border-imagine-foreground-faint/60 type-small text-imagine-foreground-muted outline-none hover:border-imagine-foreground-muted hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
         >
-          <Icon name="grid-2" size="s" />
+          <Icon name="puzzle-piece" size="s" />
           Browse all
         </motion.button>
       </StaggerItem>

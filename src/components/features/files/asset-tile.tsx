@@ -53,12 +53,12 @@ export function AssetTile({
         />
       ) : (
         <span className="flex size-full items-center justify-center text-imagine-foreground-faint">
-          <Icon name={asset.kind === "video" ? "play" : "image"} size="l" />
+          <Icon name={asset.kind === "video" ? "video" : "image"} size="l" />
         </span>
       )}
       {asset.kind === "video" && asset.src ? (
         <span className="absolute right-xs bottom-xs flex size-5 items-center justify-center rounded-xs bg-imagine-foreground/70 text-imagine-primary-foreground">
-          <Icon name="play" size="s" active />
+          <Icon name="video" size="s" active />
         </span>
       ) : null}
       {asset.caption && asset.src ? (

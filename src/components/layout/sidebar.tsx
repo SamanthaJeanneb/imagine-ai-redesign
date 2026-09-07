@@ -106,7 +106,7 @@ export function Sidebar({
           collapsed ? "justify-center" : "px-xs",
         )}
       >
-        <span className="flex size-7 shrink-0 items-center justify-center rounded-control accent-gradient text-imagine-secondary-foreground shadow-control inset-shadow-highlight">
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-control accent-gradient text-imagine-secondary-foreground shadow-control">
           <Icon name="sparkles" size="s" active />
         </span>
         <AnimatePresence initial={false}>
@@ -182,14 +182,7 @@ export function Sidebar({
                   />
                 </motion.span>
               ) : null}
-              <span
-                className={cn(
-                  "relative z-10 flex size-7 shrink-0 items-center justify-center rounded-[4px] transition-colors",
-                  selected
-                    ? "bg-white/20"
-                    : "group-hover/nav:bg-imagine-surface-raised",
-                )}
-              >
+              <span className="relative z-10 flex size-7 shrink-0 items-center justify-center">
                 <Icon name={item.icon} size="m" active={selected} />
               </span>
               {collapsed ? null : (

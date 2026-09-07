@@ -87,6 +87,9 @@ Every color lives in one central token file. Nothing hardcodes a color value.
 - Outlines on components stay as minimal as possible; outlined buttons appear only where
   genuinely necessary.
 - Cards are used only when absolutely needed. Default to no card.
+- Never put a card inside a card. Inside any raised, elevated, or filled container
+  (a pill, a panel, the composer, a stat group) children are plain: no icon wells, no
+  tiles, no inner boxes. One level of surface, then content.
 - Sections are not walled off by divider lines. The sidebar rounds into the main page
   component rather than sitting behind a hard edge.
 

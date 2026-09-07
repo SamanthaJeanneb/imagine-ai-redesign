@@ -170,7 +170,7 @@ export function ProfileDetail({
         {profile.kind === "person" ? (
           <Group title="Company">
             {profile.company ? (
-              <div className="flex items-center gap-m rounded-control bg-imagine-surface px-m py-s shadow-control">
+              <div className="flex items-center gap-m py-xs">
                 <Avatar size="sm">
                   {profile.company.logoUrl ? (
                     <AvatarImage
@@ -227,7 +227,7 @@ export function ProfileDetail({
 
         <Group title="Persona">
           {profile.persona ? (
-            <div className="flex items-center gap-m rounded-control bg-imagine-surface px-m py-s shadow-control">
+            <div className="flex items-center gap-m py-xs">
               <Icon
                 name="file-lines"
                 size="s"
@@ -254,7 +254,7 @@ export function ProfileDetail({
 
         <div className="mt-auto flex items-center justify-between pt-l">
           <Button variant="ghost" size="sm" onClick={onIndexPosts}>
-            <Icon name="rotate" size="s" data-icon="inline-start" />
+            <Icon name="arrows-rotate" size="s" data-icon="inline-start" />
             Index posts
           </Button>
           <Button

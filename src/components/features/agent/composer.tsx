@@ -142,9 +142,9 @@ export function Composer({
         ) : (
           <span
             aria-hidden="true"
-            className="mb-1 flex size-7 shrink-0 items-center justify-center rounded-control bg-imagine-secondary-soft text-imagine-secondary"
+            className="mb-1 flex size-7 shrink-0 items-center justify-center text-imagine-secondary"
           >
-            <Icon name="sparkles" size="s" active />
+            <Icon name="sparkles" active />
           </span>
         )}
         <textarea

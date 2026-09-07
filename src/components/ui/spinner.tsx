@@ -26,7 +26,7 @@ function Spinner({ className, size = "m", ...props }: SpinnerProps) {
       transition={{ duration: 0.9, ease: "linear", repeat: Infinity }}
       {...props}
     >
-      <Icon name="circle-notch" size={size} />
+      <Icon name="spinner" size={size} />
     </motion.span>
   );
 }

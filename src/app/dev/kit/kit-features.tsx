@@ -674,6 +674,7 @@ export function ComposerDemo() {
                   series={[IMPRESSIONS_SERIES]}
                   tone="accent"
                   dense
+                  plain
                   highlightIndex={3}
                 />
               </PreviewSurface>

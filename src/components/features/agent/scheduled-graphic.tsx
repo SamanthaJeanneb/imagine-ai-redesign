@@ -88,10 +88,7 @@ export function ScheduledGraphic({
           </div>
         </div>
 
-        <ol
-          className="grid grid-cols-7 gap-xs rounded-control bg-imagine-surface-raised/70 p-xs"
-          aria-label="This week"
-        >
+        <ol className="grid grid-cols-7 gap-xs" aria-label="This week">
           {WEEKDAYS.map((label, index) => {
             const isTarget = index === weekdayIndex;
             const hasPost = occupied.includes(index);

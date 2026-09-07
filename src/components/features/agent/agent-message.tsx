@@ -150,7 +150,7 @@ function Part({
                 variant="ghost"
                 onClick={() => onIntent?.("regenerate", part.postId)}
               >
-                <Icon name="rotate" size="s" data-icon="inline-start" />
+                <Icon name="arrows-rotate" size="s" data-icon="inline-start" />
                 Try another angle
               </Button>
             </>

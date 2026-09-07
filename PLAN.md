@@ -140,6 +140,8 @@ section on General; the `billing/` route in `PROJECT.md`'s tree is not built unl
 asked.
 - `**/files` is a full-page version of the files panel** (same tree component, wider
 preview column). The Files nav item goes there; the chat's file icon opens the panel.
+- **Never a card inside a card.** Inside a raised, elevated, or filled container the
+children are plain rows and icons, never wells, tiles, or inner boxes.
 - **Stat tiles and chart blocks are not cards.** They sit on the main surface separated
 by spacing; where grouping is needed, a single soft `imagine-surface-raised` wraps the
 group, never one border per tile.

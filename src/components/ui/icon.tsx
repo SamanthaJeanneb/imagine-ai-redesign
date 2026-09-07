@@ -5,17 +5,17 @@ import { cn } from "cn";
  * root layout. The kit nests an <svg> inside each <i>. This is the only place
  * `fa-` classes are written.
  *
- * Names come from the Sharp Regular set:
- * https://fontawesome.com/search?ip=sharp&s=regular
+ * The kit is subset: only the icons enabled in the kit's settings load, and
+ * anything else renders as the "missing" glyph. Keep this union to names that
+ * exist in the kit (Sharp Regular, Sharp Solid, and the enabled Brands).
  */
 export const ICON_NAMES = [
   "arrow-down",
   "arrow-left",
   "arrow-right",
   "arrow-up",
-  "arrow-up-right-from-square",
+  "arrows-rotate",
   "bell",
-  "bolt",
   "bookmark",
   "building",
   "calendar",
@@ -27,8 +27,6 @@ export const ICON_NAMES = [
   "chevron-up",
   "circle-check",
   "circle-info",
-  "circle-notch",
-  "circle-plus",
   "circle-xmark",
   "clock",
   "comment",
@@ -41,10 +39,7 @@ export const ICON_NAMES = [
   "file-lines",
   "folder",
   "gear",
-  "globe",
   "google",
-  "grid-2",
-  "hashtag",
   "hubspot",
   "image",
   "key",
@@ -60,22 +55,24 @@ export const ICON_NAMES = [
   "paperclip",
   "pen",
   "pen-to-square",
-  "play",
   "plug",
   "plus",
-  "retweet",
-  "rotate",
+  "puzzle-piece",
   "salesforce",
   "sidebar",
   "slack",
   "sparkles",
+  "spinner",
   "sun",
   "thumbs-up",
   "trash",
   "triangle-exclamation",
+  "up-right-from-square",
   "upload",
   "user",
   "users",
+  "video",
+  "wand-magic-sparkles",
   "x-twitter",
   "xmark",
 ] as const;

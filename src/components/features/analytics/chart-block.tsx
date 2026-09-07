@@ -45,6 +45,8 @@ interface ChartBlockProps {
   legend?: boolean;
   /** Hide axes and padding for tiny inline charts. */
   dense?: boolean;
+  /** No surface of its own. Use inside a container that already has one. */
+  plain?: boolean;
   className?: string;
 }
 
@@ -94,6 +96,7 @@ export function ChartBlock({
   highlightIndex,
   legend = false,
   dense = false,
+  plain = false,
   className,
 }: ChartBlockProps) {
   const gradientId = useId().replace(/:/g, "");
@@ -122,8 +125,9 @@ export function ChartBlock({
       animate={{ opacity: 1 }}
       transition={fade.base}
       className={cn(
-        "flex flex-col gap-m rounded-panel bg-imagine-surface-raised",
-        dense ? "p-s" : "p-l",
+        "flex flex-col gap-m rounded-panel",
+        plain ? "p-0" : dense ? "p-s" : "p-l",
+        !plain && "bg-imagine-surface-raised",
         className,
       )}
     >

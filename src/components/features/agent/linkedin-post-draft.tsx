@@ -32,7 +32,7 @@ interface LinkedInPostDraftProps {
 const REACTIONS: readonly { icon: IconName; label: string }[] = [
   { icon: "thumbs-up", label: "Like" },
   { icon: "comment", label: "Comment" },
-  { icon: "retweet", label: "Repost" },
+  { icon: "arrows-rotate", label: "Repost" },
   { icon: "paper-plane", label: "Send" },
 ];
 
@@ -90,7 +90,7 @@ export function LinkedInPostDraft({
             </span>
             <span className="inline-flex items-center gap-xs type-small text-imagine-foreground-faint">
               Now
-              <Icon name="globe" size="s" />
+              <Icon name="link" size="s" />
             </span>
           </div>
         </header>

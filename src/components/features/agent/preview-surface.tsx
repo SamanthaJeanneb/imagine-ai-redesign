@@ -5,11 +5,6 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { fade, spring } from "@/styles/motion";
 
 interface PreviewSurfaceProps {
@@ -55,24 +50,10 @@ export function PreviewSurface({
             layoutId={layoutId}
             data-slot="preview-surface"
             className={cn(
-              "relative mx-xs mb-s rounded-control bg-imagine-surface-raised/70 p-s",
+              "mx-xs mb-xs flex flex-col gap-xs border-b border-imagine-border/70 px-xs pt-xs pb-xs",
               className,
             )}
           >
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="icon-xs"
-                  variant="ghost"
-                  aria-label={expandLabel}
-                  onClick={onExpand}
-                  className="absolute top-s right-s z-10"
-                >
-                  <Icon name="arrow-up-right-from-square" size="s" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{expandLabel}</TooltipContent>
-            </Tooltip>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -80,6 +61,19 @@ export function PreviewSurface({
             >
               {children}
             </motion.div>
+            <Button
+              size="xs"
+              variant="ghost"
+              onClick={onExpand}
+              className="self-end text-imagine-foreground-muted"
+            >
+              {expandLabel}
+              <Icon
+                name="up-right-from-square"
+                size="s"
+                data-icon="inline-end"
+              />
+            </Button>
           </motion.div>
         </motion.div>
       ) : null}

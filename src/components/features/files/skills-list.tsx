@@ -30,8 +30,8 @@ export function SkillsList({ skills, onToggle, className }: SkillsListProps) {
       {skills.map((skill) => (
         <StaggerItem key={skill.id}>
           <label className="flex cursor-pointer items-start gap-m rounded-control px-s py-s transition-colors hover:bg-imagine-surface-raised">
-            <span className="mt-xxs flex size-6 shrink-0 items-center justify-center rounded-control bg-imagine-secondary-soft text-imagine-secondary">
-              <Icon name="bolt" size="s" />
+            <span className="mt-xxs flex size-6 shrink-0 items-center justify-center text-imagine-secondary">
+              <Icon name="wand-magic-sparkles" active />
             </span>
             <span className="flex min-w-0 flex-1 flex-col gap-xxs">
               <span className="type-small font-medium">{skill.name}</span>
