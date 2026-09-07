@@ -386,9 +386,27 @@ export function ChartDemo() {
         <span className="type-small text-imagine-foreground-muted">
           Impressions, last 7 days
         </span>
-        <ChartContainer config={chartConfig} className="h-40 w-full">
-          <AreaChart data={IMPRESSIONS} margin={{ left: 0, right: 0 }}>
-            <XAxis dataKey="day" tickLine={false} axisLine={false} />
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-auto h-48 w-full"
+        >
+          <AreaChart data={IMPRESSIONS} margin={{ left: 4, right: 12, top: 8 }}>
+            <XAxis
+              dataKey="day"
+              tickLine={false}
+              axisLine={false}
+              interval={0}
+              tickMargin={8}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              width={36}
+              tickMargin={6}
+              tickFormatter={(value: number) =>
+                value >= 1000 ? `${String(value / 1000)}k` : String(value)
+              }
+            />
             <ChartTooltip content={<ChartTooltipContent />} />
             <Area
               dataKey="impressions"
@@ -405,18 +423,32 @@ export function ChartDemo() {
         <span className="type-small text-imagine-foreground-muted">
           Posts by type
         </span>
-        <ChartContainer config={chartConfig} className="h-40 w-full">
-          <BarChart data={BY_TYPE} layout="vertical" margin={{ left: 0 }}>
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-auto h-48 w-full"
+        >
+          <BarChart
+            data={BY_TYPE}
+            layout="vertical"
+            margin={{ left: 4, right: 8, top: 4, bottom: 4 }}
+            barCategoryGap="28%"
+          >
             <XAxis type="number" hide />
             <YAxis
               dataKey="type"
               type="category"
               tickLine={false}
               axisLine={false}
-              width={56}
+              width={64}
+              interval={0}
             />
             <ChartTooltip content={<ChartTooltipContent />} />
-            <Bar dataKey="posts" fill="var(--color-posts)" radius={4} />
+            <Bar
+              dataKey="posts"
+              fill="var(--color-posts)"
+              radius={4}
+              maxBarSize={16}
+            />
           </BarChart>
         </ChartContainer>
       </div>

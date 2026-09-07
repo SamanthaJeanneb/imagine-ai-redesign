@@ -8,6 +8,7 @@ import {
   AreaChart,
   Bar,
   BarChart,
+  Line,
   Rectangle,
   type RectangleProps,
   XAxis,
@@ -67,19 +68,41 @@ function seriesColor(index: number, tone: "accent" | "neutral"): string {
   return palette[index] ?? palette[2];
 }
 
-type BarShapeProps = RectangleProps & { index?: number };
+type BarShapeProps = RectangleProps & {
+  index?: number;
+  payload?: { label?: string };
+};
+
+function numericMax(data: readonly ChartDatum[], key: string): number {
+  let max = 0;
+  for (const datum of data) {
+    const value = datum[key];
+    if (typeof value === "number" && value > max) max = value;
+  }
+  return max;
+}
 
 /** Draws one bar solid (today, the selected post) and the rest in the series color. */
-function highlightShape(highlightIndex: number | undefined, color: string) {
+function highlightShape(highlightLabel: string | undefined, color: string) {
   return function HighlightBar(props: BarShapeProps) {
-    const { index, fill, ...rest } = props;
-    return (
-      <Rectangle
-        {...rest}
-        fill={index !== undefined && index === highlightIndex ? color : fill}
-      />
-    );
+    const { fill, payload, index: _index, ...rest } = props;
+    const isHighlight =
+      highlightLabel !== undefined && payload?.label === highlightLabel;
+    return <Rectangle {...rest} fill={isHighlight ? color : fill} />;
   };
+}
+
+const AXIS_TICK = {
+  fontSize: 11,
+  fill: "var(--color-imagine-foreground-faint)",
+} as const;
+
+function formatAxisValue(value: number): string {
+  if (value >= 1000) {
+    const thousands = value / 1000;
+    return `${thousands % 1 === 0 ? String(thousands) : thousands.toFixed(1)}k`;
+  }
+  return String(value);
 }
 
 /**
@@ -113,10 +136,20 @@ export function ChartBlock({
 
   const highlightColor =
     tone === "accent"
-      ? "var(--color-imagine-secondary-strong)"
-      : "var(--color-imagine-foreground)";
+      ? "var(--color-imagine-foreground)"
+      : "var(--color-imagine-secondary)";
+  const highlightLabel =
+    highlightIndex === undefined ? undefined : data[highlightIndex]?.label;
+
+  const primaryMax = primary ? numericMax(data, primary.key) : 0;
+  const restMax = Math.max(
+    0,
+    ...series.slice(1).map((item) => numericMax(data, item.key)),
+  );
+  const splitScale = restMax > 0 && primaryMax > restMax * 4;
 
   const mutable = data.map((datum) => ({ ...datum }));
+  const barShape = highlightShape(highlightLabel, highlightColor);
 
   return (
     <motion.div
@@ -189,18 +222,45 @@ export function ChartBlock({
 
       <ChartContainer
         config={config}
-        className={cn("w-full", dense ? "h-20" : "h-44")}
+        className={cn("aspect-auto w-full", dense ? "h-20" : "h-48")}
       >
         {kind === "area" ? (
-          <AreaChart data={mutable} margin={{ left: 0, right: 0, top: 4 }}>
+          <AreaChart
+            data={mutable}
+            margin={{ left: 4, right: splitScale ? 8 : 4, top: 8, bottom: 0 }}
+          >
             {dense ? null : (
-              <XAxis
-                dataKey="label"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                minTickGap={24}
-              />
+              <>
+                <XAxis
+                  dataKey="label"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  interval={0}
+                  tick={AXIS_TICK}
+                />
+                <YAxis
+                  yAxisId="left"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={6}
+                  width={36}
+                  tick={AXIS_TICK}
+                  tickFormatter={formatAxisValue}
+                />
+                {splitScale ? (
+                  <YAxis
+                    yAxisId="right"
+                    orientation="right"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={6}
+                    width={28}
+                    tick={AXIS_TICK}
+                    tickFormatter={formatAxisValue}
+                  />
+                ) : null}
+              </>
             )}
             <defs>
               {visible.map((item) => (
@@ -226,26 +286,48 @@ export function ChartBlock({
               ))}
             </defs>
             <ChartTooltip content={<ChartTooltipContent />} />
-            {visible.map((item) => (
-              <Area
-                key={item.key}
-                dataKey={item.key}
-                type="monotone"
-                fill={`url(#${gradientId}-${item.key})`}
-                stroke={`var(--color-${item.key})`}
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4, strokeWidth: 2 }}
-                isAnimationActive
-              />
-            ))}
+            {visible.map((item, index) => {
+              const axis =
+                splitScale && index > 0 && item.key !== primary?.key
+                  ? "right"
+                  : "left";
+              if (axis === "right") {
+                return (
+                  <Line
+                    key={item.key}
+                    yAxisId="right"
+                    dataKey={item.key}
+                    type="monotone"
+                    stroke={`var(--color-${item.key})`}
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 3, strokeWidth: 2 }}
+                    isAnimationActive
+                  />
+                );
+              }
+              return (
+                <Area
+                  key={item.key}
+                  yAxisId={dense ? undefined : "left"}
+                  dataKey={item.key}
+                  type="monotone"
+                  fill={`url(#${gradientId}-${item.key})`}
+                  stroke={`var(--color-${item.key})`}
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 4, strokeWidth: 2 }}
+                  isAnimationActive
+                />
+              );
+            })}
           </AreaChart>
         ) : kind === "hbar" ? (
           <BarChart
             data={mutable}
             layout="vertical"
-            margin={{ left: 0, right: 0 }}
-            barCategoryGap={dense ? 4 : 8}
+            margin={{ left: 4, right: 8, top: 4, bottom: 4 }}
+            barCategoryGap="28%"
           >
             <XAxis type="number" hide />
             <YAxis
@@ -253,7 +335,9 @@ export function ChartBlock({
               type="category"
               tickLine={false}
               axisLine={false}
-              width={dense ? 40 : 72}
+              width={dense ? 52 : 64}
+              interval={0}
+              tick={AXIS_TICK}
             />
             <ChartTooltip content={<ChartTooltipContent />} />
             {visible.map((item) => (
@@ -262,28 +346,36 @@ export function ChartBlock({
                 dataKey={item.key}
                 fill={`var(--color-${item.key})`}
                 radius={4}
-                maxBarSize={14}
-                shape={
-                  item.key === primary?.key
-                    ? highlightShape(highlightIndex, highlightColor)
-                    : undefined
-                }
+                maxBarSize={16}
+                shape={item.key === primary?.key ? barShape : undefined}
               />
             ))}
           </BarChart>
         ) : (
           <BarChart
             data={mutable}
-            margin={{ left: 0, right: 0, top: 4 }}
-            barCategoryGap={dense ? "20%" : "28%"}
+            margin={{ left: 4, right: 4, top: 8, bottom: 0 }}
+            barCategoryGap={dense ? "22%" : "30%"}
           >
             {dense ? null : (
-              <XAxis
-                dataKey="label"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-              />
+              <>
+                <XAxis
+                  dataKey="label"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  interval={0}
+                  tick={AXIS_TICK}
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={6}
+                  width={36}
+                  tick={AXIS_TICK}
+                  tickFormatter={formatAxisValue}
+                />
+              </>
             )}
             <ChartTooltip content={<ChartTooltipContent />} />
             {visible.map((item) => (
@@ -292,12 +384,8 @@ export function ChartBlock({
                 dataKey={item.key}
                 fill={`var(--color-${item.key})`}
                 radius={[4, 4, 0, 0]}
-                maxBarSize={dense ? 24 : 36}
-                shape={
-                  item.key === primary?.key
-                    ? highlightShape(highlightIndex, highlightColor)
-                    : undefined
-                }
+                maxBarSize={dense ? 22 : 32}
+                shape={item.key === primary?.key ? barShape : undefined}
               />
             ))}
           </BarChart>

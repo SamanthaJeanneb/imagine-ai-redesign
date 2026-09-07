@@ -117,6 +117,7 @@ function Part({
           title={part.title}
           tone="accent"
           highlightIndex={part.highlightIndex}
+          plain
           className="max-w-lg"
         />
       );

@@ -77,7 +77,7 @@ export function ByProfileList({
                 </span>
                 <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-imagine-surface">
                   <motion.span
-                    className="block h-full origin-left rounded-full bg-imagine-secondary"
+                    className="block h-full origin-left rounded-full accent-gradient"
                     initial={reduceMotion ? false : { scaleX: 0 }}
                     animate={{ scaleX: ratio }}
                     transition={spring.soft}
