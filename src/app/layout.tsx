@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
+import Script from "next/script";
 import { ThemeProvider } from "next-themes";
 
 import { Toaster } from "@/components/ui/sonner";
@@ -34,10 +35,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           data-imagine-tokens=""
           dangerouslySetInnerHTML={{ __html: tokenCss }}
         />
-        <link
-          rel="stylesheet"
-          href="https://kit.fontawesome.com/70369a3baa.css"
+        {/*
+          Font Awesome Pro 7 Kit (SVG + JS). `nest` keeps the <i> React renders
+          and puts the <svg> inside it, so React never loses a node it owns.
+        */}
+        <Script
+          src="https://kit.fontawesome.com/70369a3baa.js"
           crossOrigin="anonymous"
+          strategy="beforeInteractive"
+          data-auto-replace-svg="nest"
         />
       </head>
       <body className="flex min-h-full flex-col">

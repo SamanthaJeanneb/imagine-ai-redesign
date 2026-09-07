@@ -1,8 +1,9 @@
 import { cn } from "cn";
 
 /**
- * Font Awesome Pro 7 Sharp, loaded once from the Kit stylesheet in the root
- * layout. This is the only place `fa-` classes are written.
+ * Font Awesome Pro 7 Sharp, loaded once from the Kit script (SVG + JS) in the
+ * root layout. The kit nests an <svg> inside each <i>. This is the only place
+ * `fa-` classes are written.
  *
  * Names come from the Sharp Regular set:
  * https://fontawesome.com/search?ip=sharp&s=regular
