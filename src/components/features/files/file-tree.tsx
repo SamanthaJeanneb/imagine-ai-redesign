@@ -300,9 +300,19 @@ export function FileTree({
             >
               <Chevron open={open} />
               {section.kind === "organization" ? (
-                <span className="flex size-6 items-center justify-center rounded-control bg-imagine-secondary-soft text-imagine-secondary">
-                  <Icon name="building" size="s" />
-                </span>
+                section.avatarUrl ? (
+                  // Org logos are user uploads from arbitrary hosts; next/image needs a domain list.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={section.avatarUrl}
+                    alt=""
+                    className="size-6 shrink-0 rounded-control object-cover"
+                  />
+                ) : (
+                  <span className="flex size-6 items-center justify-center rounded-control bg-imagine-secondary-soft text-imagine-secondary">
+                    <Icon name="building" size="s" />
+                  </span>
+                )
               ) : (
                 <Avatar size="sm" className="size-6">
                   {section.avatarUrl ? (

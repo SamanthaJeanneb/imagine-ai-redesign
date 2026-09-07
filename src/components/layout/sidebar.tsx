@@ -46,6 +46,8 @@ export const SIDEBAR_NAV: readonly SidebarNavItem[] = [
 
 interface SidebarProps {
   orgName: string;
+  /** The organization's mark. Falls back to the Imagine sparkle. */
+  orgLogoUrl?: string;
   active: SidebarNavKey;
   threads: readonly SidebarThread[];
   user: SidebarUser;
@@ -76,6 +78,7 @@ function initials(name: string): string {
  */
 export function Sidebar({
   orgName,
+  orgLogoUrl,
   active,
   threads,
   user,
@@ -109,9 +112,19 @@ export function Sidebar({
             collapsed ? "justify-center" : "px-xs",
           )}
         >
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-control accent-gradient text-imagine-secondary-foreground">
-            <Icon name="sparkles" size="s" active />
-          </span>
+          {orgLogoUrl ? (
+            // Org logos are user uploads from arbitrary hosts; next/image needs a domain list.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={orgLogoUrl}
+              alt=""
+              className="size-8 shrink-0 rounded-control object-cover shadow-control"
+            />
+          ) : (
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-control accent-gradient text-imagine-secondary-foreground">
+              <Icon name="sparkles" size="s" active />
+            </span>
+          )}
           <AnimatePresence initial={false}>
             {collapsed ? null : (
               <motion.span

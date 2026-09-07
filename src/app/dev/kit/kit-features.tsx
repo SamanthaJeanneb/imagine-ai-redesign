@@ -97,6 +97,7 @@ import { Button } from "@/components/ui/button";
 /* Mock data. Phase 2 replaces these with selectors over src/mocks/db.json. */
 
 const AVATAR = (n: number) => `https://i.pravatar.cc/96?img=${String(n)}`;
+const ACME_LOGO = "/brand/acme-logo.png";
 const PHOTO = (id: string) => `https://picsum.photos/seed/${id}/400/400`;
 
 const ASSETS: AssetTileData[] = [
@@ -200,7 +201,11 @@ const AUTHOR_RAVI = {
   headline: "Head of Design at Acme",
   avatarUrl: AVATAR(12),
 };
-const AUTHOR_ACME = { name: "Acme", headline: "Company page" };
+const AUTHOR_ACME = {
+  name: "Acme",
+  headline: "Company page",
+  avatarUrl: ACME_LOGO,
+};
 
 const POST_LAUNCH: PostChipData = {
   id: "p1",
@@ -289,7 +294,7 @@ const PROFILES: ProfileSummary[] = [
     headline: "Company page",
     kind: "company",
     status: "connected",
-    avatarUrl: undefined,
+    avatarUrl: ACME_LOGO,
   },
   {
     id: "c2",
@@ -333,7 +338,11 @@ const SARAH_DETAIL: ProfileDetailData = {
   status: "connected",
   avatarUrl: AVATAR(47),
   postsIndexed: 128,
-  company: { name: "Acme", url: "linkedin.com/company/acme" },
+  company: {
+    name: "Acme",
+    logoUrl: ACME_LOGO,
+    url: "linkedin.com/company/acme",
+  },
   persona: { fileName: "sarah-persona.md", updated: "Updated yesterday" },
 };
 
@@ -346,7 +355,11 @@ const RAVI_DETAIL: ProfileDetailData = {
   statusNote: "Two scheduled posts are waiting on this.",
   avatarUrl: AVATAR(12),
   postsIndexed: 64,
-  company: { name: "Acme", url: "linkedin.com/company/acme" },
+  company: {
+    name: "Acme",
+    logoUrl: ACME_LOGO,
+    url: "linkedin.com/company/acme",
+  },
   persona: { fileName: "ravi-persona.md", updated: "Updated 2 weeks ago" },
 };
 
@@ -357,6 +370,7 @@ const PROFILE_DETAILS: Record<string, ProfileDetailData> = {
     headline: "Company page",
     kind: "company",
     status: "connected",
+    avatarUrl: ACME_LOGO,
     postsIndexed: 212,
     persona: { fileName: "acme-voice.md", updated: "Updated 3 days ago" },
   },
@@ -387,6 +401,7 @@ const FILE_SECTIONS: FileSection[] = [
     id: "org",
     title: "Acme",
     kind: "organization",
+    avatarUrl: ACME_LOGO,
     nodes: [
       { type: "file", id: "f1", name: "brand-voice.md" },
       { type: "file", id: "f2", name: "content-pillars.md" },
@@ -577,6 +592,7 @@ export function SidebarDemo() {
         <OnBackground className="h-[520px] rounded-r-none">
           <Sidebar
             orgName="Acme"
+            orgLogoUrl={ACME_LOGO}
             active={active}
             threads={THREADS}
             activeThreadId="t1"
@@ -599,6 +615,7 @@ export function SidebarDemo() {
         <OnBackground className="h-[520px] rounded-r-none">
           <Sidebar
             orgName="Acme"
+            orgLogoUrl={ACME_LOGO}
             active={active}
             collapsed
             threads={THREADS}
@@ -624,6 +641,7 @@ export function FilesPanelDemo() {
           <PageStub side="left" />
           <FilesPanel
             title="Acme"
+            logoUrl={ACME_LOGO}
             sections={FILE_SECTIONS}
             skills={skills}
             storageLabel="2.1 GB of 10 GB"
@@ -1175,7 +1193,7 @@ export function PostDraftDemo() {
       </Demo>
       <Demo label={editing ? "Editing" : "Text only"}>
         <LinkedInPostDraft
-          author={{ name: "Acme", headline: "Company page" }}
+          author={AUTHOR_ACME}
           body={body}
           editing={editing}
           onBodyChange={setBody}
@@ -1315,7 +1333,13 @@ export function AnalyticsPartsDemo() {
                 value: 5200,
                 valueLabel: "5.2k",
               },
-              { id: "c1", name: "Acme", value: 4100, valueLabel: "4.1k" },
+              {
+                id: "c1",
+                name: "Acme",
+                avatarUrl: ACME_LOGO,
+                value: 4100,
+                valueLabel: "4.1k",
+              },
               {
                 id: "c3",
                 name: "Ravi Patel",
@@ -1698,6 +1722,7 @@ export function OnboardingPartsDemo() {
         <Demo label="Invite link landing, replaces 2 and 3">
           <JoinOrganization
             orgName="Acme"
+            orgLogoUrl={ACME_LOGO}
             orgNote="12 members · 3 LinkedIn profiles"
             members={[
               { id: "m1", name: "Sarah Chen", avatarUrl: AVATAR(47) },

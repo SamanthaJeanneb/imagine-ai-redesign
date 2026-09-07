@@ -22,6 +22,8 @@ import { spring } from "@/styles/motion";
 
 interface FilesPanelProps {
   title: string;
+  /** The organization's mark, shown before the title. */
+  logoUrl?: string;
   sections: readonly FileSection[];
   skills: readonly Skill[];
   /** "2.1 GB of 10 GB used". */
@@ -57,6 +59,7 @@ function filterSections(
  */
 export function FilesPanel({
   title,
+  logoUrl,
   sections,
   skills,
   storageLabel,
@@ -83,7 +86,18 @@ export function FilesPanel({
       )}
     >
       <div className="flex items-center justify-between gap-s px-xs">
-        <span className="truncate type-body font-semibold">{title}</span>
+        <span className="flex min-w-0 items-center gap-s">
+          {logoUrl ? (
+            // Org logos are user uploads from arbitrary hosts; next/image needs a domain list.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logoUrl}
+              alt=""
+              className="size-6 shrink-0 rounded-control object-cover"
+            />
+          ) : null}
+          <span className="truncate type-body font-semibold">{title}</span>
+        </span>
         {onClose ? (
           <Button
             size="icon-xs"
