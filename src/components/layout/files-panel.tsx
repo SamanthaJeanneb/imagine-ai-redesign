@@ -33,6 +33,9 @@ interface FilesPanelProps {
   onEditFile?: (id: string) => void;
   onOpenAsset?: (asset: AssetTileData) => void;
   onToggleSkill?: (id: string, enabled: boolean) => void;
+  /** Opens a skill's markdown in an editor tab. */
+  onOpenSkillFile?: (id: string) => void;
+  openSkillId?: string;
   onClose?: () => void;
   onManage?: () => void;
   className?: string;
@@ -68,6 +71,8 @@ export function FilesPanel({
   onEditFile,
   onOpenAsset,
   onToggleSkill,
+  onOpenSkillFile,
+  openSkillId,
   onClose,
   onManage,
   className,
@@ -143,7 +148,9 @@ export function FilesPanel({
           <ScrollArea className="h-full">
             <SkillsList
               skills={skills}
+              openSkillId={openSkillId}
               onToggle={onToggleSkill}
+              onOpenFile={onOpenSkillFile}
               className="pr-s"
             />
           </ScrollArea>

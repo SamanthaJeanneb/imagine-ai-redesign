@@ -444,26 +444,52 @@ const SKILLS: Skill[] = [
     name: "Draft from a calendar gap",
     description: "Proposes a post whenever a weekday has nothing scheduled.",
     enabled: true,
+    fileName: "calendar-gap.md",
   },
   {
     id: "s2",
     name: "Repurpose top posts",
     description: "Turns last month's best post into a new angle.",
     enabled: true,
+    fileName: "repurpose.md",
   },
   {
     id: "s3",
     name: "Comment suggestions",
     description: "Finds posts from targeted accounts worth replying to.",
     enabled: false,
+    fileName: "comments.md",
   },
   {
     id: "s4",
     name: "Weekly recap",
     description: "Summarizes reach and follows every Monday.",
     enabled: true,
+    fileName: "weekly-recap.md",
   },
 ];
+
+/** Every skill is a markdown file; this stands in for its contents. */
+function skillMarkdown(skill: Skill): string {
+  return `# ${skill.name}
+
+## When to run
+${skill.description}
+
+## Steps
+- Pull the posts and calendar context for the profile.
+- Draft in Sarah's voice, under 120 words.
+- Attach the draft to the thread for review.
+
+## Avoid
+- Emoji and hashtags.
+- Claims without a number behind them.
+`;
+}
+
+const SKILL_TEXT: Record<string, string> = Object.fromEntries(
+  SKILLS.map((skill) => [skill.id, skillMarkdown(skill)]),
+);
 
 const PERSONA_MD = `# Sarah Chen
 
@@ -631,6 +657,33 @@ export function SidebarDemo() {
 export function FilesPanelDemo() {
   const [activeFile, setActiveFile] = useState<string | undefined>("f6");
   const [skills, setSkills] = useState(SKILLS);
+  const [openSkills, setOpenSkills] = useState<readonly string[]>(["s1"]);
+  const [activeSkill, setActiveSkill] = useState<string | null>("s1");
+  const [text, setText] = useState(SKILL_TEXT);
+  const [savedText, setSavedText] = useState(SKILL_TEXT);
+
+  const toggleSkill = (id: string, enabled: boolean) => {
+    setSkills((current) =>
+      current.map((skill) => (skill.id === id ? { ...skill, enabled } : skill)),
+    );
+  };
+
+  const openSkillFile = (id: string) => {
+    setOpenSkills((current) =>
+      current.includes(id) ? current : [...current, id],
+    );
+    setActiveSkill(id);
+  };
+
+  const skillById = new Map(skills.map((skill) => [skill.id, skill]));
+  const skillTabs: EditorTab[] = openSkills.map((id) => ({
+    id,
+    label: skillById.get(id)?.fileName ?? id,
+    closable: true,
+    dirty: (text[id] ?? "") !== (savedText[id] ?? ""),
+  }));
+  const openSkill =
+    activeSkill === null ? undefined : skillById.get(activeSkill);
 
   return (
     <div className="flex flex-wrap gap-xl">
@@ -644,7 +697,10 @@ export function FilesPanelDemo() {
             skills={skills}
             storageLabel="2.1 GB of 10 GB"
             activeFileId={activeFile}
+            openSkillId={activeSkill ?? undefined}
             onOpenFile={setActiveFile}
+            onToggleSkill={toggleSkill}
+            onOpenSkillFile={openSkillFile}
             onEditFile={(id) => {
               toast(`Edit ${id}`);
             }}
@@ -668,17 +724,65 @@ export function FilesPanelDemo() {
           assetSize="sm"
         />
       </Demo>
-      <Demo label="Skills list" className="w-80">
-        <SkillsList
-          skills={skills}
-          onToggle={(id, enabled) => {
-            setSkills((current) =>
-              current.map((skill) =>
-                skill.id === id ? { ...skill, enabled } : skill,
-              ),
-            );
-          }}
-        />
+      <Demo
+        label="Skills. The file under each one opens in an editor tab"
+        className="w-full"
+      >
+        <div className="grid gap-l lg:grid-cols-[20rem_1fr]">
+          <SkillsList
+            skills={skills}
+            openSkillId={activeSkill ?? undefined}
+            onToggle={toggleSkill}
+            onOpenFile={openSkillFile}
+          />
+          <OnBackground className="min-h-80 p-s">
+            {openSkill ? (
+              <EditorTabStrip
+                tabs={skillTabs}
+                activeId={openSkill.id}
+                onActivate={setActiveSkill}
+                onClose={(id) => {
+                  const next = openSkills.filter((open) => open !== id);
+                  setOpenSkills(next);
+                  if (activeSkill === id) {
+                    setActiveSkill(next.at(-1) ?? null);
+                  }
+                }}
+                className="w-full"
+              >
+                <MarkdownEditor
+                  meta={{ title: openSkill.fileName }}
+                  value={text[openSkill.id] ?? ""}
+                  savedValue={savedText[openSkill.id] ?? ""}
+                  onValueChange={(next) => {
+                    setText((current) => ({
+                      ...current,
+                      [openSkill.id]: next,
+                    }));
+                  }}
+                  onSave={() => {
+                    setSavedText((current) => ({
+                      ...current,
+                      [openSkill.id]: text[openSkill.id] ?? "",
+                    }));
+                    toast.success(`Saved ${openSkill.fileName}`);
+                  }}
+                  onRevert={() => {
+                    setText((current) => ({
+                      ...current,
+                      [openSkill.id]: savedText[openSkill.id] ?? "",
+                    }));
+                  }}
+                  className="p-l"
+                />
+              </EditorTabStrip>
+            ) : (
+              <p className="m-auto type-small text-imagine-foreground-muted">
+                Open a skill file to edit it.
+              </p>
+            )}
+          </OnBackground>
+        </div>
       </Demo>
     </div>
   );
