@@ -80,6 +80,24 @@ export default defineConfig([
     },
   },
 
+  // shadcn registry code is vendored; keep upstream diffs reviewable by not
+  // reformatting it to satisfy the strictest type-aware rules.
+  {
+    files: ["src/components/ui/**"],
+    rules: {
+      "@typescript-eslint/array-type": "off",
+      "@typescript-eslint/consistent-type-assertions": "off",
+      "@typescript-eslint/consistent-type-definitions": "off",
+      "@typescript-eslint/no-unnecessary-condition": "off",
+      "@typescript-eslint/no-unnecessary-type-assertion": "off",
+      "@typescript-eslint/no-unsafe-argument": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/prefer-nullish-coalescing": "off",
+      "@typescript-eslint/restrict-template-expressions": "off",
+    },
+  },
+
   // Test files may use assertions to build fixtures.
   {
     files: ["**/*.test.ts"],

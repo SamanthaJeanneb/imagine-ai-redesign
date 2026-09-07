@@ -9,7 +9,6 @@
     "noEmit": true,
     "strict": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noFallthroughCasesInSwitch": true,

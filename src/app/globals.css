@@ -2,131 +2,224 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/*
+ * Every `--imagine-*` variable referenced here is emitted at runtime from
+ * `src/styles/tokens.ts` (see the <style> tag in the root layout). This file
+ * only maps them into Tailwind utilities and shadcn's semantic names.
+ */
+
+@custom-variant dark (&:is([data-theme="dark"] *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Type */
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Imagine palette, exposed as bg-imagine-*, text-imagine-*, border-imagine-* */
+  --color-imagine-background: var(--imagine-background);
+  --color-imagine-surface: var(--imagine-surface);
+  --color-imagine-surface-raised: var(--imagine-surface-raised);
+  --color-imagine-border: var(--imagine-border);
+  --color-imagine-foreground: var(--imagine-foreground);
+  --color-imagine-foreground-muted: var(--imagine-foreground-muted);
+  --color-imagine-foreground-faint: var(--imagine-foreground-faint);
+  --color-imagine-primary: var(--imagine-primary);
+  --color-imagine-primary-foreground: var(--imagine-primary-foreground);
+  --color-imagine-secondary: var(--imagine-secondary);
+  --color-imagine-secondary-soft: var(--imagine-secondary-soft);
+  --color-imagine-secondary-strong: var(--imagine-secondary-strong);
+  --color-imagine-secondary-foreground: var(--imagine-secondary-foreground);
+
+  /* Non-palette states from Tailwind's scales, mapped once. */
   --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
+
+  /*
+   * shadcn semantic names resolve to Imagine tokens so every primitive is
+   * token-driven. Note: shadcn's `secondary` is the soft neutral button, not
+   * the brand accent. The accent is only ever `imagine-secondary`.
+   */
+  --color-background: var(--imagine-background);
+  --color-foreground: var(--imagine-foreground);
+  --color-card: var(--imagine-surface);
+  --color-card-foreground: var(--imagine-foreground);
+  --color-popover: var(--imagine-surface);
+  --color-popover-foreground: var(--imagine-foreground);
+  --color-primary: var(--imagine-primary);
+  --color-primary-foreground: var(--imagine-primary-foreground);
+  --color-secondary: var(--imagine-surface-raised);
+  --color-secondary-foreground: var(--imagine-foreground);
+  --color-muted: var(--imagine-surface-raised);
+  --color-muted-foreground: var(--imagine-foreground-muted);
+  --color-accent: var(--imagine-surface-raised);
+  --color-accent-foreground: var(--imagine-foreground);
+  --color-border: var(--imagine-border);
+  --color-input: var(--imagine-border);
+  --color-ring: var(--imagine-foreground-faint);
+  --color-chart-1: var(--imagine-secondary);
+  --color-chart-2: var(--imagine-foreground-faint);
+  --color-chart-3: var(--imagine-foreground-muted);
+  --color-chart-4: var(--imagine-border);
+  --color-chart-5: var(--imagine-foreground);
+
+  /* Spacing: gap-l, p-xl, etc. Numeric spacing (p-4) still works. */
+  --spacing-xxs: var(--imagine-spacing-xxs);
+  --spacing-xs: var(--imagine-spacing-xs);
+  --spacing-s: var(--imagine-spacing-s);
+  --spacing-m: var(--imagine-spacing-m);
+  --spacing-l: var(--imagine-spacing-l);
+  --spacing-xl: var(--imagine-spacing-xl);
+  --spacing-xxl: var(--imagine-spacing-xxl);
+  --spacing-xxxl: var(--imagine-spacing-xxxl);
+  --spacing-section: var(--imagine-spacing-section);
+
+  /* Radius: rounded-control, rounded-panel, rounded-surface. shadcn's scale
+     is folded onto the same three values so nothing is ever square or ad hoc. */
+  --radius-control: var(--imagine-radius-control);
+  --radius-panel: var(--imagine-radius-panel);
+  --radius-surface: var(--imagine-radius-surface);
+  --radius-xs: calc(var(--imagine-radius-control) - 2px);
+  --radius-sm: calc(var(--imagine-radius-control) - 2px);
+  --radius-md: var(--imagine-radius-control);
+  --radius-lg: var(--imagine-radius-control);
+  --radius-xl: var(--imagine-radius-panel);
+  --radius-2xl: var(--imagine-radius-panel);
+  --radius-3xl: var(--imagine-radius-surface);
+  --radius-4xl: var(--imagine-radius-surface);
 }
 
 :root {
-  /* Placeholder until DM Sans lands with the design system. */
-  --font-sans: ui-sans-serif, system-ui, sans-serif;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* shadcn aliases still read by a few components as raw variables. */
+  --background: var(--imagine-background);
+  --foreground: var(--imagine-foreground);
+  --popover: var(--imagine-surface);
+  --popover-foreground: var(--imagine-foreground);
+  --primary: var(--imagine-primary);
+  --secondary: var(--imagine-surface-raised);
+  --muted: var(--imagine-surface-raised);
+  --border: var(--imagine-border);
+  --radius: var(--imagine-radius-control);
+
+  --destructive: var(--color-red-600);
+  --warning: var(--color-amber-600);
+  --success: var(--color-emerald-600);
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+[data-theme="dark"] {
+  --destructive: var(--color-red-400);
+  --warning: var(--color-amber-400);
+  --success: var(--color-emerald-400);
+}
+
+/* Type scale. Named type-* (not text-*) so class merging never confuses them
+   with text colors. */
+@utility type-display {
+  font-size: var(--imagine-text-display-size);
+  line-height: var(--imagine-text-display-line-height);
+  letter-spacing: var(--imagine-text-display-letter-spacing);
+  font-weight: 500;
+}
+@utility type-title {
+  font-size: var(--imagine-text-title-size);
+  line-height: var(--imagine-text-title-line-height);
+  letter-spacing: var(--imagine-text-title-letter-spacing);
+  font-weight: 500;
+}
+@utility type-heading {
+  font-size: var(--imagine-text-heading-size);
+  line-height: var(--imagine-text-heading-line-height);
+  letter-spacing: var(--imagine-text-heading-letter-spacing);
+  font-weight: 500;
+}
+@utility type-body {
+  font-size: var(--imagine-text-body-size);
+  line-height: var(--imagine-text-body-line-height);
+  letter-spacing: var(--imagine-text-body-letter-spacing);
+}
+@utility type-small {
+  font-size: var(--imagine-text-small-size);
+  line-height: var(--imagine-text-small-line-height);
+  letter-spacing: var(--imagine-text-small-letter-spacing);
+}
+@utility type-micro {
+  font-size: var(--imagine-text-micro-size);
+  line-height: var(--imagine-text-micro-line-height);
+  letter-spacing: var(--imagine-text-micro-letter-spacing);
+  text-transform: uppercase;
+}
+
+/* Skeleton and text shimmer: a gradient sweep, not a pulse. */
+@keyframes imagine-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+@utility shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--imagine-surface-raised) 0%,
+    var(--imagine-surface) 50%,
+    var(--imagine-surface-raised) 100%
+  );
+  background-size: 200% 100%;
+  animation: imagine-shimmer 1.4s linear infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+@utility shimmer-text {
+  color: transparent;
+  background-clip: text;
+  background-image: linear-gradient(
+    90deg,
+    var(--imagine-foreground-muted) 0%,
+    var(--imagine-foreground) 50%,
+    var(--imagine-foreground-muted) 100%
+  );
+  background-size: 200% 100%;
+  animation: imagine-shimmer 1.4s linear infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    color: var(--imagine-foreground-muted);
+  }
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     @apply font-sans;
+  }
+  body {
+    @apply bg-background type-body text-foreground;
+  }
+
+  /* Font Awesome Sharp icons rendered through the Icon component. */
+  [data-slot="icon"] {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 1em;
+    line-height: 1;
+    pointer-events: none;
+  }
+  [data-slot="icon"][data-size="s"] {
+    font-size: var(--imagine-text-small-size);
+  }
+  [data-slot="icon"][data-size="m"] {
+    font-size: var(--imagine-text-body-size);
+  }
+  [data-slot="icon"][data-size="l"] {
+    font-size: var(--imagine-text-heading-size);
+  }
+  [data-slot="icon"][data-size="xl"] {
+    font-size: var(--imagine-text-title-size);
   }
 }
