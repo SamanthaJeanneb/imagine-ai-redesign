@@ -68,9 +68,9 @@ function initials(name: string): string {
 }
 
 /**
- * Workspace sidebar. Fills its parent on `imagine-background`; the main
- * surface rounds into it. The selected nav item carries a light accent wash
- * and a bar in the gutter; both slide together when the selection moves.
+ * Workspace sidebar. Full height of its parent on `imagine-background`. The
+ * main surface sits beside it with `rounded-surface` so the page rounds in.
+ * The selected nav item carries a light accent wash and a bar in the gutter.
  */
 export function Sidebar({
   orgName,

@@ -502,45 +502,58 @@ const SIDEBAR_USER = {
   note: "Growth plan",
 };
 
+/**
+ * Kit chrome: full-height sidebar with the review surface rounding into it.
+ */
+export function KitWorkspace({ children }: { children: React.ReactNode }) {
+  const [active, setActive] = useState<SidebarNavKey>("agent");
+
+  return (
+    <div className="flex h-dvh bg-imagine-background">
+      <Sidebar
+        orgName="Acme"
+        active={active}
+        threads={THREADS}
+        activeThreadId="t1"
+        user={SIDEBAR_USER}
+        onNavigate={setActive}
+        onNewPost={() => {
+          toast("New post");
+        }}
+        onOpenThread={(id) => {
+          toast(`Open thread ${id}`);
+        }}
+        onOpenUser={() => {
+          toast("Account");
+        }}
+      />
+      <div className="flex min-h-0 min-w-0 flex-1 p-l">
+        <div className="min-h-0 w-full overflow-y-auto rounded-surface bg-imagine-surface p-xxl shadow-raised">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function SidebarDemo() {
   const [active, setActive] = useState<SidebarNavKey>("agent");
 
   return (
-    <div className="flex flex-wrap gap-xl">
-      <Demo label="Expanded">
-        <OnBackground className="h-[520px]">
-          <Sidebar
-            orgName="Acme"
-            active={active}
-            threads={THREADS}
-            activeThreadId="t1"
-            user={SIDEBAR_USER}
-            onNavigate={setActive}
-            onNewPost={() => {
-              toast("New post");
-            }}
-            onOpenThread={(id) => {
-              toast(`Open thread ${id}`);
-            }}
-          />
-          <div className="w-36 self-stretch bg-imagine-surface" />
-        </OnBackground>
-      </Demo>
-      <Demo label="Collapsed">
-        <OnBackground className="h-[520px]">
-          <Sidebar
-            orgName="Acme"
-            active={active}
-            collapsed
-            threads={THREADS}
-            activeThreadId="t1"
-            user={SIDEBAR_USER}
-            onNavigate={setActive}
-          />
-          <div className="w-36 self-stretch bg-imagine-surface" />
-        </OnBackground>
-      </Demo>
-    </div>
+    <Demo label="Collapsed (icon rail while files are open)">
+      <div className="flex h-80 bg-imagine-background">
+        <Sidebar
+          orgName="Acme"
+          active={active}
+          collapsed
+          threads={THREADS}
+          activeThreadId="t1"
+          user={SIDEBAR_USER}
+          onNavigate={setActive}
+        />
+        <div className="m-s min-w-0 flex-1 rounded-surface bg-imagine-surface shadow-raised" />
+      </div>
+    </Demo>
   );
 }
 

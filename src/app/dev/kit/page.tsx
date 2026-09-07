@@ -35,6 +35,7 @@ import {
   PostDraftDemo,
   ProfilesDemo,
   ScheduledGraphicDemo,
+  KitWorkspace,
   SidebarDemo,
   StatTileDemo,
   TimelineDemo,
@@ -84,8 +85,8 @@ export default function KitPage() {
   if (process.env.NODE_ENV === "production") notFound();
 
   return (
-    <main className="flex flex-1 justify-center bg-imagine-background p-xl">
-      <div className="flex w-full max-w-6xl flex-col gap-section rounded-surface bg-imagine-surface p-xxl">
+    <KitWorkspace>
+      <div className="flex w-full flex-col gap-section">
         <header className="flex items-start justify-between gap-l">
           <div className="flex flex-col gap-xs">
             <h1 className="type-display">Design kit</h1>
@@ -317,6 +318,6 @@ export default function KitPage() {
           <AnalyticsPartsDemo />
         </Section>
       </div>
-    </main>
+    </KitWorkspace>
   );
 }
