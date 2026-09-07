@@ -1811,7 +1811,6 @@ export function OnboardingPartsDemo() {
             permissions={[
               "Publish posts you approve, on the schedule you set",
               "Read post analytics to plan what to write next",
-              "Never send messages or connection requests",
             ]}
             onConnect={() => {
               toast.success("LinkedIn connected");
