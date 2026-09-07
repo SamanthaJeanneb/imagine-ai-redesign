@@ -6,8 +6,8 @@ import { motion } from "motion/react";
 import { fade } from "@/styles/motion";
 
 interface LogoLoaderProps {
-  /** Rendered width in px. Height follows the wordmark's aspect. */
-  width?: number;
+  /** Width utility for the wordmark. Height follows its aspect. */
+  size?: string;
   label?: string;
   className?: string;
 }
@@ -17,7 +17,7 @@ interface LogoLoaderProps {
  * fast load never flashes it. Use `PageLoader` for a whole route.
  */
 export function LogoLoader({
-  width = 120,
+  size = "w-30",
   label = "Loading",
   className,
 }: LogoLoaderProps) {
@@ -31,11 +31,7 @@ export function LogoLoader({
       data-slot="logo-loader"
       className={cn("inline-flex", className)}
     >
-      <span
-        aria-hidden="true"
-        className="block logo-shimmer"
-        style={{ width }}
-      />
+      <span aria-hidden="true" className={cn("block logo-shimmer", size)} />
     </motion.div>
   );
 }

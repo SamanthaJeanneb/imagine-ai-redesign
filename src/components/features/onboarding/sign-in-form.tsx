@@ -35,7 +35,7 @@ export function SignInForm({
   return (
     <form
       data-slot="sign-in-form"
-      className={cn("flex w-full max-w-80 flex-col gap-l", className)}
+      className={cn("flex w-full max-w-96 flex-col gap-xl", className)}
       onSubmit={(event) => {
         event.preventDefault();
         if (email.trim()) onEmail?.(email.trim(), remember);
@@ -48,12 +48,12 @@ export function SignInForm({
         </p>
       </div>
 
-      <div className="flex flex-col gap-s">
-        <Button type="button" variant="outline" onClick={onGoogle}>
+      <div className="flex flex-col gap-m">
+        <Button type="button" variant="outline" size="lg" onClick={onGoogle}>
           <Icon name="google" data-icon="inline-start" />
           Continue with Google
         </Button>
-        <Button type="button" variant="outline" onClick={onX}>
+        <Button type="button" variant="outline" size="lg" onClick={onX}>
           <Icon name="x-twitter" data-icon="inline-start" />
           Continue with X
         </Button>
@@ -61,7 +61,7 @@ export function SignInForm({
 
       <div
         role="separator"
-        className="flex items-center gap-m type-micro text-imagine-secondary"
+        className="flex items-center gap-m type-small text-imagine-secondary"
       >
         <span className="h-px flex-1 bg-imagine-secondary/60" />
         or
@@ -73,6 +73,7 @@ export function SignInForm({
         <Input
           id="sign-in-email"
           type="email"
+          required
           autoComplete="email"
           placeholder="you@company.com"
           value={email}
@@ -92,7 +93,8 @@ export function SignInForm({
         Keep me signed in
       </label>
 
-      <Button type="submit" size="lg" disabled={pending || !email.trim()}>
+      {/* Enabled from the start; the email input's own validation is the guard. */}
+      <Button type="submit" size="lg" disabled={pending}>
         {pending ? <Spinner size="s" data-icon="inline-start" /> : null}
         Sign in
       </Button>

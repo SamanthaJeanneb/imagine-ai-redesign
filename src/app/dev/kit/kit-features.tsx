@@ -609,7 +609,7 @@ export function LoadingDemo() {
         </OnBackground>
       </Demo>
       <Demo label="Inline, small">
-        <LogoLoader width={72} />
+        <LogoLoader size="w-18" />
       </Demo>
     </div>
   );
@@ -1792,6 +1792,9 @@ export function OnboardingPartsDemo() {
             members={TEAM}
             onInvite={(invites) => {
               toast(`Invited ${String(invites.length)}`);
+            }}
+            onContinue={() => {
+              toast("Continue");
             }}
             onResend={() => {
               toast("Invite resent");

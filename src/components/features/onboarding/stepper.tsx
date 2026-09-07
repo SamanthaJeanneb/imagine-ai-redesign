@@ -2,6 +2,7 @@
 
 import { cn } from "cn";
 import { motion } from "motion/react";
+import { useId } from "react";
 
 import { Icon } from "@/components/ui/icon";
 import { fade, spring, stagger } from "@/styles/motion";
@@ -24,6 +25,8 @@ interface StepperProps {
  * filled accent number, upcoming steps fade back. A hairline connects them.
  */
 export function Stepper({ steps, current, onSelect, className }: StepperProps) {
+  const markerId = useId();
+
   return (
     <ol
       data-slot="stepper"
@@ -71,28 +74,38 @@ export function Stepper({ steps, current, onSelect, className }: StepperProps) {
                 last && "pb-0",
               )}
             >
-              <motion.span
-                layout
-                transition={spring.snappy}
-                className={cn(
-                  "flex size-6 shrink-0 items-center justify-center rounded-full type-small font-semibold tabular-nums",
-                  state === "done" &&
-                    "bg-imagine-surface-raised text-imagine-foreground-muted",
-                  state === "current" &&
-                    "bg-imagine-secondary text-imagine-secondary-foreground ring-4 ring-imagine-secondary-soft",
-                  state === "upcoming" &&
-                    "bg-imagine-surface-raised/60 text-imagine-foreground-faint",
-                )}
-              >
-                {state === "done" ? (
-                  <Icon name="check" size="s" active />
-                ) : (
-                  index + 1
-                )}
-              </motion.span>
               <span
                 className={cn(
-                  "type-body",
+                  "relative flex size-6 shrink-0 items-center justify-center rounded-full type-small font-semibold tabular-nums transition-colors",
+                  // The rail sits on the background, which matches
+                  // surface-raised in light mode, so these read off foreground.
+                  state === "done" &&
+                    "bg-imagine-foreground-faint text-imagine-surface",
+                  state === "current" && "text-imagine-secondary-foreground",
+                  state === "upcoming" &&
+                    "bg-imagine-border text-imagine-foreground-faint",
+                )}
+              >
+                {/* One accent disc for the whole list, so it slides between steps. */}
+                {state === "current" ? (
+                  <motion.span
+                    layoutId={`${markerId}-current`}
+                    aria-hidden="true"
+                    transition={spring.snappy}
+                    className="absolute inset-0 rounded-full bg-imagine-secondary ring-4 ring-imagine-secondary-soft"
+                  />
+                ) : null}
+                <span className="relative">
+                  {state === "done" ? (
+                    <Icon name="check" size="s" active />
+                  ) : (
+                    index + 1
+                  )}
+                </span>
+              </span>
+              <span
+                className={cn(
+                  "type-body transition-colors",
                   state === "current" && "font-semibold",
                   state === "done" && "text-imagine-foreground-muted",
                   state === "upcoming" && "text-imagine-foreground-faint",

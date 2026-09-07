@@ -406,17 +406,21 @@ states in both themes.
 `db.json`, `entities/rows.ts`, the domain types and transforms, and the selectors in
 `services/*`. No Zod, no route handlers, no SWR hooks, no tests: see the hard rules.
 
-### Phase 3 — Sign-in and onboarding
+### Phase 3 — Sign-in and onboarding ✅
 
 Wireframes: `onboarding/Sign-in.png`, `step-1.png`, `step-2.png`, `step-3.png`.
 
-- `(auth)/layout.tsx`. Sign-in is a split layout: form left, pink brand panel right with
-the Imagine mark, rounding into the page.
-- Three steps sharing a layout with the `Stepper` rail: organization, invite team,
-connect LinkedIn. Changing step animates the stepper marker and slides the form.
-- `/` redirects on the mock onboarding state; finishing routes to `/agent`.
-- Done when: `http://localhost:3000` walks sign-in through three steps to `/agent` and
-matches the wireframes.
+- Sign-in is a split layout: form left, pink panel right rounding into the page. The
+panel is a flat pink block waiting on artwork.
+- `(auth)/onboarding/layout.tsx` holds the rail: signing in counts as the first step and
+is always done, so the three routes are steps two through four. One accent disc carries a
+shared `layoutId`, so it slides between steps while `template.tsx` slides each form in.
+- Steps are server components that read `services/onboarding` and hand data to a client
+component beside them, which owns the form state and the navigation.
+- `/` redirects on `db.json`'s `onboarded` flag; both actions on the last step open
+`/agent`, a placeholder until Phase 4.
+- The `(auth)` group has no layout of its own. Sign-in and the steps share nothing but a
+background, and the group already keeps them out of the workspace shell.
 
 ### Phase 4 — Workspace shell
 
@@ -556,9 +560,10 @@ the port maps them deliberately.
 ## 10. Verification
 
 - `pnpm typecheck`, `pnpm lint`, and `pnpm build` pass.
-- Grep gates: no `lucide-react`, `material-symbols`, `framer-motion`, `style={{`, or raw
-hex outside `src/styles/tokens.ts` and `globals.css`. No raw `fa-` strings outside
-`Icon`. No em dash anywhere under `src/`.
+- Grep gates: no `lucide-react`, `material-symbols`, `framer-motion`, or raw hex outside
+`src/styles/tokens.ts` and `globals.css`. No raw `fa-` strings outside `Icon`. No em dash
+anywhere under `src/`. No `style={{` except `ui/chart.tsx`, where Recharts needs series
+colors as values.
 - Every page renders in light and dark from the single theme switch.
 - Landing → thread, preview → page, chat → sidebar, and panel → editor tab are each one
 continuous morph with no blank frame.

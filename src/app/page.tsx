@@ -1,7 +1,8 @@
+import { redirect } from "next/navigation";
+
+import { isOnboarded } from "@/services/onboarding";
+
+/** New users start at sign-in. Flip `onboarded` in the mock to skip the flow. */
 export default function HomePage() {
-  return (
-    <main className="flex flex-1 items-center justify-center">
-      <h1 className="text-2xl font-medium tracking-tight">Imagine AI</h1>
-    </main>
-  );
+  redirect(isOnboarded() ? "/agent" : "/sign-in");
 }

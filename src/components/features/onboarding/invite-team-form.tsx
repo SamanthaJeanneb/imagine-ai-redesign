@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { fade, spring } from "@/styles/motion";
+import { spring } from "@/styles/motion";
 
 export type MemberRole = "admin" | "member";
 
@@ -177,7 +177,9 @@ export function TeamMemberRow({
 interface InviteTeamFormProps {
   inviteUrl: string;
   members: readonly TeamMember[];
+  /** Send the drafted invites; they join `members` as invited rows. */
   onInvite: (invites: readonly { email: string; role: MemberRole }[]) => void;
+  onContinue: () => void;
   onRoleChange?: (id: string, role: MemberRole) => void;
   onResend?: (id: string) => void;
   onSkip?: () => void;
@@ -195,6 +197,7 @@ export function InviteTeamForm({
   inviteUrl,
   members,
   onInvite,
+  onContinue,
   onRoleChange,
   onResend,
   onSkip,
@@ -211,9 +214,7 @@ export function InviteTeamForm({
       className={cn("flex w-full max-w-md flex-col gap-xl", className)}
       onSubmit={(event) => {
         event.preventDefault();
-        onInvite(
-          filled.map(({ email, role }) => ({ email: email.trim(), role })),
-        );
+        onContinue();
       }}
     >
       <Field>
@@ -281,21 +282,43 @@ export function InviteTeamForm({
             ))}
           </AnimatePresence>
         </div>
-        <Button
-          type="button"
-          variant="link"
-          size="sm"
-          className="self-start px-0"
-          onClick={() => {
-            setDrafts((current) => [
-              ...current,
-              { key: Date.now(), email: "", role: "member" },
-            ]);
-          }}
-        >
-          <Icon name="plus" size="s" data-icon="inline-start" />
-          Add another
-        </Button>
+        {/* Field stretches its children, so the two actions share a row. */}
+        <div className="flex items-center gap-m">
+          <Button
+            type="button"
+            variant="link"
+            size="sm"
+            className="px-0"
+            onClick={() => {
+              setDrafts((current) => [
+                ...current,
+                { key: Date.now(), email: "", role: "member" },
+              ]);
+            }}
+          >
+            <Icon name="plus" size="s" data-icon="inline-start" />
+            Add another
+          </Button>
+          <Button
+            type="button"
+            variant="soft"
+            size="sm"
+            disabled={filled.length === 0}
+            onClick={() => {
+              onInvite(
+                filled.map(({ email, role }) => ({
+                  email: email.trim(),
+                  role,
+                })),
+              );
+              setDrafts([{ key: Date.now(), email: "", role: "member" }]);
+            }}
+          >
+            {filled.length > 1
+              ? `Send ${String(filled.length)} invites`
+              : "Send invite"}
+          </Button>
+        </div>
       </Field>
 
       <Field>
@@ -320,19 +343,7 @@ export function InviteTeamForm({
 
       <div className="flex items-center gap-l">
         <Button type="submit" size="lg">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.span
-              key={filled.length > 0 ? "invite" : "continue"}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={fade.fast}
-            >
-              {filled.length > 0
-                ? `Invite ${String(filled.length)} and continue`
-                : "Continue"}
-            </motion.span>
-          </AnimatePresence>
+          Continue
         </Button>
         {onSkip ? (
           <Button

@@ -216,6 +216,8 @@ export interface WorkspaceFileRow {
 export interface Database {
   /** Fixed clock, so the calendar always lands on the same week. */
   now: string;
+  /** Whether `/` opens the app or starts at sign-in. */
+  onboarded: boolean;
   public: { users: UserRow[] };
   app: {
     organizations: OrganizationRow[];
