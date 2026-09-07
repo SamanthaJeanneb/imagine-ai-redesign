@@ -68,7 +68,7 @@ function initials(name: string): string {
 }
 
 /**
- * Workspace sidebar. Full viewport height on `imagine-background`; the main
+ * Workspace sidebar. Fills its parent on `imagine-background`; the main
  * surface rounds into it. The selected nav item carries a light accent wash
  * and a bar in the gutter; both slide together when the selection moves.
  */
@@ -94,7 +94,7 @@ export function Sidebar({
       transition={spring.soft}
       data-collapsed={collapsed || undefined}
       className={cn(
-        "flex h-dvh shrink-0 flex-col bg-imagine-background text-imagine-foreground",
+        "flex h-full shrink-0 flex-col bg-imagine-background text-imagine-foreground",
         collapsed ? "w-16 items-center px-s py-xl" : "w-64 px-m py-xl",
         className,
       )}
