@@ -68,9 +68,10 @@ function initials(name: string): string {
 }
 
 /**
- * Workspace sidebar. Full height of its parent on `imagine-background`. The
- * main surface sits beside it with `rounded-surface` so the page rounds in.
- * The selected nav item carries a light accent wash and a bar in the gutter.
+ * Workspace sidebar. Fills the height of its parent on `imagine-background`;
+ * the main surface beside it carries `rounded-surface` so the page rounds in.
+ * The selected nav item has a light accent wash and a bar in the gutter, and
+ * both slide together when the selection moves.
  */
 export function Sidebar({
   orgName,
@@ -99,12 +100,7 @@ export function Sidebar({
         className,
       )}
     >
-      <div
-        className={cn(
-          "flex flex-col",
-          collapsed ? "items-center gap-l" : "gap-l",
-        )}
-      >
+      <div className={cn("flex flex-col gap-l", collapsed && "items-center")}>
         {/* Organization */}
         <div
           className={cn(
@@ -223,9 +219,9 @@ export function Sidebar({
         })}
       </nav>
 
-      {/* Recent posts */}
+      {/* Recent posts. Collapsed keeps the spacer so the account stays pinned. */}
       {collapsed ? (
-        <div className="min-h-0 flex-1" />
+        <div className="flex-1" />
       ) : (
         <div className="mt-xl flex min-h-0 flex-1 flex-col">
           <div className="flex h-8 shrink-0 items-center justify-between px-s">

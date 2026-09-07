@@ -40,7 +40,7 @@ function Switch({
         <motion.span
           layout
           transition={spring.snappy}
-          className="block size-4 rounded-full bg-imagine-surface shadow-sm"
+          className="block size-4 rounded-full bg-imagine-surface shadow-control"
         />
       </SwitchPrimitive.Thumb>
     </SwitchPrimitive.Root>

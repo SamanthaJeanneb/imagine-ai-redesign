@@ -35,6 +35,14 @@ const CHIP_COLOR = {
   failed: "var(--destructive)",
 } as const satisfies Record<PostChipStatus, string>;
 
+/** Exposes the status color to `chip-wash` and the rail as `--chip-color`. */
+function chipStyle(status: PostChipStatus): CSSProperties {
+  const style: CSSProperties & { "--chip-color": string } = {
+    "--chip-color": CHIP_COLOR[status],
+  };
+  return style;
+}
+
 /**
  * A post inside a calendar cell. Every status uses a solid left rail and a
  * wash that fades to the surface. Color is the only status signal. No badges.
@@ -56,11 +64,7 @@ export function PostChip({
       data-slot="post-chip"
       data-status={post.status}
       aria-label={`${post.title}, ${post.time}, ${post.profile}, ${post.status}`}
-      style={
-        {
-          "--chip-color": CHIP_COLOR[post.status],
-        } as CSSProperties
-      }
+      style={chipStyle(post.status)}
       className={cn(
         "relative flex w-full min-w-0 flex-col gap-xxs overflow-hidden rounded-control text-left shadow-control outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
         "chip-wash text-imagine-secondary-foreground",

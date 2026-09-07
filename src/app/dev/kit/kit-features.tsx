@@ -496,6 +496,13 @@ function OnBackground({
   );
 }
 
+/** Stand-in for the main surface that rounds into the sidebar. */
+function PageStub() {
+  return (
+    <div className="my-s mr-s w-24 rounded-surface bg-imagine-surface shadow-raised" />
+  );
+}
+
 const SIDEBAR_USER = {
   name: "Sarah Chen",
   avatarUrl: AVATAR(47),
@@ -508,7 +515,7 @@ export function SidebarDemo() {
   return (
     <div className="flex flex-wrap gap-xl">
       <Demo label="Expanded">
-        <div className="flex h-[520px] bg-imagine-background">
+        <OnBackground className="h-[520px]">
           <Sidebar
             orgName="Acme"
             active={active}
@@ -526,11 +533,11 @@ export function SidebarDemo() {
               toast("Account");
             }}
           />
-          <div className="m-s min-w-0 flex-1 rounded-surface bg-imagine-surface shadow-raised" />
-        </div>
+          <PageStub />
+        </OnBackground>
       </Demo>
       <Demo label="Collapsed">
-        <div className="flex h-[520px] bg-imagine-background">
+        <OnBackground className="h-[520px]">
           <Sidebar
             orgName="Acme"
             active={active}
@@ -540,8 +547,8 @@ export function SidebarDemo() {
             user={SIDEBAR_USER}
             onNavigate={setActive}
           />
-          <div className="m-s min-w-0 flex-1 rounded-surface bg-imagine-surface shadow-raised" />
-        </div>
+          <PageStub />
+        </OnBackground>
       </Demo>
     </div>
   );
@@ -555,7 +562,7 @@ export function FilesPanelDemo() {
     <div className="flex flex-wrap gap-xl">
       <Demo label="Files panel">
         <OnBackground className="h-[520px]">
-          <div className="w-10 rounded-surface bg-imagine-surface" />
+          <div className="my-s ml-s w-10 rounded-surface bg-imagine-surface shadow-raised" />
           <FilesPanel
             title="Acme"
             sections={FILE_SECTIONS}
