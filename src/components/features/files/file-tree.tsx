@@ -77,13 +77,14 @@ function Disclosure({
   );
 }
 
+/** Trails its row, so names start on a straight edge at every depth. */
 function Chevron({ open }: { open: boolean }) {
   return (
     <motion.span
       aria-hidden="true"
       animate={{ rotate: open ? 90 : 0 }}
       transition={spring.snappy}
-      className="flex w-3 justify-center text-imagine-foreground-faint"
+      className="ml-auto flex w-3 shrink-0 justify-center text-imagine-foreground-faint"
     >
       <Icon name="chevron-right" size="s" />
     </motion.span>
@@ -213,13 +214,13 @@ function Nodes({
                 transition={pressRow.transition}
                 className="flex h-8 w-full items-center gap-s rounded-control px-s text-left text-imagine-foreground-muted transition-colors outline-none hover:bg-imagine-surface-raised hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
               >
-                <Chevron open={!closed.has(node.id)} />
                 <Icon
                   name="folder"
                   size="s"
                   className="text-imagine-foreground-faint"
                 />
                 <span className="truncate type-small">{node.name}</span>
+                <Chevron open={!closed.has(node.id)} />
               </motion.button>
               <Disclosure open={!closed.has(node.id)}>
                 <Nodes
@@ -298,7 +299,6 @@ export function FileTree({
               transition={pressRow.transition}
               className="flex h-9 w-full items-center gap-s rounded-control px-s text-left transition-colors outline-none hover:bg-imagine-surface-raised focus-visible:ring-2 focus-visible:ring-ring/40"
             >
-              <Chevron open={open} />
               {section.kind === "organization" ? (
                 section.avatarUrl ? (
                   // Org logos are user uploads from arbitrary hosts; next/image needs a domain list.
@@ -326,6 +326,7 @@ export function FileTree({
               <span className="truncate type-body font-medium">
                 {section.title}
               </span>
+              <Chevron open={open} />
             </motion.button>
             <Disclosure open={open}>
               <div className="ml-m border-l border-imagine-border pl-s">
