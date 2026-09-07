@@ -64,7 +64,16 @@
   --color-chart-4: var(--imagine-border);
   --color-chart-5: var(--imagine-foreground);
 
-  /* Spacing: gap-l, p-xl, etc. Numeric spacing (p-4) still works. */
+  /* Elevation: shadow-control, shadow-raised, shadow-floating, inset-shadow-highlight */
+  --shadow-control: var(--imagine-shadow-control);
+  --shadow-raised: var(--imagine-shadow-raised);
+  --shadow-floating: var(--imagine-shadow-floating);
+  --inset-shadow-highlight: var(--imagine-shadow-highlight);
+
+  /* Spacing: gap-l, p-xl, etc. Numeric spacing (p-4) still works.
+     Because these are spacing keys, size utilities resolve them first:
+     `max-w-xs` becomes 4px, not 20rem. Use numeric widths (`max-w-80`) or
+     the non-colliding container names (`max-w-sm`, `max-w-md`, `max-w-lg`). */
   --spacing-xxs: var(--imagine-spacing-xxs);
   --spacing-xs: var(--imagine-spacing-xs);
   --spacing-s: var(--imagine-spacing-s);

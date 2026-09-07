@@ -18,6 +18,27 @@ import {
   OverlayDemo,
   SelectionDemo,
 } from "./kit-demos";
+import {
+  AccountDemo,
+  AnalyticsPartsDemo,
+  AssetsDemo,
+  CalendarGridDemo,
+  CalendarToolbarDemo,
+  ChartBlockDemo,
+  ComposerDemo,
+  EditorDemo,
+  FilesPanelDemo,
+  IntegrationsDemo,
+  MessagesDemo,
+  OnboardingPartsDemo,
+  PostChipDemo,
+  PostDraftDemo,
+  ProfilesDemo,
+  ScheduledGraphicDemo,
+  SidebarDemo,
+  StatTileDemo,
+  TimelineDemo,
+} from "./kit-features";
 
 const COLOR_TOKENS = Object.keys(colors.light) as ColorToken[];
 
@@ -64,7 +85,7 @@ export default function KitPage() {
 
   return (
     <main className="flex flex-1 justify-center bg-imagine-background p-xl">
-      <div className="flex w-full max-w-4xl flex-col gap-section rounded-surface bg-imagine-surface p-xxl">
+      <div className="flex w-full max-w-6xl flex-col gap-section rounded-surface bg-imagine-surface p-xxl">
         <header className="flex items-start justify-between gap-l">
           <div className="flex flex-col gap-xs">
             <h1 className="type-display">Design kit</h1>
@@ -196,6 +217,82 @@ export default function KitPage() {
 
         <Section title="Chat primitives">
           <ChatDemo />
+        </Section>
+
+        <Section title="Sidebar">
+          <SidebarDemo />
+        </Section>
+
+        <Section title="Files panel, file tree, skills">
+          <FilesPanelDemo />
+        </Section>
+
+        <Section title="Composer">
+          <ComposerDemo />
+        </Section>
+
+        <Section title="Timeline: while you were away">
+          <TimelineDemo />
+        </Section>
+
+        <Section title="Messages">
+          <MessagesDemo />
+        </Section>
+
+        <Section title="LinkedIn post draft">
+          <PostDraftDemo />
+        </Section>
+
+        <Section title="Scheduled graphic">
+          <ScheduledGraphicDemo />
+        </Section>
+
+        <Section title="Assets">
+          <AssetsDemo />
+        </Section>
+
+        <Section title="Post chip">
+          <PostChipDemo />
+        </Section>
+
+        <Section title="Calendar grid">
+          <CalendarGridDemo />
+        </Section>
+
+        <Section title="Calendar toolbar, up next">
+          <CalendarToolbarDemo />
+        </Section>
+
+        <Section title="Stat tiles">
+          <StatTileDemo />
+        </Section>
+
+        <Section title="Chart block">
+          <ChartBlockDemo />
+        </Section>
+
+        <Section title="Analytics toolbar, by profile, top posts">
+          <AnalyticsPartsDemo />
+        </Section>
+
+        <Section title="Editor tab strip, markdown editor">
+          <EditorDemo />
+        </Section>
+
+        <Section title="Profiles">
+          <ProfilesDemo />
+        </Section>
+
+        <Section title="Integrations">
+          <IntegrationsDemo />
+        </Section>
+
+        <Section title="API keys, usage">
+          <AccountDemo />
+        </Section>
+
+        <Section title="Onboarding parts">
+          <OnboardingPartsDemo />
         </Section>
 
         <Section title="Loading">

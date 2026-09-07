@@ -19,14 +19,14 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-imagine-primary text-imagine-primary-foreground hover:bg-imagine-primary/85",
-        soft: "bg-imagine-surface-raised text-imagine-foreground hover:bg-imagine-border aria-expanded:bg-imagine-border",
+          "bg-imagine-primary text-imagine-primary-foreground shadow-control inset-shadow-highlight hover:bg-imagine-primary/90",
+        soft: "bg-imagine-surface text-imagine-foreground shadow-control hover:bg-imagine-surface-raised aria-expanded:bg-imagine-surface-raised",
         ghost:
           "text-imagine-foreground-muted hover:bg-imagine-surface-raised hover:text-imagine-foreground aria-expanded:bg-imagine-surface-raised aria-expanded:text-imagine-foreground",
         outline:
           "border-imagine-border bg-transparent text-imagine-foreground hover:bg-imagine-surface-raised aria-expanded:bg-imagine-surface-raised",
         destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:ring-destructive/30",
+          "bg-destructive text-white shadow-control inset-shadow-highlight hover:bg-destructive/90 focus-visible:ring-destructive/30",
         link: "text-imagine-foreground underline-offset-4 hover:underline",
       },
       size: {

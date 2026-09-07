@@ -59,6 +59,33 @@ export const colors = {
   },
 } as const satisfies Record<Theme, Record<ColorToken, string>>;
 
+export type ShadowToken = "control" | "raised" | "floating" | "highlight";
+
+/**
+ * Elevation. Controls get a hairline ring plus a whisper of drop shadow so
+ * they read as physical without a drawn border. `highlight` is an inset top
+ * sheen for primary surfaces. Dark mode leans on the inset light instead of
+ * drop shadows, which vanish on dark backgrounds.
+ */
+export const shadows = {
+  light: {
+    control: "0 0 0 1px rgb(22 21 22 / 0.05), 0 1px 2px rgb(22 21 22 / 0.06)",
+    raised:
+      "0 0 0 1px rgb(22 21 22 / 0.04), 0 1px 2px rgb(22 21 22 / 0.04), 0 8px 24px -12px rgb(22 21 22 / 0.18)",
+    floating:
+      "0 0 0 1px rgb(22 21 22 / 0.05), 0 2px 6px -2px rgb(22 21 22 / 0.08), 0 16px 40px -16px rgb(22 21 22 / 0.24)",
+    highlight: "inset 0 1px 0 rgb(255 255 255 / 0.14)",
+  },
+  dark: {
+    control: "0 0 0 1px rgb(255 255 255 / 0.06), 0 1px 2px rgb(0 0 0 / 0.4)",
+    raised:
+      "0 0 0 1px rgb(255 255 255 / 0.05), 0 8px 24px -12px rgb(0 0 0 / 0.6)",
+    floating:
+      "0 0 0 1px rgb(255 255 255 / 0.07), 0 16px 40px -16px rgb(0 0 0 / 0.7)",
+    highlight: "inset 0 1px 0 rgb(255 255 255 / 0.08)",
+  },
+} as const satisfies Record<Theme, Record<ShadowToken, string>>;
+
 export type SpacingToken =
   "xxs" | "xs" | "s" | "m" | "l" | "xl" | "xxl" | "xxxl" | "section";
 
@@ -113,6 +140,14 @@ function colorDeclarations(theme: Theme): string {
   return declarations(Object.entries(colors[theme]));
 }
 
+function shadowDeclarations(theme: Theme): string {
+  return declarations(
+    Object.entries(shadows[theme]).map(
+      ([name, value]) => [`shadow-${name}`, value] as const,
+    ),
+  );
+}
+
 function scaleDeclarations(): string {
   const entries: (readonly [string, string])[] = [];
   for (const [name, px] of Object.entries(spacing)) {
@@ -138,7 +173,7 @@ function scaleDeclarations(): string {
  */
 export function tokensToCss(): string {
   return [
-    `:root{${scaleDeclarations()};${colorDeclarations("light")}}`,
-    `[data-theme="dark"]{${colorDeclarations("dark")}}`,
+    `:root{${scaleDeclarations()};${colorDeclarations("light")};${shadowDeclarations("light")}}`,
+    `[data-theme="dark"]{${colorDeclarations("dark")};${shadowDeclarations("dark")}}`,
   ].join("\n");
 }

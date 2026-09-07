@@ -590,8 +590,15 @@ active, Brands for LinkedIn) and the typed icon-name union.
 `skeleton`, `spinner`, `dialog`, `alert-dialog`, `sonner`, `scroll-area`, `separator`,
 `command`, `chart`, `message-scroller`, `message`, `bubble`, `attachment`, `marker`.
 - Theme switch with the no-flicker inline script.
-- A hidden `/dev/kit` route (excluded from production) that renders every primitive in
-every variant, both themes, for review.
+- Feature components under `components/features/*` and `components/layout/*` for every
+element the wireframes call for (composer, timeline, post chip, stat tile, chart block,
+post draft, scheduled graphic, sidebar, files panel, and so on). Wireframes give the
+structure and idea only; the built component must be high fidelity and distinctly
+Imagine, with an elevation system (`shadow-control`, `shadow-raised`,
+`shadow-floating`, `inset-shadow-highlight`) instead of drawn borders.
+- A hidden `/dev/kit` route (excluded from production) that renders every primitive and
+every feature component in isolation, in each of its states, both themes, for review.
+The kit shows components, not pages. Page composition is Phase 2 and later.
 - Done when: no component references a raw color, radius, `lucide-react`, or Material
 Symbols; icons render via `Icon` in Sharp Regular; the kit route passes a visual check
 against `pink-application.png` density.
