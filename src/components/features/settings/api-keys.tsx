@@ -1,47 +1,251 @@
 "use client";
 
 import { cn } from "cn";
+import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/ui/icon";
+import { Icon, type IconName } from "@/components/ui/icon";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { pop } from "@/styles/motion";
 
 export interface ApiKey {
   id: string;
   name: string;
-  /** "sk_live_4f2a". Only the prefix is ever shown. */
-  prefix: string;
-  /** "Used 3h ago" or "Never used". */
-  lastUsed: string;
-  created: string;
+  /** The full secret. Shown masked until the row is revealed. */
+  secret: string;
 }
 
 interface ApiKeyListProps {
   keys: readonly ApiKey[];
+  /** Where "API documentation" points. */
+  docsHref?: string;
   onCreate?: () => void;
+  /** Issues a new secret and invalidates the old one. */
+  onRotate?: (id: string) => void;
   onRevoke?: (id: string) => void;
   className?: string;
 }
 
-/** Settings, API: keys as rows with a copyable prefix and a quiet revoke. */
+/** A fixed run of dots, so the mask never leaks the secret's length. */
+const MASK = "•".repeat(18);
+const PREFIX_LENGTH = 10;
+
+interface ConfirmActionProps {
+  icon: IconName;
+  label: string;
+  title: string;
+  description: string;
+  confirmLabel: string;
+  destructive?: boolean;
+  onConfirm: () => void;
+}
+
+/**
+ * An icon button that asks before it acts. Rotating and revoking both break
+ * live integrations, so neither happens on a single click.
+ */
+function ConfirmAction({
+  icon,
+  label,
+  title,
+  description,
+  confirmLabel,
+  destructive = false,
+  onConfirm,
+}: ConfirmActionProps) {
+  return (
+    <AlertDialog>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <AlertDialogTrigger asChild>
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              aria-label={label}
+              className={
+                destructive
+                  ? "text-imagine-foreground-muted hover:text-destructive"
+                  : undefined
+              }
+            >
+              <Icon name={icon} size="s" />
+            </Button>
+          </AlertDialogTrigger>
+        </TooltipTrigger>
+        <TooltipContent>{label}</TooltipContent>
+      </Tooltip>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            variant={destructive ? "destructive" : "default"}
+            onClick={onConfirm}
+          >
+            {confirmLabel}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+interface ApiKeyRowProps {
+  apiKey: ApiKey;
+  onRotate?: (id: string) => void;
+  onRevoke?: (id: string) => void;
+}
+
+/** One key: name, the secret in a read-only field, then reveal, copy, rotate, revoke. */
+function ApiKeyRow({ apiKey, onRotate, onRevoke }: ApiKeyRowProps) {
+  const [revealed, setRevealed] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  return (
+    <div className="flex flex-col gap-xs py-s">
+      <div className="flex items-center gap-s px-xs">
+        <Icon name="key" size="s" className="text-imagine-foreground-faint" />
+        <span className="min-w-0 flex-1 truncate type-small font-medium">
+          {apiKey.name}
+        </span>
+      </div>
+      <div className="flex items-center gap-xs">
+        <code className="min-w-0 flex-1 truncate rounded-control bg-imagine-surface-raised px-m py-xs font-mono text-xs text-imagine-foreground-muted select-all">
+          {revealed
+            ? apiKey.secret
+            : `${apiKey.secret.slice(0, PREFIX_LENGTH)}${MASK}`}
+        </code>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              aria-label={revealed ? "Hide key" : "Reveal key"}
+              aria-pressed={revealed}
+              onClick={() => {
+                setRevealed((current) => !current);
+              }}
+            >
+              <Icon name="eye" size="s" active={revealed} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{revealed ? "Hide" : "Reveal"}</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              aria-label="Copy key"
+              onClick={() => {
+                void navigator.clipboard.writeText(apiKey.secret);
+                setCopied(true);
+                window.setTimeout(() => {
+                  setCopied(false);
+                }, 1500);
+              }}
+            >
+              <AnimatePresence initial={false} mode="popLayout">
+                <motion.span
+                  key={copied ? "copied" : "copy"}
+                  className="flex"
+                  {...pop}
+                >
+                  <Icon
+                    name={copied ? "check" : "copy"}
+                    size="s"
+                    active={copied}
+                    className={copied ? "text-success" : undefined}
+                  />
+                </motion.span>
+              </AnimatePresence>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{copied ? "Copied" : "Copy"}</TooltipContent>
+        </Tooltip>
+        {onRotate ? (
+          <ConfirmAction
+            icon="arrows-rotate"
+            label="Rotate key"
+            title={`Rotate ${apiKey.name}?`}
+            description="A new key is issued and this one stops working. Anything using the old key has to be updated."
+            confirmLabel="Rotate"
+            onConfirm={() => {
+              onRotate(apiKey.id);
+            }}
+          />
+        ) : null}
+        {onRevoke ? (
+          <ConfirmAction
+            icon="trash"
+            label="Revoke key"
+            title={`Revoke ${apiKey.name}?`}
+            description="This key stops working right away and cannot be restored."
+            confirmLabel="Revoke"
+            destructive
+            onConfirm={() => {
+              onRevoke(apiKey.id);
+            }}
+          />
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Settings, API. One row per key: the secret masked in a read-only field, and
+ * the three things you can do to it. Rotate and revoke both confirm first.
+ */
 export function ApiKeyList({
   keys,
+  docsHref,
   onCreate,
+  onRotate,
   onRevoke,
   className,
 }: ApiKeyListProps) {
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-
   return (
     <div data-slot="api-keys" className={cn("flex flex-col gap-m", className)}>
-      <div className="flex items-center justify-between">
-        <span className="type-heading">API keys</span>
+      <div className="flex items-start justify-between gap-l">
+        <div className="flex min-w-0 flex-col gap-xxs">
+          <span className="type-heading">API keys</span>
+          <p className="type-small text-imagine-foreground-muted">
+            Authenticate requests from your own tools.
+            {docsHref ? (
+              <>
+                {" See the "}
+                <a
+                  href={docsHref}
+                  className="text-imagine-foreground underline underline-offset-4 hover:text-imagine-secondary"
+                >
+                  API documentation
+                </a>
+                {" for endpoints and examples."}
+              </>
+            ) : null}
+          </p>
+        </div>
         {onCreate ? (
           <Button size="sm" variant="soft" onClick={onCreate}>
             <Icon name="plus" size="s" data-icon="inline-start" />
@@ -55,63 +259,15 @@ export function ApiKeyList({
         </p>
       ) : (
         <Stagger kind="list" className="flex flex-col">
-          {keys.map((key) => {
-            const copied = copiedId === key.id;
-            return (
-              <StaggerItem key={key.id}>
-                <div className="flex items-center gap-m rounded-control px-m py-s transition-colors hover:bg-imagine-surface-raised/50">
-                  <span className="flex size-8 items-center justify-center rounded-control bg-imagine-surface-raised text-imagine-foreground-muted">
-                    <Icon name="key" size="s" />
-                  </span>
-                  <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate type-body font-medium">
-                      {key.name}
-                    </span>
-                    <span className="type-small text-imagine-foreground-muted">
-                      Created {key.created}
-                      <span className="text-imagine-foreground-faint"> · </span>
-                      {key.lastUsed}
-                    </span>
-                  </span>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant="soft"
-                        className="font-mono text-xs"
-                        onClick={() => {
-                          void navigator.clipboard.writeText(key.prefix);
-                          setCopiedId(key.id);
-                          window.setTimeout(() => {
-                            setCopiedId(null);
-                          }, 1500);
-                        }}
-                      >
-                        {key.prefix}
-                        <span aria-hidden="true">…</span>
-                        <Icon
-                          name={copied ? "check" : "copy"}
-                          size="s"
-                          data-icon="inline-end"
-                        />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {copied ? "Copied" : "Copy prefix"}
-                    </TooltipContent>
-                  </Tooltip>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-imagine-foreground-muted hover:text-destructive"
-                    onClick={() => onRevoke?.(key.id)}
-                  >
-                    Revoke
-                  </Button>
-                </div>
-              </StaggerItem>
-            );
-          })}
+          {keys.map((apiKey) => (
+            <StaggerItem key={apiKey.id}>
+              <ApiKeyRow
+                apiKey={apiKey}
+                onRotate={onRotate}
+                onRevoke={onRevoke}
+              />
+            </StaggerItem>
+          ))}
         </Stagger>
       )}
     </div>

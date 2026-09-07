@@ -154,14 +154,14 @@ const TIMELINE: TimelineEntry[] = [
   },
   {
     id: "e3",
-    kind: "Needs a decision",
+    kind: "Reply drafted",
     when: "Yesterday",
-    title: "Ravi Patel's LinkedIn connection expired",
+    title: "Comment on Sarah's hiring post",
     excerpt:
-      "Two scheduled posts will not publish until the profile is reconnected.",
+      "A hiring manager asked how the design interview works. The reply is written in Sarah's voice.",
     actions: [
-      { intent: "reconnect", label: "Reconnect", primary: true },
-      { intent: "later", label: "Later" },
+      { intent: "approve-reply", label: "Approve", primary: true },
+      { intent: "edit-reply", label: "Edit" },
     ],
     unread: true,
   },
@@ -337,13 +337,12 @@ const SARAH_DETAIL: ProfileDetailData = {
   kind: "person",
   status: "connected",
   avatarUrl: AVATAR(47),
-  postsIndexed: 128,
   company: {
     name: "Acme",
     logoUrl: ACME_LOGO,
     url: "linkedin.com/company/acme",
   },
-  persona: { fileName: "sarah-persona.md", updated: "Updated yesterday" },
+  persona: { fileName: "sarah-persona.md" },
 };
 
 const RAVI_DETAIL: ProfileDetailData = {
@@ -352,15 +351,13 @@ const RAVI_DETAIL: ProfileDetailData = {
   headline: "Head of Growth",
   kind: "person",
   status: "expired",
-  statusNote: "Two scheduled posts are waiting on this.",
   avatarUrl: AVATAR(12),
-  postsIndexed: 64,
   company: {
     name: "Acme",
     logoUrl: ACME_LOGO,
     url: "linkedin.com/company/acme",
   },
-  persona: { fileName: "ravi-persona.md", updated: "Updated 2 weeks ago" },
+  persona: { fileName: "ravi-persona.md" },
 };
 
 const PROFILE_DETAILS: Record<string, ProfileDetailData> = {
@@ -371,8 +368,7 @@ const PROFILE_DETAILS: Record<string, ProfileDetailData> = {
     kind: "company",
     status: "connected",
     avatarUrl: ACME_LOGO,
-    postsIndexed: 212,
-    persona: { fileName: "acme-voice.md", updated: "Updated 3 days ago" },
+    persona: { fileName: "acme-voice.md" },
   },
   c2: SARAH_DETAIL,
   c3: RAVI_DETAIL,
@@ -383,7 +379,6 @@ const PROFILE_DETAILS: Record<string, ProfileDetailData> = {
     kind: "person",
     status: "connected",
     avatarUrl: AVATAR(32),
-    postsIndexed: 41,
   },
   c5: {
     id: "c5",
@@ -392,7 +387,6 @@ const PROFILE_DETAILS: Record<string, ProfileDetailData> = {
     kind: "person",
     status: "disconnected",
     avatarUrl: AVATAR(59),
-    postsIndexed: 0,
   },
 };
 
@@ -585,15 +579,19 @@ export function LoadingDemo() {
 
 export function SidebarDemo() {
   const [active, setActive] = useState<SidebarNavKey>("agent");
+  const [expandedCollapsed, setExpandedCollapsed] = useState(false);
+  const [railCollapsed, setRailCollapsed] = useState(true);
 
   return (
     <div className="flex flex-wrap gap-xl">
-      <Demo label="Expanded">
-        <OnBackground className="h-[520px] rounded-r-none">
+      <Demo label="Expanded. Arrow collapses it">
+        <OnBackground className="h-[720px] rounded-r-none">
           <Sidebar
             orgName="Acme"
             orgLogoUrl={ACME_LOGO}
             active={active}
+            collapsed={expandedCollapsed}
+            onCollapsedChange={setExpandedCollapsed}
             threads={THREADS}
             activeThreadId="t1"
             user={SIDEBAR_USER}
@@ -611,13 +609,14 @@ export function SidebarDemo() {
           <PageStub />
         </OnBackground>
       </Demo>
-      <Demo label="Collapsed">
-        <OnBackground className="h-[520px] rounded-r-none">
+      <Demo label="Collapsed. Arrow expands it">
+        <OnBackground className="h-[720px] rounded-r-none">
           <Sidebar
             orgName="Acme"
             orgLogoUrl={ACME_LOGO}
             active={active}
-            collapsed
+            collapsed={railCollapsed}
+            onCollapsedChange={setRailCollapsed}
             threads={THREADS}
             activeThreadId="t1"
             user={SIDEBAR_USER}
@@ -637,7 +636,7 @@ export function FilesPanelDemo() {
   return (
     <div className="flex flex-wrap gap-xl">
       <Demo label="Files panel">
-        <OnBackground className="h-[520px] rounded-l-none">
+        <OnBackground className="h-[720px] rounded-l-none">
           <PageStub side="left" />
           <FilesPanel
             title="Acme"
@@ -1437,9 +1436,6 @@ export function EditorDemo() {
             <MarkdownEditor
               meta={{
                 title: "sarah-persona.md",
-                edited: "Edited by Sarah Chen, yesterday",
-                editorName: "Sarah Chen",
-                editorAvatarUrl: AVATAR(47),
               }}
               value={value}
               savedValue={saved}
@@ -1593,24 +1589,24 @@ export function AccountDemo() {
     <div className="grid gap-xl lg:grid-cols-2">
       <Demo label="API keys">
         <ApiKeyList
+          docsHref="#"
           keys={[
             {
               id: "k1",
               name: "Zapier",
-              prefix: "sk_live_4f2a",
-              lastUsed: "Used 3h ago",
-              created: "12 Aug",
+              secret: "imga_T19lbhQC1UlsqK9AZ7mIVcxybsjbFSR",
             },
             {
               id: "k2",
               name: "Internal dashboard",
-              prefix: "sk_live_9c1e",
-              lastUsed: "Never used",
-              created: "2 Sep",
+              secret: "imga_9c1eKf2ZpQ7nRxLm4TvBdWyH8sJaEcU",
             },
           ]}
           onCreate={() => {
             toast("New key");
+          }}
+          onRotate={(id) => {
+            toast(`Rotated ${id}`);
           }}
           onRevoke={(id) => {
             toast.error(`Revoked ${id}`);
@@ -1620,7 +1616,6 @@ export function AccountDemo() {
       <Demo label="Usage meter">
         <UsageMeter
           planName="Growth plan"
-          renewal="Renews 1 Oct"
           lines={[
             {
               id: "posts",
