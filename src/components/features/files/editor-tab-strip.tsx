@@ -27,8 +27,9 @@ interface EditorTabStripProps {
 
 /**
  * The strip that appears above the thread when a document opens: "Current
- * post" plus one tab per open file. The whole sheet lifts with the same
- * drop shadow as the dock; the active tab is the surface color.
+ * post" plus one tab per open file. Sits on the page background. The active
+ * tab is the page color and joins the page with no seam; its drop shadow
+ * sections it off from the neighbors. Closing collapses the tab width.
  */
 export function EditorTabStrip({
   tabs,
@@ -43,12 +44,11 @@ export function EditorTabStrip({
   return (
     <div
       data-slot="editor-tab-strip"
-      className={cn(
-        "flex flex-col overflow-visible rounded-panel bg-imagine-surface-raised shadow-raised",
-        className,
-      )}
+      className={cn("flex flex-col", className)}
     >
-      <div role="tablist" className="flex items-end gap-xxs px-xs pt-xs">
+      {/* Tabs start past the page's corner radius so the active tab meets a
+          flat edge. The active tab drops 1px under the page to hide the seam. */}
+      <div role="tablist" className="flex items-end gap-xxs pt-xs pr-xs pl-l">
         <AnimatePresence initial={false}>
           {tabs.map((tab) => {
             const active = tab.id === activeId;
@@ -60,7 +60,7 @@ export function EditorTabStrip({
                 animate={{ opacity: 1, width: "auto" }}
                 exit={{ opacity: 0, width: 0 }}
                 transition={spring.soft}
-                className="relative"
+                className="group/tab relative -mb-px"
               >
                 {active ? (
                   <motion.span
@@ -69,7 +69,12 @@ export function EditorTabStrip({
                     transition={spring.snappy}
                     className="absolute inset-0 rounded-t-control bg-imagine-surface shadow-raised"
                   />
-                ) : null}
+                ) : (
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-0 top-0 bottom-px rounded-t-control transition-colors group-hover/tab:bg-imagine-surface/50"
+                  />
+                )}
                 <div
                   className={cn(
                     "relative z-10 flex h-8 items-center gap-s overflow-hidden pr-xs pl-m",
@@ -115,9 +120,11 @@ export function EditorTabStrip({
           })}
         </AnimatePresence>
       </div>
-      {children ? (
-        <div className="rounded-b-panel bg-imagine-surface">{children}</div>
-      ) : null}
+      {/* The page. Sits above the tabs so it covers the active tab's bottom
+          shadow, leaving the shadow on its sides and top. */}
+      <div className="relative z-10 min-h-0 flex-1 rounded-panel bg-imagine-surface">
+        {children}
+      </div>
     </div>
   );
 }

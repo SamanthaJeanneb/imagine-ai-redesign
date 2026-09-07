@@ -1280,17 +1280,22 @@ export function EditorDemo() {
   return (
     <div className="flex flex-col gap-xl">
       <Demo label="Editor tab strip (dirty dot on the persona file)">
-        <EditorTabStrip
-          tabs={tabs.map((tab) => (tab.id === "f6" ? { ...tab, dirty } : tab))}
-          activeId={activeTab}
-          onActivate={setActiveTab}
-          onClose={(id) => {
-            setTabs((current) => current.filter((tab) => tab.id !== id));
-            if (activeTab === id) setActiveTab("thread");
-          }}
-        >
-          <div className="h-3" />
-        </EditorTabStrip>
+        <OnBackground className="p-s">
+          <EditorTabStrip
+            tabs={tabs.map((tab) =>
+              tab.id === "f6" ? { ...tab, dirty } : tab,
+            )}
+            activeId={activeTab}
+            onActivate={setActiveTab}
+            onClose={(id) => {
+              setTabs((current) => current.filter((tab) => tab.id !== id));
+              if (activeTab === id) setActiveTab("thread");
+            }}
+            className="w-full"
+          >
+            <div className="h-16" />
+          </EditorTabStrip>
+        </OnBackground>
       </Demo>
       <Demo label="Markdown editor" className="max-w-2xl">
         <MarkdownEditor
