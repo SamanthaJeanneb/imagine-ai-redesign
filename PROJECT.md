@@ -4,7 +4,7 @@ Imagine AI ([useimagine.ai](https://useimagine.ai)) is a LinkedIn content agent 
 high-growth B2B companies. It drafts and schedules posts for a team, maps who
 engages back to the CRM, and traces deals to a first content touch so marketing
 and founders can treat LinkedIn as a revenue channel, not a posting chore. This
-repo redesigns that product's UI; the live app is `imagine-app`.
+repo redesigns that product's UI; the live app is `imagine-app` the old code is bad so dont borrow from it, but you can reference to see what to expect when this Ui is ported over to rip out the old one
 
 ## What this project is
 
@@ -15,6 +15,8 @@ restructuring anything.
 
 Mock data is a placeholder for the data source only — never for code quality. All code
 follows strict, idiomatic TypeScript and stays production-ready.
+
+mock data should all come from one JSON file that follows the structure of SCHEMA.md
 
 ## Design inputs
 
@@ -28,6 +30,20 @@ The wireframes are structural only: they fix layout and behavior, not visual pol
 Where the wireframes are explicit, follow them exactly. Where they leave a decision open,
 make a deliberate choice consistent with the rules below.
 
+Notes on wireframes:
+
+- After onboarding, a user will land on landing, landing shows everything the agent has done, drafts that have not been scheduled, updates on what the agent did while they were away, and some analytics to spark ideas on what to post next, if they click on one of the buttons to interact with the notification it will send off to the agent
+- When a user types into the prompt box and sends a message, the UI will move down into a chat interface (angent.png) , SMOOTH ANIMATED TRANSITION, not a flash to new static page 
+
+- The agent in the chat will be able to answer questions by showing charts/ graphs, and graphics for when a post is scheduled or drafted (agent-iteraction.png shows what this will look like) - when a post is drafted it should look like a real linkedin post that can be edited in chat
+
+- The chat bar will have two options - calendar and analytics (analytics in agent and calendar in agent) that will show a preview of the calendar or analytics, clicking the expand button will bring the user to the full page (calendar.png) and (analytics.png), and the chat will transition to the right sidebar, clean animated transition mock all of this data
+
+- Chat (agent interaction) will have a file icon in the right corner, which can open a right sidebar with the file system bar, this will be a google drive like interface with markdown files and a section for assets (pictures and videos) file system has files for the organization and for individuals 
+  - when the user hovers to edit from file system, it will open a tab next to the agent where they can see the markdown, after editing and clicking save, they can close this tab to go back to their chat
+
+  ALL INTERACTIONS WILL HAVE CLEAN MOTION ANIMATIONS & animated page transitions like apple
+
 ## Stack
 
 - React and Next.js (App Router)
@@ -35,7 +51,7 @@ make a deliberate choice consistent with the rules below.
 - Tailwind CSS
 - shadcn/ui as the component base
 - Motion for animation
-- Material Symbols **Sharp** icon set
+- Font Awesome Pro 7 — **Sharp** family, Regular style (delivered by Kit CSS embed)
 
 ## Design system rules
 
@@ -86,9 +102,35 @@ bar.
 
 ### Icons
 
-Material Symbols Sharp only ([Google Fonts Icons](https://fonts.google.com/icons), Sharp
-style). **No Lucide, no Font Awesome.** Use the same Sharp cut everywhere — not Rounded
-or Outlined as a second family.
+Font Awesome Pro 7, **Sharp** family. Sharp Regular is the outline cut and the default for
+every icon in the UI. **No Lucide, no Material Symbols.** Use the same Sharp cut everywhere.
+
+Load the Kit stylesheet once, in `src/app/layout.tsx`:
+
+```tsx
+<link
+  rel="stylesheet"
+  href="https://kit.fontawesome.com/70369a3baa.css"
+  crossOrigin="anonymous"
+/>
+```
+
+Then apply the family, the style, and the icon name as classes:
+
+```tsx
+<i className="fa-sharp fa-regular fa-calendar" />   {/* default */}
+<i className="fa-sharp fa-solid fa-calendar" />     {/* active/selected only */}
+<i className="fa-brands fa-linkedin-in" />          {/* LinkedIn logo only */}
+```
+
+Icon names come from the Sharp Regular set:
+[fontawesome.com/search?ip=sharp&s=regular](https://fontawesome.com/search?ip=sharp&s=regular).
+
+- Wrap this in one centralized `Icon` component; feature code doesn't write `fa-` classes by hand.
+- Size and color come from Tailwind `imagine-*` tokens, never `fa-lg`/`fa-2x` or a hardcoded color.
+- Animation is Motion's job, not `fa-spin`/`fa-beat`.
+- The Kit only carries Sharp Regular, Sharp Solid, and Brands. Any other style silently falls
+  back to Sharp Solid instead of erroring.
 
 ### Visual references
 
