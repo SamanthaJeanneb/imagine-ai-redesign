@@ -1,49 +1,88 @@
 "use client";
 
-import * as React from "react";
+// Imagine: shadcn tabs rewritten so the selected state is one indicator that
+// slides between triggers (shared layoutId), not a highlight applied per item.
+// `default` is a raised pill track with a surface indicator; `line` is an
+// underline in imagine-foreground.
+
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
+import { motion } from "motion/react";
+import { createContext, useContext, useId, useState } from "react";
 import { Tabs as TabsPrimitive } from "radix-ui";
+
+import { spring } from "@/styles/motion";
+
+interface TabsContextValue {
+  value: string | undefined;
+  indicatorId: string;
+  variant: "default" | "line";
+}
+
+const TabsContext = createContext<TabsContextValue>({
+  value: undefined,
+  indicatorId: "tabs",
+  variant: "default",
+});
+
+type TabsProps = React.ComponentProps<typeof TabsPrimitive.Root> & {
+  variant?: "default" | "line";
+};
 
 function Tabs({
   className,
   orientation = "horizontal",
+  variant = "default",
+  value: controlledValue,
+  defaultValue,
+  onValueChange,
   ...props
-}: React.ComponentProps<typeof TabsPrimitive.Root>) {
+}: TabsProps) {
+  const indicatorId = useId();
+  const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue);
+  const value = controlledValue ?? uncontrolledValue;
+
   return (
-    <TabsPrimitive.Root
-      data-slot="tabs"
-      data-orientation={orientation}
-      className={cn(
-        "group/tabs flex gap-2 data-horizontal:flex-col",
-        className,
-      )}
-      {...props}
-    />
+    <TabsContext value={{ value, indicatorId, variant }}>
+      <TabsPrimitive.Root
+        data-slot="tabs"
+        data-orientation={orientation}
+        orientation={orientation}
+        value={value}
+        onValueChange={(next) => {
+          setUncontrolledValue(next);
+          onValueChange?.(next);
+        }}
+        className={cn(
+          "group/tabs flex gap-s data-horizontal:flex-col",
+          className,
+        )}
+        {...props}
+      />
+    </TabsContext>
   );
 }
 
 const tabsListVariants = cva(
-  "group/tabs-list inline-flex w-fit items-center justify-center rounded-lg p-[3px] text-muted-foreground group-data-horizontal/tabs:h-8 group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col data-[variant=line]:rounded-none",
+  "group/tabs-list relative inline-flex w-fit items-center justify-center text-imagine-foreground-muted group-data-vertical/tabs:flex-col",
   {
     variants: {
       variant: {
-        default: "bg-muted",
-        line: "gap-1 bg-transparent",
+        default:
+          "rounded-control bg-imagine-surface-raised p-xxs group-data-horizontal/tabs:h-8",
+        line: "gap-xs",
       },
     },
-    defaultVariants: {
-      variant: "default",
-    },
+    defaultVariants: { variant: "default" },
   },
 );
 
 function TabsList({
   className,
-  variant = "default",
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.List> &
-  VariantProps<typeof tabsListVariants>) {
+  Omit<VariantProps<typeof tabsListVariants>, "variant">) {
+  const { variant } = useContext(TabsContext);
   return (
     <TabsPrimitive.List
       data-slot="tabs-list"
@@ -56,20 +95,40 @@ function TabsList({
 
 function TabsTrigger({
   className,
+  children,
+  value,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.Trigger>) {
+  const context = useContext(TabsContext);
+  const selected = context.value === value;
+
   return (
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
+      value={value}
       className={cn(
-        "relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-1.5 py-0.5 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1 has-data-[icon=inline-start]:pl-1 dark:text-muted-foreground dark:hover:text-foreground group-data-[variant=default]/tabs-list:data-active:shadow-sm group-data-[variant=line]/tabs-list:data-active:shadow-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        "group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent",
-        "data-active:bg-background data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground",
-        "after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100",
+        "relative inline-flex h-full flex-1 items-center justify-center gap-1.5 rounded-control px-2.5 py-1 text-sm font-medium whitespace-nowrap transition-colors outline-none select-none group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-50 data-active:text-imagine-foreground",
+        context.variant === "line" && "px-1.5 py-1.5",
         className,
       )}
       {...props}
-    />
+    >
+      {selected ? (
+        <motion.span
+          layoutId={context.indicatorId}
+          aria-hidden="true"
+          transition={spring.snappy}
+          className={cn(
+            context.variant === "default"
+              ? "absolute inset-0 rounded-control bg-imagine-surface shadow-sm"
+              : "absolute inset-x-0 -bottom-xs h-0.5 rounded-full bg-imagine-foreground",
+          )}
+        />
+      ) : null}
+      <span className="relative z-10 inline-flex items-center gap-1.5">
+        {children}
+      </span>
+    </TabsPrimitive.Trigger>
   );
 }
 
@@ -86,4 +145,4 @@ function TabsContent({
   );
 }
 
-export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants };
+export { Tabs, TabsList, TabsTrigger, TabsContent };

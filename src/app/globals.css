@@ -119,19 +119,19 @@
   font-size: var(--imagine-text-display-size);
   line-height: var(--imagine-text-display-line-height);
   letter-spacing: var(--imagine-text-display-letter-spacing);
-  font-weight: 500;
+  font-weight: 600;
 }
 @utility type-title {
   font-size: var(--imagine-text-title-size);
   line-height: var(--imagine-text-title-line-height);
   letter-spacing: var(--imagine-text-title-letter-spacing);
-  font-weight: 500;
+  font-weight: 600;
 }
 @utility type-heading {
   font-size: var(--imagine-text-heading-size);
   line-height: var(--imagine-text-heading-line-height);
   letter-spacing: var(--imagine-text-heading-letter-spacing);
-  font-weight: 500;
+  font-weight: 600;
 }
 @utility type-body {
   font-size: var(--imagine-text-body-size);

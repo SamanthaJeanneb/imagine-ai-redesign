@@ -28,6 +28,8 @@ Sharp Solid is for active/selected only; Brands is for the LinkedIn logo only. N
 no Material Symbols. Feature code uses the centralized `Icon` component, never raw
 `fa-` classes.
 - No inline styles, no raw color values outside the token file.
+- No em dashes in any product copy or mock data (labels, headings, descriptions,
+placeholders, toasts, JSON strings). Use a period, comma, or colon instead.
 - Every element, click and transition has motion animations
 - **Stop at the end of every phase and wait for review.** Do not start the next phase
 until the user has looked at the result and said to continue. Each stop includes a short
@@ -765,7 +767,8 @@ editor; `aria` on the thinking state; dialog titles.
 - `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` all pass.
 - Grep gates: no `lucide-react`, `material-symbols`, `framer-motion`, `style={{`, or
 `#[0-9a-f]{3,6}` outside `src/styles/tokens.ts` and `globals.css`. Feature files contain
-no raw `fa-` class strings (only `Icon`).
+no raw `fa-` class strings (only `Icon`). No em dash character (`—`) anywhere under
+`src/`.
 - Every page renders in light and dark from the single theme switch.
 - Landing → thread, preview → page, chat → sidebar, files panel open → editor tab are
 each a single continuous morph with no blank frame.

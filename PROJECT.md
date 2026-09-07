@@ -95,6 +95,9 @@ Every color lives in one central token file. Nothing hardcodes a color value.
 No eyebrow labels, no filler text, no quantifiers that aren't carrying information. If a
 label isn't doing a job, it doesn't ship.
 
+No em dashes anywhere in product copy (labels, headings, descriptions, placeholders,
+empty states, toasts, mock data). Use a period, a comma, or a colon instead.
+
 ### Menus
 
 Menu selection should feel tasteful and specific to this product — not a default highlight

@@ -10,6 +10,15 @@ import { Spinner } from "@/components/ui/spinner";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { colors, type ColorToken } from "@/styles/tokens";
 
+import {
+  AvatarDemo,
+  ChartDemo,
+  ChatDemo,
+  FormDemo,
+  OverlayDemo,
+  SelectionDemo,
+} from "./kit-demos";
+
 const COLOR_TOKENS = Object.keys(colors.light) as ColorToken[];
 
 const SWATCH_CLASSES = {
@@ -84,23 +93,23 @@ export default function KitPage() {
 
         <Section title="Type">
           <div className="flex flex-col gap-s">
-            <p className="type-display">Display 28/34 — LinkedIn, solved</p>
-            <p className="type-title">Title 20/28 — While you were away</p>
-            <p className="type-heading">Heading 16/24 — Next two weeks</p>
+            <p className="type-display">Display 28/34. LinkedIn, solved</p>
+            <p className="type-title">Title 20/28. While you were away</p>
+            <p className="type-heading">Heading 16/24. Next two weeks</p>
             <p className="type-body">
-              Body 14/22 — Our system drafts and schedules LinkedIn content for
+              Body 14/22. Our system drafts and schedules LinkedIn content for
               your entire team. You only need to review, approve, or edit.
             </p>
             <p className="type-small text-imagine-foreground-muted">
-              Small 12/16 — Scheduled for Tue, 3 Sep at 9:00
+              Small 12/16. Scheduled for Tue, 3 Sep at 9:00
             </p>
             <p className="type-micro text-imagine-foreground-muted">
-              Micro 11/14 — Mon Tue Wed
+              Micro 11/14. Mon Tue Wed
             </p>
           </div>
         </Section>
 
-        <Section title="Icons — Sharp Regular, Solid when active">
+        <Section title="Icons: Sharp Regular, Solid when active">
           <div className="flex flex-wrap gap-m">
             {ICON_NAMES.map((name) => (
               <div
@@ -163,6 +172,30 @@ export default function KitPage() {
             <Badge variant="warning">Expiring</Badge>
             <Badge variant="destructive">Failed</Badge>
           </div>
+        </Section>
+
+        <Section title="Forms">
+          <FormDemo />
+        </Section>
+
+        <Section title="Selection: one indicator that slides">
+          <SelectionDemo />
+        </Section>
+
+        <Section title="Menus, overlays, toasts">
+          <OverlayDemo />
+        </Section>
+
+        <Section title="Avatars">
+          <AvatarDemo />
+        </Section>
+
+        <Section title="Charts">
+          <ChartDemo />
+        </Section>
+
+        <Section title="Chat primitives">
+          <ChatDemo />
         </Section>
 
         <Section title="Loading">
