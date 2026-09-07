@@ -1,11 +1,12 @@
 "use client";
 
 import { cn } from "cn";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { useState } from "react";
 
 import { AssetGrid } from "@/components/features/files/asset-grid";
 import { type AssetTileData } from "@/components/features/files/asset-tile";
+import { Disclosure } from "@/components/motion/disclosure";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -47,34 +48,6 @@ function initials(name: string): string {
     .slice(0, 2)
     .map((part) => part.charAt(0).toUpperCase())
     .join("");
-}
-
-function Disclosure({
-  open,
-  children,
-}: {
-  open: boolean;
-  children: React.ReactNode;
-}) {
-  const reduceMotion = useReducedMotion();
-  return (
-    <AnimatePresence initial={false}>
-      {open ? (
-        <motion.div
-          key="children"
-          initial={reduceMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
-          animate={
-            reduceMotion ? { opacity: 1 } : { height: "auto", opacity: 1 }
-          }
-          exit={reduceMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
-          transition={spring.soft}
-          className="overflow-hidden"
-        >
-          {children}
-        </motion.div>
-      ) : null}
-    </AnimatePresence>
-  );
 }
 
 /** Trails its row, so names start on a straight edge at every depth. */

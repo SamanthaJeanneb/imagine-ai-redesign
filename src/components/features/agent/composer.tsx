@@ -147,14 +147,7 @@ export function Composer({
           >
             <Icon name="paperclip" />
           </Button>
-        ) : (
-          <span
-            aria-hidden="true"
-            className="mb-1 flex size-7 shrink-0 items-center justify-center text-imagine-secondary"
-          >
-            <Icon name="sparkles" active />
-          </span>
-        )}
+        ) : null}
         <textarea
           rows={1}
           value={value}

@@ -1,5 +1,8 @@
 "use client";
 
+import { motion } from "motion/react";
+import { useState } from "react";
+
 import {
   Timeline,
   type TimelineAction,
@@ -20,7 +23,10 @@ import {
   UpNextList,
   type UpNextItem,
 } from "@/components/features/calendar/up-next-list";
+import { Disclosure } from "@/components/motion/disclosure";
 import { Stagger } from "@/components/motion/stagger";
+import { Icon } from "@/components/ui/icon";
+import { pressRow, spring } from "@/styles/motion";
 
 /**
  * The landing, in three pieces so the composer can sit between them and slide
@@ -61,18 +67,13 @@ export function LandingBelow({
   onOpenPost: (post: PostChipData) => void;
   selectedPostId?: string;
 }) {
+  const [open, setOpen] = useState(false);
+  const unread = entries.some((entry) => entry.unread);
+
   return (
     <div className="flex flex-col gap-xxl pt-xl pb-xxl">
-      <section className="flex flex-col gap-l">
-        <h2 className="type-heading">While you were away</h2>
-        {entries.length === 0 ? (
-          <p className="type-body text-imagine-foreground-muted">
-            Nothing new. The agent is waiting on you.
-          </p>
-        ) : (
-          <Timeline entries={entries} onAction={onAction} className="pl-xs" />
-        )}
-      </section>
+      {/* The week is the reason to be here, so it stays put. What happened while
+          the user was away waits behind its header. */}
       <section className="flex flex-col gap-l">
         <h2 className="type-heading">Next two weeks</h2>
         <CalendarGrid
@@ -82,6 +83,41 @@ export function LandingBelow({
           {...(selectedPostId === undefined ? {} : { selectedPostId })}
         />
       </section>
+      {entries.length === 0 ? null : (
+        <section className="flex flex-col gap-l">
+          <h2 className="flex">
+            <motion.button
+              type="button"
+              aria-expanded={open}
+              onClick={() => {
+                setOpen((current) => !current);
+              }}
+              whileTap={pressRow.whileTap}
+              transition={pressRow.transition}
+              className="-mx-s flex items-center gap-s rounded-control px-s py-xs type-heading transition-colors outline-none hover:bg-imagine-surface-raised focus-visible:ring-2 focus-visible:ring-ring/40"
+            >
+              While you were away
+              {unread && !open ? (
+                <span
+                  aria-hidden="true"
+                  className="size-2 rounded-full bg-imagine-secondary ring-4 ring-imagine-secondary-soft"
+                />
+              ) : null}
+              <motion.span
+                aria-hidden="true"
+                animate={{ rotate: open ? 90 : 0 }}
+                transition={spring.snappy}
+                className="flex text-imagine-foreground-faint"
+              >
+                <Icon name="chevron-right" size="s" />
+              </motion.span>
+            </motion.button>
+          </h2>
+          <Disclosure open={open}>
+            <Timeline entries={entries} onAction={onAction} className="pl-xs" />
+          </Disclosure>
+        </section>
+      )}
     </div>
   );
 }

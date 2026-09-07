@@ -169,9 +169,7 @@ export function AgentWorkspace({
       onSend={sendDraft}
       animateLayout={!reduceMotion}
       className={
-        onLanding
-          ? "max-w-2xl"
-          : "sticky bottom-l z-10 mx-auto mt-l max-w-3xl"
+        onLanding ? "max-w-2xl" : "sticky bottom-l z-10 mx-auto mt-l max-w-3xl"
       }
       {...(attached === null
         ? {}
