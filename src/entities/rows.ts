@@ -2,7 +2,7 @@
  * The slice of SCHEMA.md the mock reads, in database shape: snake_case columns,
  * the same nullability, and status fields as plain strings because Postgres has
  * no enums here. This stands in for the generated `services/supabase/schemas`,
- * so rows stop at the entity transforms — nothing above them sees snake_case.
+ * so rows stop at the entity transforms and nothing above them sees snake_case.
  *
  * Columns nothing renders yet (queue locks, embeddings, CRM mirrors, engagement
  * rollups) are left out on purpose.
@@ -36,7 +36,7 @@ export interface OrganizationMemberRow {
   joined_at: string | null;
 }
 
-/** `app.clients` — a LinkedIn identity the org posts as, not a human login. */
+/** `app.clients`, a LinkedIn identity the org posts as, not a human login. */
 export interface ClientRow {
   id: string;
   org_id: string;
@@ -60,13 +60,13 @@ export interface ClientLinkedInAuthRow {
   status: string;
 }
 
-/** `client_posts.media` — a storage object, the same shape as `MediaFile`. */
+/** `client_posts.media`, a storage object with the same shape as `MediaFile`. */
 export interface MediaFileRow {
   bucket: string;
   path: string;
 }
 
-/** `client_posts.analytics` — the payload LinkedIn returns after publish. */
+/** `client_posts.analytics`, the payload LinkedIn returns after publish. */
 export interface PostAnalyticsRow {
   impressions: number;
   engagements: number;
@@ -81,7 +81,7 @@ export interface PostAnalyticsRow {
   reposts: number;
 }
 
-/** `app.client_posts` — `scheduled_at` + `status` drive the calendar. */
+/** `app.client_posts`. `scheduled_at` and `status` drive the calendar. */
 export interface ClientPostRow {
   id: string;
   client_id: string;
@@ -127,7 +127,7 @@ export interface ApiKeyRow {
   created_at: string;
 }
 
-/** `app.crm_connections` — tokens omitted, they never reach the client. */
+/** `app.crm_connections`. Tokens omitted: they never reach the client. */
 export interface CrmConnectionRow {
   id: string;
   org_id: string;
@@ -137,7 +137,7 @@ export interface CrmConnectionRow {
   last_synced_at: string | null;
 }
 
-/** `agent.activities` — the timeline. */
+/** `agent.activities`, read as the landing timeline. */
 export interface ActivityRow {
   id: string;
   user_id: string;
@@ -153,6 +153,20 @@ export interface ActivityRow {
   created_at: string;
 }
 
+/**
+ * Mock-only. The agent cannot answer in a static app, so a send plays one of
+ * these back part by part. Same part shape as a stored message, so the thread
+ * renderer does not care which one it is looking at.
+ */
+export interface CannedReplyRow {
+  id: string;
+  /** Matched against the intent behind the send; `default` is the fallback. */
+  intent: string;
+  /** Rotating lines for the thinking state. */
+  statuses: string[];
+  parts: MessagePartRow[];
+}
+
 /** `mastra.mastra_threads` */
 export interface ThreadRow {
   id: string;
@@ -165,17 +179,19 @@ export interface ThreadRow {
 
 /**
  * `mastra_messages.content.parts`. JSON is a bag of optional fields, so it stays
- * one loose shape here and `getThread` narrows it into renderable parts.
+ * one loose shape here and `services/agent` narrows it into renderable parts.
  */
 export interface MessagePartRow {
-  /** `text`, `emphasis`, `post_draft`, or `chart`. */
+  /** `text`, `emphasis`, `post_draft`, `scheduled`, `chart`, `asset_picker`. */
   type: string;
   text?: string;
   postId?: string;
-  /** Chart: impressions for this client's last `limit` published posts. */
+  /** Chart and asset picker: whose posts or assets to read. */
   clientId?: string;
   limit?: number;
   title?: string;
+  /** Asset picker: what the agent is asking for. */
+  prompt?: string;
 }
 
 /** `mastra.mastra_messages` */
@@ -229,7 +245,7 @@ export interface Database {
     api_keys: ApiKeyRow[];
     crm_connections: CrmConnectionRow[];
   };
-  agent: { activities: ActivityRow[] };
+  agent: { activities: ActivityRow[]; canned_replies: CannedReplyRow[] };
   mastra: {
     mastra_threads: ThreadRow[];
     mastra_messages: MessageRow[];

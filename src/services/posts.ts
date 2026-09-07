@@ -67,7 +67,7 @@ function toAuthor(client: Client): PostAuthor {
   };
 }
 
-/** "Acme" for a page, "Sarah" for a person — the calendar chip has one line. */
+/** "Acme" for a page, "Sarah" for a person. The calendar chip has one line. */
 function toProfileLabel(client: Client): string {
   if (client.isCompany) return client.name;
   return client.name.split(" ", 1)[0] ?? client.name;
@@ -115,12 +115,16 @@ export function toPostChip(
 export function scheduledPosts(): readonly Post[] {
   return getPosts()
     .filter((post) => post.scheduledAt !== null)
-    .toSorted((a, b) => (a.scheduledAt ?? "").localeCompare(b.scheduledAt ?? ""));
+    .toSorted((a, b) =>
+      (a.scheduledAt ?? "").localeCompare(b.scheduledAt ?? ""),
+    );
 }
 
 /** Published posts that reported back, newest first. */
 export function publishedPosts(): readonly Post[] {
   return getPosts()
     .filter((post) => post.status === "published" && post.analytics !== null)
-    .toSorted((a, b) => (b.scheduledAt ?? "").localeCompare(a.scheduledAt ?? ""));
+    .toSorted((a, b) =>
+      (b.scheduledAt ?? "").localeCompare(a.scheduledAt ?? ""),
+    );
 }

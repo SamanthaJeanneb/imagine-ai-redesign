@@ -91,7 +91,11 @@ function totals(posts: readonly Post[]): AnalyticsTotals {
   };
 }
 
-function toStat(label: string, current: number, previous: number): AnalyticsStat {
+function toStat(
+  label: string,
+  current: number,
+  previous: number,
+): AnalyticsStat {
   return {
     value: formatCompact(current),
     label,
@@ -146,7 +150,8 @@ export function getAnalyticsOverview(
 
   const topPosts: TopPost[] = current
     .toSorted(
-      (a, b) => (b.analytics?.impressions ?? 0) - (a.analytics?.impressions ?? 0),
+      (a, b) =>
+        (b.analytics?.impressions ?? 0) - (a.analytics?.impressions ?? 0),
     )
     .slice(0, 3)
     .map((post) => {
@@ -233,6 +238,29 @@ export function getAnalyticsOverview(
         };
       }),
     topPosts,
+  };
+}
+
+export interface LandingRail {
+  /** The same four numbers as the analytics page, without their deltas. */
+  stats: readonly { value: string; label: string }[];
+  /** Impressions per post over the last few published posts. */
+  chart: AnalyticsChart;
+}
+
+/** The landing's right rail: last month's numbers and the shape of them. */
+export function getLandingRail(): LandingRail {
+  const overview = getAnalyticsOverview("1m");
+
+  return {
+    stats: overview.stats.map((stat) => ({
+      value: stat.value,
+      label: stat.label,
+    })),
+    chart: {
+      data: overview.impressions.data.slice(-8),
+      series: IMPRESSION_SERIES,
+    },
   };
 }
 

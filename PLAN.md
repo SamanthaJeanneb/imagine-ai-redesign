@@ -175,16 +175,8 @@ the client. Building a fetch layer over local JSON would be thrown away on arriv
 
 ### Data flow
 
-```mermaid
-flowchart LR
-    JSON["src/mocks/db.json"] --> DB["src/mocks/db.ts (typed import)"]
-    DB --> Entities["src/entities/* (row -> domain transforms)"]
-    Entities --> Services["src/services/* (selectors)"]
-    Services --> Pages["Server components"]
-    Pages --> Client["Client components (props only)"]
-```
-
-Four rules hold this together:
+`db.json` → typed import in `src/mocks/db.ts` → row transforms in `src/entities/*` →
+selectors in `src/services/*` → server components → props. Four rules hold it together:
 
 1. `db.json` is annotated where it is imported (`const db: Database = rawDb`). TypeScript
 compares the JSON against the row types, so a typo is a compile error. Nothing parses at
@@ -198,26 +190,14 @@ component takes. No async, no `Result`, no caching: the source is a static objec
 
 ### Workspace shell state
 
-```mermaid
-stateDiagram-v2
-    [*] --> Landing
-    Landing --> Thread: send message / notification action
-    Thread --> Landing: new thread
-    Thread --> PreviewOpen: composer tab (Calendar | Analytics)
-    PreviewOpen --> Thread: dismiss chip
-    PreviewOpen --> SidebarChat: expand icon (route to /calendar or /analytics)
-    SidebarChat --> Thread: nav to /agent
-    Thread --> FilesPanel: files icon
-    FilesPanel --> EditorTab: hover edit on a file
-    EditorTab --> Thread: close tab
-    FilesPanel --> Thread: close panel
-```
+`WorkspaceShell` (client, in the workspace layout) holds only what more than one place
+reads, and derives the rest from the pathname: the selected nav item and the open thread
+come from the URL, so they need no state at all. Today that leaves the collapsed rail.
+Later phases add the composer preview, the files panel, and the editor tabs, each when the
+phase that needs it lands, not before.
 
-`WorkspaceProvider` (client, in the workspace layout) holds `mode`
-(`landing | thread`), `activeThreadId`, `composerPreview`, `filesPanelOpen`,
-`editorTabs`, and `chatPlacement` derived from the pathname. The layout renders
-`Sidebar`, `MainSurface`, `ChatColumn`, and `FilesPanel` inside one `LayoutGroup` so
-shared `layoutId`s resolve across route changes. Pages stay thin: select data, compose.
+One `LayoutGroup` wraps the rail and the page so shared `layoutId`s resolve across route
+changes. Pages stay thin: select data, compose.
 
 ---
 
@@ -379,11 +359,13 @@ React and Next.js, from `vercel-react-best-practices`:
 - Pages are server components that read selectors and pass only the fields the client
 needs. Client components are leaf-level.
 - `useTransition` for send and save; `Activity` for hidden previews; functional
-`setState`; no components defined inside components; no derived state in effects;
-`content-visibility` on long threads and the file tree.
-- The chart library loads with `next/dynamic`, preloaded on hover of the Analytics nav
-item and the composer's Analytics tab.
+`setState`; no components defined inside components; no derived state in effects.
 - The theme switch uses the inline-script pattern to avoid flicker.
+
+Performance work stops at what a mock of this size can actually feel. Recharts loads with
+`next/dynamic` because it is genuinely heavy; there is no hover preloading, no
+`content-visibility` on a four message thread, and no deferred values for filtering
+thirty three posts.
 
 shadcn, from the shadcn skill:
 
@@ -453,20 +435,30 @@ below deletes the one it replaces, and `page-placeholder.tsx` goes with the last
 - Columns for the chat, the files panel, and the right rail are added as siblings of the
 page by the phases that build them.
 
-### Phase 5 — Agent: landing and thread
+### Phase 5 — Agent: landing and thread ✅
 
 Wireframes: `landing/landing(agent).png`, `agent/agent.png`,
 `agent/agent-interaction.png`.
 
-- Landing: greeting, composer, `Timeline` of `agent.activities` with actions,
-`CalendarStrip` for the next two weeks, right rail with stats, a mini chart, and Up next.
-- Thread: the message scroller, a renderer per part type including the editable
-`LinkedInPostDraft`, `ScheduledGraphic`, asset grids, and charts.
-- The landing → thread choreography; notification actions take the same path; the URL is
-replaced to `/agent/[threadId]` and that path deep links to the thread.
-- Thinking state and mocked streaming, parts arriving on a timer.
-- Done when: send morphs without a flash, a notification action starts a thread, every
-part renders, reduced motion works.
+- `AgentWorkspace` is one client component for both modes, because the composer has to be
+one element: on send it stays mounted and its `layout` prop springs it from the hero
+position into the dock while everything around it exits.
+- Landing, in three presentational pieces so the composer can sit between them: the
+greeting, the `Timeline` of `agent.activities` with actions and the two week calendar
+strip below, and the right rail with stats, a mini chart, and Up next. Each is wrapped in
+a `motion` element inside `AnimatePresence mode="popLayout"`, so the leaving landing drops
+out of flow at once and the composer has a settled position to spring to.
+- Thread: `AgentThread` renders the message list and follows the last part as it arrives.
+Every part type in `db.json` renders, including the post draft, the scheduled graphic, the
+asset picker, and charts.
+- Replies are scripted. `agent.canned_replies` holds a default and a scheduling reply;
+`AgentWorkspace` reveals the parts on a timer behind the thinking state. A timeline action
+or a button in a reply sends a sentence on the user's behalf and picks the matching reply.
+- The URL is replaced to `/agent/new` on the first send, so the rail reads as a thread
+without a navigation that would unmount the composer. That path is not a stored thread, so
+loading it directly redirects to `/agent`; `/agent/[threadId]` deep links normally.
+- Done when: send morphs without a flash, a timeline action starts a thread, every part
+renders, reduced motion works. Verified against a production build.
 
 ### Phase 6 — Previews and expand
 
@@ -488,7 +480,6 @@ strip.
 - Toolbar (previous, Today, next, Day | Week | Month, search), the grid in three views,
 chips by status, today marked, and the right rail.
 - Selecting a post attaches it to the chat as context so the user can ask about it.
-- Optional if it stays simple: drag a chip to another day, updating mock state.
 - Done when: all three views render from the selectors with staggered cells and the chat
 sidebar coexists.
 
@@ -498,7 +489,7 @@ Wireframes: `analytics/analytics-page.png`, plus the landing right rail.
 
 - Controls (range toggle, profile select, Export), four stat tiles, impressions over
 time, a breakdown by post label, by profile bars, and top posts.
-- Filters recompute through the selectors with `useDeferredValue`.
+- Filters recompute through the selectors on change.
 - Done when: charts are token-colored at the reference pink density, filters respond, and
 the page morphs from the preview.
 
@@ -533,9 +524,7 @@ actions use the Tailwind mapping.
 - Every wireframe side by side with the running app, screen by screen, in both themes.
 - Keyboard and screen reader pass: focus order through the composer, previews, panel, and
 editor; `aria` on the thinking state; titled dialogs.
-- Motion audit on `AgentWorkspace`, `PreviewSurface`, `FilesPanel`, and `CalendarGrid`;
-fix layout thrash and non-composited animation.
-- Keep `/dev/kit` out of production builds; confirm the grep gates in §10 pass.
+- Confirm the grep gates in §10 pass and every morph animates on a compositor property.
 - Short README for running the app.
 
 ---
@@ -592,9 +581,7 @@ continuous morph with no blank frame.
 
 ---
 
-## 11. Open questions (do not block; defaults shown)
+## 11. Open questions (do not block)
 
-- Default calendar view on `/calendar`: Week, as in the wireframe.
-- Does "New post" open a fresh thread or prefill the current one: fresh thread.
-- The file tree currently shows two sections named "Acme", the workspace and the company
-page. Rename one when Phase 9 lands.
+- The file tree shows two sections named "Acme", the workspace and the company page.
+Rename one when Phase 9 lands.

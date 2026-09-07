@@ -1,14 +1,28 @@
-import { PagePlaceholder } from "@/app/(workspace)/page-placeholder";
-import { getCurrentUser } from "@/services/workspace";
+import { AgentWorkspace } from "@/components/features/agent/agent-workspace";
+import { formatFullDate } from "@/lib/format";
+import { getNow } from "@/mocks/db";
+import { getScriptedReply, getTimeline } from "@/services/agent";
+import { getLandingRail } from "@/services/analytics";
+import { getUpcomingWeeks, getUpNext } from "@/services/calendar";
 
 export default function AgentPage() {
-  const user = getCurrentUser();
-  const firstName = user.name.split(" ")[0] ?? user.name;
+  const rail = getLandingRail();
 
   return (
-    <PagePlaceholder
-      title={`How can I help with your LinkedIn content today, ${firstName}?`}
-      note="The composer, the timeline, and the two-week calendar land here."
+    <AgentWorkspace
+      replies={{
+        default: getScriptedReply(),
+        schedule: getScriptedReply("schedule"),
+      }}
+      landing={{
+        greeting: "How can I help with your LinkedIn content today?",
+        dateLabel: formatFullDate(getNow()),
+        timeline: getTimeline(),
+        days: getUpcomingWeeks(),
+        stats: rail.stats,
+        chart: rail.chart,
+        upNext: getUpNext(),
+      }}
     />
   );
 }

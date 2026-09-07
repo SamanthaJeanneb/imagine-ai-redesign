@@ -1164,7 +1164,7 @@
           "post_id": "pst_19",
           "client_id": "cli_acme",
           "title": "Reply drafted for a comment on \"Skills are markdown files now\"",
-          "excerpt": "Thanks — the file lives next to the persona, so you can diff the two side by side."
+          "excerpt": "Thanks, the file lives next to the persona, so you can diff the two side by side."
         },
         "created_at": "2026-09-06T08:20:00.000Z"
       },
@@ -1220,6 +1220,50 @@
           "excerpt": "The customer call where I realised we had built the reporting for the wrong person."
         },
         "created_at": "2026-09-06T16:20:00.000Z"
+      }
+    ],
+    "canned_replies": [
+      {
+        "id": "rpl_default",
+        "intent": "default",
+        "statuses": [
+          "Reading your calendar",
+          "Comparing the last four posts",
+          "Drafting"
+        ],
+        "parts": [
+          {
+            "type": "text",
+            "text": "Sarah has one open weekday before the end of next week, and her two posts that ran furthest this quarter were both stories about a specific week rather than advice."
+          },
+          {
+            "type": "emphasis",
+            "text": "So: a story, and hers is already half written."
+          },
+          {
+            "type": "text",
+            "text": "This is the customer call she mentioned on Tuesday. Nothing is scheduled yet, so you can edit it or ask for another angle."
+          },
+          {
+            "type": "post_draft",
+            "postId": "pst_31"
+          }
+        ]
+      },
+      {
+        "id": "rpl_schedule",
+        "intent": "schedule",
+        "statuses": ["Finding a slot", "Checking the week"],
+        "parts": [
+          {
+            "type": "text",
+            "text": "Tuesday at 9:00 is her usual time and the rest of the week is clear, so it goes out first."
+          },
+          {
+            "type": "scheduled",
+            "postId": "pst_22"
+          }
+        ]
       }
     ]
   },
@@ -1364,6 +1408,164 @@
           ]
         },
         "createdAt": "2026-09-05T10:01:00.000Z"
+      },
+      {
+        "id": "msg_05",
+        "thread_id": "thr_03",
+        "role": "user",
+        "type": "text",
+        "content": {
+          "parts": [
+            {
+              "type": "text",
+              "text": "Company page vs Sarah over the last 30 days. Which one is worth more of my time?"
+            }
+          ]
+        },
+        "createdAt": "2026-09-04T14:00:00.000Z"
+      },
+      {
+        "id": "msg_06",
+        "thread_id": "thr_03",
+        "role": "assistant",
+        "type": "text",
+        "content": {
+          "parts": [
+            {
+              "type": "text",
+              "text": "Sarah reaches more people per post, but the page is the only one gaining followers from posts rather than from the profile visits she drives."
+            },
+            {
+              "type": "chart",
+              "clientId": "cli_sarah",
+              "limit": 4,
+              "title": "Sarah, last four posts"
+            },
+            {
+              "type": "chart",
+              "clientId": "cli_acme",
+              "limit": 4,
+              "title": "Acme page, last four posts"
+            },
+            {
+              "type": "emphasis",
+              "text": "Keep writing as Sarah. Let the page repeat her, two days later."
+            }
+          ]
+        },
+        "createdAt": "2026-09-04T14:02:00.000Z"
+      },
+      {
+        "id": "msg_07",
+        "thread_id": "thr_04",
+        "role": "user",
+        "type": "text",
+        "content": {
+          "parts": [
+            {
+              "type": "text",
+              "text": "Nothing goes out between 11 and 15 Sep. Fill it."
+            }
+          ]
+        },
+        "createdAt": "2026-09-03T09:00:00.000Z"
+      },
+      {
+        "id": "msg_08",
+        "thread_id": "thr_04",
+        "role": "assistant",
+        "type": "text",
+        "content": {
+          "parts": [
+            {
+              "type": "text",
+              "text": "The page had the oldest last post, so it takes the slot. Friday at 9:00, on the feature you shipped this week."
+            },
+            {
+              "type": "scheduled",
+              "postId": "pst_24"
+            }
+          ]
+        },
+        "createdAt": "2026-09-03T09:03:00.000Z"
+      },
+      {
+        "id": "msg_09",
+        "thread_id": "thr_05",
+        "role": "user",
+        "type": "text",
+        "content": {
+          "parts": [
+            {
+              "type": "text",
+              "text": "Marcus's Saturday post failed. Rewrite it and hold it until his account is back."
+            }
+          ]
+        },
+        "createdAt": "2026-09-05T13:00:00.000Z"
+      },
+      {
+        "id": "msg_10",
+        "thread_id": "thr_05",
+        "role": "assistant",
+        "type": "text",
+        "content": {
+          "parts": [
+            {
+              "type": "text",
+              "text": "The original opened on a metric. His posts do better when they open on the decision, so this one starts with what he stopped doing."
+            },
+            {
+              "type": "post_draft",
+              "postId": "pst_33"
+            },
+            {
+              "type": "text",
+              "text": "It stays a draft until his connection is renewed. I will not try to publish it again on its own."
+            }
+          ]
+        },
+        "createdAt": "2026-09-05T13:04:00.000Z"
+      },
+      {
+        "id": "msg_11",
+        "thread_id": "thr_06",
+        "role": "user",
+        "type": "text",
+        "content": {
+          "parts": [
+            {
+              "type": "text",
+              "text": "We are hiring two people in Q4. Start a post from Sarah about the first product hire."
+            }
+          ]
+        },
+        "createdAt": "2026-08-31T11:00:00.000Z"
+      },
+      {
+        "id": "msg_12",
+        "thread_id": "thr_06",
+        "role": "assistant",
+        "type": "text",
+        "content": {
+          "parts": [
+            {
+              "type": "text",
+              "text": "Her hiring post from August is the one people replied to, so this follows its shape: what the role does in the first month, then what it does not."
+            },
+            {
+              "type": "post_draft",
+              "postId": "pst_26"
+            },
+            {
+              "type": "asset_picker",
+              "clientId": "cli_sarah",
+              "limit": 3,
+              "prompt": "Her posts with a photo of the team run about a third further. Pick one and I will attach it."
+            }
+          ]
+        },
+        "createdAt": "2026-08-31T11:06:00.000Z"
       }
     ],
     "mastra_skills": [

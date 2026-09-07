@@ -40,7 +40,6 @@ export type MessagePart =
       title?: string;
       highlightIndex?: number;
     }
-  | { type: "image_pair"; assets: readonly AssetTileData[] }
   | {
       type: "post_draft";
       postId: string;
@@ -105,10 +104,6 @@ function Part({
           plain
           className="max-w-lg"
         />
-      );
-    case "image_pair":
-      return (
-        <AssetGrid assets={part.assets} className="max-w-80 grid-cols-2" />
       );
     case "post_draft":
       return (

@@ -11,6 +11,8 @@ export interface TimelineAction {
   intent: string;
   label: string;
   primary?: boolean;
+  /** What the press says on the user's behalf, opening a thread with it. */
+  prompt?: string;
 }
 
 export interface TimelineEntry {

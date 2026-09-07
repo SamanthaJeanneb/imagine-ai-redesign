@@ -1,7 +1,7 @@
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 
-import { PagePlaceholder } from "@/app/(workspace)/page-placeholder";
-import { getThread } from "@/services/agent";
+import { AgentWorkspace } from "@/components/features/agent/agent-workspace";
+import { getScriptedReply, getThread } from "@/services/agent";
 
 export default async function ThreadPage({
   params,
@@ -10,9 +10,18 @@ export default async function ThreadPage({
 }) {
   const { threadId } = await params;
   const thread = getThread(threadId);
-  if (thread === null) notFound();
+
+  // A conversation started in the browser is never stored, so its URL only
+  // holds while the page is open. Reloading it starts over on the landing.
+  if (thread === null) redirect("/agent");
 
   return (
-    <PagePlaceholder title={thread.title} note="The conversation lands here." />
+    <AgentWorkspace
+      replies={{
+        default: getScriptedReply(),
+        schedule: getScriptedReply("schedule"),
+      }}
+      messages={thread.messages}
+    />
   );
 }

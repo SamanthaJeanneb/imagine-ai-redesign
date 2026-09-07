@@ -165,7 +165,7 @@ export function Kit({ radiusScale = "default" }: KitProps) {
         <header className="flex items-start justify-between gap-l">
           <div className="flex flex-col gap-xs">
             <h1 className="type-display">
-              {sharp ? "Design kit — sharp" : "Design kit"}
+              {sharp ? "Design kit, sharp" : "Design kit"}
             </h1>
             <p className="type-body text-imagine-foreground-muted">
               {sharp

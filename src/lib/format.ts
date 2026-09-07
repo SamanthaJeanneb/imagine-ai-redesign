@@ -43,6 +43,16 @@ const WEEKDAYS_SHORT = [
   "Sat",
 ] as const;
 
+const WEEKDAYS_LONG = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+] as const;
+
 function monthShort(date: Date): string {
   return MONTHS_SHORT[date.getUTCMonth()] ?? "";
 }
@@ -55,7 +65,8 @@ function weekdayShort(date: Date): string {
 export function formatCompact(value: number): string {
   if (value < 1000) return String(Math.round(value));
   const thousands = value / 1000;
-  const text = thousands < 10 ? thousands.toFixed(1) : String(Math.round(thousands));
+  const text =
+    thousands < 10 ? thousands.toFixed(1) : String(Math.round(thousands));
   return `${text.endsWith(".0") ? text.slice(0, -2) : text}k`;
 }
 
@@ -91,6 +102,27 @@ export function formatDayTime(iso: string): string {
 export function formatDayMonth(iso: string): string {
   const date = new Date(iso);
   return `${String(date.getUTCDate())} ${monthShort(date)}`;
+}
+
+/** "Sep". */
+export function formatMonthShort(iso: string): string {
+  return monthShort(new Date(iso));
+}
+
+/** "Tue, 8 Sep at 9:00". */
+export function formatWhen(iso: string): string {
+  const date = new Date(iso);
+  return `${weekdayShort(date)}, ${formatDayMonth(iso)} at ${formatTime(iso)}`;
+}
+
+/** "Monday, 7 September". */
+export function formatFullDate(date: Date): string {
+  return `${WEEKDAYS_LONG[date.getUTCDay()] ?? ""}, ${String(date.getUTCDate())} ${MONTHS_LONG[date.getUTCMonth()] ?? ""}`;
+}
+
+/** 0 for Monday, so a week starts where the calendar starts. */
+export function weekdayIndex(iso: string): number {
+  return (new Date(iso).getUTCDay() + 6) % 7;
 }
 
 /** "September 2026". */

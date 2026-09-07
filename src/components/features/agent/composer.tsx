@@ -28,14 +28,15 @@ interface ComposerProps {
   placeholder?: string;
   /** Which preview is open above the input. Dock only. */
   preview?: ComposerPreview | null;
+  /** Without this the preview chips are not offered at all. */
   onPreviewChange?: (preview: ComposerPreview | null) => void;
   /** The open preview surface, rendered above the input. */
   children?: React.ReactNode;
   /** Context attached to the next message (e.g. `PostContext`). Sits above the input. */
   attachments?: React.ReactNode;
   onAttach?: () => void;
-  /** Shared layout id so the hero can morph into the dock. */
-  layoutId?: string;
+  /** Off for reduced motion, where the hero should not slide into the dock. */
+  animateLayout?: boolean;
   className?: string;
 }
 
@@ -54,7 +55,7 @@ export function Composer({
   children,
   attachments,
   onAttach,
-  layoutId,
+  animateLayout = true,
   className,
 }: ComposerProps) {
   const [focused, setFocused] = useState(false);
@@ -68,8 +69,7 @@ export function Composer({
 
   return (
     <motion.div
-      layoutId={layoutId}
-      layout
+      layout={animateLayout}
       transition={spring.soft}
       data-slot="composer"
       data-variant={variant}
@@ -80,7 +80,7 @@ export function Composer({
         className,
       )}
     >
-      {isDock ? (
+      {isDock && onPreviewChange ? (
         <div className="flex items-center gap-xs px-xs pt-xxs pb-xs">
           <AnimatePresence initial={false} mode="popLayout">
             {PREVIEW_OPTIONS.filter(
@@ -105,7 +105,7 @@ export function Composer({
                         "bg-imagine-secondary-soft text-imagine-secondary shadow-none hover:bg-imagine-secondary-soft",
                     )}
                     onClick={() => {
-                      onPreviewChange?.(active ? null : option.key);
+                      onPreviewChange(active ? null : option.key);
                     }}
                   >
                     <Icon

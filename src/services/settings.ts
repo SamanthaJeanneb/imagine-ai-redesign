@@ -53,16 +53,18 @@ function headline(client: Client): string {
 
 /** Settings, Profiles. Every LinkedIn identity the workspace posts as. */
 export function getProfiles(): readonly ProfileSummary[] {
-  return getDb().app.clients.map(transformClientRow).map((client) => ({
-    id: client.id,
-    name: client.name,
-    headline: headline(client),
-    ...(client.profilePicturePath === null
-      ? {}
-      : { avatarUrl: client.profilePicturePath }),
-    kind: client.isCompany ? "company" : "person",
-    status: connectionState(client),
-  }));
+  return getDb()
+    .app.clients.map(transformClientRow)
+    .map((client) => ({
+      id: client.id,
+      name: client.name,
+      headline: headline(client),
+      ...(client.profilePicturePath === null
+        ? {}
+        : { avatarUrl: client.profilePicturePath }),
+      kind: client.isCompany ? "company" : "person",
+      status: connectionState(client),
+    }));
 }
 
 export function getProfileDetail(clientId: string): ProfileDetailData | null {
