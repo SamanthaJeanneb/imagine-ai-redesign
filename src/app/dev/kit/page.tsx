@@ -211,10 +211,6 @@ export default function KitPage() {
           <AvatarDemo />
         </Section>
 
-        <Section title="Loading">
-          <LoadingDemo />
-        </Section>
-
         <Section title="Sidebar">
           <SidebarDemo />
         </Section>
@@ -280,6 +276,7 @@ export default function KitPage() {
         </Section>
 
         <Section title="Loading">
+          <LoadingDemo />
           <div className="grid gap-l sm:grid-cols-2">
             <div className="flex flex-col gap-s">
               <Skeleton className="h-5 w-2/3" />

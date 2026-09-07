@@ -66,6 +66,7 @@ import {
 } from "@/components/features/files/skills-list";
 import { BrandPanel } from "@/components/features/onboarding/brand-panel";
 import { ConnectLinkedIn } from "@/components/features/onboarding/connect-linkedin";
+import { JoinOrganization } from "@/components/features/onboarding/join-organization";
 import {
   InviteLinkField,
   InviteTeamForm,
@@ -1672,6 +1673,26 @@ export function OnboardingPartsDemo() {
             }}
             onSkip={() => {
               toast("Skipped");
+            }}
+          />
+        </Demo>
+        <Demo label="Join organization (invite landing)">
+          <JoinOrganization
+            orgName="Acme"
+            orgNote="12 members · 3 LinkedIn profiles"
+            members={[
+              { id: "m1", name: "Sarah Chen", avatarUrl: AVATAR(47) },
+              { id: "m2", name: "Ravi Patel", avatarUrl: AVATAR(12) },
+              { id: "m3", name: "Maya Okafor", avatarUrl: AVATAR(32) },
+              { id: "m4", name: "Tom Lindqvist", avatarUrl: AVATAR(59) },
+            ]}
+            memberCount={12}
+            invitedBy={{ id: "m1", name: "Sarah Chen", avatarUrl: AVATAR(47) }}
+            onJoin={() => {
+              toast.success("Joined Acme");
+            }}
+            onDecline={() => {
+              toast("Not now");
             }}
           />
         </Demo>
