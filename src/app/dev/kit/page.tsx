@@ -1,10 +1,6 @@
-import { notFound } from "next/navigation";
-
 import { Kit } from "./kit";
 
-/** Design-system review. Development only. */
+/** Design-system review. Deployed too, so the kit can be shared for review. */
 export default function KitPage() {
-  if (process.env.NODE_ENV === "production") notFound();
-
   return <Kit />;
 }

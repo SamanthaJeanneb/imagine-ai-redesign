@@ -3,7 +3,6 @@
 import { usePathname, useRouter } from "next/navigation";
 
 import { Stepper } from "@/components/features/onboarding/stepper";
-import { Icon } from "@/components/ui/icon";
 
 /**
  * The setup rail. Signing in counts as the first step, so it is always done and
@@ -26,10 +25,9 @@ export function OnboardingRail() {
   const current = STEPS.findIndex((step) => step.href === pathname);
 
   return (
-    <div className="flex w-56 shrink-0 flex-col gap-xxl px-l py-xl">
-      <span className="flex size-8 items-center justify-center rounded-control accent-gradient text-imagine-secondary-foreground">
-        <Icon name="sparkles" size="s" active />
-      </span>
+    // Same top inset as the step surface, so the first step sits on the same
+    // line as the step's heading now that no mark stands above it.
+    <div className="flex w-56 shrink-0 flex-col px-l pt-section pb-xxl">
       <Stepper
         steps={STEPS}
         current={current === -1 ? 1 : current}

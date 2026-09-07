@@ -1,13 +1,9 @@
-import { notFound } from "next/navigation";
-
 import { Kit } from "../kit/kit";
 
 import { RadiusScope } from "./radius-scope";
 
-/** Same kit, tighter radius. Development only. */
+/** Same kit, tighter radius. Deployed alongside `/dev/kit`. */
 export default function KitSharpPage() {
-  if (process.env.NODE_ENV === "production") notFound();
-
   return (
     <>
       <script
