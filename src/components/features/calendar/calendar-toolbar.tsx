@@ -45,9 +45,12 @@ export function CalendarToolbar({
   return (
     <div
       data-slot="calendar-toolbar"
-      className={cn("flex flex-wrap items-center gap-l", className)}
+      className={cn(
+        "grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-l",
+        className,
+      )}
     >
-      <div className="flex items-center gap-xs">
+      <div className="flex min-w-0 items-center gap-xs">
         <div className="flex items-center rounded-control bg-imagine-surface-raised p-xxs">
           <Button
             size="icon-xs"
@@ -90,7 +93,6 @@ export function CalendarToolbar({
           if (found) onViewChange(found.key);
         }}
         aria-label="Calendar view"
-        className="mx-auto"
       >
         {VIEWS.map((item) => (
           <ToggleGroupItem key={item.key} value={item.key}>
@@ -103,7 +105,7 @@ export function CalendarToolbar({
         value={search}
         onValueChange={onSearchChange}
         placeholder="Search posts"
-        className="w-56"
+        className="w-56 justify-self-end"
       />
     </div>
   );

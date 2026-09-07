@@ -41,15 +41,12 @@ export function AssetPicker({
   return (
     <div
       data-slot="asset-picker"
-      className={cn(
-        "flex w-full max-w-lg flex-col gap-m rounded-panel bg-imagine-surface p-l shadow-raised",
-        className,
-      )}
+      className={cn("flex w-full max-w-lg flex-col gap-m", className)}
     >
       <span className="type-body font-medium">{prompt}</span>
-      <Stagger kind="grid" className="flex gap-s overflow-x-auto pb-xxs">
+      <Stagger kind="grid" className="grid grid-cols-4 gap-s p-xs">
         {assets.map((asset) => (
-          <StaggerItem key={asset.id} className="w-20 shrink-0">
+          <StaggerItem key={asset.id}>
             <AssetTile
               asset={asset}
               selected={asset.id === selectedId}

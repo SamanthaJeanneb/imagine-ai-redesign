@@ -96,7 +96,7 @@ function ToggleGroupItem({
           layoutId={context.indicatorId}
           aria-hidden="true"
           transition={spring.snappy}
-          className="absolute inset-0 rounded-control bg-imagine-surface shadow-raised"
+          className="absolute inset-0 rounded-control bg-imagine-surface shadow-control"
         />
       ) : null}
       <span className="relative z-10 inline-flex items-center gap-1.5">
