@@ -23,10 +23,7 @@ import {
   Timeline,
   type TimelineEntry,
 } from "@/components/features/agent/timeline";
-import {
-  type AnalyticsRange,
-  AnalyticsToolbar,
-} from "@/components/features/analytics/analytics-toolbar";
+import { AnalyticsToolbar } from "@/components/features/analytics/analytics-toolbar";
 import { ByProfileList } from "@/components/features/analytics/by-profile-list";
 import {
   ChartBlock,
@@ -97,8 +94,9 @@ import {
 } from "@/components/layout/sidebar";
 import { LogoLoader } from "@/components/motion/logo-loader";
 import { Button } from "@/components/ui/button";
+import type { TimeRange } from "@/entities/analytics";
 
-/* Mock data. Phase 2 replaces these with selectors over src/mocks/db.json. */
+/* Kit fixtures. The screens read src/mocks/db.json through src/services/. */
 
 const AVATAR = (n: number) => `https://i.pravatar.cc/96?img=${String(n)}`;
 const ACME_LOGO = "/brand/acme-logo.png";
@@ -1434,7 +1432,7 @@ export function AssetsDemo() {
 }
 
 export function AnalyticsPartsDemo() {
-  const [range, setRange] = useState<AnalyticsRange>("30d");
+  const [range, setRange] = useState<TimeRange>("1m");
   const [profileId, setProfileId] = useState("all");
 
   return (

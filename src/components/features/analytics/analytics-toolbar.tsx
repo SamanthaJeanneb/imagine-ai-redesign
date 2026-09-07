@@ -12,8 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-
-export type AnalyticsRange = "7d" | "30d" | "90d";
+import type { TimeRange } from "@/entities/analytics";
 
 export interface ProfileOption {
   id: string;
@@ -21,8 +20,8 @@ export interface ProfileOption {
 }
 
 interface AnalyticsToolbarProps {
-  range: AnalyticsRange;
-  onRangeChange: (range: AnalyticsRange) => void;
+  range: TimeRange;
+  onRangeChange: (range: TimeRange) => void;
   profiles: readonly ProfileOption[];
   /** `all` or a profile id. */
   profileId: string;
@@ -31,7 +30,8 @@ interface AnalyticsToolbarProps {
   className?: string;
 }
 
-const RANGES: readonly AnalyticsRange[] = ["7d", "30d", "90d"];
+/** The three the toolbar offers, out of the app's full `TimeRange`. */
+const RANGES: readonly TimeRange[] = ["7d", "1m", "3m"];
 
 /** Range, profile filter, and export. */
 export function AnalyticsToolbar({

@@ -1,0 +1,1518 @@
+{
+  "now": "2026-09-07T09:00:00.000Z",
+  "public": {
+    "users": [
+      {
+        "id": "usr_sam",
+        "email": "sam@acme.com",
+        "name": "Samantha Brown",
+        "avatar_url": null
+      },
+      {
+        "id": "usr_sarah",
+        "email": "sarah@acme.com",
+        "name": "Sarah Chen",
+        "avatar_url": null
+      },
+      {
+        "id": "usr_marcus",
+        "email": "marcus@acme.com",
+        "name": "Marcus Webb",
+        "avatar_url": null
+      },
+      {
+        "id": "usr_priya",
+        "email": "priya@acme.com",
+        "name": "Priya Raman",
+        "avatar_url": null
+      }
+    ]
+  },
+  "app": {
+    "organizations": [
+      {
+        "id": "org_acme",
+        "name": "Acme",
+        "created_by": "usr_sam",
+        "post_label_options": [
+          "Thought leadership",
+          "Case study",
+          "Hiring",
+          "Product"
+        ],
+        "created_at": "2026-01-14T10:00:00.000Z",
+        "updated_at": "2026-09-04T16:20:00.000Z"
+      }
+    ],
+    "organization_members": [
+      {
+        "id": "mem_01",
+        "org_id": "org_acme",
+        "user_id": "usr_sam",
+        "role": "owner",
+        "member_name": "Samantha Brown",
+        "joined_at": "2026-01-14T10:00:00.000Z"
+      },
+      {
+        "id": "mem_02",
+        "org_id": "org_acme",
+        "user_id": "usr_sarah",
+        "role": "admin",
+        "member_name": "Sarah Chen",
+        "joined_at": "2026-01-20T14:00:00.000Z"
+      },
+      {
+        "id": "mem_03",
+        "org_id": "org_acme",
+        "user_id": "usr_marcus",
+        "role": "member",
+        "member_name": "Marcus Webb",
+        "joined_at": "2026-02-02T09:30:00.000Z"
+      },
+      {
+        "id": "mem_04",
+        "org_id": "org_acme",
+        "user_id": "usr_priya",
+        "role": "member",
+        "member_name": "Priya Raman",
+        "joined_at": "2026-03-11T11:15:00.000Z"
+      }
+    ],
+    "clients": [
+      {
+        "id": "cli_acme",
+        "org_id": "org_acme",
+        "name": "Acme",
+        "description": "Company page",
+        "is_company": true,
+        "linkedin_id": "acme-inc",
+        "profile_picture_path": "/brand/acme-logo.png",
+        "persona": "Acme speaks plainly about the work: what shipped, what it cost, what we learned. No hype, no exclamation marks.\n\n## Voice\n\n- Short sentences. One idea per line.\n- Numbers over adjectives.\n- Name the tradeoff, not just the win.\n\n## Avoid\n\n- \"Excited to announce\"\n- Emoji in the first line\n- Anything a competitor could also claim\n",
+        "status": "connected",
+        "created_at": "2026-01-15T09:00:00.000Z",
+        "updated_at": "2026-09-03T09:10:00.000Z"
+      },
+      {
+        "id": "cli_sarah",
+        "org_id": "org_acme",
+        "name": "Sarah Chen",
+        "description": "VP Product at Acme",
+        "is_company": false,
+        "linkedin_id": "sarahchen",
+        "profile_picture_path": null,
+        "persona": "Sarah writes from inside the product work. She opens with a decision she had to make and closes with what she would do differently.\n\n## Voice\n\n- First person, past tense.\n- One concrete artifact per post: a metric, a screenshot, a quote from a customer call.\n- Ends on a question she is genuinely still holding.\n\n## Avoid\n\n- Frameworks with names\n- Advice addressed to \"founders\"\n",
+        "status": "connected",
+        "created_at": "2026-01-20T14:10:00.000Z",
+        "updated_at": "2026-09-04T09:05:00.000Z"
+      },
+      {
+        "id": "cli_marcus",
+        "org_id": "org_acme",
+        "name": "Marcus Webb",
+        "description": "Head of Growth at Acme",
+        "is_company": false,
+        "linkedin_id": "marcuswebb",
+        "profile_picture_path": null,
+        "persona": "Marcus posts experiments. Hypothesis, what he ran, the number, and whether he would run it again.\n\n## Voice\n\n- Leads with the result.\n- Always shows the losing variant too.\n- Dry, a little self-deprecating.\n",
+        "status": "connected",
+        "created_at": "2026-02-02T09:40:00.000Z",
+        "updated_at": "2026-09-05T12:35:00.000Z"
+      },
+      {
+        "id": "cli_priya",
+        "org_id": "org_acme",
+        "name": "Priya Raman",
+        "description": "Staff Engineer at Acme",
+        "is_company": false,
+        "linkedin_id": "priyaraman",
+        "profile_picture_path": null,
+        "persona": "Priya explains one system at a time, at the level a senior engineer at another company would need to act on it.\n\n## Voice\n\n- Starts from the failure that forced the change.\n- Names the technology, the version, and the limit she hit.\n- No conclusions she cannot back with a graph.\n",
+        "status": "connected",
+        "created_at": "2026-03-11T11:20:00.000Z",
+        "updated_at": "2026-09-01T14:05:00.000Z"
+      },
+      {
+        "id": "cli_ravi",
+        "org_id": "org_acme",
+        "name": "Ravi Patel",
+        "description": "Sales Lead at Acme",
+        "is_company": false,
+        "linkedin_id": "ravipatel",
+        "profile_picture_path": null,
+        "persona": "Ravi writes about the deals that did not close and what the buyer actually said.\n",
+        "status": "expired",
+        "created_at": "2026-04-08T15:00:00.000Z",
+        "updated_at": "2026-08-29T08:00:00.000Z"
+      }
+    ],
+    "client_linkedin_auth": [
+      {
+        "id": "auth_acme",
+        "client_id": "cli_acme",
+        "unipile_account_id": "unp_acme",
+        "status": "connected"
+      },
+      {
+        "id": "auth_sarah",
+        "client_id": "cli_sarah",
+        "unipile_account_id": "unp_sarah",
+        "status": "connected"
+      },
+      {
+        "id": "auth_marcus",
+        "client_id": "cli_marcus",
+        "unipile_account_id": "unp_marcus",
+        "status": "connected"
+      },
+      {
+        "id": "auth_priya",
+        "client_id": "cli_priya",
+        "unipile_account_id": "unp_priya",
+        "status": "connected"
+      },
+      {
+        "id": "auth_ravi",
+        "client_id": "cli_ravi",
+        "unipile_account_id": "unp_ravi",
+        "status": "expired"
+      }
+    ],
+    "client_posts": [
+      {
+        "id": "pst_01",
+        "client_id": "cli_sarah",
+        "content": "We shipped the wrong roadmap for two quarters.\n\nEvery item was something a customer had asked for. None of it was something a customer would have paid more for. I could not tell the difference until I put price next to each request.\n\nThe list looks very different when you do that.",
+        "status": "published",
+        "scheduled_at": "2026-06-11T09:00:00.000Z",
+        "linkedin_post_id": "li_pst_01",
+        "media": null,
+        "analytics": {
+          "impressions": 3120,
+          "engagements": 218,
+          "engagement_rate": 0.0699,
+          "clicks": 37,
+          "clickthrough_rate": 0.0119,
+          "profile_viewers_from_this_post": 52,
+          "followers_gained_from_this_post": 9,
+          "members_reached": 2434,
+          "reactions": 148,
+          "comments": 26,
+          "reposts": 7
+        },
+        "notes": null,
+        "post_label": "Thought leadership",
+        "created_at": "2026-06-09T16:00:00.000Z",
+        "updated_at": "2026-06-12T08:00:00.000Z"
+      },
+      {
+        "id": "pst_02",
+        "client_id": "cli_marcus",
+        "content": "Tested removing the pricing page from the nav.\n\nHypothesis: people who find pricing on their own convert better.\nResult: signups down 9%, qualified demos flat. Ran it for eleven days and put it back.\n\nWould not run it again.",
+        "status": "published",
+        "scheduled_at": "2026-06-18T12:30:00.000Z",
+        "linkedin_post_id": "li_pst_02",
+        "media": null,
+        "analytics": {
+          "impressions": 2410,
+          "engagements": 146,
+          "engagement_rate": 0.0606,
+          "clicks": 29,
+          "clickthrough_rate": 0.012,
+          "profile_viewers_from_this_post": 34,
+          "followers_gained_from_this_post": 6,
+          "members_reached": 1880,
+          "reactions": 96,
+          "comments": 18,
+          "reposts": 3
+        },
+        "notes": null,
+        "post_label": "Case study",
+        "created_at": "2026-06-16T10:00:00.000Z",
+        "updated_at": "2026-06-19T08:00:00.000Z"
+      },
+      {
+        "id": "pst_03",
+        "client_id": "cli_acme",
+        "content": "Acme now imports your CRM stages instead of asking you to redraw them.\n\nIf your pipeline has eleven stages, you get eleven stages. The mapping screen is gone.",
+        "status": "published",
+        "scheduled_at": "2026-06-25T09:00:00.000Z",
+        "linkedin_post_id": "li_pst_03",
+        "media": [
+          {
+            "bucket": "app",
+            "path": "assets/cli_acme/crm-stages.png"
+          }
+        ],
+        "analytics": {
+          "impressions": 5210,
+          "engagements": 320,
+          "engagement_rate": 0.0614,
+          "clicks": 63,
+          "clickthrough_rate": 0.0121,
+          "profile_viewers_from_this_post": 74,
+          "followers_gained_from_this_post": 13,
+          "members_reached": 4064,
+          "reactions": 212,
+          "comments": 31,
+          "reposts": 14
+        },
+        "notes": null,
+        "post_label": "Product",
+        "created_at": "2026-06-23T09:00:00.000Z",
+        "updated_at": "2026-06-26T08:00:00.000Z"
+      },
+      {
+        "id": "pst_04",
+        "client_id": "cli_sarah",
+        "content": "A customer told me our onboarding was \"fine\" and then took nineteen days to send their first invite.\n\nFine is not a signal. Nineteen days is.",
+        "status": "published",
+        "scheduled_at": "2026-07-02T09:00:00.000Z",
+        "linkedin_post_id": "li_pst_04",
+        "media": null,
+        "analytics": {
+          "impressions": 3480,
+          "engagements": 247,
+          "engagement_rate": 0.071,
+          "clicks": 42,
+          "clickthrough_rate": 0.0121,
+          "profile_viewers_from_this_post": 61,
+          "followers_gained_from_this_post": 10,
+          "members_reached": 2714,
+          "reactions": 174,
+          "comments": 22,
+          "reposts": 9
+        },
+        "notes": null,
+        "post_label": "Thought leadership",
+        "created_at": "2026-06-30T15:00:00.000Z",
+        "updated_at": "2026-07-03T08:00:00.000Z"
+      },
+      {
+        "id": "pst_05",
+        "client_id": "cli_priya",
+        "content": "Our queue fell over at 4,000 jobs a minute because every worker was claiming rows with the same lock.\n\nWe moved the claim into a lease with an expiry. Same Postgres, same table, one column. Throughput went to 22,000.",
+        "status": "published",
+        "scheduled_at": "2026-07-09T14:00:00.000Z",
+        "linkedin_post_id": "li_pst_05",
+        "media": null,
+        "analytics": {
+          "impressions": 1890,
+          "engagements": 128,
+          "engagement_rate": 0.0677,
+          "clicks": 23,
+          "clickthrough_rate": 0.0122,
+          "profile_viewers_from_this_post": 31,
+          "followers_gained_from_this_post": 5,
+          "members_reached": 1474,
+          "reactions": 88,
+          "comments": 12,
+          "reposts": 5
+        },
+        "notes": null,
+        "post_label": "Thought leadership",
+        "created_at": "2026-07-07T11:00:00.000Z",
+        "updated_at": "2026-07-10T08:00:00.000Z"
+      },
+      {
+        "id": "pst_06",
+        "client_id": "cli_marcus",
+        "content": "Sent the same email at 6am and 2pm to matched lists.\n\n6am: 41% open, 4% reply.\n2pm: 38% open, 7% reply.\n\nOpens are not the metric.",
+        "status": "published",
+        "scheduled_at": "2026-07-16T12:30:00.000Z",
+        "linkedin_post_id": "li_pst_06",
+        "media": null,
+        "analytics": {
+          "impressions": 2760,
+          "engagements": 179,
+          "engagement_rate": 0.0649,
+          "clicks": 33,
+          "clickthrough_rate": 0.012,
+          "profile_viewers_from_this_post": 42,
+          "followers_gained_from_this_post": 7,
+          "members_reached": 2153,
+          "reactions": 121,
+          "comments": 19,
+          "reposts": 6
+        },
+        "notes": null,
+        "post_label": "Case study",
+        "created_at": "2026-07-14T10:00:00.000Z",
+        "updated_at": "2026-07-17T08:00:00.000Z"
+      },
+      {
+        "id": "pst_07",
+        "client_id": "cli_acme",
+        "content": "Scheduling now holds a lease on a post while it publishes.\n\nIf a worker dies mid-publish the lease expires and another picks it up. No more duplicate posts at 9:01.",
+        "status": "published",
+        "scheduled_at": "2026-07-23T09:00:00.000Z",
+        "linkedin_post_id": "li_pst_07",
+        "media": null,
+        "analytics": {
+          "impressions": 6120,
+          "engagements": 358,
+          "engagement_rate": 0.0585,
+          "clicks": 73,
+          "clickthrough_rate": 0.0119,
+          "profile_viewers_from_this_post": 84,
+          "followers_gained_from_this_post": 14,
+          "members_reached": 4774,
+          "reactions": 240,
+          "comments": 28,
+          "reposts": 17
+        },
+        "notes": null,
+        "post_label": "Product",
+        "created_at": "2026-07-21T09:00:00.000Z",
+        "updated_at": "2026-07-24T08:00:00.000Z"
+      },
+      {
+        "id": "pst_08",
+        "client_id": "cli_sarah",
+        "content": "I killed a feature three people used every day.\n\nThey were our three largest accounts. I did not check that before the deprecation email went out. We rebuilt it in a week and I still hear about it.",
+        "status": "published",
+        "scheduled_at": "2026-07-30T09:00:00.000Z",
+        "linkedin_post_id": "li_pst_08",
+        "media": null,
+        "analytics": {
+          "impressions": 4020,
+          "engagements": 298,
+          "engagement_rate": 0.0741,
+          "clicks": 48,
+          "clickthrough_rate": 0.0119,
+          "profile_viewers_from_this_post": 69,
+          "followers_gained_from_this_post": 12,
+          "members_reached": 3136,
+          "reactions": 198,
+          "comments": 41,
+          "reposts": 11
+        },
+        "notes": null,
+        "post_label": "Thought leadership",
+        "created_at": "2026-07-28T16:00:00.000Z",
+        "updated_at": "2026-07-31T08:00:00.000Z"
+      },
+      {
+        "id": "pst_09",
+        "client_id": "cli_priya",
+        "content": "Embeddings at 3072 dimensions cost us 4x the index memory for a 2% recall gain.\n\nWe dropped to 768 and moved the budget into reranking. Recall went up.",
+        "status": "published",
+        "scheduled_at": "2026-08-04T14:00:00.000Z",
+        "linkedin_post_id": "li_pst_09",
+        "media": null,
+        "analytics": {
+          "impressions": 2210,
+          "engagements": 154,
+          "engagement_rate": 0.0697,
+          "clicks": 27,
+          "clickthrough_rate": 0.0122,
+          "profile_viewers_from_this_post": 36,
+          "followers_gained_from_this_post": 6,
+          "members_reached": 1724,
+          "reactions": 104,
+          "comments": 15,
+          "reposts": 8
+        },
+        "notes": null,
+        "post_label": "Thought leadership",
+        "created_at": "2026-08-02T11:00:00.000Z",
+        "updated_at": "2026-08-05T08:00:00.000Z"
+      },
+      {
+        "id": "pst_10",
+        "client_id": "cli_marcus",
+        "content": "We stopped gating the changelog.\n\nTraffic to it went up 6x. Two of last month's five biggest deals cited it on the first call.",
+        "status": "published",
+        "scheduled_at": "2026-08-06T12:30:00.000Z",
+        "linkedin_post_id": "li_pst_10",
+        "media": null,
+        "analytics": {
+          "impressions": 3010,
+          "engagements": 194,
+          "engagement_rate": 0.0645,
+          "clicks": 36,
+          "clickthrough_rate": 0.012,
+          "profile_viewers_from_this_post": 46,
+          "followers_gained_from_this_post": 8,
+          "members_reached": 2348,
+          "reactions": 132,
+          "comments": 17,
+          "reposts": 9
+        },
+        "notes": null,
+        "post_label": "Case study",
+        "created_at": "2026-08-04T10:00:00.000Z",
+        "updated_at": "2026-08-07T08:00:00.000Z"
+      },
+      {
+        "id": "pst_11",
+        "client_id": "cli_acme",
+        "content": "The agent can now read your calendar and tell you which week is empty.\n\nIt does not fill it for you. It asks first.",
+        "status": "published",
+        "scheduled_at": "2026-08-11T09:00:00.000Z",
+        "linkedin_post_id": "li_pst_11",
+        "media": [
+          {
+            "bucket": "app",
+            "path": "assets/cli_acme/empty-week.png"
+          }
+        ],
+        "analytics": {
+          "impressions": 7240,
+          "engagements": 431,
+          "engagement_rate": 0.0595,
+          "clicks": 87,
+          "clickthrough_rate": 0.012,
+          "profile_viewers_from_this_post": 101,
+          "followers_gained_from_this_post": 17,
+          "members_reached": 5647,
+          "reactions": 289,
+          "comments": 34,
+          "reposts": 21
+        },
+        "notes": null,
+        "post_label": "Product",
+        "created_at": "2026-08-09T09:00:00.000Z",
+        "updated_at": "2026-08-12T08:00:00.000Z"
+      },
+      {
+        "id": "pst_12",
+        "client_id": "cli_sarah",
+        "content": "Our best week of product decisions came from reading twelve support tickets out loud in a room.\n\nNo dashboard. No survey. Twelve tickets, read out, in order.",
+        "status": "published",
+        "scheduled_at": "2026-08-13T09:00:00.000Z",
+        "linkedin_post_id": "li_pst_12",
+        "media": null,
+        "analytics": {
+          "impressions": 4610,
+          "engagements": 318,
+          "engagement_rate": 0.069,
+          "clicks": 55,
+          "clickthrough_rate": 0.0119,
+          "profile_viewers_from_this_post": 77,
+          "followers_gained_from_this_post": 13,
+          "members_reached": 3596,
+          "reactions": 221,
+          "comments": 29,
+          "reposts": 13
+        },
+        "notes": null,
+        "post_label": "Thought leadership",
+        "created_at": "2026-08-11T15:00:00.000Z",
+        "updated_at": "2026-08-14T08:00:00.000Z"
+      },
+      {
+        "id": "pst_13",
+        "client_id": "cli_priya",
+        "content": "A 40ms query became a 4 second query because the planner stopped using an index after the table crossed 12 million rows.\n\nThe fix was a partial index on the 3% of rows anyone queries.",
+        "status": "published",
+        "scheduled_at": "2026-08-18T14:00:00.000Z",
+        "linkedin_post_id": "li_pst_13",
+        "media": null,
+        "analytics": {
+          "impressions": 2480,
+          "engagements": 179,
+          "engagement_rate": 0.0722,
+          "clicks": 30,
+          "clickthrough_rate": 0.0121,
+          "profile_viewers_from_this_post": 41,
+          "followers_gained_from_this_post": 7,
+          "members_reached": 1934,
+          "reactions": 118,
+          "comments": 21,
+          "reposts": 10
+        },
+        "notes": null,
+        "post_label": "Thought leadership",
+        "created_at": "2026-08-16T11:00:00.000Z",
+        "updated_at": "2026-08-19T08:00:00.000Z"
+      },
+      {
+        "id": "pst_14",
+        "client_id": "cli_marcus",
+        "content": "Cut our ad spend to zero for three weeks to see what was actually incremental.\n\nPipeline dropped 12%. We had been paying full price for 88% of it either way.",
+        "status": "published",
+        "scheduled_at": "2026-08-20T12:30:00.000Z",
+        "linkedin_post_id": "li_pst_14",
+        "media": null,
+        "analytics": {
+          "impressions": 3320,
+          "engagements": 232,
+          "engagement_rate": 0.0699,
+          "clicks": 40,
+          "clickthrough_rate": 0.012,
+          "profile_viewers_from_this_post": 55,
+          "followers_gained_from_this_post": 9,
+          "members_reached": 2590,
+          "reactions": 156,
+          "comments": 24,
+          "reposts": 12
+        },
+        "notes": null,
+        "post_label": "Case study",
+        "created_at": "2026-08-18T10:00:00.000Z",
+        "updated_at": "2026-08-21T08:00:00.000Z"
+      },
+      {
+        "id": "pst_15",
+        "client_id": "cli_acme",
+        "content": "Assets are now cropped once and reused everywhere.\n\nUpload the original, crop it for the feed, and the post keeps a reference instead of a copy.",
+        "status": "published",
+        "scheduled_at": "2026-08-25T09:00:00.000Z",
+        "linkedin_post_id": "li_pst_15",
+        "media": [
+          {
+            "bucket": "app",
+            "path": "assets/cli_acme/crop-once.png"
+          },
+          {
+            "bucket": "app",
+            "path": "assets/cli_acme/asset-library.png"
+          }
+        ],
+        "analytics": {
+          "impressions": 8130,
+          "engagements": 477,
+          "engagement_rate": 0.0587,
+          "clicks": 98,
+          "clickthrough_rate": 0.0121,
+          "profile_viewers_from_this_post": 111,
+          "followers_gained_from_this_post": 19,
+          "members_reached": 6341,
+          "reactions": 318,
+          "comments": 37,
+          "reposts": 24
+        },
+        "notes": null,
+        "post_label": "Product",
+        "created_at": "2026-08-23T09:00:00.000Z",
+        "updated_at": "2026-08-26T08:00:00.000Z"
+      },
+      {
+        "id": "pst_16",
+        "client_id": "cli_sarah",
+        "content": "We hired a designer before we hired a second engineer.\n\nEverything got slower for six weeks and then much faster. I would do it again in the same order.",
+        "status": "published",
+        "scheduled_at": "2026-08-27T09:00:00.000Z",
+        "linkedin_post_id": "li_pst_16",
+        "media": null,
+        "analytics": {
+          "impressions": 5140,
+          "engagements": 356,
+          "engagement_rate": 0.0693,
+          "clicks": 62,
+          "clickthrough_rate": 0.0121,
+          "profile_viewers_from_this_post": 86,
+          "followers_gained_from_this_post": 15,
+          "members_reached": 4009,
+          "reactions": 246,
+          "comments": 33,
+          "reposts": 15
+        },
+        "notes": null,
+        "post_label": "Hiring",
+        "created_at": "2026-08-25T15:00:00.000Z",
+        "updated_at": "2026-08-28T08:00:00.000Z"
+      },
+      {
+        "id": "pst_17",
+        "client_id": "cli_priya",
+        "content": "Rolling observations beat a bigger context window for us.\n\nWe keep 2,000 tokens of what the agent has learned about a workspace and refresh it on a schedule. Recall is better than stuffing the whole history in.",
+        "status": "published",
+        "scheduled_at": "2026-09-01T14:00:00.000Z",
+        "linkedin_post_id": "li_pst_17",
+        "media": null,
+        "analytics": {
+          "impressions": 2690,
+          "engagements": 188,
+          "engagement_rate": 0.0699,
+          "clicks": 32,
+          "clickthrough_rate": 0.0119,
+          "profile_viewers_from_this_post": 44,
+          "followers_gained_from_this_post": 8,
+          "members_reached": 2098,
+          "reactions": 127,
+          "comments": 18,
+          "reposts": 11
+        },
+        "notes": null,
+        "post_label": "Thought leadership",
+        "created_at": "2026-08-30T11:00:00.000Z",
+        "updated_at": "2026-09-02T08:00:00.000Z"
+      },
+      {
+        "id": "pst_18",
+        "client_id": "cli_marcus",
+        "content": "Our highest converting page is the one with no illustration on it.\n\nI have redesigned it twice. Both redesigns lost.",
+        "status": "published",
+        "scheduled_at": "2026-09-02T12:30:00.000Z",
+        "linkedin_post_id": "li_pst_18",
+        "media": null,
+        "analytics": {
+          "impressions": 3580,
+          "engagements": 250,
+          "engagement_rate": 0.0698,
+          "clicks": 43,
+          "clickthrough_rate": 0.012,
+          "profile_viewers_from_this_post": 59,
+          "followers_gained_from_this_post": 10,
+          "members_reached": 2792,
+          "reactions": 168,
+          "comments": 26,
+          "reposts": 13
+        },
+        "notes": null,
+        "post_label": "Case study",
+        "created_at": "2026-08-31T10:00:00.000Z",
+        "updated_at": "2026-09-03T08:00:00.000Z"
+      },
+      {
+        "id": "pst_19",
+        "client_id": "cli_acme",
+        "content": "Skills are markdown files now.\n\nOpen one, edit it, save. The agent picks up the change on the next run. No settings screen.",
+        "status": "published",
+        "scheduled_at": "2026-09-03T09:00:00.000Z",
+        "linkedin_post_id": "li_pst_19",
+        "media": [
+          {
+            "bucket": "app",
+            "path": "assets/cli_acme/skill-file.png"
+          }
+        ],
+        "analytics": {
+          "impressions": 8620,
+          "engagements": 516,
+          "engagement_rate": 0.0599,
+          "clicks": 103,
+          "clickthrough_rate": 0.0119,
+          "profile_viewers_from_this_post": 119,
+          "followers_gained_from_this_post": 20,
+          "members_reached": 6724,
+          "reactions": 341,
+          "comments": 44,
+          "reposts": 28
+        },
+        "notes": null,
+        "post_label": "Product",
+        "created_at": "2026-09-01T09:00:00.000Z",
+        "updated_at": "2026-09-04T08:00:00.000Z"
+      },
+      {
+        "id": "pst_20",
+        "client_id": "cli_sarah",
+        "content": "The question I ask in every roadmap review now: what did we take off the list to make room for this?\n\nIf the answer is nothing, the list is a wish.",
+        "status": "published",
+        "scheduled_at": "2026-09-04T09:00:00.000Z",
+        "linkedin_post_id": "li_pst_20",
+        "media": null,
+        "analytics": {
+          "impressions": 5460,
+          "engagements": 372,
+          "engagement_rate": 0.0681,
+          "clicks": 66,
+          "clickthrough_rate": 0.0121,
+          "profile_viewers_from_this_post": 91,
+          "followers_gained_from_this_post": 16,
+          "members_reached": 4259,
+          "reactions": 259,
+          "comments": 31,
+          "reposts": 16
+        },
+        "notes": null,
+        "post_label": "Thought leadership",
+        "created_at": "2026-09-02T15:00:00.000Z",
+        "updated_at": "2026-09-05T08:00:00.000Z"
+      },
+      {
+        "id": "pst_21",
+        "client_id": "cli_marcus",
+        "content": "Three things we stopped measuring this quarter and did not miss once.",
+        "status": "failed",
+        "scheduled_at": "2026-09-05T12:30:00.000Z",
+        "linkedin_post_id": null,
+        "media": null,
+        "analytics": null,
+        "notes": null,
+        "post_label": "Case study",
+        "created_at": "2026-09-03T10:00:00.000Z",
+        "updated_at": "2026-09-05T12:31:00.000Z"
+      },
+      {
+        "id": "pst_22",
+        "client_id": "cli_sarah",
+        "content": "Six months of running product reviews without a deck.\n\nWe open the app instead. The meeting is half as long and twice as specific.",
+        "status": "scheduled",
+        "scheduled_at": "2026-09-08T09:00:00.000Z",
+        "linkedin_post_id": null,
+        "media": null,
+        "analytics": null,
+        "notes": "Follows the roadmap post from Friday.",
+        "post_label": "Thought leadership",
+        "created_at": "2026-09-05T15:00:00.000Z",
+        "updated_at": "2026-09-06T09:00:00.000Z"
+      },
+      {
+        "id": "pst_23",
+        "client_id": "cli_marcus",
+        "content": "Ran the same webinar twice: once with a demo, once with a customer telling the story.\n\nThe customer version booked 3x the meetings.",
+        "status": "scheduled",
+        "scheduled_at": "2026-09-09T12:30:00.000Z",
+        "linkedin_post_id": null,
+        "media": null,
+        "analytics": null,
+        "notes": null,
+        "post_label": "Case study",
+        "created_at": "2026-09-05T10:00:00.000Z",
+        "updated_at": "2026-09-06T09:00:00.000Z"
+      },
+      {
+        "id": "pst_24",
+        "client_id": "cli_acme",
+        "content": "You can attach a scheduled post to the chat and ask about it.\n\nSelect it on the calendar, it shows up above the composer, and the agent has the draft, the time, and the profile.",
+        "status": "scheduled",
+        "scheduled_at": "2026-09-11T09:00:00.000Z",
+        "linkedin_post_id": null,
+        "media": [
+          {
+            "bucket": "app",
+            "path": "assets/cli_acme/attached-post.png"
+          }
+        ],
+        "analytics": null,
+        "notes": null,
+        "post_label": "Product",
+        "created_at": "2026-09-06T09:00:00.000Z",
+        "updated_at": "2026-09-06T09:00:00.000Z"
+      },
+      {
+        "id": "pst_25",
+        "client_id": "cli_priya",
+        "content": "How we cut cold start from 1.8s to 240ms by moving the model client out of the request path.",
+        "status": "scheduled",
+        "scheduled_at": "2026-09-15T14:00:00.000Z",
+        "linkedin_post_id": null,
+        "media": null,
+        "analytics": null,
+        "notes": null,
+        "post_label": "Thought leadership",
+        "created_at": "2026-09-06T11:00:00.000Z",
+        "updated_at": "2026-09-06T11:00:00.000Z"
+      },
+      {
+        "id": "pst_26",
+        "client_id": "cli_sarah",
+        "content": "What I look for in a first product hire, in order: taste, then judgement, then range. Speed is last and it still surprises people.",
+        "status": "scheduled",
+        "scheduled_at": "2026-09-17T09:00:00.000Z",
+        "linkedin_post_id": null,
+        "media": null,
+        "analytics": null,
+        "notes": null,
+        "post_label": "Hiring",
+        "created_at": "2026-09-06T15:00:00.000Z",
+        "updated_at": "2026-09-06T15:00:00.000Z"
+      },
+      {
+        "id": "pst_27",
+        "client_id": "cli_marcus",
+        "content": "Attribution report we actually use fits on one screen and has four rows.",
+        "status": "scheduled",
+        "scheduled_at": "2026-09-22T12:30:00.000Z",
+        "linkedin_post_id": null,
+        "media": null,
+        "analytics": null,
+        "notes": null,
+        "post_label": "Case study",
+        "created_at": "2026-09-06T10:00:00.000Z",
+        "updated_at": "2026-09-06T10:00:00.000Z"
+      },
+      {
+        "id": "pst_28",
+        "client_id": "cli_acme",
+        "content": "Analytics now shows impressions per profile next to each other, so you can tell whether the company page or the people are carrying the month.",
+        "status": "scheduled",
+        "scheduled_at": "2026-09-24T09:00:00.000Z",
+        "linkedin_post_id": null,
+        "media": null,
+        "analytics": null,
+        "notes": null,
+        "post_label": "Product",
+        "created_at": "2026-09-06T09:00:00.000Z",
+        "updated_at": "2026-09-06T09:00:00.000Z"
+      },
+      {
+        "id": "pst_29",
+        "client_id": "cli_sarah",
+        "content": "Q4 planning, written as a list of things we are not doing.",
+        "status": "scheduled",
+        "scheduled_at": "2026-10-01T09:00:00.000Z",
+        "linkedin_post_id": null,
+        "media": null,
+        "analytics": null,
+        "notes": null,
+        "post_label": "Thought leadership",
+        "created_at": "2026-09-06T15:00:00.000Z",
+        "updated_at": "2026-09-06T15:00:00.000Z"
+      },
+      {
+        "id": "pst_30",
+        "client_id": "cli_priya",
+        "content": "The migration we ran twice: once as a copy, once as a swap. Only one of them let us go back.",
+        "status": "scheduled",
+        "scheduled_at": "2026-10-06T14:00:00.000Z",
+        "linkedin_post_id": null,
+        "media": null,
+        "analytics": null,
+        "notes": null,
+        "post_label": "Thought leadership",
+        "created_at": "2026-09-06T11:00:00.000Z",
+        "updated_at": "2026-09-06T11:00:00.000Z"
+      },
+      {
+        "id": "pst_31",
+        "client_id": "cli_sarah",
+        "content": "Draft: the customer call where I realised we had built the reporting for the wrong person.",
+        "status": "idea",
+        "scheduled_at": null,
+        "linkedin_post_id": null,
+        "media": null,
+        "analytics": null,
+        "notes": "Needs the quote checked with the customer first.",
+        "post_label": null,
+        "created_at": "2026-09-06T16:00:00.000Z",
+        "updated_at": "2026-09-06T16:20:00.000Z"
+      },
+      {
+        "id": "pst_32",
+        "client_id": "cli_acme",
+        "content": "Draft: what a workspace looks like after ninety days.",
+        "status": "idea",
+        "scheduled_at": null,
+        "linkedin_post_id": null,
+        "media": null,
+        "analytics": null,
+        "notes": null,
+        "post_label": null,
+        "created_at": "2026-09-06T14:00:00.000Z",
+        "updated_at": "2026-09-06T14:00:00.000Z"
+      },
+      {
+        "id": "pst_33",
+        "client_id": "cli_marcus",
+        "content": "Draft: the channel we keep trying and keep abandoning.",
+        "status": "idea",
+        "scheduled_at": null,
+        "linkedin_post_id": null,
+        "media": null,
+        "analytics": null,
+        "notes": null,
+        "post_label": null,
+        "created_at": "2026-09-05T17:00:00.000Z",
+        "updated_at": "2026-09-05T17:00:00.000Z"
+      }
+    ],
+    "assets": [
+      {
+        "id": "ast_01",
+        "client_id": "cli_acme",
+        "bucket": "app",
+        "path": "assets/cli_acme/crm-stages.png",
+        "original_path": null,
+        "mime_type": "image/png",
+        "caption": "CRM stages import",
+        "crop": null,
+        "status": "used",
+        "processing_status": "ready",
+        "processing_error": null,
+        "used_count": 1,
+        "deleted_at": null,
+        "created_at": "2026-06-23T09:00:00.000Z",
+        "updated_at": "2026-06-23T09:00:00.000Z"
+      },
+      {
+        "id": "ast_02",
+        "client_id": "cli_acme",
+        "bucket": "app",
+        "path": "assets/cli_acme/empty-week.png",
+        "original_path": null,
+        "mime_type": "image/png",
+        "caption": "Calendar gap",
+        "crop": null,
+        "status": "used",
+        "processing_status": "ready",
+        "processing_error": null,
+        "used_count": 1,
+        "deleted_at": null,
+        "created_at": "2026-08-09T09:00:00.000Z",
+        "updated_at": "2026-08-09T09:00:00.000Z"
+      },
+      {
+        "id": "ast_03",
+        "client_id": "cli_acme",
+        "bucket": "app",
+        "path": "assets/cli_acme/crop-once.png",
+        "original_path": null,
+        "mime_type": "image/png",
+        "caption": "Crop once",
+        "crop": null,
+        "status": "used",
+        "processing_status": "ready",
+        "processing_error": null,
+        "used_count": 1,
+        "deleted_at": null,
+        "created_at": "2026-08-23T09:00:00.000Z",
+        "updated_at": "2026-08-23T09:00:00.000Z"
+      },
+      {
+        "id": "ast_04",
+        "client_id": "cli_acme",
+        "bucket": "app",
+        "path": "assets/cli_acme/asset-library.png",
+        "original_path": null,
+        "mime_type": "image/png",
+        "caption": "Asset library",
+        "crop": null,
+        "status": "used",
+        "processing_status": "ready",
+        "processing_error": null,
+        "used_count": 1,
+        "deleted_at": null,
+        "created_at": "2026-08-23T09:05:00.000Z",
+        "updated_at": "2026-08-23T09:05:00.000Z"
+      },
+      {
+        "id": "ast_05",
+        "client_id": "cli_acme",
+        "bucket": "app",
+        "path": "assets/cli_acme/skill-file.png",
+        "original_path": null,
+        "mime_type": "image/png",
+        "caption": "Skill markdown",
+        "crop": null,
+        "status": "used",
+        "processing_status": "ready",
+        "processing_error": null,
+        "used_count": 1,
+        "deleted_at": null,
+        "created_at": "2026-09-01T09:00:00.000Z",
+        "updated_at": "2026-09-01T09:00:00.000Z"
+      },
+      {
+        "id": "ast_06",
+        "client_id": "cli_acme",
+        "bucket": "app",
+        "path": "assets/cli_acme/attached-post.png",
+        "original_path": null,
+        "mime_type": "image/png",
+        "caption": "Post attached to chat",
+        "crop": null,
+        "status": "used",
+        "processing_status": "ready",
+        "processing_error": null,
+        "used_count": 1,
+        "deleted_at": null,
+        "created_at": "2026-09-06T09:00:00.000Z",
+        "updated_at": "2026-09-06T09:00:00.000Z"
+      },
+      {
+        "id": "ast_07",
+        "client_id": "cli_sarah",
+        "bucket": "app",
+        "path": "assets/cli_sarah/offsite-01.jpg",
+        "original_path": null,
+        "mime_type": "image/jpeg",
+        "caption": "Product offsite",
+        "crop": null,
+        "status": "available",
+        "processing_status": "ready",
+        "processing_error": null,
+        "used_count": 0,
+        "deleted_at": null,
+        "created_at": "2026-08-14T12:00:00.000Z",
+        "updated_at": "2026-08-14T12:00:00.000Z"
+      },
+      {
+        "id": "ast_08",
+        "client_id": "cli_sarah",
+        "bucket": "app",
+        "path": "assets/cli_sarah/roadmap-wall.jpg",
+        "original_path": null,
+        "mime_type": "image/jpeg",
+        "caption": "Roadmap wall",
+        "crop": null,
+        "status": "available",
+        "processing_status": "ready",
+        "processing_error": null,
+        "used_count": 0,
+        "deleted_at": null,
+        "created_at": "2026-08-14T12:05:00.000Z",
+        "updated_at": "2026-08-14T12:05:00.000Z"
+      },
+      {
+        "id": "ast_09",
+        "client_id": "cli_sarah",
+        "bucket": "app",
+        "path": "assets/cli_sarah/review-clip.mp4",
+        "original_path": null,
+        "mime_type": "video/mp4",
+        "caption": "Review walkthrough",
+        "crop": null,
+        "status": "available",
+        "processing_status": "ready",
+        "processing_error": null,
+        "used_count": 0,
+        "deleted_at": null,
+        "created_at": "2026-08-28T12:00:00.000Z",
+        "updated_at": "2026-08-28T12:00:00.000Z"
+      },
+      {
+        "id": "ast_10",
+        "client_id": "cli_marcus",
+        "bucket": "app",
+        "path": "assets/cli_marcus/experiment-board.jpg",
+        "original_path": null,
+        "mime_type": "image/jpeg",
+        "caption": "Experiment board",
+        "crop": null,
+        "status": "available",
+        "processing_status": "ready",
+        "processing_error": null,
+        "used_count": 0,
+        "deleted_at": null,
+        "created_at": "2026-08-19T12:00:00.000Z",
+        "updated_at": "2026-08-19T12:00:00.000Z"
+      },
+      {
+        "id": "ast_11",
+        "client_id": "cli_marcus",
+        "bucket": "app",
+        "path": "assets/cli_marcus/spend-chart.png",
+        "original_path": null,
+        "mime_type": "image/png",
+        "caption": "Spend vs pipeline",
+        "crop": null,
+        "status": "available",
+        "processing_status": "ready",
+        "processing_error": null,
+        "used_count": 0,
+        "deleted_at": null,
+        "created_at": "2026-08-19T12:05:00.000Z",
+        "updated_at": "2026-08-19T12:05:00.000Z"
+      },
+      {
+        "id": "ast_12",
+        "client_id": "cli_priya",
+        "bucket": "app",
+        "path": "assets/cli_priya/query-plan.png",
+        "original_path": null,
+        "mime_type": "image/png",
+        "caption": "Query plan",
+        "crop": null,
+        "status": "available",
+        "processing_status": "ready",
+        "processing_error": null,
+        "used_count": 0,
+        "deleted_at": null,
+        "created_at": "2026-08-17T12:00:00.000Z",
+        "updated_at": "2026-08-17T12:00:00.000Z"
+      }
+    ],
+    "api_keys": [
+      {
+        "id": "key_01",
+        "org_id": "org_acme",
+        "key": "imga_T19lb4Kq8ZxRv2NpWy7Ac3Fd",
+        "key_prefix": "imga_T19lb",
+        "last_used_at": "2026-09-06T08:12:00.000Z",
+        "rotated_at": null,
+        "created_at": "2026-05-02T10:00:00.000Z"
+      }
+    ],
+    "crm_connections": [
+      {
+        "id": "crm_01",
+        "org_id": "org_acme",
+        "provider": "hubspot",
+        "status": "connected",
+        "external_account_id": "mrg_acme_hubspot",
+        "last_synced_at": "2026-09-07T07:00:00.000Z"
+      }
+    ]
+  },
+  "agent": {
+    "activities": [
+      {
+        "id": "act_01",
+        "user_id": "usr_sam",
+        "platform": "linkedin",
+        "activity_type": "post_scheduled",
+        "status": "done",
+        "metadata": {
+          "post_id": "pst_22",
+          "client_id": "cli_sarah",
+          "title": "Six months of running product reviews without a deck"
+        },
+        "created_at": "2026-09-06T09:04:00.000Z"
+      },
+      {
+        "id": "act_02",
+        "user_id": "usr_sam",
+        "platform": "linkedin",
+        "activity_type": "comment_drafted",
+        "status": "needs_review",
+        "metadata": {
+          "post_id": "pst_19",
+          "client_id": "cli_acme",
+          "title": "Reply drafted for a comment on \"Skills are markdown files now\"",
+          "excerpt": "Thanks — the file lives next to the persona, so you can diff the two side by side."
+        },
+        "created_at": "2026-09-06T08:20:00.000Z"
+      },
+      {
+        "id": "act_03",
+        "user_id": "usr_sam",
+        "platform": "linkedin",
+        "activity_type": "post_published",
+        "status": "done",
+        "metadata": {
+          "post_id": "pst_20",
+          "client_id": "cli_sarah",
+          "title": "The question I ask in every roadmap review"
+        },
+        "created_at": "2026-09-04T09:01:00.000Z"
+      },
+      {
+        "id": "act_04",
+        "user_id": "usr_sam",
+        "platform": "linkedin",
+        "activity_type": "post_failed",
+        "status": "error",
+        "metadata": {
+          "post_id": "pst_21",
+          "client_id": "cli_marcus",
+          "title": "Three things we stopped measuring this quarter",
+          "excerpt": "LinkedIn rejected the request: the connected account needs to be re-authorised."
+        },
+        "created_at": "2026-09-05T12:31:00.000Z"
+      },
+      {
+        "id": "act_05",
+        "user_id": "usr_sam",
+        "platform": "linkedin",
+        "activity_type": "persona_updated",
+        "status": "done",
+        "metadata": {
+          "client_id": "cli_priya",
+          "title": "Persona updated from the last four published posts"
+        },
+        "created_at": "2026-09-03T16:40:00.000Z"
+      },
+      {
+        "id": "act_06",
+        "user_id": "usr_sam",
+        "platform": "linkedin",
+        "activity_type": "post_drafted",
+        "status": "needs_review",
+        "metadata": {
+          "post_id": "pst_31",
+          "client_id": "cli_sarah",
+          "title": "Draft ready for Thursday",
+          "excerpt": "The customer call where I realised we had built the reporting for the wrong person."
+        },
+        "created_at": "2026-09-06T16:20:00.000Z"
+      }
+    ]
+  },
+  "mastra": {
+    "mastra_threads": [
+      {
+        "id": "thr_01",
+        "resourceId": "org_acme",
+        "title": "Next week's posts for Sarah",
+        "metadata": {
+          "unread": true
+        },
+        "createdAt": "2026-09-06T15:40:00.000Z",
+        "updatedAt": "2026-09-06T16:22:00.000Z"
+      },
+      {
+        "id": "thr_02",
+        "resourceId": "org_acme",
+        "title": "Why did Friday's post underperform",
+        "metadata": {
+          "unread": false
+        },
+        "createdAt": "2026-09-05T10:00:00.000Z",
+        "updatedAt": "2026-09-05T10:32:00.000Z"
+      },
+      {
+        "id": "thr_03",
+        "resourceId": "org_acme",
+        "title": "Company page vs Sarah, last 30 days",
+        "metadata": {
+          "unread": false
+        },
+        "createdAt": "2026-09-04T14:00:00.000Z",
+        "updatedAt": "2026-09-04T14:26:00.000Z"
+      },
+      {
+        "id": "thr_04",
+        "resourceId": "org_acme",
+        "title": "Fill the gap between 11 and 15 Sep",
+        "metadata": {
+          "unread": false
+        },
+        "createdAt": "2026-09-03T09:00:00.000Z",
+        "updatedAt": "2026-09-03T09:18:00.000Z"
+      },
+      {
+        "id": "thr_05",
+        "resourceId": "org_acme",
+        "title": "Rewrite Marcus's failed post",
+        "metadata": {
+          "unread": false
+        },
+        "createdAt": "2026-09-05T13:00:00.000Z",
+        "updatedAt": "2026-09-05T13:12:00.000Z"
+      },
+      {
+        "id": "thr_06",
+        "resourceId": "org_acme",
+        "title": "Hiring posts for Q4",
+        "metadata": {
+          "unread": false
+        },
+        "createdAt": "2026-08-31T11:00:00.000Z",
+        "updatedAt": "2026-08-31T11:40:00.000Z"
+      }
+    ],
+    "mastra_messages": [
+      {
+        "id": "msg_01",
+        "thread_id": "thr_01",
+        "role": "user",
+        "type": "text",
+        "content": {
+          "parts": [
+            {
+              "type": "text",
+              "text": "What should Sarah post next week? She has one slot on Tuesday."
+            }
+          ]
+        },
+        "createdAt": "2026-09-06T15:40:00.000Z"
+      },
+      {
+        "id": "msg_02",
+        "thread_id": "thr_01",
+        "role": "assistant",
+        "type": "text",
+        "content": {
+          "parts": [
+            {
+              "type": "text",
+              "text": "Her last four posts were all about roadmap decisions. The one that ran furthest was the support-ticket post, which was a story about a specific week."
+            },
+            {
+              "type": "emphasis",
+              "text": "So: another story, not another lesson."
+            },
+            {
+              "type": "text",
+              "text": "I drafted one from the product review she mentioned on Tuesday. It is scheduled for 9:00 and you can move it."
+            },
+            {
+              "type": "post_draft",
+              "postId": "pst_22"
+            }
+          ]
+        },
+        "createdAt": "2026-09-06T15:41:00.000Z"
+      },
+      {
+        "id": "msg_03",
+        "thread_id": "thr_02",
+        "role": "user",
+        "type": "text",
+        "content": {
+          "parts": [
+            {
+              "type": "text",
+              "text": "Why did Friday's post underperform?"
+            }
+          ]
+        },
+        "createdAt": "2026-09-05T10:00:00.000Z"
+      },
+      {
+        "id": "msg_04",
+        "thread_id": "thr_02",
+        "role": "assistant",
+        "type": "text",
+        "content": {
+          "parts": [
+            {
+              "type": "text",
+              "text": "It did not, relative to her median. It is 12% above. It looks flat because the post before it was her best of the quarter."
+            },
+            {
+              "type": "chart",
+              "clientId": "cli_sarah",
+              "limit": 5,
+              "title": "Sarah, last five posts"
+            }
+          ]
+        },
+        "createdAt": "2026-09-05T10:01:00.000Z"
+      }
+    ],
+    "mastra_skills": [
+      {
+        "id": "skl_gap",
+        "name": "Calendar gap",
+        "description": "Notices empty weeks and proposes posts to fill them.",
+        "enabled": true,
+        "file_name": "calendar-gap.md",
+        "content": "# Calendar gap\n\nLook ahead fourteen days. A gap is any weekday with no scheduled post for a connected profile.\n\n## When you find one\n\n- Propose one post, not three.\n- Use the profile whose last post is oldest.\n- Draft it at the profile's usual time.\n\n## Never\n\n- Schedule without asking.\n- Fill a Friday afternoon.\n"
+      },
+      {
+        "id": "skl_reply",
+        "name": "Comment replies",
+        "description": "Drafts replies to comments on published posts.",
+        "enabled": true,
+        "file_name": "comment-replies.md",
+        "content": "# Comment replies\n\nDraft a reply when a comment asks a question or adds a fact.\n\n## Shape\n\n- One or two sentences.\n- Answer first, thank second, and only if there is something to thank for.\n- Match the profile's persona, not the commenter's tone.\n\n## Skip\n\n- Comments that are only emoji or congratulations.\n- Anything that needs a number you cannot verify.\n"
+      },
+      {
+        "id": "skl_repurpose",
+        "name": "Repurpose",
+        "description": "Turns a post that worked into a draft for another profile.",
+        "enabled": false,
+        "file_name": "repurpose.md",
+        "content": "# Repurpose\n\nA post is worth repurposing if it is above the profile's median impressions and more than sixty days old.\n\n## Rules\n\n- Rewrite from the idea, not the wording.\n- Change the opening example.\n- Never reuse an anecdote across two people.\n"
+      },
+      {
+        "id": "skl_persona",
+        "name": "Persona drift",
+        "description": "Flags posts that no longer sound like the profile.",
+        "enabled": true,
+        "file_name": "persona-drift.md",
+        "content": "# Persona drift\n\nCompare each draft against the persona file before proposing it.\n\n## Flag when\n\n- The draft uses a phrase the persona lists under Avoid.\n- Sentence length is more than double the persona's usual.\n- The draft gives advice and the persona tells stories.\n"
+      },
+      {
+        "id": "skl_digest",
+        "name": "Weekly digest",
+        "description": "Summarises what published, what it did, and what is next.",
+        "enabled": false,
+        "file_name": "weekly-digest.md",
+        "content": "# Weekly digest\n\nSend on Monday morning covering the previous seven days.\n\n## Include\n\n- Every post that published, with impressions.\n- Anything that failed and why.\n- The next seven days of scheduled posts.\n\n## Leave out\n\n- Comparisons to other profiles.\n- Anything the user has already seen in the timeline.\n"
+      }
+    ],
+    "workspace_search": [
+      {
+        "id": "ws_01",
+        "resourceId": "org_acme",
+        "content": "# Brand voice\n\nAcme writes the way its engineers talk in a review: plainly, with the number attached.\n\n## Always\n\n- Say what changed before saying why it matters.\n- One claim per sentence.\n- Use the customer's words when you have them.\n\n## Never\n\n- \"Excited to announce\".\n- Three adjectives in a row.\n- A metric without a baseline.\n",
+        "metadata": {
+          "orgId": "org_acme",
+          "sourceFile": "brand-voice.md"
+        }
+      },
+      {
+        "id": "ws_02",
+        "resourceId": "org_acme",
+        "content": "# Posting rules\n\n- Two posts a week per person, three for the company page.\n- Nothing publishes on a Friday after 14:00.\n- Every post names a person, a number, or a decision.\n- Drafts sit for one night before they go out.\n",
+        "metadata": {
+          "orgId": "org_acme",
+          "sourceFile": "posting-rules.md"
+        }
+      },
+      {
+        "id": "ws_03",
+        "resourceId": "org_acme",
+        "content": "# Product notes\n\nWhat we can talk about publicly this quarter: CRM stage import, publish leases, the asset library, skills as markdown.\n\nNot yet: pricing changes, the agent's memory rewrite, anything about the LinkedIn API terms.\n",
+        "metadata": {
+          "orgId": "org_acme",
+          "sourceFile": "product-notes.md"
+        }
+      },
+      {
+        "id": "ws_04",
+        "resourceId": "org_acme",
+        "content": "# Q3 campaign\n\nOne idea a week, told once by the company page and once by a person.\n\nWeek 1 leases, week 2 the asset library, week 3 skills, week 4 analytics per profile.\n",
+        "metadata": {
+          "orgId": "org_acme",
+          "sourceFile": "campaigns/q3-launch.md"
+        }
+      },
+      {
+        "id": "ws_05",
+        "resourceId": "org_acme",
+        "content": "# Q4 campaign\n\nPlanning as subtraction: what we are not doing, and what that bought us.\n",
+        "metadata": {
+          "orgId": "org_acme",
+          "sourceFile": "campaigns/q4-planning.md"
+        }
+      },
+      {
+        "id": "ws_06",
+        "resourceId": "cli_sarah",
+        "content": "# Persona\n\nSarah writes from inside the product work. She opens with a decision she had to make and closes with what she would do differently.\n",
+        "metadata": {
+          "orgId": "org_acme",
+          "clientId": "cli_sarah",
+          "sourceFile": "persona.md"
+        }
+      },
+      {
+        "id": "ws_07",
+        "resourceId": "cli_sarah",
+        "content": "# Post ideas\n\n- The reporting we built for the wrong person.\n- Reviews without a deck.\n- What came off the roadmap to make room for search.\n",
+        "metadata": {
+          "orgId": "org_acme",
+          "clientId": "cli_sarah",
+          "sourceFile": "post-ideas.md"
+        }
+      },
+      {
+        "id": "ws_08",
+        "resourceId": "cli_marcus",
+        "content": "# Persona\n\nMarcus posts experiments. Hypothesis, what he ran, the number, and whether he would run it again.\n",
+        "metadata": {
+          "orgId": "org_acme",
+          "clientId": "cli_marcus",
+          "sourceFile": "persona.md"
+        }
+      },
+      {
+        "id": "ws_09",
+        "resourceId": "cli_marcus",
+        "content": "# Experiment log\n\nPricing page in nav: lost. Email send time: 2pm won on replies. Ad spend pause: 88% was not incremental.\n",
+        "metadata": {
+          "orgId": "org_acme",
+          "clientId": "cli_marcus",
+          "sourceFile": "experiment-log.md"
+        }
+      },
+      {
+        "id": "ws_10",
+        "resourceId": "cli_priya",
+        "content": "# Persona\n\nPriya explains one system at a time, at the level a senior engineer at another company would need to act on it.\n",
+        "metadata": {
+          "orgId": "org_acme",
+          "clientId": "cli_priya",
+          "sourceFile": "persona.md"
+        }
+      },
+      {
+        "id": "ws_11",
+        "resourceId": "cli_acme",
+        "content": "# Persona\n\nAcme speaks plainly about the work: what shipped, what it cost, what we learned.\n",
+        "metadata": {
+          "orgId": "org_acme",
+          "clientId": "cli_acme",
+          "sourceFile": "persona.md"
+        }
+      }
+    ]
+  }
+}
