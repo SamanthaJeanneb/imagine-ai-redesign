@@ -75,7 +75,7 @@ import { OrganizationForm } from "@/components/features/onboarding/organization-
 import { SignInForm } from "@/components/features/onboarding/sign-in-form";
 import { StepHeading } from "@/components/features/onboarding/step-heading";
 import { Stepper } from "@/components/features/onboarding/stepper";
-import { ApiKeyList } from "@/components/features/settings/api-keys";
+import { ApiKeySection } from "@/components/features/settings/api-keys";
 import {
   IntegrationGrid,
   IntegrationRows,
@@ -1584,32 +1584,42 @@ export function IntegrationsDemo() {
   );
 }
 
+const SECRET_CHARS =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+/** Demo-only, so rotating in the kit visibly issues a different key. */
+function randomSecret(): string {
+  let body = "";
+  for (let i = 0; i < 30; i += 1) {
+    body += SECRET_CHARS.charAt(
+      Math.floor(Math.random() * SECRET_CHARS.length),
+    );
+  }
+  return `imga_${body}`;
+}
+
 export function AccountDemo() {
+  const [secret, setSecret] = useState<string | null>(
+    "imga_T19lbhQC1UlsqK9AZ7mIVcxybsjbFSR",
+  );
+
   return (
     <div className="grid gap-xl lg:grid-cols-2">
-      <Demo label="API keys">
-        <ApiKeyList
+      <Demo label="API key">
+        <ApiKeySection
+          secret={secret}
           docsHref="#"
-          keys={[
-            {
-              id: "k1",
-              name: "Zapier",
-              secret: "imga_T19lbhQC1UlsqK9AZ7mIVcxybsjbFSR",
-            },
-            {
-              id: "k2",
-              name: "Internal dashboard",
-              secret: "imga_9c1eKf2ZpQ7nRxLm4TvBdWyH8sJaEcU",
-            },
-          ]}
           onCreate={() => {
-            toast("New key");
+            setSecret(randomSecret());
+            toast("Key created");
           }}
-          onRotate={(id) => {
-            toast(`Rotated ${id}`);
+          onRotate={() => {
+            setSecret(randomSecret());
+            toast("Key rotated");
           }}
-          onRevoke={(id) => {
-            toast.error(`Revoked ${id}`);
+          onRevoke={() => {
+            setSecret(null);
+            toast.error("Key revoked");
           }}
         />
       </Demo>
