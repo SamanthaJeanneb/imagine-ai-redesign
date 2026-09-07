@@ -192,12 +192,29 @@ const SERIES = [
   { key: "followers", label: "Followers" },
 ];
 
+const AUTHOR_SARAH = {
+  name: "Sarah Chen",
+  headline: "CEO at Acme",
+  avatarUrl: AVATAR(47),
+};
+const AUTHOR_RAVI = {
+  name: "Ravi Patel",
+  headline: "Head of Design at Acme",
+  avatarUrl: AVATAR(12),
+};
+const AUTHOR_ACME = { name: "Acme", headline: "Company page" };
+
 const POST_LAUNCH: PostChipData = {
   id: "p1",
   title: "Onboarding launch",
   time: "9:00",
   profile: "Sarah",
   status: "scheduled",
+  preview: {
+    author: AUTHOR_SARAH,
+    body: "We rebuilt onboarding from scratch.\n\nThree steps instead of nine. The first post goes out in under ten minutes.\n\nWhat we cut, and why it was harder than adding.",
+    media: ASSETS.slice(0, 2),
+  },
 };
 const POST_FOUNDERS: PostChipData = {
   id: "p2",
@@ -205,6 +222,10 @@ const POST_FOUNDERS: PostChipData = {
   time: "12:30",
   profile: "Acme",
   status: "draft",
+  preview: {
+    author: AUTHOR_ACME,
+    body: "Founders who post once a week grow their audience 3x faster than those who post when inspired.\n\nConsistency beats brilliance. Here is the cadence we recommend.",
+  },
 };
 const POST_HIRING: PostChipData = {
   id: "p3",
@@ -212,6 +233,11 @@ const POST_HIRING: PostChipData = {
   time: "9:00",
   profile: "Ravi",
   status: "published",
+  preview: {
+    author: AUTHOR_RAVI,
+    body: "We are hiring a senior product designer.\n\nSmall team, real ownership, and a product people use every day. Remote across Europe.\n\nDM me or apply below.",
+    media: ASSETS.slice(2, 3),
+  },
 };
 const POST_NORTHWIND: PostChipData = {
   id: "p4",
@@ -219,6 +245,11 @@ const POST_NORTHWIND: PostChipData = {
   time: "10:00",
   profile: "Sarah",
   status: "failed",
+  preview: {
+    author: AUTHOR_SARAH,
+    body: "Northwind cut their onboarding time from three weeks to four days.\n\nHere is how their ops team did it, in their own words.",
+    media: ASSETS.slice(3, 4),
+  },
 };
 const POST_Q3: PostChipData = {
   id: "p5",
@@ -226,6 +257,10 @@ const POST_Q3: PostChipData = {
   time: "9:00",
   profile: "Acme",
   status: "scheduled",
+  preview: {
+    author: AUTHOR_ACME,
+    body: "Three lessons from Q3.\n\n1. Ship smaller.\n2. Talk to customers before the roadmap, not after.\n3. Say no to the second priority.",
+  },
 };
 
 function buildDays(weeks: number): CalendarDay[] {
@@ -835,6 +870,9 @@ export function ChartBlockDemo() {
 export function PostChipDemo() {
   return (
     <div className="flex flex-wrap gap-xl">
+      <p className="w-full type-small text-imagine-foreground-muted">
+        Hover any chip to preview the post as it will appear on LinkedIn.
+      </p>
       {[POST_LAUNCH, POST_FOUNDERS, POST_HIRING, POST_NORTHWIND].map((post) => (
         <Demo key={post.id} label={post.status} className="w-44">
           <PostChip
@@ -1025,13 +1063,8 @@ export function MessagesDemo() {
   );
 }
 
-const DRAFT_AUTHOR = {
-  name: "Sarah Chen",
-  headline: "CEO at Acme",
-  avatarUrl: AVATAR(47),
-};
-const DRAFT_BODY =
-  "We rebuilt onboarding from scratch.\n\nThree steps instead of nine. The first post goes out in under ten minutes.\n\nWhat we cut, and why it was harder than adding.";
+const DRAFT_AUTHOR = AUTHOR_SARAH;
+const DRAFT_BODY = POST_LAUNCH.preview?.body ?? "";
 
 export function PostDraftDemo() {
   const [body, setBody] = useState(DRAFT_BODY);

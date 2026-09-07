@@ -4,6 +4,15 @@ import { cn } from "cn";
 import { motion } from "motion/react";
 import type { CSSProperties } from "react";
 
+import {
+  LinkedInPost,
+  type LinkedInPostContent,
+} from "@/components/features/agent/linkedin-post-draft";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { Icon } from "@/components/ui/icon";
 import { hoverLift, press } from "@/styles/motion";
 
@@ -17,6 +26,8 @@ export interface PostChipData {
   /** Short profile label, e.g. initials or first name. */
   profile: string;
   status: PostChipStatus;
+  /** When present, hovering the chip previews the post as it will appear. */
+  preview?: LinkedInPostContent;
 }
 
 interface PostChipProps {
@@ -73,7 +84,7 @@ export function PostChip({
   onOpen,
   className,
 }: PostChipProps) {
-  return (
+  const chip = (
     <motion.button
       type="button"
       whileTap={press.whileTap}
@@ -121,5 +132,20 @@ export function PostChip({
         </span>
       )}
     </motion.button>
+  );
+
+  if (!post.preview) return chip;
+
+  return (
+    <HoverCard>
+      <HoverCardTrigger asChild>{chip}</HoverCardTrigger>
+      <HoverCardContent aria-label={`Preview of ${post.title}`}>
+        <LinkedInPost
+          {...post.preview}
+          timestamp={post.time}
+          className="p-m shadow-none"
+        />
+      </HoverCardContent>
+    </HoverCard>
   );
 }
