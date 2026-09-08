@@ -460,17 +460,28 @@ loading it directly redirects to `/agent`; `/agent/[threadId]` deep links normal
 - Done when: send morphs without a flash, a timeline action starts a thread, every part
 renders, reduced motion works. Verified against a production build.
 
-### Phase 6 — Previews and expand
+### Phase 6 — Previews and expand ✅
 
 Wireframes: `agent/calendar - in agent chat.png`, `agent/analytics - in agent.png`, then
 `calendar/calendar page.png` for where the chat lands.
 
-- `PreviewSurface` in the composer dock with calendar and analytics previews kept alive
-by `Activity`, a dismiss chip, and an expand icon.
-- Expanding routes to the page, whose block shares the preview's `layoutId`, while the
-chat moves to the sidebar.
-- Done when: the preview grows out of the composer, expand morphs into the page, and
-returning to `/agent` puts the chat back in the center.
+- The conversation moved out of the page into `ChatProvider`, rendered by
+`WorkspaceShell` and fed the scripted replies and preview data by the workspace layout.
+This is the point where two places read it: `AgentWorkspace` in the main column and
+`ChatColumn`, which the shell mounts beside `/calendar` and `/analytics`. The column
+enters in flow by width so the page compresses in the same beat.
+- `ChatDock` is the composer wired to the conversation, used by both. Its
+`PreviewSurface` grows out of the frame above the chips; both previews stay mounted
+behind `Activity`, and only the visible one carries the shared `layoutId`, so a hidden
+one can never be what the page morphs from.
+- Expanding closes the preview, records a handoff, and routes to the page. The page's
+grid or chart carries the same `layoutId`; `PageTransition` skips its fade for that
+arrival so the morph is not dimmed, and the page fades its other content in itself.
+- The composer carries `layoutId="composer"` in both columns, so moving the chat morphs
+the box between them, and "New chat" morphs it back into the hero.
+- `/agent` with a conversation open shows the thread, and the URL settles to it. The
+calendar and analytics pages are the minimum that carries the ids; Phases 7 and 8 fill
+them in.
 
 ### Phase 7 — Calendar page
 

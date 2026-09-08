@@ -1,10 +1,14 @@
-import { PagePlaceholder } from "@/app/(workspace)/page-placeholder";
+import { AnalyticsPage as AnalyticsPageView } from "@/components/features/analytics/analytics-page";
+import { getAnalyticsOverview } from "@/services/analytics";
 
+/** Last month's numbers and the shape of them. Phase 8 adds the controls and breakdowns. */
 export default function AnalyticsPage() {
+  const overview = getAnalyticsOverview("1m");
+
   return (
-    <PagePlaceholder
-      title="Analytics"
-      note="The range control, the headline stats, and the charts land here."
+    <AnalyticsPageView
+      stats={overview.stats}
+      impressions={overview.impressions}
     />
   );
 }

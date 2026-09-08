@@ -4,19 +4,31 @@ import { AnimatePresence, LayoutGroup } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useState } from "react";
 
+import {
+  ChatProvider,
+  type PreviewData,
+  useChat,
+} from "@/components/features/agent/chat-provider";
+import type { ComposerPreview } from "@/components/features/agent/composer";
 import { AccountControls, type AccountUser } from "@/components/layout/account";
+import { ChatColumn } from "@/components/layout/chat-column";
 import {
   Sidebar,
   SidebarExpandButton,
   type SidebarNavKey,
   type SidebarThread,
 } from "@/components/layout/sidebar";
+import type { ScriptedReply } from "@/services/agent";
 
 interface WorkspaceShellProps {
   orgName: string;
   orgLogoUrl?: string;
   threads: readonly SidebarThread[];
   user: AccountUser;
+  /** The agent's scripted answers, for the conversation the shell owns. */
+  replies: { default: ScriptedReply; schedule: ScriptedReply };
+  /** What the composer's Calendar and Analytics chips open. */
+  previews: PreviewData;
   children: ReactNode;
 }
 
@@ -43,22 +55,48 @@ function threadIdFor(pathname: string): string | undefined {
 }
 
 /**
+ * Where the chat goes. It fills the page on `/agent`; beside the calendar and
+ * analytics it is a column on the right; everywhere else it is put away.
+ */
+function chatColumnFor(pathname: string): ComposerPreview | undefined {
+  if (pathname.startsWith("/calendar")) return "calendar";
+  if (pathname.startsWith("/analytics")) return "analytics";
+  return undefined;
+}
+
+/**
  * The signed-in shell: rail on the background, page on a surface that rounds
  * into it. Everything lives in one `LayoutGroup` so shared `layoutId`s survive
- * a route change, which is what later lets the chat move between columns.
+ * a route change, which is what lets the chat move between columns. The
+ * conversation is owned here, above the pages, for the same reason.
  */
 export function WorkspaceShell({
+  replies,
+  previews,
+  children,
+  ...frame
+}: WorkspaceShellProps) {
+  return (
+    <ChatProvider replies={replies} previews={previews}>
+      <WorkspaceFrame {...frame}>{children}</WorkspaceFrame>
+    </ChatProvider>
+  );
+}
+
+function WorkspaceFrame({
   orgName,
   orgLogoUrl,
   threads,
   user,
   children,
-}: WorkspaceShellProps) {
+}: Omit<WorkspaceShellProps, "replies" | "previews">) {
   const pathname = usePathname();
   const router = useRouter();
+  const chat = useChat();
   const [collapsed, setCollapsed] = useState(false);
   const activeKey = navKeyFor(pathname);
   const activeThreadId = threadIdFor(pathname);
+  const chatColumn = chatColumnFor(pathname);
 
   return (
     <LayoutGroup>
@@ -72,12 +110,16 @@ export function WorkspaceShell({
           collapsed={collapsed}
           onCollapsedChange={setCollapsed}
           onNavigate={(key) => {
+            // A preview left open would follow the chat into its column.
+            chat.setPreview(null);
             router.push(`/${key}`);
           }}
           onNewPost={() => {
+            chat.reset();
             router.push("/agent");
           }}
           onOpenThread={(id) => {
+            chat.setPreview(null);
             router.push(`/agent/${id}`);
           }}
         />
@@ -110,8 +152,15 @@ export function WorkspaceShell({
               }}
             />
           </div>
-          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-            {children}
+          <div className="flex min-h-0 flex-1">
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
+              {children}
+            </div>
+            <AnimatePresence initial={false}>
+              {chatColumn === undefined ? null : (
+                <ChatColumn key="chat" page={chatColumn} />
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@
 import { cn } from "cn";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   LandingBelow,
@@ -17,17 +17,16 @@ import {
   MonthCalendar,
 } from "@/components/features/agent/agent-landing-2";
 import { AgentThread } from "@/components/features/agent/agent-thread";
-import { Composer } from "@/components/features/agent/composer";
-import { PostContext } from "@/components/features/agent/post-context";
+import { ChatDock } from "@/components/features/agent/chat-dock";
+import { useChat } from "@/components/features/agent/chat-provider";
 import type { TimelineEntry } from "@/components/features/agent/timeline";
 import type {
   ChartDatum,
   ChartSeries,
 } from "@/components/features/analytics/chart-block";
 import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
-import type { PostChipData } from "@/components/features/calendar/post-chip";
 import type { UpNextItem } from "@/components/features/calendar/up-next-list";
-import type { AgentMessage, ScriptedReply } from "@/services/agent";
+import type { AgentMessage } from "@/services/agent";
 import { blurOut, fade } from "@/styles/motion";
 
 export interface LandingData {
@@ -50,128 +49,51 @@ export interface LandingData {
 export type LandingLayout = "split" | "centered";
 
 interface AgentWorkspaceProps {
-  /**
-   * Played back part by part on every send, since there is no model here.
-   * Scheduling confirms a slot; everything else drafts.
-   */
-  replies: { default: ScriptedReply; schedule: ScriptedReply };
   /** Present on `/agent`, where the composer starts as the hero. */
   landing?: LandingData;
   landingLayout?: LandingLayout;
-  /** Present on `/agent/[threadId]`, where the thread is already open. */
-  messages?: readonly AgentMessage[];
+  /** Present on `/agent/[threadId]`, where a stored thread is already open. */
+  thread?: { id: string; messages: readonly AgentMessage[] };
 }
-
-interface Streaming {
-  messageId: string;
-  revealed: number;
-  reply: ScriptedReply;
-}
-
-/** How long the thinking state holds, then the gap between parts. */
-const THINK_MS = 1400;
-const PART_MS = 700;
-
-/** A live conversation is not stored, so its URL is not a real thread id. */
-const NEW_THREAD_PATH = "/agent/new";
-
-/** What pressing a button in a reply says on the user's behalf. */
-const INTENT_PROMPT: Record<string, string> = {
-  schedule: "Schedule it.",
-  edit: "I want to edit it first.",
-  regenerate: "Try another angle.",
-  move: "Move it to another day.",
-  unschedule: "Take it off the calendar.",
-  "browse-files": "Let me pick from the files.",
-};
 
 /**
  * `/agent`, in both of its modes. The landing and the thread are one component
  * so the composer is one element: on send it stays mounted and slides from the
  * hero position down into the dock while everything around it gives way.
+ *
+ * The conversation itself lives in `ChatProvider`, above the page, so leaving
+ * for the calendar or analytics keeps it and coming back finds it here.
  */
 export function AgentWorkspace({
-  replies,
   landing,
   landingLayout = "split",
-  messages: initialMessages,
+  thread,
 }: AgentWorkspaceProps) {
   const router = useRouter();
   const reduceMotion = useReducedMotion();
-  const [messages, setMessages] = useState<readonly AgentMessage[]>(
-    initialMessages ?? [],
-  );
-  const [streaming, setStreaming] = useState<Streaming | null>(null);
-  const [draft, setDraft] = useState("");
-  const [attached, setAttached] = useState<PostChipData | null>(null);
+  const chat = useChat();
+  const { open } = chat;
   const [handled, setHandled] = useState<readonly string[]>([]);
-  const [onLanding, setOnLanding] = useState(landing !== undefined);
-  const turns = useRef(0);
 
-  // The reply arrives a part at a time: the thinking state holds, then the rest.
+  // A stored thread becomes the open conversation. Until the provider has it,
+  // render what the page brought, so the switch has no blank frame.
   useEffect(() => {
-    if (streaming === null) return;
-    const { messageId, revealed, reply } = streaming;
-    const next = revealed + 1;
+    if (thread !== undefined) open(thread.id, thread.messages);
+  }, [thread, open]);
+  const synced = thread === undefined || chat.threadId === thread.id;
+  const messages = synced ? chat.messages : thread.messages;
 
-    const timer = window.setTimeout(
-      () => {
-        setMessages((current) =>
-          current.map((message) =>
-            message.id === messageId
-              ? { ...message, parts: reply.parts.slice(0, next) }
-              : message,
-          ),
-        );
-        setStreaming(
-          next < reply.parts.length
-            ? { messageId, revealed: next, reply }
-            : null,
-        );
-      },
-      revealed === 0 ? THINK_MS : PART_MS,
-    );
+  const onLanding = landing !== undefined && chat.threadId === null;
 
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [streaming]);
+  // No navigation on the first send: the composer has to survive the morph.
+  // The URL catches up instead, so the rail reads as a thread and a reload of
+  // the live one lands back on the page. Coming back to `/agent` with a
+  // conversation open shows it, and the same effect settles the URL then.
+  useEffect(() => {
+    if (landing === undefined || chat.threadId === null) return;
+    window.history.replaceState(null, "", `/agent/${chat.threadId}`);
+  }, [landing, chat.threadId]);
 
-  function send(text: string, intent = "default") {
-    turns.current += 1;
-    const turn = String(turns.current);
-    const messageId = `reply-${turn}`;
-
-    setMessages((current) => [
-      ...current,
-      { id: `user-${turn}`, role: "user", parts: [{ type: "text", text }] },
-      { id: messageId, role: "assistant", parts: [] },
-    ]);
-    setStreaming({
-      messageId,
-      revealed: 0,
-      reply:
-        intent === "schedule" || intent === "approve"
-          ? replies.schedule
-          : replies.default,
-    });
-    setDraft("");
-    setAttached(null);
-
-    if (onLanding) {
-      setOnLanding(false);
-      // No navigation: the composer has to survive the morph. The URL catches
-      // up so the rail reads as a thread, and a reload lands back on the page.
-      window.history.replaceState(null, "", NEW_THREAD_PATH);
-    }
-  }
-
-  /** An attached post rides along in the message, the way a person would say it. */
-  function sendDraft(text: string) {
-    send(attached === null ? text : `About "${attached.title}": ${text}`);
-  }
-
-  const showLanding = landing !== undefined && onLanding;
   const centered = landingLayout === "centered";
   const pending = (landing?.timeline ?? []).filter(
     (entry) => !handled.includes(entry.id),
@@ -183,11 +105,8 @@ export function AgentWorkspace({
    * sitting on a bar, which is what keeps the move to one animation.
    */
   const composer = (
-    <Composer
+    <ChatDock
       variant={onLanding ? "hero" : "dock"}
-      value={draft}
-      onValueChange={setDraft}
-      onSend={sendDraft}
       animateLayout={!reduceMotion}
       // Split: spans the column, so it lines up with the calendar under it.
       // Centered: narrower than the cards and the month, so it reads as the
@@ -199,19 +118,6 @@ export function AgentWorkspace({
             : undefined
           : "sticky bottom-l z-10 mx-auto mt-l max-w-3xl"
       }
-      {...(attached === null
-        ? {}
-        : {
-            placeholder: "Ask about this post",
-            attachments: (
-              <PostContext
-                posts={[attached]}
-                onRemove={() => {
-                  setAttached(null);
-                }}
-              />
-            ),
-          })}
     />
   );
 
@@ -229,7 +135,7 @@ export function AgentWorkspace({
             have to be motion elements for that, which is why the wrappers are
             here rather than inside the landing pieces. */}
         <AnimatePresence initial={false} mode="popLayout">
-          {showLanding ? (
+          {onLanding ? (
             <motion.div key="intro" exit={blurOut} transition={fade.base}>
               {centered ? (
                 <CenteredIntro
@@ -249,20 +155,18 @@ export function AgentWorkspace({
         {onLanding ? null : (
           <AgentThread
             messages={messages}
-            thinking={streaming !== null}
-            {...(streaming === null
+            thinking={chat.thinking}
+            {...(chat.thinkingStatuses === undefined
               ? {}
-              : { thinkingStatuses: streaming.reply.statuses })}
-            onIntent={(intent) => {
-              send(INTENT_PROMPT[intent] ?? "Go ahead.", intent);
-            }}
+              : { thinkingStatuses: chat.thinkingStatuses })}
+            onIntent={chat.sendIntent}
           />
         )}
 
         {composer}
 
         <AnimatePresence initial={false} mode="popLayout">
-          {showLanding ? (
+          {onLanding ? (
             <motion.div
               key="below"
               exit={blurOut}
@@ -275,19 +179,19 @@ export function AgentWorkspace({
                     entries={pending}
                     onAction={(entry, action) => {
                       setHandled((current) => [...current, entry.id]);
-                      send(action.prompt ?? entry.title, action.intent);
+                      chat.send(action.prompt ?? entry.title, action.intent);
                     }}
                   />
                   <MonthCalendar
                     label={landing.month?.label ?? "Next two weeks"}
                     days={landing.month?.days ?? landing.days}
-                    onOpenPost={setAttached}
+                    onOpenPost={chat.setAttached}
                     onOpenCalendar={() => {
                       router.push("/calendar");
                     }}
-                    {...(attached === null
+                    {...(chat.attached === null
                       ? {}
-                      : { selectedPostId: attached.id })}
+                      : { selectedPostId: chat.attached.id })}
                   />
                 </div>
               ) : (
@@ -296,12 +200,12 @@ export function AgentWorkspace({
                   days={landing.days}
                   onAction={(entry, action) => {
                     setHandled((current) => [...current, entry.id]);
-                    send(action.prompt ?? entry.title, action.intent);
+                    chat.send(action.prompt ?? entry.title, action.intent);
                   }}
-                  onOpenPost={setAttached}
-                  {...(attached === null
+                  onOpenPost={chat.setAttached}
+                  {...(chat.attached === null
                     ? {}
-                    : { selectedPostId: attached.id })}
+                    : { selectedPostId: chat.attached.id })}
                 />
               )}
             </motion.div>
@@ -310,7 +214,7 @@ export function AgentWorkspace({
       </div>
 
       <AnimatePresence initial={false} mode="popLayout">
-        {showLanding && !centered ? (
+        {onLanding && !centered ? (
           <motion.aside
             key="rail"
             exit={{ opacity: 0, x: 24 }}

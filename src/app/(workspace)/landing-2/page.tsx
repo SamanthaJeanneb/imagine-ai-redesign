@@ -1,7 +1,7 @@
 import { AgentWorkspace } from "@/components/features/agent/agent-workspace";
 import { formatFullDate } from "@/lib/format";
 import { getNow } from "@/mocks/db";
-import { getScriptedReply, getTimeline } from "@/services/agent";
+import { getTimeline } from "@/services/agent";
 import { getLandingRail } from "@/services/analytics";
 import {
   getCalendarMonth,
@@ -23,10 +23,6 @@ export default function LandingTwoPage() {
   return (
     <AgentWorkspace
       landingLayout="centered"
-      replies={{
-        default: getScriptedReply(),
-        schedule: getScriptedReply("schedule"),
-      }}
       landing={{
         greeting: `Hi ${firstName ?? "there"}, what are we posting next?`,
         dateLabel: formatFullDate(getNow()),

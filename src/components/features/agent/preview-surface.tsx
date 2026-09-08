@@ -5,29 +5,33 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { fade, spring } from "@/styles/motion";
 
 interface PreviewSurfaceProps {
   open: boolean;
-  /** Visible label for the expand action, e.g. "Open calendar". */
+  /** Label for the expand action, e.g. "Open calendar". */
   expandLabel: string;
   onExpand?: () => void;
-  /** Shared layout id with the full page's grid or chart block. */
-  layoutId?: string;
   children: React.ReactNode;
   className?: string;
 }
 
 /**
  * The calendar or analytics preview that grows out of the composer frame.
- * Opening animates height with `spring.soft`; the expand affordance sits in
- * the top-right corner like the wireframe.
+ * The clip springs open on height; the content fades in a beat later; the
+ * expand affordance sits in the top-right corner like the wireframe. The
+ * children carry the shared `layoutId`, so what morphs into the page is the
+ * grid or the chart itself, not this frame.
  */
 export function PreviewSurface({
   open,
   expandLabel,
   onExpand,
-  layoutId,
   children,
   className,
 }: PreviewSurfaceProps) {
@@ -42,17 +46,17 @@ export function PreviewSurface({
           animate={
             reduceMotion ? { opacity: 1 } : { height: "auto", opacity: 1 }
           }
-          exit={reduceMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
+          exit={
+            reduceMotion
+              ? { opacity: 0, transition: fade.fast }
+              : { height: 0, opacity: 0, transition: fade.base }
+          }
           transition={spring.soft}
           className="overflow-hidden"
         >
-          <motion.div
-            layoutId={layoutId}
+          <div
             data-slot="preview-surface"
-            className={cn(
-              "mx-xs mb-xs flex flex-col gap-xs border-b border-imagine-border/70 px-xs pt-xs pb-xs",
-              className,
-            )}
+            className={cn("relative mx-xs mt-xs mb-xxs", className)}
           >
             <motion.div
               initial={{ opacity: 0 }}
@@ -61,20 +65,21 @@ export function PreviewSurface({
             >
               {children}
             </motion.div>
-            <Button
-              size="xs"
-              variant="ghost"
-              onClick={onExpand}
-              className="self-end text-imagine-foreground-muted"
-            >
-              {expandLabel}
-              <Icon
-                name="up-right-from-square"
-                size="s"
-                data-icon="inline-end"
-              />
-            </Button>
-          </motion.div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon-xs"
+                  variant="ghost"
+                  aria-label={expandLabel}
+                  onClick={onExpand}
+                  className="absolute top-xs right-xs z-10 bg-imagine-surface/80 text-imagine-foreground-muted backdrop-blur-sm hover:text-imagine-foreground"
+                >
+                  <Icon name="up-right-from-square" size="s" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left">{expandLabel}</TooltipContent>
+            </Tooltip>
+          </div>
         </motion.div>
       ) : null}
     </AnimatePresence>

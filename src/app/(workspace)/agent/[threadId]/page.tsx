@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { AgentWorkspace } from "@/components/features/agent/agent-workspace";
-import { getScriptedReply, getThread } from "@/services/agent";
+import { getThread } from "@/services/agent";
 
 export default async function ThreadPage({
   params,
@@ -16,12 +16,6 @@ export default async function ThreadPage({
   if (thread === null) redirect("/agent");
 
   return (
-    <AgentWorkspace
-      replies={{
-        default: getScriptedReply(),
-        schedule: getScriptedReply("schedule"),
-      }}
-      messages={thread.messages}
-    />
+    <AgentWorkspace thread={{ id: thread.id, messages: thread.messages }} />
   );
 }

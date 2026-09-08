@@ -19,6 +19,8 @@ const PREVIEW_OPTIONS: readonly {
   { key: "analytics", label: "Analytics", icon: "chart-simple" },
 ];
 
+const ALL_PREVIEWS: readonly ComposerPreview[] = ["calendar", "analytics"];
+
 interface ComposerProps {
   /** `hero` is the landing prompt; `dock` is the thread's bottom bar. */
   variant?: "hero" | "dock";
@@ -30,6 +32,10 @@ interface ComposerProps {
   preview?: ComposerPreview | null;
   /** Without this the preview chips are not offered at all. */
   onPreviewChange?: (preview: ComposerPreview | null) => void;
+  /** Which previews to offer. The calendar page's chat has no use for a calendar chip. */
+  previews?: readonly ComposerPreview[];
+  /** Shared with the other dock, so the box morphs when the chat changes column. */
+  layoutId?: string;
   /** The open preview surface, rendered above the input. */
   children?: React.ReactNode;
   /** Context attached to the next message (e.g. `PostContext`). Sits above the input. */
@@ -52,6 +58,8 @@ export function Composer({
   placeholder = "Ask about your LinkedIn, or describe a post",
   preview = null,
   onPreviewChange,
+  previews = ALL_PREVIEWS,
+  layoutId,
   children,
   attachments,
   onAttach,
@@ -70,6 +78,7 @@ export function Composer({
   return (
     <motion.div
       layout={animateLayout}
+      layoutId={animateLayout ? layoutId : undefined}
       transition={spring.soft}
       data-slot="composer"
       data-variant={variant}
@@ -80,11 +89,17 @@ export function Composer({
         className,
       )}
     >
+      {/* The preview sits on top, like the wireframe: the open chip below it
+          is the way to dismiss, the corner icon the way to expand. */}
+      {children}
+
       {isDock && onPreviewChange ? (
         <div className="flex items-center gap-xs px-xs pt-xxs pb-xs">
           <AnimatePresence initial={false} mode="popLayout">
             {PREVIEW_OPTIONS.filter(
-              (option) => preview === null || option.key === preview,
+              (option) =>
+                previews.includes(option.key) &&
+                (preview === null || option.key === preview),
             ).map((option) => {
               const active = option.key === preview;
               return (
@@ -124,8 +139,6 @@ export function Composer({
           </AnimatePresence>
         </div>
       ) : null}
-
-      {children}
 
       {attachments ? (
         <div
