@@ -45,6 +45,7 @@ import {
   PostChipDemo,
   PostDraftDemo,
   ProfileSelectorDemo,
+  ResourceContextDemo,
   ProfilesDemo,
   ScheduledGraphicDemo,
   SidebarDemo,
@@ -347,6 +348,10 @@ export function Kit({ radiusScale = "default" }: KitProps) {
 
         <Section title="Complete Files workspace">
           <FilesWorkspacePageDemo />
+        </Section>
+
+        <Section title="File and asset chat context">
+          <ResourceContextDemo />
         </Section>
 
         <Section title="Composer">

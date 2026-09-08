@@ -9,6 +9,7 @@ import {
   type FileNode,
   type FileSection,
 } from "@/components/features/files/file-tree";
+import type { FileResource } from "@/components/features/files/resource-drag";
 import { type AssetTileData } from "@/components/features/files/asset-tile";
 import {
   type Skill,
@@ -31,9 +32,12 @@ interface FilesPanelProps {
   activeAssetId?: string;
   onOpenFile?: (id: string) => void;
   onEditFile?: (id: string) => void;
+  onAttachFile?: (file: FileResource) => void;
   onOpenAsset?: (asset: AssetTileData) => void;
   /** Larger asset tiles on the full Files route. */
   assetSize?: "sm" | "default";
+  /** Explains the chat-only drag interaction. */
+  dragHint?: boolean;
   onToggleSkill?: (id: string, enabled: boolean) => void;
   /** Opens a skill's markdown in an editor tab. */
   onOpenSkillFile?: (id: string) => void;
@@ -90,8 +94,10 @@ export function FilesPanel({
   activeAssetId,
   onOpenFile,
   onEditFile,
+  onAttachFile,
   onOpenAsset,
   assetSize = "sm",
+  dragHint = false,
   onToggleSkill,
   onOpenSkillFile,
   openSkillId,
@@ -162,6 +168,7 @@ export function FilesPanel({
                 activeAssetId={activeAssetId}
                 onOpenFile={onOpenFile}
                 onEditFile={onEditFile}
+                onAttachFile={onAttachFile}
                 onOpenAsset={onOpenAsset}
                 onShowAllAssets={(id) => {
                   setExpandedAssetIds((current) =>
@@ -170,6 +177,7 @@ export function FilesPanel({
                 }}
                 expandedAssetIds={expandedAssetIds}
                 assetSize={assetSize}
+                draggableResources={dragHint}
                 className="pr-s"
               />
             )}
@@ -187,6 +195,12 @@ export function FilesPanel({
           </ScrollArea>
         </TabsContent>
       </Tabs>
+      {dragHint ? (
+        <div className="flex items-center gap-s border-t border-imagine-border px-xs pt-m type-small text-imagine-foreground-muted">
+          <Icon name="paperclip" size="s" />
+          Drag a file or asset into chat
+        </div>
+      ) : null}
     </motion.aside>
   );
 }

@@ -13,6 +13,7 @@ import {
 import type { ComposerPreview } from "@/components/features/agent/composer";
 import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
+import type { DraggableResource } from "@/components/features/files/resource-drag";
 import type { AgentMessage, ScriptedReply } from "@/services/agent";
 import type { PreviewChart } from "@/services/analytics";
 
@@ -25,16 +26,30 @@ export interface PreviewData {
   analytics: readonly PreviewChart[];
 }
 
-/** What the next message is about: a post from the calendar, or a chart. */
+/** What the next message is about: a post, chart, workspace file, or asset. */
 export type ChatAttachment =
-  { kind: "post"; post: PostChipData } | { kind: "chart"; chart: PreviewChart };
+  | { kind: "post"; post: PostChipData }
+  | { kind: "chart"; chart: PreviewChart }
+  | DraggableResource;
 
 /** Both kinds carry an id and a title; this is the one the chat speaks about. */
 function subject(
   attachment: ChatAttachment | null,
 ): { id: string; title: string } | null {
   if (attachment === null) return null;
-  return attachment.kind === "post" ? attachment.post : attachment.chart;
+  switch (attachment.kind) {
+    case "post":
+      return attachment.post;
+    case "chart":
+      return attachment.chart;
+    case "file":
+      return attachment.file;
+    case "asset":
+      return {
+        id: attachment.asset.id,
+        title: attachment.asset.caption ?? "Untitled asset",
+      };
+  }
 }
 
 interface Streaming {
@@ -75,7 +90,9 @@ export interface ChatActions {
   /** A button in a reply, pressed: says the intent on the user's behalf. */
   sendIntent: (intent: string) => void;
   setDraft: (draft: string) => void;
-  /** Attach a post or a chart. Attaching what is attached already detaches it. */
+  /** Replace the next-message context, used by drag and drop. */
+  attach: (next: ChatAttachment) => void;
+  /** Attach context. Attaching the current subject again detaches it. */
   toggleAttached: (next: ChatAttachment) => void;
   clearAttached: () => void;
   setPreview: (preview: ComposerPreview | null) => void;
@@ -207,6 +224,10 @@ export function ChatProvider({
     );
   }, []);
 
+  const attach = useCallback((next: ChatAttachment) => {
+    setAttached(next);
+  }, []);
+
   const clearAttached = useCallback(() => {
     setAttached(null);
   }, []);
@@ -263,6 +284,7 @@ export function ChatProvider({
       send,
       sendIntent,
       setDraft,
+      attach,
       toggleAttached,
       clearAttached,
       setPreview,
@@ -283,6 +305,7 @@ export function ChatProvider({
       previews,
       send,
       sendIntent,
+      attach,
       toggleAttached,
       clearAttached,
       setPreview,

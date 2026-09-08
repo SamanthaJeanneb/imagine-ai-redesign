@@ -11,6 +11,7 @@ import {
 } from "@/components/features/agent/composer";
 import { PostContext } from "@/components/features/agent/post-context";
 import { PreviewSurface } from "@/components/features/agent/preview-surface";
+import { ResourceContext } from "@/components/features/agent/resource-context";
 import { ChartCard } from "@/components/features/analytics/chart-card";
 import { CalendarGrid } from "@/components/features/calendar/calendar-grid";
 
@@ -71,6 +72,7 @@ export function ChatDock({
       value={chat.draft}
       onValueChange={chat.setDraft}
       onSend={chat.send}
+      onResourceDrop={chat.attach}
       animateLayout={animateLayout}
       layoutId={COMPOSER_LAYOUT_ID}
       className={className}
@@ -93,15 +95,28 @@ export function ChatDock({
                 />
               ),
             }
-          : {
-              placeholder: "Ask about this chart",
-              attachments: (
-                <ChartContext
-                  chart={attached.chart}
-                  onRemove={chat.clearAttached}
-                />
-              ),
-            })}
+          : attached.kind === "chart"
+            ? {
+                placeholder: "Ask about this chart",
+                attachments: (
+                  <ChartContext
+                    chart={attached.chart}
+                    onRemove={chat.clearAttached}
+                  />
+                ),
+              }
+            : {
+                placeholder:
+                  attached.kind === "file"
+                    ? "Ask about this file"
+                    : "Ask about this asset",
+                attachments: (
+                  <ResourceContext
+                    resource={attached}
+                    onRemove={chat.clearAttached}
+                  />
+                ),
+              })}
     >
       {isDock ? (
         <PreviewSurface

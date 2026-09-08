@@ -6,6 +6,7 @@ import {
   AssetTile,
   type AssetTileData,
 } from "@/components/features/files/asset-tile";
+import { writeResourceDrag } from "@/components/features/files/resource-drag";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 
 interface AssetGridProps {
@@ -17,6 +18,7 @@ interface AssetGridProps {
   onShowAll?: () => void;
   /** Tile size. `sm` is the files tree, `default` is the Files page. */
   size?: "sm" | "default";
+  draggableResources?: boolean;
   className?: string;
 }
 
@@ -31,6 +33,7 @@ export function AssetGrid({
   onSelect,
   onShowAll,
   size = "default",
+  draggableResources = false,
   className,
 }: AssetGridProps) {
   const shown = limit === undefined ? assets : assets.slice(0, limit);
@@ -50,11 +53,30 @@ export function AssetGrid({
     >
       {shown.map((asset) => (
         <StaggerItem key={asset.id}>
-          <AssetTile
-            asset={asset}
-            selected={asset.id === selectedId}
-            onSelect={onSelect}
-          />
+          <div
+            draggable={draggableResources}
+            title={draggableResources ? "Drag to attach to chat" : undefined}
+            onDragStart={(event) => {
+              if (!draggableResources) return;
+              event.currentTarget.dataset["dragging"] = "true";
+              writeResourceDrag(event, { kind: "asset", asset });
+            }}
+            onDragEnd={(event) => {
+              delete event.currentTarget.dataset["dragging"];
+            }}
+            className="flex cursor-grab flex-col gap-xs transition-opacity active:cursor-grabbing data-[dragging=true]:opacity-40"
+          >
+            <AssetTile
+              asset={asset}
+              selected={asset.id === selectedId}
+              onSelect={onSelect}
+            />
+            {asset.caption ? (
+              <span className="truncate px-xxs type-small text-imagine-foreground-muted">
+                {asset.caption}
+              </span>
+            ) : null}
+          </div>
         </StaggerItem>
       ))}
       {overflow > 0 ? (

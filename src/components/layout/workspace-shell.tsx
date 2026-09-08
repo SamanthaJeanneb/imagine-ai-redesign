@@ -393,9 +393,12 @@ function WorkspaceFrame({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -6 }}
         transition={fade.fast}
+        data-slot="workspace-editor"
         className={cn(
           "pointer-events-none absolute inset-x-0 top-0 z-20 px-xxl",
-          activeDocument !== undefined && "bottom-28 bg-imagine-surface",
+          activeDocument !== undefined && "bg-imagine-surface",
+          activeDocument !== undefined &&
+            (chat.attached === null ? "bottom-28" : "bottom-48"),
         )}
       >
         <EditorTabStrip
@@ -481,9 +484,20 @@ function WorkspaceFrame({
           {...(orgLogoUrl === undefined ? {} : { logoUrl: orgLogoUrl })}
           sections={fileSections}
           skills={skills}
+          dragHint
           {...(activeFileId === undefined ? {} : { activeFileId })}
+          {...(chat.attached?.kind === "asset"
+            ? { activeAssetId: chat.attached.asset.id }
+            : {})}
           onOpenFile={setActiveFileId}
           onEditFile={openEditor}
+          onAttachFile={(file) => {
+            setActiveFileId(file.id);
+            chat.attach({ kind: "file", file });
+          }}
+          onOpenAsset={(asset) => {
+            chat.attach({ kind: "asset", asset });
+          }}
           onToggleSkill={(id, enabled) => {
             setSkills((current) =>
               current.map((skill) =>

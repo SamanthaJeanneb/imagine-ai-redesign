@@ -61,11 +61,6 @@ export function AssetTile({
           <Icon name="video" size="s" active />
         </span>
       ) : null}
-      {asset.caption && asset.src ? (
-        <span className="absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-imagine-foreground/60 to-transparent px-s pt-l pb-xs text-left type-micro text-imagine-primary-foreground opacity-0 transition-opacity group-hover/asset:opacity-100">
-          {asset.caption}
-        </span>
-      ) : null}
     </>
   );
 

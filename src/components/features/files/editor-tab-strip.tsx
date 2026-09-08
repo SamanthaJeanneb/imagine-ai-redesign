@@ -48,7 +48,10 @@ export function EditorTabStrip({
     >
       {/* Tabs start past the page's corner radius so the active tab meets a
           flat edge. The active tab drops 1px under the page to hide the seam. */}
-      <div role="tablist" className="flex items-end gap-xxs pt-xs pr-xs pl-l">
+      <div
+        role="tablist"
+        className="flex items-end gap-xxs border-b border-imagine-border pt-xs pr-xs pl-l"
+      >
         <AnimatePresence initial={false}>
           {tabs.map((tab) => {
             const active = tab.id === activeId;
@@ -67,12 +70,12 @@ export function EditorTabStrip({
                     layoutId={indicatorId}
                     aria-hidden="true"
                     transition={spring.snappy}
-                    className="absolute inset-0 rounded-t-control bg-imagine-surface shadow-raised"
+                    className="absolute inset-0 rounded-t-control bg-imagine-surface shadow-floating ring-1 ring-imagine-border"
                   />
                 ) : (
                   <span
                     aria-hidden="true"
-                    className="absolute inset-x-0 top-0 bottom-px rounded-t-control transition-colors group-hover/tab:bg-imagine-surface/50"
+                    className="absolute inset-x-0 top-0 bottom-px rounded-t-control transition-colors group-hover/tab:bg-imagine-surface-raised"
                   />
                 )}
                 <div

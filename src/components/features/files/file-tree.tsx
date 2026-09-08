@@ -6,6 +6,10 @@ import { useState } from "react";
 
 import { AssetGrid } from "@/components/features/files/asset-grid";
 import { type AssetTileData } from "@/components/features/files/asset-tile";
+import {
+  type FileResource,
+  writeResourceDrag,
+} from "@/components/features/files/resource-drag";
 import { Disclosure } from "@/components/motion/disclosure";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -36,11 +40,13 @@ interface FileTreeProps {
   activeAssetId?: string;
   onOpenFile?: (id: string) => void;
   onEditFile?: (id: string) => void;
+  onAttachFile?: (file: FileResource) => void;
   onOpenAsset?: (asset: AssetTileData) => void;
   onShowAllAssets?: (nodeId: string) => void;
   expandedAssetIds?: readonly string[];
   /** Tile size for asset rows. */
   assetSize?: "sm" | "default";
+  draggableResources?: boolean;
   className?: string;
 }
 
@@ -71,17 +77,34 @@ function FileRow({
   active,
   onOpen,
   onEdit,
+  onAttach,
+  draggableResources,
 }: {
   node: Extract<FileNode, { type: "file" }>;
   active: boolean;
   onOpen?: (id: string) => void;
   onEdit?: (id: string) => void;
+  onAttach?: (file: FileResource) => void;
+  draggableResources: boolean;
 }) {
   return (
     <div
+      draggable={draggableResources}
+      title={draggableResources ? "Drag to attach to chat" : undefined}
+      onDragStart={(event) => {
+        if (!draggableResources) return;
+        event.currentTarget.dataset["dragging"] = "true";
+        writeResourceDrag(event, {
+          kind: "file",
+          file: { id: node.id, title: node.name },
+        });
+      }}
+      onDragEnd={(event) => {
+        delete event.currentTarget.dataset["dragging"];
+      }}
       className={cn(
-        "group/file relative flex h-8 items-center gap-s rounded-control pr-xs pl-s transition-colors hover:bg-imagine-surface-raised",
-        active && "selection-gradient-soft hover:bg-transparent",
+        "group/file relative flex h-8 cursor-grab items-center gap-s rounded-control pr-xs pl-s transition-[background-color,opacity] hover:bg-imagine-surface-raised active:cursor-grabbing data-[dragging=true]:opacity-40",
+        active && "bg-imagine-secondary-soft hover:bg-imagine-secondary-soft",
       )}
     >
       {active ? (
@@ -111,6 +134,19 @@ function FileRow({
           {node.name}
         </span>
       </button>
+      {onAttach ? (
+        <Button
+          size="icon-xs"
+          variant="ghost"
+          aria-label={`Attach ${node.name} to chat`}
+          onClick={() => {
+            onAttach({ id: node.id, title: node.name });
+          }}
+          className="text-imagine-foreground-faint opacity-0 transition-opacity group-hover/file:opacity-100 focus-visible:opacity-100"
+        >
+          <Icon name="paperclip" size="s" />
+        </Button>
+      ) : null}
       {onEdit ? (
         <Button
           size="icon-xs"
@@ -136,9 +172,11 @@ function Nodes({
   assetSize,
   onOpenFile,
   onEditFile,
+  onAttachFile,
   onOpenAsset,
   onShowAllAssets,
   expandedAssetIds,
+  draggableResources,
 }: {
   nodes: readonly FileNode[];
   depth: number;
@@ -149,9 +187,11 @@ function Nodes({
   | "assetSize"
   | "onOpenFile"
   | "onEditFile"
+  | "onAttachFile"
   | "onOpenAsset"
   | "onShowAllAssets"
   | "expandedAssetIds"
+  | "draggableResources"
 >) {
   const [closed, setClosed] = useState<ReadonlySet<string>>(new Set());
 
@@ -175,6 +215,8 @@ function Nodes({
               active={node.id === activeFileId}
               onOpen={onOpenFile}
               onEdit={onEditFile}
+              onAttach={onAttachFile}
+              draggableResources={draggableResources ?? false}
             />
           ) : node.type === "folder" ? (
             <>
@@ -210,9 +252,11 @@ function Nodes({
                   assetSize={assetSize}
                   onOpenFile={onOpenFile}
                   onEditFile={onEditFile}
+                  onAttachFile={onAttachFile}
                   onOpenAsset={onOpenAsset}
                   onShowAllAssets={onShowAllAssets}
                   expandedAssetIds={expandedAssetIds}
+                  draggableResources={draggableResources}
                 />
               </Disclosure>
             </>
@@ -239,6 +283,7 @@ function Nodes({
                 size={assetSize}
                 onSelect={onOpenAsset}
                 onShowAll={() => onShowAllAssets?.(node.id)}
+                draggableResources={draggableResources}
                 className="px-s"
               />
             </div>
@@ -260,10 +305,12 @@ export function FileTree({
   activeAssetId,
   onOpenFile,
   onEditFile,
+  onAttachFile,
   onOpenAsset,
   onShowAllAssets,
   expandedAssetIds,
   assetSize = "sm",
+  draggableResources = false,
   className,
 }: FileTreeProps) {
   const [closed, setClosed] = useState<ReadonlySet<string>>(new Set());
@@ -328,9 +375,11 @@ export function FileTree({
                   assetSize={assetSize}
                   onOpenFile={onOpenFile}
                   onEditFile={onEditFile}
+                  onAttachFile={onAttachFile}
                   onOpenAsset={onOpenAsset}
                   onShowAllAssets={onShowAllAssets}
                   expandedAssetIds={expandedAssetIds}
+                  draggableResources={draggableResources}
                 />
               </div>
             </Disclosure>

@@ -22,6 +22,7 @@ import {
 } from "@/components/features/agent/linkedin-post-draft";
 import { PostContext } from "@/components/features/agent/post-context";
 import { PreviewSurface } from "@/components/features/agent/preview-surface";
+import { ResourceContext } from "@/components/features/agent/resource-context";
 import { ScheduledGraphic } from "@/components/features/agent/scheduled-graphic";
 import { ProfileSelector } from "@/components/features/agent/profile-selector";
 import {
@@ -1092,6 +1093,7 @@ export function FilesPanelDemo() {
           <FilesPanel
             title="Acme"
             logoUrl={ACME_LOGO}
+            dragHint
             sections={FILE_SECTIONS}
             skills={skills}
             activeFileId={activeFile}
@@ -1101,6 +1103,9 @@ export function FilesPanelDemo() {
             onOpenSkillFile={openSkillFile}
             onEditFile={(id) => {
               toast(`Edit ${id}`);
+            }}
+            onAttachFile={(file) => {
+              toast(`Attached ${file.title}`);
             }}
             onOpenAsset={(asset) => {
               toast(asset.caption ?? asset.id);
@@ -1187,6 +1192,33 @@ export function FilesWorkspacePageDemo() {
           sections={FILE_SECTIONS}
           skills={SKILLS}
           documents={KIT_DOCUMENTS}
+        />
+      </div>
+    </Demo>
+  );
+}
+
+export function ResourceContextDemo() {
+  return (
+    <Demo label="Files and assets attached to chat">
+      <div className="flex flex-wrap gap-m bg-imagine-surface p-l">
+        <ResourceContext
+          resource={{
+            kind: "file",
+            file: { id: "f1", title: "brand-voice.md" },
+          }}
+          onRemove={() => {
+            toast("Removed brand-voice.md");
+          }}
+        />
+        <ResourceContext
+          resource={{
+            kind: "asset",
+            asset: ASSETS[1] ?? { id: "a2", kind: "image" },
+          }}
+          onRemove={() => {
+            toast("Removed asset");
+          }}
         />
       </div>
     </Demo>

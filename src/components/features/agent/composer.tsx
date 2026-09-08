@@ -2,8 +2,13 @@
 
 import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
+import {
+  hasResourceDrag,
+  readResourceDrag,
+  type DraggableResource,
+} from "@/components/features/files/resource-drag";
 import { Button } from "@/components/ui/button";
 import { Icon, type IconName } from "@/components/ui/icon";
 import { spring } from "@/styles/motion";
@@ -40,6 +45,8 @@ interface ComposerProps {
   children?: React.ReactNode;
   /** Context attached to the next message (e.g. `PostContext`). Sits above the input. */
   attachments?: React.ReactNode;
+  /** Files and assets can be dropped directly onto the composer. */
+  onResourceDrop?: (resource: DraggableResource) => void;
   onAttach?: () => void;
   /** Off for reduced motion, where the hero should not slide into the dock. */
   animateLayout?: boolean;
@@ -62,11 +69,14 @@ export function Composer({
   layoutId,
   children,
   attachments,
+  onResourceDrop,
   onAttach,
   animateLayout = true,
   className,
 }: ComposerProps) {
   const [focused, setFocused] = useState(false);
+  const [dropActive, setDropActive] = useState(false);
+  const dragDepth = useRef(0);
   const canSend = value.trim().length > 0;
   const isDock = variant === "dock";
 
@@ -82,13 +92,68 @@ export function Composer({
       transition={spring.soft}
       data-slot="composer"
       data-variant={variant}
+      data-drop-active={dropActive ? "true" : "false"}
+      onDragEnter={(event) => {
+        if (
+          onResourceDrop === undefined ||
+          !hasResourceDrag(Array.from(event.dataTransfer.types))
+        ) {
+          return;
+        }
+        event.preventDefault();
+        dragDepth.current += 1;
+        setDropActive(true);
+      }}
+      onDragOver={(event) => {
+        if (
+          onResourceDrop === undefined ||
+          !hasResourceDrag(Array.from(event.dataTransfer.types))
+        ) {
+          return;
+        }
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "copy";
+      }}
+      onDragLeave={(event) => {
+        if (!hasResourceDrag(Array.from(event.dataTransfer.types))) return;
+        dragDepth.current = Math.max(0, dragDepth.current - 1);
+        if (dragDepth.current === 0) setDropActive(false);
+      }}
+      onDrop={(event) => {
+        if (onResourceDrop === undefined) return;
+        const resource = readResourceDrag(event.dataTransfer);
+        if (resource === null) return;
+        event.preventDefault();
+        dragDepth.current = 0;
+        setDropActive(false);
+        onResourceDrop(resource);
+      }}
       className={cn(
-        "flex w-full flex-col rounded-panel bg-imagine-surface shadow-floating transition-shadow",
+        "relative isolate flex w-full flex-col rounded-panel bg-imagine-surface shadow-floating transition-shadow",
         isDock ? "p-xs" : "p-s",
         focused && "ring-2 ring-imagine-secondary-soft",
         className,
       )}
     >
+      <AnimatePresence initial={false}>
+        {dropActive ? (
+          <motion.div
+            key="drop-target"
+            initial={{ opacity: 0, transform: "scale(0.98)" }}
+            animate={{ opacity: 1, transform: "scale(1)" }}
+            exit={{ opacity: 0, transform: "scale(0.98)" }}
+            transition={spring.snappy}
+            aria-live="polite"
+            className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center rounded-panel border-2 border-imagine-secondary bg-imagine-surface shadow-floating"
+          >
+            <span className="flex items-center gap-s rounded-control bg-imagine-secondary px-m py-s type-small font-medium text-imagine-secondary-foreground shadow-control">
+              <Icon name="paperclip" size="s" />
+              Drop to attach
+            </span>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
       {/* The preview sits on top, like the wireframe: the open chip below it
           is the way to dismiss, the corner icon the way to expand. */}
       {children}

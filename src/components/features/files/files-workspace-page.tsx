@@ -7,7 +7,10 @@ import {
   AssetTile,
   type AssetTileData,
 } from "@/components/features/files/asset-tile";
-import type { FileSection } from "@/components/features/files/file-tree";
+import type {
+  FileNode,
+  FileSection,
+} from "@/components/features/files/file-tree";
 import { MarkdownEditor } from "@/components/features/files/markdown-editor";
 import type { Skill } from "@/components/features/files/skills-list";
 import { FilesPanel } from "@/components/layout/files-panel";
@@ -25,6 +28,24 @@ interface FilesWorkspacePageProps {
 
 type Selection =
   { kind: "document"; id: string } | { kind: "asset"; asset: AssetTileData };
+
+function countLibrary(nodes: readonly FileNode[]): {
+  documents: number;
+  assets: number;
+} {
+  let documents = 0;
+  let assets = 0;
+  for (const node of nodes) {
+    if (node.type === "file") documents += 1;
+    else if (node.type === "assets") assets += node.assets.length;
+    else {
+      const nested = countLibrary(node.children);
+      documents += nested.documents;
+      assets += nested.assets;
+    }
+  }
+  return { documents, assets };
+}
 
 /**
  * Full-page Files route. The searchable tree is the same one the chat opens;
@@ -56,6 +77,7 @@ export function FilesWorkspacePage({
     selection?.kind === "document"
       ? documents.find((document) => document.id === selection.id)
       : undefined;
+  const library = countLibrary(sections.flatMap((section) => section.nodes));
 
   const openDocument = (id: string) => {
     if (documents.some((document) => document.id === id)) {
@@ -64,9 +86,14 @@ export function FilesWorkspacePage({
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-xl">
-      <h1 className="type-title">Files</h1>
-      <div className="flex min-h-0 flex-1 overflow-hidden border border-imagine-border bg-imagine-surface">
+    <div className="flex min-h-0 flex-1 flex-col gap-l">
+      <header className="flex items-end justify-between gap-l">
+        <h1 className="type-title">Files</h1>
+        <p className="type-small text-imagine-foreground-muted">
+          {library.documents} documents and {library.assets} assets
+        </p>
+      </header>
+      <div className="flex min-h-0 flex-1 overflow-hidden rounded-panel border border-imagine-border bg-imagine-surface shadow-control">
         <FilesPanel
           title={title}
           {...(logoUrl === undefined ? {} : { logoUrl })}

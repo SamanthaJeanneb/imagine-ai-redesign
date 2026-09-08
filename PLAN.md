@@ -534,6 +534,9 @@ Wireframes: `file-system/file system - right sidebar.png`,
 - Opening a workspace or skill markdown file adds it beside the persistent Current chat
   tab. The editor overlays only the conversation body, so save, revert, tab switching,
   and close animate while the docked composer keeps the same bounds.
+- Files and media assets can be dragged from the panel into the composer, which becomes
+  a clear drop target and renders the attached resource as next-message context. File
+  rows also expose a keyboard-focusable attach action.
 - `/files` reuses the panel at a wider size and places a document or asset preview beside
   it. Markdown edits save inline; assets select and expand without an inner card stack.
 - `workspace_search` chunks are grouped by `metadata.sourceFile` and scoped by
