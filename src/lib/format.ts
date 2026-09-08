@@ -92,6 +92,21 @@ export function formatTime(iso: string): string {
   return `${String(date.getUTCHours())}:${String(date.getUTCMinutes()).padStart(2, "0")}`;
 }
 
+/** "Tuesday". */
+export function formatWeekdayLong(iso: string): string {
+  return WEEKDAYS_LONG[new Date(iso).getUTCDay()] ?? "";
+}
+
+/** "Tue". */
+export function formatWeekdayShort(iso: string): string {
+  return weekdayShort(new Date(iso));
+}
+
+/** "Mon, 7 Sep". */
+export function formatDayShort(iso: string): string {
+  return `${formatWeekdayShort(iso)}, ${formatDayMonth(iso)}`;
+}
+
 /** "Tue 9:00". */
 export function formatDayTime(iso: string): string {
   const date = new Date(iso);

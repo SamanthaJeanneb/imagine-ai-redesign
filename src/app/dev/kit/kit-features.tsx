@@ -5,6 +5,8 @@ import { AnimatePresence } from "motion/react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import type { CalendarView } from "@/lib/calendar";
+
 import {
   AgentMessage,
   type MessagePart,
@@ -40,10 +42,7 @@ import {
   type CalendarDay,
   CalendarGrid,
 } from "@/components/features/calendar/calendar-grid";
-import {
-  CalendarToolbar,
-  type CalendarView,
-} from "@/components/features/calendar/calendar-toolbar";
+import { CalendarToolbar } from "@/components/features/calendar/calendar-toolbar";
 import {
   PostChip,
   type PostChipData,

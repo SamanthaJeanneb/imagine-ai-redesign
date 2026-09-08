@@ -7,9 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { SearchField } from "@/components/ui/search-field";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import type { CalendarView } from "@/lib/calendar";
 import { fade } from "@/styles/motion";
-
-export type CalendarView = "day" | "week" | "month";
 
 interface CalendarToolbarProps {
   /** "September 2026" or "8 to 14 Sep". */

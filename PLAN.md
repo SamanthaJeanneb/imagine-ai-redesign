@@ -483,16 +483,26 @@ the box between them, and "New chat" morphs it back into the hero.
 calendar and analytics pages are the minimum that carries the ids; Phases 7 and 8 fill
 them in.
 
-### Phase 7 — Calendar page
+### Phase 7 — Calendar page ✅
 
 Wireframes: `calendar/calendar page.png`, plus `landing(agent).png` for the compact
 strip.
 
-- Toolbar (previous, Today, next, Day | Week | Month, search), the grid in three views,
-chips by status, today marked, and the right rail.
-- Selecting a post attaches it to the chat as context so the user can ask about it.
-- Done when: all three views render from the selectors with staggered cells and the chat
-sidebar coexists.
+- The view, the range, and the search all change in the browser, so the page hands over
+the chips rather than a grid: `getCalendarPosts` returns them keyed by day, and
+`lib/calendar` builds the cells from a date key. That keeps `db.json` out of the client
+bundle and leaves one implementation of the date math, which `getCalendarMonth` and
+`getUpcomingWeeks` now go through too.
+- `CalendarToolbar` was already built, so this phase only wired it: previous, Today,
+next, Day | Week | Month, and search over the range on screen.
+- Month stays on `CalendarGrid` and carries the preview's `layoutId`, since that is the
+view the page arrives in. Day and week are `CalendarTimeGrid`, hours down the side and a
+column per day, because a week is worth looking at only if a post keeps its time. The
+working day is 9 to 18, widened by anything scheduled outside it.
+- Under the grid, a legend for the status colors, because color is the only status signal
+on a chip, and one line that speaks when it has something to say: how the search landed,
+or that the range is empty and the agent can fill it.
+- Selecting a post fills its chip solid and attaches it to the chat beside the page.
 
 ### Phase 8 — Analytics page
 

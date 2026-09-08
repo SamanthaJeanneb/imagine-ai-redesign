@@ -1,9 +1,12 @@
 import { CalendarPage as CalendarPageView } from "@/components/features/calendar/calendar-page";
-import { getCalendarMonth } from "@/services/calendar";
+import { getCalendarPosts } from "@/services/calendar";
 
-/** The month, with the chat beside it. Phase 7 adds the toolbar and the other views. */
+/**
+ * The page hands over the chips rather than a grid: the view, the month, and
+ * the search all change in the browser, and `lib/calendar` builds the cells.
+ */
 export default function CalendarPage() {
-  const month = getCalendarMonth();
+  const { postsByDay, today } = getCalendarPosts();
 
-  return <CalendarPageView label={month.rangeLabel} days={month.days} />;
+  return <CalendarPageView postsByDay={postsByDay} today={today} />;
 }

@@ -22,9 +22,13 @@ export interface CalendarDay {
 export type CalendarDensity = "strip" | "preview" | "page";
 
 interface CalendarGridProps {
-  /** Rows of seven days starting Monday. */
+  /** Rows of seven days, starting Monday. */
   days: readonly CalendarDay[];
   density?: CalendarDensity;
+  /** Chips shown before the rest become "+N more". Defaults by density. */
+  maxChips?: number;
+  /** Rows share the height available instead of taking a minimum. */
+  fill?: boolean;
   selectedPostId?: string;
   onOpenPost?: (post: PostChipData) => void;
   onSelectDay?: (day: CalendarDay) => void;
@@ -41,14 +45,22 @@ const CELL_HEIGHT: Record<CalendarDensity, string> = {
   page: "min-h-32",
 };
 
+const DEFAULT_MAX_CHIPS: Record<CalendarDensity, number> = {
+  strip: 1,
+  preview: 1,
+  page: 3,
+};
+
 /**
- * A seven-column grid used three ways: the landing's two-week strip, the
- * composer preview, and the full calendar page. Cells are separated by
+ * A seven-column grid used four ways: the landing's two-week strip, the
+ * composer preview, and the calendar page's month. Cells are separated by
  * hairlines inside one rounded frame; today is a filled number, not a box.
  */
 export function CalendarGrid({
   days,
   density = "page",
+  maxChips,
+  fill = density === "strip",
   selectedPostId,
   onOpenPost,
   onSelectDay,
@@ -57,7 +69,7 @@ export function CalendarGrid({
 }: CalendarGridProps) {
   const reduceMotion = useReducedMotion();
   const dense = density !== "page";
-  const maxChips = density === "page" ? 3 : 1;
+  const chipLimit = maxChips ?? DEFAULT_MAX_CHIPS[density];
 
   return (
     <motion.div
@@ -85,11 +97,11 @@ export function CalendarGrid({
         role="rowgroup"
         className={cn(
           "grid grid-cols-7 gap-px bg-imagine-border",
-          density === "strip" && "flex-1 grid-rows-2",
+          fill && "flex-1 auto-rows-fr",
         )}
       >
         {days.map((day, index) => {
-          const overflow = day.posts.length - maxChips;
+          const overflow = day.posts.length - chipLimit;
           return (
             <motion.div
               key={day.date}
@@ -125,7 +137,7 @@ export function CalendarGrid({
               >
                 {day.dayNumber}
               </span>
-              {day.posts.slice(0, maxChips).map((post) => (
+              {day.posts.slice(0, chipLimit).map((post) => (
                 <PostChip
                   key={post.id}
                   post={post}

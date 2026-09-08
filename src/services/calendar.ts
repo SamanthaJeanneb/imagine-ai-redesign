@@ -1,11 +1,13 @@
 import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
+import type { PostChipData } from "@/components/features/calendar/post-chip";
 import type { UpNextItem } from "@/components/features/calendar/up-next-list";
 import {
-  formatDayTime,
-  formatMonthYear,
-  toDateKey,
-  toTitle,
-} from "@/lib/format";
+  buildCalendarRange,
+  buildDays,
+  type PostsByDay,
+  weekStart,
+} from "@/lib/calendar";
+import { formatDayTime, toDateKey, toTitle } from "@/lib/format";
 import { getNow } from "@/mocks/db";
 import {
   indexAssetsByPath,
@@ -23,70 +25,48 @@ export interface CalendarMonth {
   days: readonly CalendarDay[];
 }
 
-function addDays(date: Date, days: number): Date {
-  return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
+export interface CalendarPosts {
+  /** Every post with a slot, keyed by the day it lands on. */
+  postsByDay: PostsByDay;
+  /** The mock's fixed clock, as a date key. */
+  today: string;
 }
 
-function parseMonth(month: string | undefined): {
-  year: number;
-  index: number;
-} {
-  const now = getNow();
-  if (month === undefined) {
-    return { year: now.getUTCFullYear(), index: now.getUTCMonth() };
-  }
-  const [year, monthNumber] = month.split("-");
-  return { year: Number(year), index: Number(monthNumber) - 1 };
-}
-
-/** Chips keyed by ISO date. Drafts have no day, so they never land in here. */
-function chipsByDay(): ReadonlyMap<string, CalendarDay["posts"]> {
+/** Chips keyed by date. Drafts have no day, so they never land in here. */
+function chipsByDay(): PostsByDay {
   const clients = indexClients();
   const assets = indexAssetsByPath();
-  const byDay = new Map<string, CalendarDay["posts"]>();
+  const byDay: Record<string, readonly PostChipData[]> = {};
 
   for (const post of scheduledPosts()) {
     const client = clients.get(post.clientId);
     if (post.scheduledAt === null || client === undefined) continue;
     const key = post.scheduledAt.slice(0, 10);
-    byDay.set(key, [
-      ...(byDay.get(key) ?? []),
-      toPostChip(post, client, assets),
-    ]);
+    byDay[key] = [...(byDay[key] ?? []), toPostChip(post, client, assets)];
   }
 
   return byDay;
 }
 
-/** Posts land on the day they are scheduled for. */
+/**
+ * The calendar page. It hands over the chips rather than a grid, because the
+ * view, the month, and the search all change in the browser: `lib/calendar`
+ * builds the cells from these.
+ */
+export function getCalendarPosts(): CalendarPosts {
+  return { postsByDay: chipsByDay(), today: toDateKey(getNow()) };
+}
+
+/** One month of cells. The landing shows this; the page builds its own. */
 export function getCalendarMonth(month?: string): CalendarMonth {
-  const { year, index } = parseMonth(month);
-  const byDay = chipsByDay();
-
-  const firstOfMonth = new Date(Date.UTC(year, index, 1));
-  const mondayOffset = (firstOfMonth.getUTCDay() + 6) % 7;
-  const gridStart = addDays(firstOfMonth, -mondayOffset);
-  const daysInMonth = new Date(Date.UTC(year, index + 1, 0)).getUTCDate();
-  const cellCount = Math.ceil((mondayOffset + daysInMonth) / 7) * 7;
-  const todayKey = toDateKey(getNow());
-
-  const days: CalendarDay[] = [];
-  for (let cell = 0; cell < cellCount; cell += 1) {
-    const date = addDays(gridStart, cell);
-    const key = toDateKey(date);
-    days.push({
-      date: key,
-      dayNumber: date.getUTCDate(),
-      isToday: key === todayKey,
-      isOutside: date.getUTCMonth() !== index,
-      posts: byDay.get(key) ?? [],
-    });
-  }
+  const today = toDateKey(getNow());
+  const anchor = month === undefined ? today : `${month}-01`;
+  const range = buildCalendarRange("month", anchor, chipsByDay(), today);
 
   return {
-    month: `${String(year)}-${String(index + 1).padStart(2, "0")}`,
-    rangeLabel: formatMonthYear(firstOfMonth.toISOString()),
-    days,
+    month: anchor.slice(0, 7),
+    rangeLabel: range.rangeLabel,
+    days: range.days,
   };
 }
 
@@ -95,24 +75,8 @@ export function getCalendarMonth(month?: string): CalendarMonth {
  * "next two weeks" always starts where the calendar page starts.
  */
 export function getUpcomingWeeks(weeks = 2): readonly CalendarDay[] {
-  const byDay = chipsByDay();
-  const now = getNow();
-  const todayKey = toDateKey(now);
-  const start = addDays(now, -((now.getUTCDay() + 6) % 7));
-
-  const days: CalendarDay[] = [];
-  for (let cell = 0; cell < weeks * 7; cell += 1) {
-    const date = addDays(start, cell);
-    const key = toDateKey(date);
-    days.push({
-      date: key,
-      dayNumber: date.getUTCDate(),
-      isToday: key === todayKey,
-      posts: byDay.get(key) ?? [],
-    });
-  }
-
-  return days;
+  const today = toDateKey(getNow());
+  return buildDays(weekStart(today), weeks * 7, chipsByDay(), today);
 }
 
 /** The right rail: what goes out next, soonest first. */
