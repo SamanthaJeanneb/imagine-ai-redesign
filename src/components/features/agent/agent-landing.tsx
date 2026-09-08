@@ -50,7 +50,7 @@ export function LandingIntro({
   dateLabel: string;
 }) {
   return (
-    <div className="flex flex-col gap-xs pb-xxl">
+    <div className="flex flex-col gap-xs pb-xl">
       <h1 className="type-title">{greeting}</h1>
       <p className="type-small text-imagine-foreground-muted">{dateLabel}</p>
     </div>
@@ -74,9 +74,9 @@ export function LandingBelow({
   const rest = entries.length - PREVIEW;
 
   return (
-    <div className="flex flex-1 flex-col gap-xxxl pt-xxl pb-l">
+    <div className="flex flex-1 flex-col gap-xxl pt-xl pb-l">
       {entries.length === 0 ? null : (
-        <section className="flex flex-col gap-xl">
+        <section className="flex flex-col gap-l">
           <h2 className="type-heading">While you were away</h2>
           {/* The first two are the preview. The timeline animates the rest in,
               so opening it grows the list rather than swapping it. */}
@@ -92,7 +92,9 @@ export function LandingBelow({
               onClick={() => {
                 setOpen((current) => !current);
               }}
-              className="self-start"
+              // Pulled back by the button's own padding so the label lines up
+              // with the heading rather than sitting inside it.
+              className="-ml-2.5 self-start"
             >
               {open ? "Show less" : `Show ${String(rest)} more`}
               <motion.span
@@ -108,7 +110,7 @@ export function LandingBelow({
           ) : null}
         </section>
       )}
-      <section className="flex flex-1 flex-col gap-xl">
+      <section className="flex flex-1 flex-col gap-l">
         <h2 className="type-heading">Next two weeks</h2>
         <CalendarGrid
           days={days}

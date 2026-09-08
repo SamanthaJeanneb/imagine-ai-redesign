@@ -13,19 +13,19 @@
         "id": "usr_sarah",
         "email": "sarah@acme.com",
         "name": "Sarah Chen",
-        "avatar_url": null
+        "avatar_url": "https://i.pravatar.cc/96?img=47"
       },
       {
         "id": "usr_marcus",
         "email": "marcus@acme.com",
         "name": "Marcus Webb",
-        "avatar_url": null
+        "avatar_url": "https://i.pravatar.cc/96?img=12"
       },
       {
         "id": "usr_priya",
         "email": "priya@acme.com",
         "name": "Priya Raman",
-        "avatar_url": null
+        "avatar_url": "https://i.pravatar.cc/96?img=44"
       }
     ]
   },
@@ -100,7 +100,7 @@
         "description": "VP Product at Acme",
         "is_company": false,
         "linkedin_id": "sarahchen",
-        "profile_picture_path": null,
+        "profile_picture_path": "https://i.pravatar.cc/96?img=47",
         "persona": "Sarah writes from inside the product work. She opens with a decision she had to make and closes with what she would do differently.\n\n## Voice\n\n- First person, past tense.\n- One concrete artifact per post: a metric, a screenshot, a quote from a customer call.\n- Ends on a question she is genuinely still holding.\n\n## Avoid\n\n- Frameworks with names\n- Advice addressed to \"founders\"\n",
         "status": "connected",
         "created_at": "2026-01-20T14:10:00.000Z",
@@ -113,7 +113,7 @@
         "description": "Head of Growth at Acme",
         "is_company": false,
         "linkedin_id": "marcuswebb",
-        "profile_picture_path": null,
+        "profile_picture_path": "https://i.pravatar.cc/96?img=12",
         "persona": "Marcus posts experiments. Hypothesis, what he ran, the number, and whether he would run it again.\n\n## Voice\n\n- Leads with the result.\n- Always shows the losing variant too.\n- Dry, a little self-deprecating.\n",
         "status": "connected",
         "created_at": "2026-02-02T09:40:00.000Z",
@@ -126,7 +126,7 @@
         "description": "Staff Engineer at Acme",
         "is_company": false,
         "linkedin_id": "priyaraman",
-        "profile_picture_path": null,
+        "profile_picture_path": "https://i.pravatar.cc/96?img=44",
         "persona": "Priya explains one system at a time, at the level a senior engineer at another company would need to act on it.\n\n## Voice\n\n- Starts from the failure that forced the change.\n- Names the technology, the version, and the limit she hit.\n- No conclusions she cannot back with a graph.\n",
         "status": "connected",
         "created_at": "2026-03-11T11:20:00.000Z",
@@ -139,7 +139,7 @@
         "description": "Sales Lead at Acme",
         "is_company": false,
         "linkedin_id": "ravipatel",
-        "profile_picture_path": null,
+        "profile_picture_path": "https://i.pravatar.cc/96?img=68",
         "persona": "Ravi writes about the deals that did not close and what the buyer actually said.\n",
         "status": "expired",
         "created_at": "2026-04-08T15:00:00.000Z",

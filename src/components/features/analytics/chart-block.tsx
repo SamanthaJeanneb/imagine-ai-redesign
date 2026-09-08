@@ -580,7 +580,7 @@ export function ChartBlock({
               data={mutable}
               margin={{
                 left: 0,
-                right: splitScale ? 0 : showMean ? MEAN_GUTTER : 8,
+                right: splitScale ? 0 : 8,
                 top: 12,
                 bottom: 0,
               }}
@@ -629,7 +629,9 @@ export function ChartBlock({
                   strokeDasharray="3 3"
                   label={{
                     value: `avg ${formatCompact(Math.round(primaryStats.mean))}`,
-                    position: splitScale ? "insideBottomLeft" : "right",
+                    position: splitScale
+                      ? "insideBottomLeft"
+                      : "insideBottomRight",
                     ...LABEL,
                   }}
                 />

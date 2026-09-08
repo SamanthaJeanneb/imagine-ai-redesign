@@ -1,6 +1,7 @@
 "use client";
 
-import { AnimatePresence, LayoutGroup } from "motion/react";
+import { cn } from "cn";
+import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useState } from "react";
 
@@ -10,21 +11,35 @@ import {
   useChat,
 } from "@/components/features/agent/chat-provider";
 import type { ComposerPreview } from "@/components/features/agent/composer";
+import { ProfileSelector } from "@/components/features/agent/profile-selector";
+import type { FileSection } from "@/components/features/files/file-tree";
+import type { ProfileSummary } from "@/components/features/settings/profile-list";
 import { AccountControls, type AccountUser } from "@/components/layout/account";
 import { ChatColumn } from "@/components/layout/chat-column";
+import {
+  ChatContextPanel,
+  type ChatPanelMode,
+} from "@/components/layout/chat-context-panel";
+import { ChatControls, ChatTitle } from "@/components/layout/chat-controls";
 import {
   Sidebar,
   SidebarExpandButton,
   type SidebarNavKey,
   type SidebarThread,
 } from "@/components/layout/sidebar";
-import type { ScriptedReply } from "@/services/agent";
+import { toTitle } from "@/lib/format";
+import type { AgentMessage, ScriptedReply } from "@/services/agent";
+import { fade } from "@/styles/motion";
 
 interface WorkspaceShellProps {
   orgName: string;
   orgLogoUrl?: string;
   threads: readonly SidebarThread[];
   user: AccountUser;
+  /** The LinkedIn identities the agent can work across. */
+  profiles: readonly ProfileSummary[];
+  /** Files available to the thread's right panel. */
+  fileSections: readonly FileSection[];
   /** The agent's scripted answers, for the conversation the shell owns. */
   replies: { default: ScriptedReply; schedule: ScriptedReply };
   /** What the composer's Calendar and Analytics chips open. */
@@ -64,6 +79,27 @@ function chatColumnFor(pathname: string): ComposerPreview | undefined {
   return undefined;
 }
 
+/** The first thing the user said, as a name for a thread that has none yet. */
+function titleFrom(messages: readonly AgentMessage[]): string | undefined {
+  for (const message of messages) {
+    if (message.role !== "user") continue;
+    for (const part of message.parts) {
+      if (part.type === "text" && part.text.trim() !== "") {
+        return toTitle(part.text, 40);
+      }
+    }
+  }
+  return undefined;
+}
+
+/** The header's right end swaps between the account and the chat's controls. */
+const HEADER_SWAP = {
+  initial: { opacity: 0, y: -4 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -4 },
+  transition: fade.fast,
+} as const;
+
 /**
  * The signed-in shell: rail on the background, page on a surface that rounds
  * into it. Everything lives in one `LayoutGroup` so shared `layoutId`s survive
@@ -88,15 +124,36 @@ function WorkspaceFrame({
   orgLogoUrl,
   threads,
   user,
+  profiles,
+  fileSections,
   children,
 }: Omit<WorkspaceShellProps, "replies" | "previews">) {
   const pathname = usePathname();
   const router = useRouter();
   const chat = useChat();
   const [collapsed, setCollapsed] = useState(false);
+  // Everyone still connected, to start. Whoever has lapsed needs reconnecting
+  // before the agent can post as them, so they wait to be chosen on purpose.
+  const [selectedProfileIds, setSelectedProfileIds] = useState<
+    readonly string[]
+  >(() =>
+    profiles
+      .filter((profile) => profile.status === "connected")
+      .map((profile) => profile.id),
+  );
   const activeKey = navKeyFor(pathname);
   const activeThreadId = threadIdFor(pathname);
   const chatColumn = chatColumnFor(pathname);
+  const [panel, setPanel] = useState<ChatPanelMode | null>(null);
+
+  // On the agent page with a conversation open, the header belongs to the
+  // thread: its name in the middle, its controls on the right.
+  const chatOpen = activeKey === "agent" && chat.threadId !== null;
+  const chatTitle = chatOpen
+    ? (threads.find((thread) => thread.id === chat.threadId)?.title ??
+      titleFrom(chat.messages) ??
+      "New chat")
+    : undefined;
 
   return (
     <LayoutGroup>
@@ -112,10 +169,12 @@ function WorkspaceFrame({
           onNavigate={(key) => {
             // A preview left open would follow the chat into its column.
             chat.setPreview(null);
+            setPanel(null);
             router.push(`/${key}`);
           }}
           onNewPost={() => {
             chat.reset();
+            setPanel(null);
             router.push("/agent");
           }}
           onOpenThread={(id) => {
@@ -124,10 +183,12 @@ function WorkspaceFrame({
           }}
         />
         <div className="flex min-w-0 flex-1 flex-col rounded-l-surface bg-imagine-surface shadow-raised">
-          {/* Page header row. The way out of the collapsed rail on the left,
-              the account on the right; sets the top inset every page starts
-              below. */}
-          <div className="mt-m mb-xxl flex h-8 shrink-0 items-center gap-s px-xxl">
+          {/* Page header row. On the left, the way out of the collapsed rail
+              and then which profiles the agent is posting as. On the right,
+              the account. With a conversation open the profiles shrink to
+              their faces, its name follows them, and its controls take the
+              right. Sets the top inset every page starts below. */}
+          <div className="relative mt-m mb-m flex h-8 shrink-0 items-center gap-s px-xxl after:absolute after:inset-x-0 after:-bottom-m after:border-b after:border-imagine-border">
             <AnimatePresence initial={false}>
               {collapsed ? (
                 <SidebarExpandButton
@@ -140,17 +201,51 @@ function WorkspaceFrame({
                 />
               ) : null}
             </AnimatePresence>
-            <AccountControls
-              user={user}
-              // The gear's glyph, not its hit area, sits on the page's right edge.
-              className="-mr-s ml-auto"
-              onOpenAccount={() => {
-                router.push("/settings");
-              }}
-              onOpenSettings={() => {
-                router.push("/settings");
-              }}
-            />
+            {profiles.length > 0 ? (
+              <ProfileSelector
+                profiles={profiles}
+                selectedIds={selectedProfileIds}
+                onSelectedIdsChange={setSelectedProfileIds}
+                compact={chatOpen}
+                // First in the row, the faces sit on the page's text column;
+                // after the expand chevron they take the row's gap instead.
+                className={cn(!collapsed && "-ml-1.5")}
+              />
+            ) : null}
+            <AnimatePresence initial={false}>
+              {chatTitle === undefined ? null : (
+                <ChatTitle key="title" title={chatTitle} />
+              )}
+            </AnimatePresence>
+            {/* Both clusters end on the same glyph edge: the gear's or the
+                panel toggle's, pulled in by the icon button's own padding. */}
+            <AnimatePresence initial={false} mode="wait">
+              {chatOpen ? (
+                <motion.div
+                  key="chat"
+                  {...HEADER_SWAP}
+                  className="-mr-s ml-auto flex"
+                >
+                  <ChatControls panel={panel} onPanelChange={setPanel} />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="account"
+                  {...HEADER_SWAP}
+                  className="-mr-s ml-auto flex"
+                >
+                  <AccountControls
+                    user={user}
+                    onOpenAccount={() => {
+                      router.push("/settings");
+                    }}
+                    onOpenSettings={() => {
+                      router.push("/settings");
+                    }}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
           <div className="flex min-h-0 flex-1">
             <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
@@ -159,6 +254,24 @@ function WorkspaceFrame({
             <AnimatePresence initial={false}>
               {chatColumn === undefined ? null : (
                 <ChatColumn key="chat" page={chatColumn} />
+              )}
+            </AnimatePresence>
+            <AnimatePresence initial={false}>
+              {!chatOpen || panel === null || chatTitle === undefined ? null : (
+                <ChatContextPanel
+                  key="context-panel"
+                  mode={panel}
+                  threads={threads}
+                  fileSections={fileSections}
+                  currentThreadId={chat.threadId}
+                  currentTitle={chatTitle}
+                  onSelectThread={(id) => {
+                    router.push(`/agent/${id}`);
+                  }}
+                  onClose={() => {
+                    setPanel(null);
+                  }}
+                />
               )}
             </AnimatePresence>
           </div>

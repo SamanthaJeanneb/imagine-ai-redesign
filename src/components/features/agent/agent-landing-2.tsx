@@ -47,9 +47,10 @@ export function CenteredIntro({
 }) {
   return (
     <div className="flex flex-col items-center gap-xl pt-xxl pb-xxl text-center">
-      {/* The agent, as a person would be: a circle. The mark in ink on white. */}
-      <span className="flex size-16 items-center justify-center rounded-full bg-imagine-surface text-imagine-foreground shadow-raised inset-shadow-highlight">
-        <Icon name="imagine" className="text-[30px]" />
+      {/* The agent, as a person would be: a circle. Black mark on a white disc
+          in both themes, with a plain drop shadow: no ring, no sheen. */}
+      <span className="flex size-16 items-center justify-center rounded-full bg-white text-black shadow-[0_2px_6px_rgb(0_0_0/0.08),0_12px_28px_-8px_rgb(0_0_0/0.22)]">
+        <Icon name="imagine" className="text-[34px]" />
       </span>
       <div className="flex flex-col gap-xs">
         <h1 className="type-title">{greeting}</h1>
@@ -128,7 +129,7 @@ export function ActivityCards({
                 </span>
               </span>
               {primary ? (
-                <span className="mt-auto flex items-center gap-xs border-t border-imagine-border pt-m type-small font-medium text-imagine-foreground-muted transition-colors group-hover/card:text-imagine-foreground">
+                <span className="mt-auto flex items-center gap-xs border-t border-imagine-border pt-m type-small font-medium">
                   {primary.label}
                   <Icon
                     name="arrow-right"

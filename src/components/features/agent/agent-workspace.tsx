@@ -3,7 +3,7 @@
 import { cn } from "cn";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 
 import {
   LandingBelow,
@@ -73,14 +73,19 @@ export function AgentWorkspace({
   const router = useRouter();
   const reduceMotion = useReducedMotion();
   const chat = useChat();
-  const { open } = chat;
   const [handled, setHandled] = useState<readonly string[]>([]);
 
   // A stored thread becomes the open conversation. Until the provider has it,
-  // render what the page brought, so the switch has no blank frame.
+  // render what the page brought, so the switch has no blank frame. Keyed on
+  // the id alone: `open` changes with the open thread, and following it would
+  // reopen this one the moment "New chat" closed it.
+  const storedThreadId = thread?.id;
+  const openStored = useEffectEvent(() => {
+    if (thread !== undefined) chat.open(thread.id, thread.messages);
+  });
   useEffect(() => {
-    if (thread !== undefined) open(thread.id, thread.messages);
-  }, [thread, open]);
+    if (storedThreadId !== undefined) openStored();
+  }, [storedThreadId]);
   const synced = thread === undefined || chat.threadId === thread.id;
   const messages = synced ? chat.messages : thread.messages;
 
@@ -131,7 +136,7 @@ export function AgentWorkspace({
     <div className="flex min-h-full flex-1 px-xxl">
       <div
         className={cn(
-          "flex min-h-full min-w-0 flex-1 flex-col pb-xl",
+          "flex min-h-full min-w-0 flex-1 flex-col pt-m pb-xl",
           // The gap to the rail. Centered has no rail.
           !centered && "pr-xxl",
         )}
@@ -225,7 +230,7 @@ export function AgentWorkspace({
             key="rail"
             exit={{ opacity: 0, x: 24 }}
             transition={fade.base}
-            className="self-stretch border-l border-imagine-foreground/12 pl-xxl"
+            className="self-stretch border-l border-imagine-foreground/12 pt-m pl-xxl"
           >
             <LandingRail
               stats={landing.stats}

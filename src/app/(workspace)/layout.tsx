@@ -4,6 +4,8 @@ import { WorkspaceShell } from "@/components/layout/workspace-shell";
 import { getScriptedReply, getThreads } from "@/services/agent";
 import { getPreviewCharts } from "@/services/analytics";
 import { getUpcomingWeeks } from "@/services/calendar";
+import { getFileSections } from "@/services/files";
+import { getProfiles } from "@/services/settings";
 import { getCurrentUser, getWorkspace } from "@/services/workspace";
 
 /**
@@ -22,6 +24,8 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
         : { orgLogoUrl: workspace.logoUrl })}
       threads={getThreads()}
       user={getCurrentUser()}
+      profiles={getProfiles()}
+      fileSections={getFileSections()}
       replies={{
         default: getScriptedReply(),
         schedule: getScriptedReply("schedule"),

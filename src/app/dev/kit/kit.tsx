@@ -39,6 +39,7 @@ import {
   OnboardingPartsDemo,
   PostChipDemo,
   PostDraftDemo,
+  ProfileSelectorDemo,
   ProfilesDemo,
   ScheduledGraphicDemo,
   SidebarDemo,
@@ -337,6 +338,10 @@ export function Kit({ radiusScale = "default" }: KitProps) {
 
         <Section title="Composer">
           <ComposerDemo />
+        </Section>
+
+        <Section title="Profile selector: who the agent posts as">
+          <ProfileSelectorDemo />
         </Section>
 
         <Section title="Timeline: while you were away">

@@ -24,6 +24,7 @@ import {
 import { PostContext } from "@/components/features/agent/post-context";
 import { PreviewSurface } from "@/components/features/agent/preview-surface";
 import { ScheduledGraphic } from "@/components/features/agent/scheduled-graphic";
+import { ProfileSelector } from "@/components/features/agent/profile-selector";
 import {
   Timeline,
   type TimelineEntry,
@@ -659,6 +660,11 @@ export function SidebarDemo() {
   const [active, setActive] = useState<SidebarNavKey>("agent");
   const [expandedCollapsed, setExpandedCollapsed] = useState(false);
   const [railCollapsed, setRailCollapsed] = useState(true);
+  const [stubProfileIds, setStubProfileIds] = useState<readonly string[]>([
+    "c1",
+    "c2",
+    "c4",
+  ]);
 
   return (
     <div className="flex flex-col gap-xl">
@@ -694,6 +700,12 @@ export function SidebarDemo() {
                 />
               ) : null}
             </AnimatePresence>
+            <ProfileSelector
+              profiles={PROFILES}
+              selectedIds={stubProfileIds}
+              onSelectedIdsChange={setStubProfileIds}
+              className={cn(!expandedCollapsed && "-ml-1.5")}
+            />
             <AccountControls
               user={SIDEBAR_USER}
               className="ml-auto"
@@ -974,6 +986,31 @@ export function ComposerDemo() {
           </OnBackground>
         </Demo>
       </div>
+    </div>
+  );
+}
+
+export function ProfileSelectorDemo() {
+  const [selectedIds, setSelectedIds] = useState<readonly string[]>(
+    PROFILES.filter((profile) => profile.status === "connected").map(
+      (profile) => profile.id,
+    ),
+  );
+
+  return (
+    <div className="flex flex-col gap-xs pl-xs">
+      <ProfileSelector
+        profiles={PROFILES}
+        selectedIds={selectedIds}
+        onSelectedIdsChange={setSelectedIds}
+        className="mb-s self-start"
+      />
+      <h1 className="type-title">
+        How can I help with your LinkedIn content today?
+      </h1>
+      <p className="type-small text-imagine-foreground-muted">
+        Tuesday, 8 September
+      </p>
     </div>
   );
 }

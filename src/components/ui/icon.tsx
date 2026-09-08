@@ -31,6 +31,7 @@ export const ICON_NAMES = [
   "circle-info",
   "circle-xmark",
   "clock",
+  "clock-rotate-left",
   "comment",
   "copy",
   "download",
