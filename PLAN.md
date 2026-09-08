@@ -45,6 +45,9 @@ it.
 CSS embed in `src/app/layout.tsx`. Sharp Solid is for active/selected only; Brands is for
 the LinkedIn and provider logos only. No Lucide, no Material Symbols. Feature code uses
 the `Icon` component, never raw `fa-` classes.
+- **Dev kit first.** Every new icon and reusable component gets an interactive specimen
+  on `/dev/kit` before a page uses it. `ICON_NAMES` remains the single list rendered by
+  the icon catalog, so adding an icon there adds its specimen automatically.
 - No inline styles, no raw color values outside the token file.
 - No em dashes in any product copy or mock data (labels, headings, descriptions,
 placeholders, toasts, JSON strings). Use a period, comma, or colon instead.

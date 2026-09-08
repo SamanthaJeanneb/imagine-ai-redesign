@@ -28,8 +28,12 @@ import {
   AnalyticsPartsDemo,
   AssetsDemo,
   CalendarGridDemo,
+  CalendarTimeGridDemo,
   CalendarToolbarDemo,
+  ChartCardDemo,
   ChartBlockDemo,
+  ChatChromeDemo,
+  ComposedWorkspacePagesDemo,
   ComposerDemo,
   EditorDemo,
   FilesPanelDemo,
@@ -332,6 +336,10 @@ export function Kit({ radiusScale = "default" }: KitProps) {
           <SidebarDemo />
         </Section>
 
+        <Section title="Chat title, controls, column, and context panel">
+          <ChatChromeDemo />
+        </Section>
+
         <Section title="Files panel, file tree, skills">
           <FilesPanelDemo />
         </Section>
@@ -370,6 +378,10 @@ export function Kit({ radiusScale = "default" }: KitProps) {
 
         <Section title="Calendar grid">
           <CalendarGridDemo />
+        </Section>
+
+        <Section title="Calendar day and week time grids">
+          <CalendarTimeGridDemo />
         </Section>
 
         <Section title="Calendar toolbar, up next">
@@ -422,8 +434,16 @@ export function Kit({ radiusScale = "default" }: KitProps) {
           <ChartBlockDemo />
         </Section>
 
+        <Section title="Chart cards">
+          <ChartCardDemo />
+        </Section>
+
         <Section title="Analytics toolbar, by profile, top posts">
           <AnalyticsPartsDemo />
+        </Section>
+
+        <Section title="Composed workspace pages">
+          <ComposedWorkspacePagesDemo />
         </Section>
       </div>
     </main>

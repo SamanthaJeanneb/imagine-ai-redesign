@@ -1,17 +1,16 @@
 "use client";
 
 import { cn } from "cn";
-import { AnimatePresence } from "motion/react";
-import { useState } from "react";
+import { AnimatePresence, LayoutGroup } from "motion/react";
+import { type ReactNode, useState } from "react";
 import { toast } from "sonner";
-
-import type { CalendarView } from "@/lib/calendar";
 
 import {
   AgentMessage,
   type MessagePart,
   UserMessage,
 } from "@/components/features/agent/agent-message";
+import { ChatProvider } from "@/components/features/agent/chat-provider";
 import {
   Composer,
   type ComposerPreview,
@@ -30,12 +29,14 @@ import {
   type TimelineEntry,
 } from "@/components/features/agent/timeline";
 import { AnalyticsToolbar } from "@/components/features/analytics/analytics-toolbar";
+import { AnalyticsPage } from "@/components/features/analytics/analytics-page";
 import { ByProfileList } from "@/components/features/analytics/by-profile-list";
 import {
   ChartBlock,
   type ChartDatum,
   type ChartSeries,
 } from "@/components/features/analytics/chart-block";
+import { ChartCard } from "@/components/features/analytics/chart-card";
 import { StatGroup, StatTile } from "@/components/features/analytics/stat-tile";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { TopPosts } from "@/components/features/analytics/top-posts";
@@ -43,6 +44,8 @@ import {
   type CalendarDay,
   CalendarGrid,
 } from "@/components/features/calendar/calendar-grid";
+import { CalendarPage } from "@/components/features/calendar/calendar-page";
+import { CalendarTimeGrid } from "@/components/features/calendar/calendar-time-grid";
 import { CalendarToolbar } from "@/components/features/calendar/calendar-toolbar";
 import {
   PostChip,
@@ -91,6 +94,12 @@ import {
   type ProfileSummary,
 } from "@/components/features/settings/profile-list";
 import { AccountControls } from "@/components/layout/account";
+import { ChatColumn } from "@/components/layout/chat-column";
+import {
+  ChatContextPanel,
+  type ChatPanelMode,
+} from "@/components/layout/chat-context-panel";
+import { ChatControls, ChatTitle } from "@/components/layout/chat-controls";
 import { FilesPanel } from "@/components/layout/files-panel";
 import {
   Sidebar,
@@ -100,6 +109,13 @@ import {
 import { LogoLoader } from "@/components/motion/logo-loader";
 import { Button } from "@/components/ui/button";
 import type { TimeRange } from "@/entities/analytics";
+import type { CalendarView, PostsByDay } from "@/lib/calendar";
+import type { ScriptedReply } from "@/services/agent";
+import type {
+  AnalyticsPageData,
+  AnalyticsSnapshot,
+  PreviewChart,
+} from "@/services/analytics";
 
 /* Kit fixtures. The screens read src/mocks/db.json through src/services/. */
 
@@ -236,6 +252,37 @@ const SERIES = [
   { key: "followers", label: "Followers" },
 ];
 
+const KIT_PREVIEW_CHART = {
+  id: "kit-impressions",
+  title: "Impressions over time",
+  description: "Last 7 days",
+  kind: "area",
+  summary: "7.4k",
+  data: IMPRESSIONS,
+  series: [IMPRESSIONS_SERIES],
+} satisfies PreviewChart;
+
+const KIT_REPLIES = {
+  default: {
+    statuses: ["Reading the numbers", "Finding the pattern"],
+    parts: [
+      {
+        type: "text",
+        text: "The strongest posts turn one specific decision into a story.",
+      },
+    ],
+  },
+  schedule: {
+    statuses: ["Checking the calendar", "Finding a clear slot"],
+    parts: [
+      {
+        type: "text",
+        text: "Tuesday at 9:00 is clear, so I scheduled it there.",
+      },
+    ],
+  },
+} satisfies { default: ScriptedReply; schedule: ScriptedReply };
+
 const AUTHOR_SARAH = {
   name: "Sarah Chen",
   headline: "CEO at Acme",
@@ -332,6 +379,15 @@ function buildDays(weeks: number): CalendarDay[] {
 }
 
 const TWO_WEEKS = buildDays(2);
+const KIT_POSTS_BY_DAY = Object.fromEntries(
+  TWO_WEEKS.flatMap((day) =>
+    day.posts.length === 0 ? [] : [[day.date, day.posts]],
+  ),
+) satisfies PostsByDay;
+const KIT_PREVIEWS = {
+  calendar: TWO_WEEKS,
+  analytics: [KIT_PREVIEW_CHART],
+};
 
 const PROFILES: ProfileSummary[] = [
   {
@@ -375,6 +431,144 @@ const PROFILES: ProfileSummary[] = [
     avatarUrl: AVATAR(59),
   },
 ];
+
+function kitAnalyticsSnapshot(
+  range: "7d" | "1m" | "3m",
+  profileId: "all" | "c2",
+  factor: number,
+): AnalyticsSnapshot {
+  const profileFactor = profileId === "all" ? 1 : 0.56;
+  const scale = factor * profileFactor;
+  const impressions = IMPRESSIONS.map((datum) => ({
+    label: datum.label,
+    impressions: Math.round(
+      (typeof datum["impressions"] === "number" ? datum["impressions"] : 0) *
+        scale,
+    ),
+  }));
+  const total = impressions.reduce((sum, datum) => sum + datum.impressions, 0);
+
+  return {
+    range,
+    profileId,
+    overview: {
+      stats: [
+        {
+          value: `${(total / 1000).toFixed(1)}k`,
+          label: "Impressions",
+          delta: { label: "+18%", direction: "up" },
+        },
+        {
+          value: "6.8%",
+          label: "Engagement rate",
+          delta: { label: "+2%", direction: "up" },
+        },
+        {
+          value: String(Math.round(42 * scale)),
+          label: "Followers gained",
+          delta: { label: "+12%", direction: "up" },
+        },
+        {
+          value: String(Math.max(1, Math.round(8 * factor))),
+          label: "Posts",
+          delta: { label: "0%", direction: "flat" },
+        },
+      ],
+      impressions: {
+        data: impressions,
+        series: [IMPRESSIONS_SERIES],
+      },
+      byLabel: {
+        data: [
+          {
+            label: "Thought leadership",
+            impressions: Math.round(4100 * scale),
+          },
+          { label: "Product", impressions: Math.round(2900 * scale) },
+          { label: "Case study", impressions: Math.round(1800 * scale) },
+        ],
+        series: [IMPRESSIONS_SERIES],
+      },
+      byProfile:
+        profileId === "c2"
+          ? [
+              {
+                id: "c2",
+                name: "Sarah Chen",
+                avatarUrl: AVATAR(47),
+                value: Math.round(5200 * factor),
+                valueLabel: `${(5.2 * factor).toFixed(1)}k`,
+              },
+            ]
+          : [
+              {
+                id: "c2",
+                name: "Sarah Chen",
+                avatarUrl: AVATAR(47),
+                value: Math.round(5200 * factor),
+                valueLabel: `${(5.2 * factor).toFixed(1)}k`,
+              },
+              {
+                id: "c1",
+                name: "Acme",
+                kind: "company",
+                avatarUrl: ACME_LOGO,
+                value: Math.round(4100 * factor),
+                valueLabel: `${(4.1 * factor).toFixed(1)}k`,
+              },
+            ],
+      topPosts: [
+        {
+          id: POST_HIRING.id,
+          title: POST_HIRING.title,
+          meta: "Ravi Patel · 2 Sep",
+          post: POST_HIRING,
+          metrics: [
+            { label: "Impressions", value: `${(4.1 * scale).toFixed(1)}k` },
+            { label: "Engagement", value: "7.6%" },
+            { label: "Comments", value: "31" },
+          ],
+        },
+        {
+          id: POST_LAUNCH.id,
+          title: POST_LAUNCH.title,
+          meta: "Sarah Chen · 3 Sep",
+          post: POST_LAUNCH,
+          metrics: [
+            { label: "Impressions", value: `${(3.4 * scale).toFixed(1)}k` },
+            { label: "Engagement", value: "6.9%" },
+            { label: "Comments", value: "24" },
+          ],
+        },
+      ],
+    },
+  };
+}
+
+const KIT_ANALYTICS_DATA = {
+  profiles: [
+    { id: "all", name: "All profiles" },
+    { id: "c2", name: "Sarah Chen" },
+  ],
+  snapshots: (
+    [
+      ["7d", 0.55],
+      ["1m", 1],
+      ["3m", 2.4],
+    ] as const
+  ).flatMap(([range, factor]) => [
+    kitAnalyticsSnapshot(range, "all", factor),
+    kitAnalyticsSnapshot(range, "c2", factor),
+  ]),
+} satisfies AnalyticsPageData;
+
+function KitChatScope({ children }: { children: ReactNode }) {
+  return (
+    <ChatProvider replies={KIT_REPLIES} previews={KIT_PREVIEWS}>
+      {children}
+    </ChatProvider>
+  );
+}
 
 const SARAH_DETAIL: ProfileDetailData = {
   id: "c2",
@@ -745,6 +939,86 @@ export function SidebarDemo() {
             <AccountControls user={SIDEBAR_USER} className="ml-auto" />
           </PageStub>
         </OnBackground>
+      </Demo>
+    </div>
+  );
+}
+
+export function ChatChromeDemo() {
+  const [panel, setPanel] = useState<ChatPanelMode | null>("history");
+  const [columnPanel, setColumnPanel] = useState<ChatPanelMode | null>(null);
+
+  return (
+    <div className="flex flex-col gap-xl">
+      <Demo label="Chat title, controls, and context panel">
+        <LayoutGroup id="kit-chat-context">
+          <div className="flex h-96 overflow-hidden border border-imagine-border bg-imagine-surface">
+            <div className="flex min-w-0 flex-1 flex-col p-l">
+              <div className="flex h-8 items-center gap-s">
+                <ChatTitle title="What made Friday's post take off" />
+                <ChatControls
+                  panel={panel}
+                  onPanelChange={setPanel}
+                  className="ml-auto"
+                />
+              </div>
+              <p className="mt-auto max-w-sm type-small text-imagine-foreground-muted">
+                Toggle history and files to inspect both working-panel states.
+              </p>
+            </div>
+            <AnimatePresence initial={false}>
+              {panel === null ? null : (
+                <ChatContextPanel
+                  key="kit-context-panel"
+                  mode={panel}
+                  threads={THREADS}
+                  fileSections={FILE_SECTIONS}
+                  currentThreadId="t1"
+                  currentTitle="What made Friday's post take off"
+                  onSelectThread={(id) => {
+                    toast(`Open ${id}`);
+                  }}
+                  onClose={() => {
+                    setPanel(null);
+                  }}
+                />
+              )}
+            </AnimatePresence>
+          </div>
+        </LayoutGroup>
+      </Demo>
+
+      <Demo label="Docked chat column, with its history panel">
+        <KitChatScope>
+          <LayoutGroup id="kit-chat-column">
+            <div className="flex h-96 justify-end overflow-hidden border border-imagine-border bg-imagine-surface">
+              <ChatColumn
+                page="analytics"
+                title="New chat"
+                panel={columnPanel}
+                onPanelChange={setColumnPanel}
+              />
+              <AnimatePresence initial={false}>
+                {columnPanel === null ? null : (
+                  <ChatContextPanel
+                    key="kit-column-context"
+                    mode={columnPanel}
+                    threads={THREADS}
+                    fileSections={FILE_SECTIONS}
+                    currentThreadId={null}
+                    currentTitle="New chat"
+                    onSelectThread={(id) => {
+                      toast(`Open ${id}`);
+                    }}
+                    onClose={() => {
+                      setColumnPanel(null);
+                    }}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
+          </LayoutGroup>
+        </KitChatScope>
       </Demo>
     </div>
   );
@@ -1204,6 +1478,34 @@ export function ChartBlockDemo() {
   );
 }
 
+export function ChartCardDemo() {
+  const [selected, setSelected] = useState(false);
+
+  return (
+    <div className="grid gap-xl lg:grid-cols-2">
+      <Demo label="Page chart card, press to attach">
+        <ChartCard
+          chart={KIT_PREVIEW_CHART}
+          selected={selected}
+          onOpen={() => {
+            setSelected((current) => !current);
+          }}
+        />
+      </Demo>
+      <Demo label="Dense chart card for the composer preview">
+        <ChartCard
+          chart={KIT_PREVIEW_CHART}
+          dense
+          selected
+          onOpen={() => {
+            toast("Attached impressions");
+          }}
+        />
+      </Demo>
+    </div>
+  );
+}
+
 export function PostChipDemo() {
   return (
     <div className="flex flex-wrap gap-xl">
@@ -1263,6 +1565,32 @@ export function CalendarGridDemo() {
           />
         </Demo>
       </div>
+    </div>
+  );
+}
+
+export function CalendarTimeGridDemo() {
+  const selectedDay = TWO_WEEKS[2];
+
+  return (
+    <div className="flex flex-col gap-xl">
+      <Demo label="Day view, hours down the side">
+        <CalendarTimeGrid
+          days={selectedDay === undefined ? [] : [selectedDay]}
+          selectedPostId="p1"
+          onOpenPost={(post) => {
+            toast(post.title);
+          }}
+        />
+      </Demo>
+      <Demo label="Week view, compact posts in their time slots">
+        <CalendarTimeGrid
+          days={TWO_WEEKS.slice(0, 7)}
+          onOpenPost={(post) => {
+            toast(post.title);
+          }}
+        />
+      </Demo>
     </div>
   );
 }
@@ -1636,6 +1964,31 @@ export function AnalyticsPartsDemo() {
           />
         </Demo>
       </div>
+    </div>
+  );
+}
+
+export function ComposedWorkspacePagesDemo() {
+  return (
+    <div className="flex flex-col gap-xl">
+      <Demo label="Complete calendar page">
+        <KitChatScope>
+          <LayoutGroup id="kit-calendar-page">
+            <div className="flex h-[720px] min-w-0 overflow-hidden border border-imagine-border bg-imagine-surface p-l">
+              <CalendarPage postsByDay={KIT_POSTS_BY_DAY} today="2026-09-03" />
+            </div>
+          </LayoutGroup>
+        </KitChatScope>
+      </Demo>
+      <Demo label="Complete analytics page">
+        <KitChatScope>
+          <LayoutGroup id="kit-analytics-page">
+            <div className="h-[900px] min-w-0 overflow-y-auto border border-imagine-border bg-imagine-surface p-l">
+              <AnalyticsPage data={KIT_ANALYTICS_DATA} />
+            </div>
+          </LayoutGroup>
+        </KitChatScope>
+      </Demo>
     </div>
   );
 }
