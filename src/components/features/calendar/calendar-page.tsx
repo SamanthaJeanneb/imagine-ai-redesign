@@ -82,11 +82,11 @@ export function CalendarPage({ postsByDay, today }: CalendarPageProps) {
   const [view, setView] = useState<CalendarView>("month");
   const [anchor, setAnchor] = useState(today);
   const [search, setSearch] = useState("");
-  const selected = chat.attached?.id ?? null;
+  const selected = chat.attachedId;
 
   /** Selecting a post attaches it to the chat, so the next message is about it. */
   function attach(post: PostChipData) {
-    chat.setAttached(chat.attached?.id === post.id ? null : post);
+    chat.toggleAttached({ kind: "post", post });
   }
 
   const range = buildCalendarRange(view, anchor, postsByDay, today, search);

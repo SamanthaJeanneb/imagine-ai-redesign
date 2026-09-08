@@ -3,22 +3,27 @@
 import { motion } from "motion/react";
 
 import { PREVIEW_LAYOUT_ID } from "@/components/features/agent/chat-dock";
-import { ChartBlock } from "@/components/features/analytics/chart-block";
+import { useChat } from "@/components/features/agent/chat-provider";
+import { ChartCard } from "@/components/features/analytics/chart-card";
 import { StatGroup, StatTile } from "@/components/features/analytics/stat-tile";
-import type { AnalyticsChart, AnalyticsStat } from "@/services/analytics";
+import type { AnalyticsStat, PreviewChart } from "@/services/analytics";
 import { fade } from "@/styles/motion";
 
 interface AnalyticsPageProps {
   stats: readonly AnalyticsStat[];
-  impressions: AnalyticsChart;
+  charts: readonly PreviewChart[];
 }
 
 /**
- * The analytics page's body. The impressions chart carries the composer
- * preview's layout id, so expanding the preview morphs it into place while
+ * The analytics page's body: the month's numbers, then the same charts the
+ * composer previews. Pressing one attaches it to the chat in the right
+ * column, the way pressing a post on the calendar does. The first chart
+ * carries the preview's layout id, so expanding morphs it into place while
  * the tiles above it fade in.
  */
-export function AnalyticsPage({ stats, impressions }: AnalyticsPageProps) {
+export function AnalyticsPage({ stats, charts }: AnalyticsPageProps) {
+  const chat = useChat();
+
   return (
     <div className="flex flex-1 flex-col gap-xl px-xxl pb-xxl">
       <motion.div
@@ -39,15 +44,22 @@ export function AnalyticsPage({ stats, impressions }: AnalyticsPageProps) {
           ))}
         </StatGroup>
       </motion.div>
-      <motion.div layoutId={PREVIEW_LAYOUT_ID.analytics}>
-        <ChartBlock
-          kind="area"
-          data={impressions.data}
-          series={impressions.series}
-          title="Impressions over time"
-          description="Last 30 days"
-        />
-      </motion.div>
+      {/* The trend runs the full width; the cuts of it sit beneath, side by
+          side where there is room. */}
+      <div className="grid gap-l lg:grid-cols-2">
+        {charts.map((chart, index) => (
+          <ChartCard
+            key={chart.id}
+            chart={chart}
+            selected={chat.attachedId === chart.id}
+            onOpen={() => {
+              chat.toggleAttached({ kind: "chart", chart });
+            }}
+            className={index === 0 ? "lg:col-span-2" : undefined}
+            {...(index === 0 ? { layoutId: PREVIEW_LAYOUT_ID.analytics } : {})}
+          />
+        ))}
+      </div>
     </div>
   );
 }

@@ -31,6 +31,8 @@ export type ChartMark = "bar" | "line" | "step";
 export interface ChartSeries {
   key: string;
   label: string;
+  /** Follows the value in the tooltip and the bar labels, e.g. `%`. */
+  unit?: string;
   /** Composed charts only. How the series is drawn. Default `line`. */
   mark?: ChartMark;
   /** Composed charts only. `right` gets its own scale. Default `left`. */
@@ -167,8 +169,10 @@ function formatFull(value: unknown): string {
   return text(value);
 }
 
-function labelFormatter(value: unknown): string {
-  return typeof value === "number" ? formatCompact(value) : text(value);
+/** Bar value labels: compact, carrying the series unit when it has one. */
+function labelFormatter(unit = "") {
+  return (value: unknown): string =>
+    (typeof value === "number" ? formatCompact(value) : text(value)) + unit;
 }
 
 function seriesStats(
@@ -302,6 +306,7 @@ export function ChartBlock({
         series.map((item, index) => [item.key, seriesColor(index, tone)]),
       );
   const labelOf = new Map(series.map((item) => [item.key, item.label]));
+  const unitOf = new Map(series.map((item) => [item.key, item.unit ?? ""]));
   const stats = new Map(
     series.map((item) => [item.key, seriesStats(data, item.key)]),
   );
@@ -351,7 +356,7 @@ export function ChartBlock({
       }
       isAnimationActive={false}
       formatter={(value: unknown, name: unknown) => [
-        formatFull(value),
+        formatFull(value) + (unitOf.get(text(name)) ?? ""),
         labelOf.get(text(name)) ?? text(name),
       ]}
     />
@@ -686,7 +691,7 @@ export function ChartBlock({
                         dataKey={item.key}
                         position="right"
                         offset={8}
-                        formatter={labelFormatter}
+                        formatter={labelFormatter(item.unit)}
                         fontSize={11}
                         fill={COLOR.foreground}
                       />
@@ -756,7 +761,7 @@ export function ChartBlock({
                         dataKey={item.key}
                         position="top"
                         offset={6}
-                        formatter={labelFormatter}
+                        formatter={labelFormatter(item.unit)}
                         {...LABEL}
                       />
                     ) : null}

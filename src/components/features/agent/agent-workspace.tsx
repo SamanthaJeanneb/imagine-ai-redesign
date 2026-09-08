@@ -25,6 +25,7 @@ import type {
   ChartSeries,
 } from "@/components/features/analytics/chart-block";
 import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
+import type { PostChipData } from "@/components/features/calendar/post-chip";
 import type { UpNextItem } from "@/components/features/calendar/up-next-list";
 import type { AgentMessage } from "@/services/agent";
 import { blurOut, fade } from "@/styles/motion";
@@ -98,6 +99,11 @@ export function AgentWorkspace({
   const pending = (landing?.timeline ?? []).filter(
     (entry) => !handled.includes(entry.id),
   );
+
+  /** Picking a post off the landing calendar makes the next message about it. */
+  function attachPost(post: PostChipData) {
+    chat.toggleAttached({ kind: "post", post });
+  }
 
   /**
    * One element in both modes, so the send is a single spring from the hero
@@ -185,13 +191,13 @@ export function AgentWorkspace({
                   <MonthCalendar
                     label={landing.month?.label ?? "Next two weeks"}
                     days={landing.month?.days ?? landing.days}
-                    onOpenPost={chat.setAttached}
+                    onOpenPost={attachPost}
                     onOpenCalendar={() => {
                       router.push("/calendar");
                     }}
-                    {...(chat.attached === null
+                    {...(chat.attachedId === null
                       ? {}
-                      : { selectedPostId: chat.attached.id })}
+                      : { selectedPostId: chat.attachedId })}
                   />
                 </div>
               ) : (
@@ -202,10 +208,10 @@ export function AgentWorkspace({
                     setHandled((current) => [...current, entry.id]);
                     chat.send(action.prompt ?? entry.title, action.intent);
                   }}
-                  onOpenPost={chat.setAttached}
-                  {...(chat.attached === null
+                  onOpenPost={attachPost}
+                  {...(chat.attachedId === null
                     ? {}
-                    : { selectedPostId: chat.attached.id })}
+                    : { selectedPostId: chat.attachedId })}
                 />
               )}
             </motion.div>

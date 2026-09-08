@@ -1,9 +1,9 @@
 "use client";
 
-import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { Activity } from "react";
 
+import { ChartContext } from "@/components/features/agent/chart-context";
 import { useChat } from "@/components/features/agent/chat-provider";
 import {
   Composer,
@@ -11,7 +11,7 @@ import {
 } from "@/components/features/agent/composer";
 import { PostContext } from "@/components/features/agent/post-context";
 import { PreviewSurface } from "@/components/features/agent/preview-surface";
-import { ChartBlock } from "@/components/features/analytics/chart-block";
+import { ChartCard } from "@/components/features/analytics/chart-card";
 import { CalendarGrid } from "@/components/features/calendar/calendar-grid";
 
 /**
@@ -63,6 +63,7 @@ export function ChatDock({
   const chat = useChat();
   const isDock = variant === "dock";
   const shown = chat.lastPreview;
+  const attached = chat.attached;
 
   return (
     <Composer
@@ -80,19 +81,27 @@ export function ChatDock({
             ...(previews === undefined ? {} : { previews }),
           }
         : {})}
-      {...(chat.attached === null
+      {...(attached === null
         ? {}
-        : {
-            placeholder: "Ask about this post",
-            attachments: (
-              <PostContext
-                posts={[chat.attached]}
-                onRemove={() => {
-                  chat.setAttached(null);
-                }}
-              />
-            ),
-          })}
+        : attached.kind === "post"
+          ? {
+              placeholder: "Ask about this post",
+              attachments: (
+                <PostContext
+                  posts={[attached.post]}
+                  onRemove={chat.clearAttached}
+                />
+              ),
+            }
+          : {
+              placeholder: "Ask about this chart",
+              attachments: (
+                <ChartContext
+                  chart={attached.chart}
+                  onRemove={chat.clearAttached}
+                />
+              ),
+            })}
     >
       {isDock ? (
         <PreviewSurface
@@ -113,32 +122,36 @@ export function ChatDock({
                 ? { layoutId: PREVIEW_LAYOUT_ID.calendar }
                 : {})}
               onOpenPost={(post) => {
-                chat.setAttached(chat.attached?.id === post.id ? null : post);
+                chat.toggleAttached({ kind: "post", post });
               }}
-              {...(chat.attached === null
+              {...(chat.attachedId === null
                 ? {}
-                : { selectedPostId: chat.attached.id })}
+                : { selectedPostId: chat.attachedId })}
             />
           </Activity>
           <Activity mode={shown === "analytics" ? "visible" : "hidden"}>
-            <motion.div
-              layoutId={
-                shown === "analytics" ? PREVIEW_LAYOUT_ID.analytics : undefined
-              }
-            >
-              <ChartBlock
-                kind="area"
-                data={chat.previews.analytics.data}
-                series={chat.previews.analytics.series}
-                title="Impressions over time"
-                description="Last 30 days"
-                tone="accent"
-                dense
-                plain
-                // The total would sit under the expand icon; the page has it.
-                headline={false}
-              />
-            </motion.div>
+            {/* Side by side where the composer is wide, stacked in the
+                shell's chat column. */}
+            <div className="@container">
+              <div className="grid gap-xs @md:grid-cols-3">
+                {chat.previews.analytics.map((chart, index) => (
+                  <ChartCard
+                    key={chart.id}
+                    chart={chart}
+                    dense
+                    selected={chat.attachedId === chart.id}
+                    onOpen={() => {
+                      chat.toggleAttached({ kind: "chart", chart });
+                    }}
+                    /* The first card is the page's first block: the one the
+                       expanded page morphs from. */
+                    {...(shown === "analytics" && index === 0
+                      ? { layoutId: PREVIEW_LAYOUT_ID.analytics }
+                      : {})}
+                  />
+                ))}
+              </div>
+            </div>
           </Activity>
         </PreviewSurface>
       ) : null}

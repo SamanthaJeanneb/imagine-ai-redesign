@@ -11,13 +11,10 @@ import {
 } from "react";
 
 import type { ComposerPreview } from "@/components/features/agent/composer";
-import type {
-  ChartDatum,
-  ChartSeries,
-} from "@/components/features/analytics/chart-block";
 import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
 import type { AgentMessage, ScriptedReply } from "@/services/agent";
+import type { PreviewChart } from "@/services/analytics";
 
 /** A conversation started in the browser. It is never stored, so this is its id. */
 export const NEW_THREAD_ID = "new";
@@ -25,7 +22,19 @@ export const NEW_THREAD_ID = "new";
 /** What the composer's preview chips open. Static, read from the mock once. */
 export interface PreviewData {
   calendar: readonly CalendarDay[];
-  analytics: { data: readonly ChartDatum[]; series: readonly ChartSeries[] };
+  analytics: readonly PreviewChart[];
+}
+
+/** What the next message is about: a post from the calendar, or a chart. */
+export type ChatAttachment =
+  { kind: "post"; post: PostChipData } | { kind: "chart"; chart: PreviewChart };
+
+/** Both kinds carry an id and a title; this is the one the chat speaks about. */
+function subject(
+  attachment: ChatAttachment | null,
+): { id: string; title: string } | null {
+  if (attachment === null) return null;
+  return attachment.kind === "post" ? attachment.post : attachment.chart;
 }
 
 interface Streaming {
@@ -42,7 +51,9 @@ export interface ChatState {
   thinking: boolean;
   thinkingStatuses: readonly string[] | undefined;
   draft: string;
-  attached: PostChipData | null;
+  attached: ChatAttachment | null;
+  /** The id of whatever is attached, for marking it selected where it lives. */
+  attachedId: string | null;
   preview: ComposerPreview | null;
   /**
    * The preview last opened. The surface keeps showing it while it closes,
@@ -64,7 +75,9 @@ export interface ChatActions {
   /** A button in a reply, pressed: says the intent on the user's behalf. */
   sendIntent: (intent: string) => void;
   setDraft: (draft: string) => void;
-  setAttached: (post: PostChipData | null) => void;
+  /** Attach a post or a chart. Attaching what is attached already detaches it. */
+  toggleAttached: (next: ChatAttachment) => void;
+  clearAttached: () => void;
   setPreview: (preview: ComposerPreview | null) => void;
   /** Show a stored thread. No-op when it is already the open one. */
   open: (threadId: string, messages: readonly AgentMessage[]) => void;
@@ -115,7 +128,7 @@ export function ChatProvider({
   const [messages, setMessages] = useState<readonly AgentMessage[]>([]);
   const [streaming, setStreaming] = useState<Streaming | null>(null);
   const [draft, setDraft] = useState("");
-  const [attached, setAttached] = useState<PostChipData | null>(null);
+  const [attached, setAttached] = useState<ChatAttachment | null>(null);
   const [preview, setPreviewState] = useState<ComposerPreview | null>(null);
   const [lastPreview, setLastPreview] = useState<ComposerPreview>("calendar");
   const [handoff, setHandoff] = useState<ComposerPreview | null>(null);
@@ -159,9 +172,9 @@ export function ChatProvider({
     (text: string, intent = "default") => {
       const turn = String(turns + 1);
       const messageId = `reply-${turn}`;
-      // An attached post rides along in the message, the way a person would say it.
-      const spoken =
-        attached === null ? text : `About "${attached.title}": ${text}`;
+      // What is attached rides along in the message, the way a person would say it.
+      const about = subject(attached);
+      const spoken = about === null ? text : `About "${about.title}": ${text}`;
 
       setTurns(turns + 1);
       setThreadId((current) => current ?? NEW_THREAD_ID);
@@ -187,6 +200,16 @@ export function ChatProvider({
     },
     [attached, replies, turns],
   );
+
+  const toggleAttached = useCallback((next: ChatAttachment) => {
+    setAttached((current) =>
+      subject(current)?.id === subject(next)?.id ? null : next,
+    );
+  }, []);
+
+  const clearAttached = useCallback(() => {
+    setAttached(null);
+  }, []);
 
   const sendIntent = useCallback(
     (intent: string) => {
@@ -232,6 +255,7 @@ export function ChatProvider({
       thinkingStatuses: streaming?.reply.statuses,
       draft,
       attached,
+      attachedId: subject(attached)?.id ?? null,
       preview,
       lastPreview,
       handoff,
@@ -239,7 +263,8 @@ export function ChatProvider({
       send,
       sendIntent,
       setDraft,
-      setAttached,
+      toggleAttached,
+      clearAttached,
       setPreview,
       open,
       reset,
@@ -258,6 +283,8 @@ export function ChatProvider({
       previews,
       send,
       sendIntent,
+      toggleAttached,
+      clearAttached,
       setPreview,
       open,
       reset,

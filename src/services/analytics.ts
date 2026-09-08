@@ -2,6 +2,7 @@ import type { ProfileOption } from "@/components/features/analytics/analytics-to
 import type { ProfileMetric } from "@/components/features/analytics/by-profile-list";
 import type {
   ChartDatum,
+  ChartKind,
   ChartSeries,
 } from "@/components/features/analytics/chart-block";
 import type { StatDelta } from "@/components/features/analytics/stat-tile";
@@ -51,6 +52,13 @@ export interface AnalyticsOverview {
 const IMPRESSION_SERIES: readonly ChartSeries[] = [
   { key: "impressions", label: "Impressions" },
 ];
+
+const ENGAGEMENT_SERIES: readonly ChartSeries[] = [
+  { key: "rate", label: "Engagement rate", unit: "%" },
+];
+
+/** How many recent posts the per-post cuts show. */
+const RECENT_POSTS = 8;
 
 const EMPTY_TOTALS: AnalyticsTotals = {
   totalImpressions: 0,
@@ -263,6 +271,90 @@ export function getLandingRail(): LandingRail {
       series: IMPRESSION_SERIES,
     },
   };
+}
+
+export interface PreviewChart {
+  /** Stable: the key in a list, and what the chat attaches. */
+  id: string;
+  title: string;
+  /** The cut: the window, or what the categories are. */
+  description: string;
+  kind: ChartKind;
+  /** The one number that sums the chart up, formatted. Shown when attached. */
+  summary: string;
+  data: readonly ChartDatum[];
+  series: readonly ChartSeries[];
+}
+
+function sum(data: readonly ChartDatum[], key: string): number {
+  let total = 0;
+  for (const datum of data) {
+    const value = datum[key];
+    if (typeof value === "number") total += value;
+  }
+  return total;
+}
+
+/** "Sarah Chen" → "Sarah". A bar in a preview has room for one word. */
+function shortName(name: string): string {
+  return name.split(" ", 1)[0] ?? name;
+}
+
+/**
+ * Three cuts of last month: the trend, the rate per post, and the split by
+ * profile. The composer's Analytics preview and the analytics page draw the
+ * same set, so expanding keeps its place and any one of them can be attached
+ * to the conversation.
+ */
+export function getPreviewCharts(): readonly PreviewChart[] {
+  const overview = getAnalyticsOverview("1m");
+  const recent = publishedPosts().slice(0, RECENT_POSTS).toReversed();
+
+  let rateSum = 0;
+  const engagement = recent.map((post) => {
+    const rate = (post.analytics?.engagement_rate ?? 0) * 100;
+    rateSum += rate;
+    return {
+      label: formatDayMonth(publishedAt(post)),
+      rate: Math.round(rate * 10) / 10,
+    };
+  });
+
+  return [
+    {
+      id: "impressions",
+      title: "Impressions over time",
+      description: "Last 30 days",
+      kind: "area",
+      summary: formatCompact(sum(overview.impressions.data, "impressions")),
+      data: overview.impressions.data,
+      series: IMPRESSION_SERIES,
+    },
+    {
+      id: "engagement",
+      title: "Engagement rate",
+      description: `Last ${String(engagement.length)} posts`,
+      kind: "bar",
+      summary:
+        recent.length === 0
+          ? toPercent(0)
+          : toPercent(rateSum / (100 * recent.length)),
+      data: engagement,
+      series: ENGAGEMENT_SERIES,
+    },
+    {
+      id: "by-profile",
+      title: "Impressions by profile",
+      description: "Last 30 days",
+      kind: "hbar",
+      summary: `${String(overview.byProfile.length)} profiles`,
+      data: overview.byProfile.slice(0, 4).map((profile) => ({
+        label: shortName(profile.name),
+        impressions: profile.value,
+      })),
+      series: IMPRESSION_SERIES,
+    },
+  ];
 }
 
 /** Impressions for one profile's last few posts, for a chart inside a reply. */
