@@ -110,7 +110,10 @@ export function ProfileDetail({
         )}
       >
         <header className="flex items-center gap-m">
-          <Avatar size="lg">
+          <Avatar
+            size="lg"
+            shape={profile.kind === "company" ? "square" : "circle"}
+          >
             {profile.avatarUrl ? (
               <AvatarImage src={profile.avatarUrl} alt={profile.name} />
             ) : null}
@@ -160,7 +163,7 @@ export function ProfileDetail({
           <Group title="Company">
             {profile.company ? (
               <div className="flex items-center gap-m py-xs">
-                <Avatar size="sm">
+                <Avatar size="sm" shape="square">
                   {profile.company.logoUrl ? (
                     <AvatarImage
                       src={profile.company.logoUrl}

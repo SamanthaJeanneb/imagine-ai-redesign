@@ -36,7 +36,7 @@ interface CalendarGridProps {
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
 const CELL_HEIGHT: Record<CalendarDensity, string> = {
-  strip: "min-h-16",
+  strip: "min-h-40",
   preview: "min-h-14",
   page: "min-h-32",
 };
@@ -83,7 +83,10 @@ export function CalendarGrid({
       </div>
       <div
         role="rowgroup"
-        className="grid grid-cols-7 gap-px bg-imagine-border"
+        className={cn(
+          "grid grid-cols-7 gap-px bg-imagine-border",
+          density === "strip" && "flex-1 grid-rows-2",
+        )}
       >
         {days.map((day, index) => {
           const overflow = day.posts.length - maxChips;

@@ -50,7 +50,7 @@ export function LandingIntro({
   dateLabel: string;
 }) {
   return (
-    <div className="flex flex-col gap-xxs pb-l">
+    <div className="flex flex-col gap-xs pb-xxl">
       <h1 className="type-title">{greeting}</h1>
       <p className="type-small text-imagine-foreground-muted">{dateLabel}</p>
     </div>
@@ -74,16 +74,15 @@ export function LandingBelow({
   const rest = entries.length - PREVIEW;
 
   return (
-    <div className="flex flex-col gap-xxl pt-xl pb-xxl">
+    <div className="flex flex-1 flex-col gap-xxxl pt-xxl pb-l">
       {entries.length === 0 ? null : (
-        <section className="flex flex-col gap-l">
+        <section className="flex flex-col gap-xl">
           <h2 className="type-heading">While you were away</h2>
           {/* The first two are the preview. The timeline animates the rest in,
               so opening it grows the list rather than swapping it. */}
           <Timeline
             entries={open ? entries : entries.slice(0, PREVIEW)}
             onAction={onAction}
-            className="pl-xs"
           />
           {rest > 0 ? (
             <Button
@@ -109,12 +108,13 @@ export function LandingBelow({
           ) : null}
         </section>
       )}
-      <section className="flex flex-col gap-l">
+      <section className="flex flex-1 flex-col gap-xl">
         <h2 className="type-heading">Next two weeks</h2>
         <CalendarGrid
           days={days}
           density="strip"
           onOpenPost={onOpenPost}
+          className="flex-1"
           {...(selectedPostId === undefined ? {} : { selectedPostId })}
         />
       </section>
@@ -134,7 +134,7 @@ export function LandingRail({
   onOpenCalendar: () => void;
 }) {
   return (
-    <div className="flex w-72 flex-col gap-xl pb-xxl">
+    <div className="flex w-72 flex-col gap-xxl pb-section">
       {/* Numbers only. The deltas live on the analytics page, where there is
           room for them and a range control to make them mean something. */}
       <Stagger kind="grid" className="grid grid-cols-2 gap-l">
@@ -148,11 +148,12 @@ export function LandingRail({
         ))}
       </Stagger>
       <ChartBlock
-        kind="bar"
+        kind="area"
         data={chart.data}
         series={chart.series}
+        title="Impressions over time"
+        description="Last 30 days"
         tone="accent"
-        dense
       />
       <UpNextList items={upNext} onViewAll={onOpenCalendar} />
     </div>

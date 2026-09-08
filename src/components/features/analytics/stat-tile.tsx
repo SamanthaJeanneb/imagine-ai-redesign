@@ -67,12 +67,10 @@ export function StatTile({
               key={delta.label + delta.direction}
               {...pop}
               className={cn(
-                "inline-flex h-5 shrink-0 items-center gap-xxs rounded-full px-1.5 type-small font-medium tabular-nums",
-                delta.direction === "up" && "bg-success/10 text-success",
-                delta.direction === "down" &&
-                  "bg-destructive/10 text-destructive",
-                delta.direction === "flat" &&
-                  "bg-imagine-surface-raised text-imagine-foreground-muted",
+                "inline-flex shrink-0 items-center gap-xxs type-small font-medium tabular-nums",
+                delta.direction === "up" && "text-success",
+                delta.direction === "down" && "text-destructive",
+                delta.direction === "flat" && "text-imagine-foreground-muted",
               )}
             >
               {delta.direction === "flat" ? null : (
@@ -95,7 +93,7 @@ interface StatGroupProps extends React.ComponentProps<typeof Stagger> {
 }
 
 /**
- * One soft background around a set of tiles, never a border per tile. The
+ * One hairline frame around a set of tiles, with a hairline between each. The
  * tiles stagger in.
  */
 export function StatGroup({
@@ -108,8 +106,11 @@ export function StatGroup({
       kind="grid"
       data-slot="stat-group"
       className={cn(
-        "grid gap-l rounded-panel bg-imagine-surface-raised p-l shadow-control",
-        columns === 4 ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2",
+        "grid border border-imagine-border bg-imagine-surface",
+        "[&>[data-slot=stat-tile]]:border-imagine-border [&>[data-slot=stat-tile]]:p-l",
+        columns === 4
+          ? "grid-cols-2 sm:grid-cols-4 [&>[data-slot=stat-tile]:nth-child(even)]:border-l sm:[&>[data-slot=stat-tile]:nth-child(n+2)]:border-l [&>[data-slot=stat-tile]:nth-child(n+3)]:border-t sm:[&>[data-slot=stat-tile]:nth-child(n+3)]:border-t-0"
+          : "grid-cols-2 [&>[data-slot=stat-tile]:nth-child(even)]:border-l [&>[data-slot=stat-tile]:nth-child(n+3)]:border-t",
         className,
       )}
       {...props}

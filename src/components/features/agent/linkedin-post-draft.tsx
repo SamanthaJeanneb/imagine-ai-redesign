@@ -15,6 +15,8 @@ export interface PostAuthor {
   name: string;
   headline: string;
   avatarUrl?: string;
+  /** Company pages get a square avatar, as on LinkedIn. Default `person`. */
+  kind?: "person" | "company";
 }
 
 /** Everything needed to render a post the way LinkedIn will. */
@@ -79,17 +81,14 @@ export function LinkedInPost({
       )}
     >
       <header className="flex items-start gap-m">
-        <Avatar size="lg" className="rounded-full">
+        <Avatar
+          size="lg"
+          shape={author.kind === "company" ? "square" : "circle"}
+        >
           {author.avatarUrl ? (
-            <AvatarImage
-              src={author.avatarUrl}
-              alt={author.name}
-              className="rounded-full"
-            />
+            <AvatarImage src={author.avatarUrl} alt={author.name} />
           ) : null}
-          <AvatarFallback className="rounded-full">
-            {initials(author.name)}
-          </AvatarFallback>
+          <AvatarFallback>{initials(author.name)}</AvatarFallback>
         </Avatar>
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="truncate type-body font-semibold">

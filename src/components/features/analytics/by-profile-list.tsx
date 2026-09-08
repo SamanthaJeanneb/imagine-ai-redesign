@@ -11,6 +11,8 @@ export interface ProfileMetric {
   id: string;
   name: string;
   avatarUrl?: string;
+  /** Company pages get a square avatar. Default `person`. */
+  kind?: "person" | "company";
   /** Raw number, used to size the bar. */
   value: number;
   /** Already formatted, e.g. "4.1k". */
@@ -33,8 +35,8 @@ function initials(name: string): string {
 }
 
 /**
- * Horizontal comparison across profiles: avatar, name, a proportional bar in
- * the accent, and the value. Bars grow in from the left.
+ * Horizontal comparison across profiles: avatar, name, a square-ended bar in
+ * the accent on a hairline track, and the value. Bars grow in from the left.
  */
 export function ByProfileList({
   title = "By profile",
@@ -50,7 +52,7 @@ export function ByProfileList({
     <div
       data-slot="by-profile"
       className={cn(
-        "flex flex-col gap-l rounded-panel bg-imagine-surface p-l shadow-raised",
+        "flex flex-col gap-l border border-imagine-border bg-imagine-surface p-l",
         className,
       )}
     >
@@ -68,7 +70,10 @@ export function ByProfileList({
                 transition={pressRow.transition}
                 className="flex w-full items-center gap-m rounded-control text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-default"
               >
-                <Avatar size="sm">
+                <Avatar
+                  size="sm"
+                  shape={item.kind === "company" ? "square" : "circle"}
+                >
                   {item.avatarUrl ? (
                     <AvatarImage src={item.avatarUrl} alt={item.name} />
                   ) : null}
@@ -77,15 +82,15 @@ export function ByProfileList({
                 <span className="w-28 shrink-0 truncate type-small">
                   {item.name}
                 </span>
-                <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-imagine-surface">
+                <span className="h-2 flex-1 overflow-hidden bg-imagine-border/60">
                   <motion.span
-                    className="block h-full origin-left rounded-full accent-gradient"
+                    className="block h-full origin-left bg-imagine-secondary"
                     initial={reduceMotion ? false : { scaleX: 0 }}
                     animate={{ scaleX: ratio }}
                     transition={spring.soft}
                   />
                 </span>
-                <span className="w-12 shrink-0 text-right type-small text-imagine-foreground-muted tabular-nums">
+                <span className="w-12 shrink-0 text-right type-small font-medium tabular-nums">
                   {item.valueLabel}
                 </span>
               </motion.button>

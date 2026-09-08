@@ -22,13 +22,7 @@ import {
   type TypeToken,
 } from "@/styles/tokens";
 
-import {
-  AvatarDemo,
-  ChartDemo,
-  FormDemo,
-  OverlayDemo,
-  SelectionDemo,
-} from "./kit-demos";
+import { AvatarDemo, FormDemo, OverlayDemo, SelectionDemo } from "./kit-demos";
 import {
   AccountDemo,
   AnalyticsPartsDemo,
@@ -415,15 +409,11 @@ export function Kit({ radiusScale = "default" }: KitProps) {
           </div>
         </Section>
 
-        <Section title="Charts">
-          <ChartDemo />
-        </Section>
-
         <Section title="Stat tiles">
           <StatTileDemo />
         </Section>
 
-        <Section title="Chart block">
+        <Section title="Charts">
           <ChartBlockDemo />
         </Section>
 

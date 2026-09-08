@@ -229,6 +229,7 @@ export function getAnalyticsOverview(
         return {
           id: clientId,
           name: client?.name ?? "Unknown profile",
+          kind: client?.isCompany ? "company" : "person",
           ...(client?.profilePicturePath === null ||
           client?.profilePicturePath === undefined
             ? {}

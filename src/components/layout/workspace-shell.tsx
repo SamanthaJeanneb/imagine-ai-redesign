@@ -4,19 +4,19 @@ import { AnimatePresence, LayoutGroup } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useState } from "react";
 
+import { AccountControls, type AccountUser } from "@/components/layout/account";
 import {
   Sidebar,
   SidebarExpandButton,
   type SidebarNavKey,
   type SidebarThread,
-  type SidebarUser,
 } from "@/components/layout/sidebar";
 
 interface WorkspaceShellProps {
   orgName: string;
   orgLogoUrl?: string;
   threads: readonly SidebarThread[];
-  user: SidebarUser;
+  user: AccountUser;
   children: ReactNode;
 }
 
@@ -29,6 +29,8 @@ const NAV_KEYS: readonly SidebarNavKey[] = [
 
 /** `/calendar` and `/agent/t1` both resolve to their nav item; `/settings` to none. */
 function navKeyFor(pathname: string): SidebarNavKey | undefined {
+  // The alternate agent landing is still the agent.
+  if (pathname === "/landing-2") return "agent";
   return NAV_KEYS.find(
     (key) => pathname === `/${key}` || pathname.startsWith(`/${key}/`),
   );
@@ -67,7 +69,6 @@ export function WorkspaceShell({
           {...(activeKey === undefined ? {} : { active: activeKey })}
           {...(activeThreadId === undefined ? {} : { activeThreadId })}
           threads={threads}
-          user={user}
           collapsed={collapsed}
           onCollapsedChange={setCollapsed}
           onNavigate={(key) => {
@@ -79,14 +80,12 @@ export function WorkspaceShell({
           onOpenThread={(id) => {
             router.push(`/agent/${id}`);
           }}
-          onOpenUser={() => {
-            router.push("/settings");
-          }}
         />
         <div className="flex min-w-0 flex-1 flex-col rounded-l-surface bg-imagine-surface shadow-raised">
-          {/* Page header row. Holds the way out of the collapsed rail, and sets
-              the top inset every page starts below. */}
-          <div className="mt-xl flex h-10 shrink-0 items-center gap-s px-xl">
+          {/* Page header row. The way out of the collapsed rail on the left,
+              the account on the right; sets the top inset every page starts
+              below. */}
+          <div className="mt-m mb-xxl flex h-8 shrink-0 items-center gap-s px-xxl">
             <AnimatePresence initial={false}>
               {collapsed ? (
                 <SidebarExpandButton
@@ -99,6 +98,17 @@ export function WorkspaceShell({
                 />
               ) : null}
             </AnimatePresence>
+            <AccountControls
+              user={user}
+              // The gear's glyph, not its hit area, sits on the page's right edge.
+              className="-mr-s ml-auto"
+              onOpenAccount={() => {
+                router.push("/settings");
+              }}
+              onOpenSettings={() => {
+                router.push("/settings");
+              }}
+            />
           </div>
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
             {children}

@@ -15,7 +15,10 @@ import {
   type ComposerPreview,
 } from "@/components/features/agent/composer";
 import { AssetPicker } from "@/components/features/agent/asset-picker";
-import { LinkedInPostDraft } from "@/components/features/agent/linkedin-post-draft";
+import {
+  LinkedInPostDraft,
+  type PostAuthor,
+} from "@/components/features/agent/linkedin-post-draft";
 import { PostContext } from "@/components/features/agent/post-context";
 import { PreviewSurface } from "@/components/features/agent/preview-surface";
 import { ScheduledGraphic } from "@/components/features/agent/scheduled-graphic";
@@ -28,6 +31,7 @@ import { ByProfileList } from "@/components/features/analytics/by-profile-list";
 import {
   ChartBlock,
   type ChartDatum,
+  type ChartSeries,
 } from "@/components/features/analytics/chart-block";
 import { StatGroup, StatTile } from "@/components/features/analytics/stat-tile";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -86,6 +90,7 @@ import {
   ProfileList,
   type ProfileSummary,
 } from "@/components/features/settings/profile-list";
+import { AccountControls } from "@/components/layout/account";
 import { FilesPanel } from "@/components/layout/files-panel";
 import {
   Sidebar,
@@ -186,6 +191,44 @@ const BY_TYPE: ChartDatum[] = [
   { label: "Hiring", posts: 9 },
 ];
 
+/**
+ * Twenty-six weeks, March to September: weekly engagements, and the prospects
+ * and deals they turned into, both running totals.
+ */
+const PIPELINE: ChartDatum[] = [];
+const PIPELINE_TICKS: string[] = [];
+const PIPELINE_START = Date.UTC(2026, 2, 2);
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+for (let week = 0; week < 27; week += 1) {
+  const date = new Date(PIPELINE_START + week * WEEK_MS);
+  const label = date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+  });
+  /* One tick per month: the first week that falls inside it. */
+  if (date.getUTCDate() <= 7) PIPELINE_TICKS.push(label);
+  const growth = 1 + week / 9;
+  const wobble = 0.72 + 0.28 * Math.abs(Math.sin(week * 1.7));
+  PIPELINE.push({
+    label,
+    engagements: Math.round(160 * growth * growth * wobble),
+    prospects: Math.round(90 + 44 * week + 0.9 * week * week),
+    deals: Math.floor(week * 0.95),
+  });
+}
+const PIPELINE_SERIES: ChartSeries[] = [
+  { key: "engagements", label: "Engagements", mark: "bar" },
+  { key: "prospects", label: "Prospects", mark: "line" },
+  {
+    key: "deals",
+    label: "Deals won",
+    mark: "step",
+    axis: "right",
+    endLabel: true,
+  },
+];
+
 const IMPRESSIONS_SERIES = { key: "impressions", label: "Impressions" };
 const SERIES = [
   IMPRESSIONS_SERIES,
@@ -203,9 +246,10 @@ const AUTHOR_RAVI = {
   headline: "Head of Design at Acme",
   avatarUrl: AVATAR(12),
 };
-const AUTHOR_ACME = {
+const AUTHOR_ACME: PostAuthor = {
   name: "Acme",
   headline: "Company page",
+  kind: "company",
   avatarUrl: ACME_LOGO,
 };
 
@@ -580,9 +624,11 @@ function PageStub({
         side === "right" ? "rounded-l-surface" : "rounded-r-surface",
       )}
     >
-      {/* Matches the rail's org row: `py-xl` then a 40px row, so the collapse
+      {/* Matches the rail's org row: `py-m` then a 32px row, so the collapse
           control keeps its baseline when it crosses over. */}
-      <div className="mt-xl flex h-10 items-center gap-s px-m">{children}</div>
+      <div className="mt-m mb-xxl flex h-8 items-center gap-s px-m">
+        {children}
+      </div>
     </div>
   );
 }
@@ -627,16 +673,15 @@ export function SidebarDemo() {
             onCollapsedChange={setExpandedCollapsed}
             threads={THREADS}
             activeThreadId="t1"
-            user={SIDEBAR_USER}
             onNavigate={setActive}
             onNewPost={() => {
-              toast("New post");
+              toast("New chat");
             }}
             onOpenThread={(id) => {
               toast(`Open thread ${id}`);
             }}
-            onOpenUser={() => {
-              toast("Account");
+            onHelp={(key) => {
+              toast(`Help: ${key}`);
             }}
           />
           <PageStub>
@@ -650,6 +695,16 @@ export function SidebarDemo() {
                 />
               ) : null}
             </AnimatePresence>
+            <AccountControls
+              user={SIDEBAR_USER}
+              className="ml-auto"
+              onOpenAccount={() => {
+                toast("Account");
+              }}
+              onOpenSettings={() => {
+                toast("Settings");
+              }}
+            />
           </PageStub>
         </OnBackground>
       </Demo>
@@ -663,7 +718,6 @@ export function SidebarDemo() {
             onCollapsedChange={setRailCollapsed}
             threads={THREADS}
             activeThreadId="t1"
-            user={SIDEBAR_USER}
             onNavigate={setActive}
           />
           <PageStub>
@@ -677,6 +731,7 @@ export function SidebarDemo() {
                 />
               ) : null}
             </AnimatePresence>
+            <AccountControls user={SIDEBAR_USER} className="ml-auto" />
           </PageStub>
         </OnBackground>
       </Demo>
@@ -1053,6 +1108,24 @@ function StatGroupDemo() {
 export function ChartBlockDemo() {
   return (
     <div className="grid gap-xl lg:grid-cols-2">
+      <Demo
+        label="Composed: bars, a line, a step on its own scale, annotated"
+        className="lg:col-span-2"
+      >
+        <ChartBlock
+          kind="composed"
+          data={PIPELINE}
+          series={PIPELINE_SERIES}
+          title="Content → pipeline"
+          description="Weekly, last six months"
+          xTicks={PIPELINE_TICKS}
+          annotations={[
+            { at: PIPELINE[13]?.label ?? "", label: "CSM hire" },
+            { at: PIPELINE[22]?.label ?? "", label: "Rebrand" },
+          ]}
+          legend
+        />
+      </Demo>
       <Demo label="Bar, accent, dense, highlighted day (right rail)">
         <ChartBlock
           kind="bar"
@@ -1063,15 +1136,16 @@ export function ChartBlockDemo() {
           highlightIndex={3}
         />
       </Demo>
-      <Demo label="Bar with title">
+      <Demo label="Bar, value labels, mean rule">
         <ChartBlock
           kind="bar"
           data={BY_TYPE}
           series={[{ key: "posts", label: "Posts" }]}
           title="By post type"
+          description="Last 30 days"
         />
       </Demo>
-      <Demo label="Area, three series, legend toggles">
+      <Demo label="Area, three series, key with totals, toggles">
         <ChartBlock
           kind="area"
           data={IMPRESSIONS}
@@ -1081,12 +1155,13 @@ export function ChartBlockDemo() {
           legend
         />
       </Demo>
-      <Demo label="Horizontal bar">
+      <Demo label="Horizontal bar, values at the end">
         <ChartBlock
           kind="hbar"
           data={BY_TYPE}
           series={[{ key: "posts", label: "Posts" }]}
           title="Posts by type"
+          description="Last 30 days"
         />
       </Demo>
     </div>
@@ -1455,6 +1530,7 @@ export function AnalyticsPartsDemo() {
               {
                 id: "c1",
                 name: "Acme",
+                kind: "company",
                 avatarUrl: ACME_LOGO,
                 value: 4100,
                 valueLabel: "4.1k",

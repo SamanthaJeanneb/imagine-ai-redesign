@@ -66,8 +66,9 @@ week, lists continue, columns are complete.
 
 ### Shell
 
-Left sidebar (logo, primary action, Agent / Calendar / Analytics / Files, a Posts list,
-user footer) rounding into the main surface, with an optional right column. When the file
+Left sidebar (logo, primary action, Agent / Calendar / Analytics / Files, a Chats list,
+"Ask imagine" footer) rounding into the main surface, with an optional right column. The
+signed-in user (avatar, name, settings) sits at the top right of the page. When the file
 system panel is open the sidebar collapses to icons.
 
 ### Landing (`landing/landing(agent).png`)
@@ -149,14 +150,13 @@ spacing; where grouping is needed, one soft `imagine-surface-raised` wraps the g
 - **Pink is the accent, not the primary button color.** Every primary button is near-black
 (`imagine-primary`). Pink appears where `pink-application.png` shows it: logo tile, active
 nav item, timeline dots, avatar tile, chart fills, sign-in brand panel.
-- **"Posts" in the sidebar lists recent agent threads** (`mastra_threads`).
+- **"Chats" in the sidebar lists recent agent threads** (`mastra_threads`).
 - **Markdown files live in the Mastra workspace**, not in `assets`. Files come from
 `workspace_search` rows grouped by `metadata.sourceFile`, scoped by `metadata.orgId` (org
 section) or `metadata.clientId` (person sections). Assets are `app.assets`. The Skills tab
 lists `mastra_skills`, each row a toggle plus the markdown file behind it. A client's
 persona is a file in that client's section.
-- **"New post" sidebar action** focuses the composer with a drafting prefill and, if not
-on `/agent`, navigates there first.
+- **"New chat" sidebar action** returns to the `/agent` landing with an empty composer.
 
 ---
 
@@ -293,7 +293,7 @@ them.
 
 | Table | Rows | Feeds |
 | --- | --- | --- |
-| `public.users` | 4 | sidebar footer, members |
+| `public.users` | 4 | page header account, members |
 | `app.organizations`, `organization_members` | 1, 4 | workspace name, General, join screen |
 | `app.clients` | 5 (1 company page) | profiles, authors, personas |
 | `app.client_linkedin_auth` | 5, one expired | connection status |
@@ -571,8 +571,8 @@ the port maps them deliberately.
 `src/styles/tokens.ts` and `globals.css`. No Tailwind palette colors (`text-red-600`), no
 arbitrary type sizes (`text-[13px]`), and no control heights outside `h-control-*`: those
 belong in `tokens.ts`. No raw `fa-` strings outside `Icon`. No em dash
-anywhere under `src/`. No `style={{` except `ui/chart.tsx`, where Recharts needs series
-colors as values.
+anywhere under `src/`. No `style={{` anywhere; Recharts takes token variables as SVG
+`fill` and `stroke` attributes in `chart-block.tsx`, the only place they appear as strings.
 - Every page renders in light and dark from the single theme switch.
 - Landing → thread, preview → page, chat → sidebar, and panel → editor tab are each one
 continuous morph with no blank frame.

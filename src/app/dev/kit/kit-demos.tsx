@@ -1,7 +1,6 @@
 "use client";
 
 import { toast } from "sonner";
-import { Bar, BarChart, Area, AreaChart, XAxis, YAxis } from "recharts";
 
 import {
   AlertDialog,
@@ -16,12 +15,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  type ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
 import {
   Dialog,
   DialogContent,
@@ -79,28 +72,6 @@ import {
 } from "@/components/ui/tooltip";
 
 const PROFILES = ["All profiles", "Acme (company)", "Sarah Chen", "Ravi Patel"];
-
-const IMPRESSIONS = [
-  { day: "Mon", impressions: 820 },
-  { day: "Tue", impressions: 1240 },
-  { day: "Wed", impressions: 980 },
-  { day: "Thu", impressions: 1610 },
-  { day: "Fri", impressions: 1390 },
-  { day: "Sat", impressions: 640 },
-  { day: "Sun", impressions: 710 },
-];
-
-const BY_TYPE = [
-  { type: "Story", posts: 14 },
-  { type: "Insight", posts: 22 },
-  { type: "Launch", posts: 6 },
-  { type: "Hiring", posts: 9 },
-];
-
-const chartConfig = {
-  impressions: { label: "Impressions", color: "var(--color-chart-1)" },
-  posts: { label: "Posts", color: "var(--color-chart-1)" },
-} satisfies ChartConfig;
 
 export function FormDemo() {
   return (
@@ -339,77 +310,16 @@ export function AvatarDemo() {
           <Icon name="linkedin-in" />
         </AvatarFallback>
       </Avatar>
-    </div>
-  );
-}
-
-export function ChartDemo() {
-  return (
-    <div className="grid gap-xl sm:grid-cols-2">
-      <div className="flex flex-col rounded-panel bg-imagine-surface-raised p-l">
-        <ChartContainer
-          config={chartConfig}
-          className="aspect-auto h-48 w-full"
-        >
-          <AreaChart data={IMPRESSIONS} margin={{ left: 4, right: 12, top: 8 }}>
-            <XAxis
-              dataKey="day"
-              tickLine={false}
-              axisLine={false}
-              interval={0}
-              tickMargin={8}
-            />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              width={36}
-              tickMargin={6}
-              tickFormatter={(value: number) =>
-                value >= 1000 ? `${String(value / 1000)}k` : String(value)
-              }
-            />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <Area
-              dataKey="impressions"
-              type="monotone"
-              fill="var(--color-impressions)"
-              fillOpacity={0.18}
-              stroke="var(--color-impressions)"
-              strokeWidth={2}
-            />
-          </AreaChart>
-        </ChartContainer>
-      </div>
-      <div className="flex flex-col rounded-panel bg-imagine-surface-raised p-l">
-        <ChartContainer
-          config={chartConfig}
-          className="aspect-auto h-48 w-full"
-        >
-          <BarChart
-            data={BY_TYPE}
-            layout="vertical"
-            margin={{ left: 4, right: 8, top: 4, bottom: 4 }}
-            barCategoryGap="28%"
-          >
-            <XAxis type="number" hide />
-            <YAxis
-              dataKey="type"
-              type="category"
-              tickLine={false}
-              axisLine={false}
-              width={64}
-              interval={0}
-            />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <Bar
-              dataKey="posts"
-              fill="var(--color-posts)"
-              radius={4}
-              maxBarSize={16}
-            />
-          </BarChart>
-        </ChartContainer>
-      </div>
+      {/* Organizations and company pages are square. */}
+      <Avatar size="lg" shape="square">
+        <AvatarImage src="/brand/acme-logo.png" alt="Acme" />
+        <AvatarFallback>AC</AvatarFallback>
+      </Avatar>
+      <Avatar shape="square">
+        <AvatarFallback>
+          <Icon name="building" size="s" />
+        </AvatarFallback>
+      </Avatar>
     </div>
   );
 }

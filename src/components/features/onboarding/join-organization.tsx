@@ -105,7 +105,7 @@ export function JoinOrganization({
         className="flex flex-col gap-l rounded-panel bg-imagine-surface p-l shadow-raised"
       >
         <div className="flex items-center gap-m">
-          <Avatar size="lg">
+          <Avatar size="lg" shape="square">
             {orgLogoUrl ? <AvatarImage src={orgLogoUrl} alt="" /> : null}
             <AvatarFallback>{initials(orgName)}</AvatarFallback>
           </Avatar>

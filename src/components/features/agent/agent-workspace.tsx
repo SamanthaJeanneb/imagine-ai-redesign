@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "cn";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -10,6 +11,11 @@ import {
   LandingRail,
   type LandingStat,
 } from "@/components/features/agent/agent-landing";
+import {
+  ActivityCards,
+  CenteredIntro,
+  MonthCalendar,
+} from "@/components/features/agent/agent-landing-2";
 import { AgentThread } from "@/components/features/agent/agent-thread";
 import { Composer } from "@/components/features/agent/composer";
 import { PostContext } from "@/components/features/agent/post-context";
@@ -32,7 +38,16 @@ export interface LandingData {
   stats: readonly LandingStat[];
   chart: { data: readonly ChartDatum[]; series: readonly ChartSeries[] };
   upNext: readonly UpNextItem[];
+  /** The whole month. Only the centered layout shows it; it falls back to `days`. */
+  month?: { label: string; days: readonly CalendarDay[] };
 }
+
+/**
+ * `split` is `/agent`: greeting and timeline on the left, stats on the right.
+ * `centered` is `/landing-2`: one column with the agent's mark, the composer,
+ * three activity cards, and the month.
+ */
+export type LandingLayout = "split" | "centered";
 
 interface AgentWorkspaceProps {
   /**
@@ -42,6 +57,7 @@ interface AgentWorkspaceProps {
   replies: { default: ScriptedReply; schedule: ScriptedReply };
   /** Present on `/agent`, where the composer starts as the hero. */
   landing?: LandingData;
+  landingLayout?: LandingLayout;
   /** Present on `/agent/[threadId]`, where the thread is already open. */
   messages?: readonly AgentMessage[];
 }
@@ -77,6 +93,7 @@ const INTENT_PROMPT: Record<string, string> = {
 export function AgentWorkspace({
   replies,
   landing,
+  landingLayout = "split",
   messages: initialMessages,
 }: AgentWorkspaceProps) {
   const router = useRouter();
@@ -155,6 +172,10 @@ export function AgentWorkspace({
   }
 
   const showLanding = landing !== undefined && onLanding;
+  const centered = landingLayout === "centered";
+  const pending = (landing?.timeline ?? []).filter(
+    (entry) => !handled.includes(entry.id),
+  );
 
   /**
    * One element in both modes, so the send is a single spring from the hero
@@ -168,10 +189,15 @@ export function AgentWorkspace({
       onValueChange={setDraft}
       onSend={sendDraft}
       animateLayout={!reduceMotion}
-      // On the landing it spans the column, so it lines up with the calendar
-      // under it. In the thread it narrows to the message column.
+      // Split: spans the column, so it lines up with the calendar under it.
+      // Centered: narrower than the cards and the month, so it reads as the
+      // prompt and not another block. Thread: the message column.
       className={
-        onLanding ? undefined : "sticky bottom-l z-10 mx-auto mt-l max-w-3xl"
+        onLanding
+          ? centered
+            ? "mx-auto max-w-2xl"
+            : undefined
+          : "sticky bottom-l z-10 mx-auto mt-l max-w-3xl"
       }
       {...(attached === null
         ? {}
@@ -190,8 +216,14 @@ export function AgentWorkspace({
   );
 
   return (
-    <div className="flex min-h-0 flex-1 gap-xl px-xl">
-      <div className="flex min-w-0 flex-1 flex-col pb-l">
+    <div className="flex min-h-full flex-1 px-xxl">
+      <div
+        className={cn(
+          "flex min-h-full min-w-0 flex-1 flex-col pb-xl",
+          // The gap to the rail. Centered has no rail.
+          !centered && "pr-xxl",
+        )}
+      >
         {/* `popLayout` takes the leaving landing out of flow at once, so the
             composer has a single, settled position to spring to. Its children
             have to be motion elements for that, which is why the wrappers are
@@ -199,10 +231,17 @@ export function AgentWorkspace({
         <AnimatePresence initial={false} mode="popLayout">
           {showLanding ? (
             <motion.div key="intro" exit={blurOut} transition={fade.base}>
-              <LandingIntro
-                greeting={landing.greeting}
-                dateLabel={landing.dateLabel}
-              />
+              {centered ? (
+                <CenteredIntro
+                  greeting={landing.greeting}
+                  dateLabel={landing.dateLabel}
+                />
+              ) : (
+                <LandingIntro
+                  greeting={landing.greeting}
+                  dateLabel={landing.dateLabel}
+                />
+              )}
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -224,30 +263,59 @@ export function AgentWorkspace({
 
         <AnimatePresence initial={false} mode="popLayout">
           {showLanding ? (
-            <motion.div key="below" exit={blurOut} transition={fade.base}>
-              <LandingBelow
-                entries={landing.timeline.filter(
-                  (entry) => !handled.includes(entry.id),
-                )}
-                days={landing.days}
-                onAction={(entry, action) => {
-                  setHandled((current) => [...current, entry.id]);
-                  send(action.prompt ?? entry.title, action.intent);
-                }}
-                onOpenPost={setAttached}
-                {...(attached === null ? {} : { selectedPostId: attached.id })}
-              />
+            <motion.div
+              key="below"
+              exit={blurOut}
+              transition={fade.base}
+              className="flex min-h-0 flex-1 flex-col"
+            >
+              {centered ? (
+                <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-xxxl pt-xxxl pb-l">
+                  <ActivityCards
+                    entries={pending}
+                    onAction={(entry, action) => {
+                      setHandled((current) => [...current, entry.id]);
+                      send(action.prompt ?? entry.title, action.intent);
+                    }}
+                  />
+                  <MonthCalendar
+                    label={landing.month?.label ?? "Next two weeks"}
+                    days={landing.month?.days ?? landing.days}
+                    onOpenPost={setAttached}
+                    onOpenCalendar={() => {
+                      router.push("/calendar");
+                    }}
+                    {...(attached === null
+                      ? {}
+                      : { selectedPostId: attached.id })}
+                  />
+                </div>
+              ) : (
+                <LandingBelow
+                  entries={pending}
+                  days={landing.days}
+                  onAction={(entry, action) => {
+                    setHandled((current) => [...current, entry.id]);
+                    send(action.prompt ?? entry.title, action.intent);
+                  }}
+                  onOpenPost={setAttached}
+                  {...(attached === null
+                    ? {}
+                    : { selectedPostId: attached.id })}
+                />
+              )}
             </motion.div>
           ) : null}
         </AnimatePresence>
       </div>
 
       <AnimatePresence initial={false} mode="popLayout">
-        {showLanding ? (
+        {showLanding && !centered ? (
           <motion.aside
             key="rail"
             exit={{ opacity: 0, x: 24 }}
             transition={fade.base}
+            className="self-stretch border-l border-imagine-foreground/12 pl-xxl"
           >
             <LandingRail
               stats={landing.stats}

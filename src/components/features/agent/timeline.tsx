@@ -49,7 +49,7 @@ export function Timeline({ entries, onAction, className }: TimelineProps) {
     >
       <span
         aria-hidden="true"
-        className="absolute top-2 bottom-2 left-[3px] w-px bg-imagine-foreground-faint/40"
+        className="absolute top-2 bottom-2 left-l w-px -translate-x-1/2 bg-imagine-foreground-faint/40"
       />
       <AnimatePresence initial={false}>
         {entries.map((entry, index) => (
@@ -70,15 +70,17 @@ export function Timeline({ entries, onAction, className }: TimelineProps) {
             transition={spring.soft}
             className="mb-m flex gap-m overflow-hidden last:mb-0"
           >
-            <span
-              aria-hidden="true"
-              className={cn(
-                "mt-[15px] size-2 shrink-0 rounded-full",
-                entry.unread
-                  ? "bg-imagine-secondary ring-4 ring-imagine-secondary-soft"
-                  : "bg-imagine-foreground-faint/60 ring-2 ring-imagine-surface",
-              )}
-            />
+            <span className="flex w-xxl shrink-0 justify-center">
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "mt-[15px] size-2 rounded-full",
+                  entry.unread
+                    ? "bg-imagine-secondary shadow-[0_0_0_2px_var(--color-imagine-surface),0_0_0_6px_var(--color-imagine-secondary-soft)]"
+                    : "bg-imagine-foreground-faint/60 ring-2 ring-imagine-surface",
+                )}
+              />
+            </span>
             <div className="flex min-w-0 flex-1 flex-col gap-m py-xs">
               <div className="flex items-start justify-between gap-l">
                 <div className="flex min-w-0 flex-col gap-xxs">

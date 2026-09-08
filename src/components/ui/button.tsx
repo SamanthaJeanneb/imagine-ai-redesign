@@ -20,7 +20,7 @@ const buttonVariants = cva(
       variant: {
         default:
           "bg-imagine-primary text-imagine-primary-foreground shadow-control inset-shadow-highlight hover:bg-imagine-primary/90 hover:shadow-raised",
-        soft: "bg-imagine-surface text-imagine-foreground shadow-control hover:bg-imagine-surface-raised hover:shadow-raised aria-expanded:bg-imagine-surface-raised",
+        soft: "bg-imagine-border text-imagine-foreground shadow-none hover:bg-imagine-foreground/12 aria-expanded:bg-imagine-foreground/12 dark:bg-imagine-surface-raised dark:hover:bg-imagine-foreground/16",
         ghost:
           "text-imagine-foreground-muted hover:bg-imagine-surface-raised hover:text-imagine-foreground aria-expanded:bg-imagine-surface-raised aria-expanded:text-imagine-foreground",
         outline:

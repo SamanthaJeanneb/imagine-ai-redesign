@@ -103,7 +103,9 @@ export function ProfileList({
                     className="absolute inset-y-s left-0 w-0.5 rounded-full bg-imagine-secondary"
                   />
                 ) : null}
-                <Avatar>
+                <Avatar
+                  shape={profile.kind === "company" ? "square" : "circle"}
+                >
                   {profile.avatarUrl ? (
                     <AvatarImage src={profile.avatarUrl} alt={profile.name} />
                   ) : null}

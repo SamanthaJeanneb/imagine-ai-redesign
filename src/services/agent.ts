@@ -91,7 +91,7 @@ function actionsFor(status: string, title: string): readonly TimelineAction[] {
   return [{ intent: "open", label: "Open", prompt: `Show me: ${title}` }];
 }
 
-/** Sidebar, Posts. Threads the org has with the agent, most recent first. */
+/** Sidebar, Chats. Threads the org has with the agent, most recent first. */
 export function getThreads(): readonly SidebarThread[] {
   return getDb()
     .mastra.mastra_threads.toSorted((a, b) =>

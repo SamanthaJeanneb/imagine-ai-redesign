@@ -6,7 +6,7 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Icon, type IconName } from "@/components/ui/icon";
-import { fade, spring } from "@/styles/motion";
+import { spring } from "@/styles/motion";
 
 export type ComposerPreview = "calendar" | "analytics";
 
@@ -190,20 +190,6 @@ export function Composer({
           </Button>
         </motion.span>
       </div>
-      <AnimatePresence initial={false}>
-        {isDock ? null : (
-          <motion.p
-            key="hint"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={fade.fast}
-            className="px-s pt-xs pb-xxs type-small text-imagine-foreground-faint"
-          >
-            Enter to send, Shift + Enter for a new line
-          </motion.p>
-        )}
-      </AnimatePresence>
     </motion.div>
   );
 }

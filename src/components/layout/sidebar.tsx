@@ -1,11 +1,15 @@
 "use client";
 
 import { cn } from "cn";
-import { AnimatePresence, motion } from "motion/react";
-import { useId } from "react";
+import {
+  AnimatePresence,
+  motion,
+  stagger as staggerChildren,
+  type Variants,
+} from "motion/react";
+import { useId, useState } from "react";
 
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Icon, type IconName } from "@/components/ui/icon";
 import {
@@ -13,9 +17,51 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { fade, spring } from "@/styles/motion";
+import { fade, spring, stagger } from "@/styles/motion";
 
 export type SidebarNavKey = "agent" | "calendar" | "analytics" | "files";
+
+export type SidebarHelpKey = "contact" | "terms" | "release-notes";
+
+/** What the Help center opens up into, top to bottom. */
+const HELP_ITEMS: readonly {
+  key: SidebarHelpKey;
+  label: string;
+  icon: IconName;
+}[] = [
+  { key: "contact", label: "Contact us", icon: "envelope" },
+  { key: "terms", label: "Terms and policies", icon: "file-lines" },
+  { key: "release-notes", label: "Release notes", icon: "file-pen" },
+];
+
+/**
+ * The Help center reveal. The clip springs open while the children are
+ * staggered from the last item, the one nearest the hairline, so the menu
+ * surfaces out of the line. Closing runs the same stagger in reverse.
+ */
+const HELP_MENU: Variants = {
+  hidden: {
+    height: 0,
+    transition: {
+      ...spring.soft,
+      when: "afterChildren",
+      delayChildren: staggerChildren(stagger.list / 2),
+    },
+  },
+  show: {
+    height: "auto",
+    transition: {
+      ...spring.soft,
+      delayChildren: staggerChildren(stagger.list, { from: "last" }),
+    },
+  },
+};
+
+/** Full opacity throughout: the items float up out of the clip, nothing fades. */
+const HELP_ITEM: Variants = {
+  hidden: { y: 16, transition: fade.fast },
+  show: { y: 0, transition: spring.soft },
+};
 
 export interface SidebarNavItem {
   key: SidebarNavKey;
@@ -28,11 +74,6 @@ export interface SidebarThread {
   title: string;
   /** Unread activity since the user last opened it. */
   unread?: boolean;
-}
-
-export interface SidebarUser {
-  name: string;
-  avatarUrl?: string;
 }
 
 export const SIDEBAR_NAV: readonly SidebarNavItem[] = [
@@ -49,7 +90,6 @@ interface SidebarProps {
   /** Omitted on routes outside the nav, like settings, where nothing is selected. */
   active?: SidebarNavKey;
   threads: readonly SidebarThread[];
-  user: SidebarUser;
   /** Icon rail. Used while the files panel is open. */
   collapsed?: boolean;
   onCollapsedChange?: (collapsed: boolean) => void;
@@ -57,60 +97,166 @@ interface SidebarProps {
   onNavigate?: (key: SidebarNavKey) => void;
   onNewPost?: () => void;
   onOpenThread?: (id: string) => void;
-  onOpenUser?: () => void;
+  /** An item chosen from the Help center menu at the foot of the rail. */
+  onHelp?: (key: SidebarHelpKey) => void;
   className?: string;
-}
-
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
 }
 
 /**
  * Workspace sidebar. Fills the height of its parent on `imagine-background`;
  * the main surface beside it rounds its left corners (`rounded-l-surface`) so
  * the page rounds into the rail.
- * The selected nav item has a light accent wash and a bar in the gutter, and
- * both slide together when the selection moves.
+ * The selected row is a quiet rounded wash of the foreground, sliding with
+ * `layoutId` when the selection moves. No accent bar, no pink fill.
  */
 export function Sidebar({
   orgName,
   orgLogoUrl,
   active,
   threads,
-  user,
   collapsed = false,
   onCollapsedChange,
   activeThreadId,
   onNavigate,
   onNewPost,
   onOpenThread,
-  onOpenUser,
+  onHelp,
   className,
 }: SidebarProps) {
   const indicatorId = useId();
   const threadIndicatorId = useId();
 
+  const [helpOpen, setHelpOpen] = useState(false);
+  const helpId = useId();
+
+  const helpTrigger = (
+    <button
+      type="button"
+      aria-expanded={helpOpen}
+      aria-controls={helpId}
+      onClick={() => {
+        setHelpOpen((current) => !current);
+      }}
+      className={cn(
+        "flex h-8 shrink-0 items-center gap-xs rounded-control text-left text-imagine-foreground-muted transition-colors outline-none select-none hover:bg-imagine-foreground/5 hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40",
+        helpOpen && "text-imagine-foreground",
+        collapsed ? "w-8 justify-center" : "pr-s pl-xs",
+      )}
+    >
+      <span className="flex size-6 shrink-0 items-center justify-center">
+        <Icon name="circle-info" size="s" active={helpOpen} />
+      </span>
+      {collapsed ? null : (
+        <>
+          <span className="flex-1 type-small font-medium">Help center</span>
+          <motion.span
+            aria-hidden="true"
+            animate={{ rotate: helpOpen ? 180 : 0 }}
+            transition={spring.snappy}
+            className="flex text-imagine-foreground-faint"
+          >
+            <Icon name="chevron-up" size="s" />
+          </motion.span>
+        </>
+      )}
+    </button>
+  );
+
+  /**
+   * The items live in the rail, above the hairline. The hairline never moves:
+   * it is the Help center row's top edge, and the items rise out of it. The
+   * clip grows with a spring while the items float up inside it at full
+   * opacity, nearest the line first (`stagger` from last), so the whole thing
+   * reads as rising rather than fading in.
+   */
+  const helpMenu = (
+    <AnimatePresence initial={false}>
+      {helpOpen ? (
+        <motion.div
+          key="help"
+          id={helpId}
+          variants={HELP_MENU}
+          initial="hidden"
+          animate="show"
+          exit="hidden"
+          // Content pins to the bottom of the clip, so the item nearest the
+          // line shows first and the rest emerge above it as the height grows.
+          className={cn(
+            "flex shrink-0 flex-col justify-end overflow-hidden",
+            collapsed && "items-center",
+          )}
+        >
+          <div
+            className={cn(
+              "flex flex-col gap-px pt-s",
+              collapsed && "items-center",
+            )}
+          >
+            {/* The menu's own top edge. It rides up with the items and is the
+                last thing to surface, so the group arrives capped. */}
+            <motion.span
+              aria-hidden="true"
+              variants={HELP_ITEM}
+              className={cn(
+                "mb-s h-px shrink-0 self-stretch bg-imagine-foreground/12",
+                collapsed ? "-mx-m" : "-mx-s",
+              )}
+            />
+            {HELP_ITEMS.map((item) => {
+              const row = (
+                <motion.button
+                  key={item.key}
+                  type="button"
+                  variants={HELP_ITEM}
+                  onClick={() => {
+                    setHelpOpen(false);
+                    onHelp?.(item.key);
+                  }}
+                  className={cn(
+                    "flex h-7 items-center gap-xs rounded-control text-left text-imagine-foreground-muted transition-colors outline-none select-none hover:bg-imagine-foreground/5 hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40",
+                    collapsed ? "w-8 justify-center" : "pr-s pl-xs",
+                  )}
+                >
+                  <span className="flex size-6 shrink-0 items-center justify-center">
+                    <Icon name={item.icon} size="s" />
+                  </span>
+                  {collapsed ? null : (
+                    <span className="type-small">{item.label}</span>
+                  )}
+                </motion.button>
+              );
+
+              if (!collapsed) return row;
+              return (
+                <Tooltip key={item.key}>
+                  <TooltipTrigger asChild>{row}</TooltipTrigger>
+                  <TooltipContent side="right">{item.label}</TooltipContent>
+                </Tooltip>
+              );
+            })}
+          </div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
+  );
+
   return (
     <motion.aside
       initial={false}
-      animate={{ width: collapsed ? 64 : 256 }}
+      animate={{ width: collapsed ? 56 : 224 }}
       transition={spring.soft}
       data-collapsed={collapsed || undefined}
       className={cn(
         "flex h-full shrink-0 flex-col overflow-x-hidden bg-imagine-background text-imagine-foreground",
-        collapsed ? "items-center px-s py-xl" : "px-m py-xl",
+        collapsed ? "items-center px-m py-m" : "px-s py-m",
         className,
       )}
     >
-      <div className={cn("flex flex-col gap-l", collapsed && "items-center")}>
+      <div className={cn("flex flex-col gap-m", collapsed && "items-center")}>
         {/* Organization */}
         <div
           className={cn(
-            "flex h-10 items-center gap-s",
+            "flex h-8 items-center gap-s",
             collapsed ? "justify-center" : "px-xs",
           )}
         >
@@ -120,10 +266,10 @@ export function Sidebar({
             <img
               src={orgLogoUrl}
               alt=""
-              className="size-8 shrink-0 rounded-control object-cover shadow-control"
+              className="size-6 shrink-0 rounded-control object-cover shadow-control"
             />
           ) : (
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-control accent-gradient text-imagine-secondary-foreground">
+            <span className="flex size-6 shrink-0 items-center justify-center rounded-control accent-gradient text-imagine-secondary-foreground">
               <Icon name="sparkles" size="s" active />
             </span>
           )}
@@ -137,7 +283,9 @@ export function Sidebar({
                 transition={fade.fast}
                 className="flex min-w-0 flex-1 items-center gap-xs"
               >
-                <span className="truncate type-heading">{orgName}</span>
+                <span className="truncate type-small font-semibold">
+                  {orgName}
+                </span>
                 <Icon
                   name="chevron-down"
                   size="s"
@@ -182,16 +330,27 @@ export function Sidebar({
         {collapsed ? (
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button size="icon" aria-label="New post" onClick={onNewPost}>
+              <Button
+                size="icon-sm"
+                variant="soft"
+                aria-label="New chat"
+                onClick={onNewPost}
+                className="bg-imagine-surface text-imagine-foreground shadow-control hover:bg-imagine-surface hover:shadow-control dark:bg-imagine-surface-raised dark:shadow-none"
+              >
                 <Icon name="plus" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="right">New post</TooltipContent>
+            <TooltipContent side="right">New chat</TooltipContent>
           </Tooltip>
         ) : (
-          <Button className="w-full" size="lg" onClick={onNewPost}>
+          <Button
+            className="w-full bg-imagine-surface text-imagine-foreground shadow-control hover:bg-imagine-surface hover:shadow-control dark:bg-imagine-surface-raised dark:shadow-none"
+            size="sm"
+            variant="soft"
+            onClick={onNewPost}
+          >
             <Icon name="plus" data-icon="inline-start" />
-            New post
+            New chat
           </Button>
         )}
       </div>
@@ -199,10 +358,7 @@ export function Sidebar({
       {/* Primary navigation */}
       <nav
         aria-label="Workspace"
-        className={cn(
-          "mt-xl flex flex-col gap-xxs",
-          collapsed && "items-center",
-        )}
+        className={cn("mt-l flex flex-col gap-px", collapsed && "items-center")}
       >
         {SIDEBAR_NAV.map((item) => {
           const selected = item.key === active;
@@ -213,11 +369,11 @@ export function Sidebar({
               aria-current={selected ? "page" : undefined}
               onClick={() => onNavigate?.(item.key)}
               className={cn(
-                "group/nav relative flex h-10 items-center gap-s rounded-control text-left transition-colors outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/40",
-                collapsed ? "w-10 justify-center" : "pr-s pl-xs",
+                "group/nav relative flex h-8 items-center gap-xs rounded-control text-left transition-colors outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/40",
+                collapsed ? "w-8 justify-center" : "pr-s pl-xs",
                 selected
                   ? "text-imagine-foreground"
-                  : "text-imagine-foreground-muted hover:bg-imagine-surface hover:text-imagine-foreground",
+                  : "text-imagine-foreground-muted hover:bg-imagine-foreground/5 hover:text-imagine-foreground",
               )}
             >
               {selected ? (
@@ -225,32 +381,20 @@ export function Sidebar({
                   layoutId={indicatorId}
                   aria-hidden="true"
                   transition={spring.snappy}
-                  className="absolute inset-0 rounded-control selection-gradient"
-                >
-                  <span
-                    className={cn(
-                      "absolute inset-y-2.5 w-0.5 rounded-full bg-imagine-secondary",
-                      collapsed ? "-left-1.5" : "-left-2",
-                    )}
-                  />
-                </motion.span>
+                  className="absolute inset-0 rounded-control bg-imagine-foreground/8"
+                />
               ) : null}
-              <span
-                className={cn(
-                  "relative z-10 flex size-7 shrink-0 items-center justify-center",
-                  selected && "text-imagine-secondary",
-                )}
-              >
+              <span className="relative z-10 flex size-6 shrink-0 items-center justify-center">
                 <Icon
                   name={item.icon}
-                  size="m"
+                  size="s"
                   active={selected && item.key !== "agent"}
                 />
               </span>
               {collapsed ? null : (
                 <span
                   className={cn(
-                    "relative z-10 type-body",
+                    "relative z-10 type-small",
                     selected ? "font-semibold" : "font-medium",
                   )}
                 >
@@ -270,7 +414,7 @@ export function Sidebar({
         })}
       </nav>
 
-      {/* Recent posts. Collapsed keeps the spacer so the account stays pinned. */}
+      {/* Recent chats. Collapsed keeps the spacer so the Help center stays pinned. */}
       <AnimatePresence initial={false} mode="popLayout">
         {collapsed ? (
           <motion.div
@@ -283,16 +427,16 @@ export function Sidebar({
           />
         ) : (
           <motion.div
-            key="posts"
+            key="chats"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={fade.base}
-            className="mt-xl flex min-h-0 flex-1 flex-col"
+            className="mt-l flex min-h-0 flex-1 flex-col"
           >
-            <div className="flex h-8 shrink-0 items-center px-s">
+            <div className="flex h-7 shrink-0 items-center px-xs">
               <span className="type-micro font-medium text-imagine-foreground-muted">
-                Posts
+                Chats
               </span>
             </div>
             <Stagger
@@ -308,10 +452,10 @@ export function Sidebar({
                       aria-current={selected ? "true" : undefined}
                       onClick={() => onOpenThread?.(thread.id)}
                       className={cn(
-                        "relative flex h-7 w-full items-center gap-s rounded-control pr-s pl-xs text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+                        "relative flex h-7 w-full items-center gap-xs rounded-control pr-s pl-xs text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
                         selected
                           ? "text-imagine-foreground"
-                          : "text-imagine-foreground-muted hover:bg-imagine-surface hover:text-imagine-foreground",
+                          : "text-imagine-foreground-muted hover:bg-imagine-foreground/5 hover:text-imagine-foreground",
                       )}
                     >
                       {selected ? (
@@ -319,17 +463,18 @@ export function Sidebar({
                           layoutId={threadIndicatorId}
                           aria-hidden="true"
                           transition={spring.snappy}
-                          className="absolute inset-0 rounded-control selection-gradient-soft"
+                          className="absolute inset-0 rounded-control bg-imagine-foreground/8"
                         />
                       ) : null}
-                      <span className="relative z-10 flex size-7 shrink-0 items-center justify-center">
+                      <span className="relative z-10 flex size-6 shrink-0 items-center justify-center">
                         <span
                           aria-hidden="true"
                           className={cn(
                             "size-1.5 rounded-full",
+                            // Read is an outline; unread fills it pink.
                             thread.unread
-                              ? "bg-imagine-secondary ring-[3px] ring-imagine-secondary-soft"
-                              : "bg-imagine-foreground-faint/70",
+                              ? "bg-imagine-secondary"
+                              : "border border-imagine-foreground-faint/70",
                           )}
                         />
                       </span>
@@ -350,34 +495,25 @@ export function Sidebar({
         )}
       </AnimatePresence>
 
-      {/* Account */}
-      <button
-        type="button"
-        onClick={onOpenUser}
+      {/* Help center, pinned to the foot. Two hairlines: this one is the
+          row's top edge and holds still; the menu carries its own above the
+          items, so opening reads as a second line rising out of this one. */}
+      {helpMenu}
+      <span
+        aria-hidden="true"
         className={cn(
-          "mt-l flex items-center gap-s rounded-control text-left transition-colors outline-none hover:bg-imagine-surface focus-visible:ring-2 focus-visible:ring-ring/40",
-          collapsed ? "size-10 justify-center" : "h-12 pr-s pl-xs",
+          "mt-s mb-s h-px shrink-0 self-stretch bg-imagine-foreground/12",
+          collapsed ? "-mx-m" : "-mx-s",
         )}
-      >
-        <Avatar size="sm">
-          {user.avatarUrl ? (
-            <AvatarImage src={user.avatarUrl} alt={user.name} />
-          ) : null}
-          <AvatarFallback>{initials(user.name)}</AvatarFallback>
-        </Avatar>
-        {collapsed ? null : (
-          <>
-            <span className="min-w-0 flex-1 truncate type-small font-semibold">
-              {user.name}
-            </span>
-            <Icon
-              name="chevron-right"
-              size="s"
-              className="text-imagine-foreground-faint"
-            />
-          </>
-        )}
-      </button>
+      />
+      {collapsed ? (
+        <Tooltip>
+          <TooltipTrigger asChild>{helpTrigger}</TooltipTrigger>
+          <TooltipContent side="right">Help center</TooltipContent>
+        </Tooltip>
+      ) : (
+        helpTrigger
+      )}
     </motion.aside>
   );
 }

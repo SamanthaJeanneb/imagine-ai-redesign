@@ -7,9 +7,9 @@ import { BrandMark, isLocalBrand } from "@/components/ui/brand-mark";
  * root layout. The kit nests an <svg> inside each <i>. This is the only place
  * `fa-` classes are written.
  *
- * The kit is subset. Sharp names must exist in the kit. Brands that the kit
- * does not ship (Google, X, HubSpot, Slack, Salesforce) render from local
- * SVGs in brand-mark.tsx so they never show the missing glyph.
+ * The kit is subset. Sharp names must exist in the kit. Marks that the kit
+ * does not ship (Imagine's own, Google, X, HubSpot, Slack, Salesforce) render
+ * from local SVGs in brand-mark.tsx so they never show the missing glyph.
  */
 export const ICON_NAMES = [
   "arrow-down",
@@ -39,11 +39,13 @@ export const ICON_NAMES = [
   "expand",
   "eye",
   "file-lines",
+  "file-pen",
   "folder",
   "gear",
   "google",
   "hubspot",
   "image",
+  "imagine",
   "key",
   "link",
   "linkedin-in",

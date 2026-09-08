@@ -39,27 +39,34 @@ interface PostChipProps {
   className?: string;
 }
 
-/** Status color, and the text color that reads on it when the chip is solid. */
+/**
+ * Status color, the text color that reads on it when the chip is solid, and
+ * whether the wash is already too deep for foreground text (`darkWash`).
+ */
 const CHIP = {
   draft: {
     color: "var(--imagine-foreground-muted)",
     contrast: "var(--imagine-surface)",
+    darkWash: false,
   },
   scheduled: {
     color: "var(--imagine-secondary)",
     contrast: "var(--imagine-secondary-foreground)",
+    darkWash: false,
   },
   published: {
     color: "var(--imagine-foreground)",
     contrast: "var(--imagine-surface)",
+    darkWash: true,
   },
   failed: {
     color: "var(--destructive)",
     contrast: "var(--imagine-secondary-foreground)",
+    darkWash: false,
   },
 } as const satisfies Record<
   PostChipStatus,
-  { color: string; contrast: string }
+  { color: string; contrast: string; darkWash: boolean }
 >;
 
 /**
@@ -79,9 +86,10 @@ export function postChipStyle(status: PostChipStatus): CSSProperties {
 
 /**
  * A post inside a calendar cell. Every status uses a solid left rail and a
- * light wash that fades to the surface, with regular text on top. Selecting a
- * chip fills it solid in its status color and lifts it. Color is the only
- * status signal. No badges.
+ * gradient wash of its color, deepest at the rail. Light washes (draft,
+ * scheduled, failed) take foreground text; the published wash is dark enough
+ * to take contrast text. Selecting a chip fills it solid in its status color
+ * and lifts it. Color is the only status signal. No badges.
  */
 export function PostChip({
   post,
@@ -90,6 +98,7 @@ export function PostChip({
   onOpen,
   className,
 }: PostChipProps) {
+  const inverted = selected || CHIP[post.status].darkWash;
   const chip = (
     <motion.button
       type="button"
@@ -105,9 +114,8 @@ export function PostChip({
       style={postChipStyle(post.status)}
       className={cn(
         "relative flex w-full min-w-0 flex-col gap-xxs overflow-hidden rounded-control text-left transition-[box-shadow,color] outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-imagine-surface",
-        selected
-          ? "chip-solid text-[var(--chip-contrast)] shadow-raised"
-          : "chip-wash text-imagine-foreground shadow-control",
+        selected ? "chip-solid shadow-raised" : "chip-wash shadow-control",
+        inverted ? "text-[var(--chip-contrast)]" : "text-imagine-foreground",
         dense ? "px-s py-xs pl-m" : "px-s py-s pl-m",
         className,
       )}
@@ -123,7 +131,7 @@ export function PostChip({
         <span
           className={cn(
             "flex items-center gap-xs type-small",
-            selected ? "opacity-80" : "text-imagine-foreground-muted",
+            inverted ? "opacity-80" : "text-imagine-foreground-muted",
           )}
         >
           <span className="tabular-nums">{post.time}</span>

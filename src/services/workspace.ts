@@ -1,5 +1,5 @@
 import type { JoinMember } from "@/components/features/onboarding/join-organization";
-import type { SidebarUser } from "@/components/layout/sidebar";
+import type { AccountUser } from "@/components/layout/account";
 import { getDb, getOrganization } from "@/mocks/db";
 
 export interface Workspace {
@@ -48,7 +48,7 @@ export function getWorkspace(): Workspace {
 }
 
 /** Whoever is signed in. The mock signs in as the user who created the org. */
-export function getCurrentUser(): SidebarUser {
+export function getCurrentUser(): AccountUser {
   const db = getDb();
   const org = getOrganization();
   const user = db.public.users.find((row) => row.id === org.created_by);

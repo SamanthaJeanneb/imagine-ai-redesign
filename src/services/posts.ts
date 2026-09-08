@@ -61,6 +61,7 @@ function toAuthor(client: Client): PostAuthor {
   return {
     name: client.name,
     headline: client.description ?? (client.isCompany ? "Company page" : ""),
+    kind: client.isCompany ? "company" : "person",
     ...(client.profilePicturePath === null
       ? {}
       : { avatarUrl: client.profilePicturePath }),
