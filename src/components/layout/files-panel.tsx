@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import {
   FileTree,
+  type FileNode,
   type FileSection,
 } from "@/components/features/files/file-tree";
 import { type AssetTileData } from "@/components/features/files/asset-tile";
@@ -27,9 +28,12 @@ interface FilesPanelProps {
   sections: readonly FileSection[];
   skills: readonly Skill[];
   activeFileId?: string;
+  activeAssetId?: string;
   onOpenFile?: (id: string) => void;
   onEditFile?: (id: string) => void;
   onOpenAsset?: (asset: AssetTileData) => void;
+  /** Larger asset tiles on the full Files route. */
+  assetSize?: "sm" | "default";
   onToggleSkill?: (id: string, enabled: boolean) => void;
   /** Opens a skill's markdown in an editor tab. */
   onOpenSkillFile?: (id: string) => void;
@@ -42,13 +46,33 @@ function matches(query: string, name: string): boolean {
   return name.toLowerCase().includes(query.trim().toLowerCase());
 }
 
+function filterNodes(
+  nodes: readonly FileNode[],
+  query: string,
+): readonly FileNode[] {
+  return nodes.flatMap((node) => {
+    if (matches(query, node.name)) return [node];
+    if (node.type === "folder") {
+      const children = filterNodes(node.children, query);
+      return children.length === 0 ? [] : [{ ...node, children }];
+    }
+    if (node.type === "assets") {
+      const assets = node.assets.filter((asset) =>
+        matches(query, asset.caption ?? asset.kind),
+      );
+      return assets.length === 0 ? [] : [{ ...node, assets }];
+    }
+    return [];
+  });
+}
+
 function filterSections(
   sections: readonly FileSection[],
   query: string,
 ): readonly FileSection[] {
   if (query.trim() === "") return sections;
   return sections.flatMap((section) => {
-    const nodes = section.nodes.filter((node) => matches(query, node.name));
+    const nodes = filterNodes(section.nodes, query);
     return nodes.length > 0 ? [{ ...section, nodes }] : [];
   });
 }
@@ -63,9 +87,11 @@ export function FilesPanel({
   sections,
   skills,
   activeFileId,
+  activeAssetId,
   onOpenFile,
   onEditFile,
   onOpenAsset,
+  assetSize = "sm",
   onToggleSkill,
   onOpenSkillFile,
   openSkillId,
@@ -73,6 +99,9 @@ export function FilesPanel({
   className,
 }: FilesPanelProps) {
   const [query, setQuery] = useState("");
+  const [expandedAssetIds, setExpandedAssetIds] = useState<readonly string[]>(
+    [],
+  );
   const visible = filterSections(sections, query);
 
   return (
@@ -130,10 +159,17 @@ export function FilesPanel({
               <FileTree
                 sections={visible}
                 activeFileId={activeFileId}
+                activeAssetId={activeAssetId}
                 onOpenFile={onOpenFile}
                 onEditFile={onEditFile}
                 onOpenAsset={onOpenAsset}
-                assetSize="sm"
+                onShowAllAssets={(id) => {
+                  setExpandedAssetIds((current) =>
+                    current.includes(id) ? current : [...current, id],
+                  );
+                }}
+                expandedAssetIds={expandedAssetIds}
+                assetSize={assetSize}
                 className="pr-s"
               />
             )}

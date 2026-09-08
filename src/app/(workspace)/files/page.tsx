@@ -1,10 +1,19 @@
-import { PagePlaceholder } from "@/app/(workspace)/page-placeholder";
+import { FilesWorkspacePage } from "@/components/features/files/files-workspace-page";
+import { getDocuments, getFileSections, getSkills } from "@/services/files";
+import { getWorkspace } from "@/services/workspace";
 
 export default function FilesPage() {
+  const workspace = getWorkspace();
+
   return (
-    <PagePlaceholder
-      title="Files"
-      note="The file tree, the skills list, and the markdown editor land here."
+    <FilesWorkspacePage
+      title={workspace.name}
+      {...(workspace.logoUrl === undefined
+        ? {}
+        : { logoUrl: workspace.logoUrl })}
+      sections={getFileSections()}
+      skills={getSkills()}
+      documents={getDocuments()}
     />
   );
 }

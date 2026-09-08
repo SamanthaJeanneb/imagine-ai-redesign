@@ -33,10 +33,12 @@ export interface FileSection {
 interface FileTreeProps {
   sections: readonly FileSection[];
   activeFileId?: string;
+  activeAssetId?: string;
   onOpenFile?: (id: string) => void;
   onEditFile?: (id: string) => void;
   onOpenAsset?: (asset: AssetTileData) => void;
   onShowAllAssets?: (nodeId: string) => void;
+  expandedAssetIds?: readonly string[];
   /** Tile size for asset rows. */
   assetSize?: "sm" | "default";
   className?: string;
@@ -130,22 +132,26 @@ function Nodes({
   nodes,
   depth,
   activeFileId,
+  activeAssetId,
   assetSize,
   onOpenFile,
   onEditFile,
   onOpenAsset,
   onShowAllAssets,
+  expandedAssetIds,
 }: {
   nodes: readonly FileNode[];
   depth: number;
 } & Pick<
   FileTreeProps,
   | "activeFileId"
+  | "activeAssetId"
   | "assetSize"
   | "onOpenFile"
   | "onEditFile"
   | "onOpenAsset"
   | "onShowAllAssets"
+  | "expandedAssetIds"
 >) {
   const [closed, setClosed] = useState<ReadonlySet<string>>(new Set());
 
@@ -200,11 +206,13 @@ function Nodes({
                   nodes={node.children}
                   depth={depth + 1}
                   activeFileId={activeFileId}
+                  activeAssetId={activeAssetId}
                   assetSize={assetSize}
                   onOpenFile={onOpenFile}
                   onEditFile={onEditFile}
                   onOpenAsset={onOpenAsset}
                   onShowAllAssets={onShowAllAssets}
+                  expandedAssetIds={expandedAssetIds}
                 />
               </Disclosure>
             </>
@@ -220,7 +228,14 @@ function Nodes({
               </span>
               <AssetGrid
                 assets={node.assets}
-                limit={assetSize === "sm" ? 2 : 5}
+                selectedId={activeAssetId}
+                limit={
+                  expandedAssetIds?.includes(node.id)
+                    ? undefined
+                    : assetSize === "sm"
+                      ? 2
+                      : 5
+                }
                 size={assetSize}
                 onSelect={onOpenAsset}
                 onShowAll={() => onShowAllAssets?.(node.id)}
@@ -242,10 +257,12 @@ function Nodes({
 export function FileTree({
   sections,
   activeFileId,
+  activeAssetId,
   onOpenFile,
   onEditFile,
   onOpenAsset,
   onShowAllAssets,
+  expandedAssetIds,
   assetSize = "sm",
   className,
 }: FileTreeProps) {
@@ -307,11 +324,13 @@ export function FileTree({
                   nodes={section.nodes}
                   depth={0}
                   activeFileId={activeFileId}
+                  activeAssetId={activeAssetId}
                   assetSize={assetSize}
                   onOpenFile={onOpenFile}
                   onEditFile={onEditFile}
                   onOpenAsset={onOpenAsset}
                   onShowAllAssets={onShowAllAssets}
+                  expandedAssetIds={expandedAssetIds}
                 />
               </div>
             </Disclosure>

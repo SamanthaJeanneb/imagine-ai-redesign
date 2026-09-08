@@ -61,6 +61,7 @@ import {
   EditorTabStrip,
   type EditorTab,
 } from "@/components/features/files/editor-tab-strip";
+import { FilesWorkspacePage } from "@/components/features/files/files-workspace-page";
 import {
   type FileSection,
   FileTree,
@@ -116,6 +117,7 @@ import type {
   AnalyticsSnapshot,
   PreviewChart,
 } from "@/services/analytics";
+import type { OpenDocument } from "@/services/files";
 
 /* Kit fixtures. The screens read src/mocks/db.json through src/services/. */
 
@@ -649,6 +651,7 @@ const FILE_SECTIONS: FileSection[] = [
           { type: "file", id: "f5", name: "hiring-push.md" },
         ],
       },
+      { type: "file", id: "f10", name: "company-persona.md" },
       { type: "assets", id: "as1", name: "Assets", assets: ASSETS },
     ],
   },
@@ -744,6 +747,32 @@ Direct, warm, and specific. Short paragraphs. Numbers over adjectives.
 ## Avoid
 - Hustle language
 - Emoji in the first line`;
+
+const KIT_DOCUMENTS: OpenDocument[] = [
+  {
+    id: "f1",
+    meta: { title: "brand-voice.md" },
+    value: `# Acme voice
+
+## Position
+Useful operating detail for small B2B teams.
+
+## Style
+- Start with the decision
+- Use one concrete number
+- End before the summary`,
+  },
+  {
+    id: "f6",
+    meta: { title: "sarah-persona.md" },
+    value: PERSONA_MD,
+  },
+  {
+    id: "s1",
+    meta: { title: "calendar-gap.md" },
+    value: SKILL_TEXT["s1"] ?? "",
+  },
+];
 
 const TEAM: TeamMember[] = [
   {
@@ -1145,6 +1174,22 @@ export function FilesPanelDemo() {
         </div>
       </Demo>
     </div>
+  );
+}
+
+export function FilesWorkspacePageDemo() {
+  return (
+    <Demo label="Full Files route, with a wider tree and preview">
+      <div className="flex h-[720px] min-w-0 bg-imagine-surface p-l">
+        <FilesWorkspacePage
+          title="Acme"
+          logoUrl={ACME_LOGO}
+          sections={FILE_SECTIONS}
+          skills={SKILLS}
+          documents={KIT_DOCUMENTS}
+        />
+      </div>
+    </Demo>
   );
 }
 

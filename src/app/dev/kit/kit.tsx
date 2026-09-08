@@ -37,6 +37,7 @@ import {
   ComposerDemo,
   EditorDemo,
   FilesPanelDemo,
+  FilesWorkspacePageDemo,
   IntegrationsDemo,
   LoadingDemo,
   MessagesDemo,
@@ -342,6 +343,10 @@ export function Kit({ radiusScale = "default" }: KitProps) {
 
         <Section title="Files panel, file tree, skills">
           <FilesPanelDemo />
+        </Section>
+
+        <Section title="Complete Files workspace">
+          <FilesWorkspacePageDemo />
         </Section>
 
         <Section title="Composer">

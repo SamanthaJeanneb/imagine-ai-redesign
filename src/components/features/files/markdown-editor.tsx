@@ -118,6 +118,17 @@ export function MarkdownEditor({
           </AnimatePresence>
           <Button
             size="sm"
+            variant="ghost"
+            disabled={!dirty}
+            onClick={() => {
+              onValueChange(savedValue);
+              setEditing(false);
+            }}
+          >
+            Revert
+          </Button>
+          <Button
+            size="sm"
             disabled={!dirty}
             onClick={() => {
               onSave();

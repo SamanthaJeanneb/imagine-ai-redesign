@@ -523,18 +523,24 @@ Wireframes: `analytics/analytics-page.png`, plus the landing right rail.
   reference pink density, long post labels stay legible, filters animate, and compact
   top-post rows do not crowd.
 
-### Phase 9 — Files
+### Phase 9 — Files ✅
 
 Wireframes: `file-system/file system - right sidebar.png`,
 `file-system/editing file - opens tab.png`.
 
-- `FilesPanel` in flow on the right: search, Files and Skills tabs, the tree with org and
-person sections, nested folders, an asset grid, and a hover edit affordance.
-- The editor tab strip above the main column with the markdown editor beneath it, saving
-inline and closing back to the thread.
-- `/files` is the same tree, wider, with a preview column instead of the chat.
-- Done when: open, browse, edit, save, and close all animate and the composer never
-moves.
+- The in-flow Files panel now collapses the navigation rail and provides recursive
+  search, Files and Skills tabs, organization and person sections, nested folders,
+  expandable asset grids, skill toggles, and hover editing.
+- Opening a workspace or skill markdown file adds it beside the persistent Current chat
+  tab. The editor overlays only the conversation body, so save, revert, tab switching,
+  and close animate while the docked composer keeps the same bounds.
+- `/files` reuses the panel at a wider size and places a document or asset preview beside
+  it. Markdown edits save inline; assets select and expand without an inner card stack.
+- `workspace_search` chunks are grouped by `metadata.sourceFile` and scoped by
+  `metadata.orgId`; company-profile files join the organization section while people
+  retain their own sections. The Skills tab is built from `mastra_skills`.
+- Verified in light and dark at the desktop workspace width. Recursive search, editing,
+  save feedback, closing back to chat, and the static production build all pass.
 
 ### Phase 10 — Settings
 

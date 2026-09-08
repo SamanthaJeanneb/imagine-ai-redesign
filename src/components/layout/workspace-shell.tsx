@@ -12,7 +12,13 @@ import {
 } from "@/components/features/agent/chat-provider";
 import type { ComposerPreview } from "@/components/features/agent/composer";
 import { ProfileSelector } from "@/components/features/agent/profile-selector";
+import {
+  EditorTabStrip,
+  type EditorTab,
+} from "@/components/features/files/editor-tab-strip";
 import type { FileSection } from "@/components/features/files/file-tree";
+import { MarkdownEditor } from "@/components/features/files/markdown-editor";
+import type { Skill } from "@/components/features/files/skills-list";
 import type { ProfileSummary } from "@/components/features/settings/profile-list";
 import { AccountControls, type AccountUser } from "@/components/layout/account";
 import { ChatColumn } from "@/components/layout/chat-column";
@@ -21,6 +27,7 @@ import {
   type ChatPanelMode,
 } from "@/components/layout/chat-context-panel";
 import { ChatControls, ChatTitle } from "@/components/layout/chat-controls";
+import { FilesPanel } from "@/components/layout/files-panel";
 import {
   Sidebar,
   SidebarExpandButton,
@@ -29,7 +36,8 @@ import {
 } from "@/components/layout/sidebar";
 import { toTitle } from "@/lib/format";
 import type { AgentMessage, ScriptedReply } from "@/services/agent";
-import { fade } from "@/styles/motion";
+import type { OpenDocument } from "@/services/files";
+import { fade, spring } from "@/styles/motion";
 
 interface WorkspaceShellProps {
   orgName: string;
@@ -40,6 +48,10 @@ interface WorkspaceShellProps {
   profiles: readonly ProfileSummary[];
   /** Files available to the thread's right panel. */
   fileSections: readonly FileSection[];
+  /** Skills appear beside files and open as editable markdown. */
+  skills: readonly Skill[];
+  /** Every workspace and skill document the editor can open. */
+  documents: readonly OpenDocument[];
   /** The agent's scripted answers, for the conversation the shell owns. */
   replies: { default: ScriptedReply; schedule: ScriptedReply };
   /** What the composer's Calendar and Analytics chips open. */
@@ -99,6 +111,8 @@ const HEADER_SWAP = {
   exit: { opacity: 0, y: -4 },
   transition: fade.fast,
 } as const;
+
+const WORKSPACE_TAB_ID = "workspace";
 
 interface WorkspaceHeaderProps {
   collapsed: boolean;
@@ -203,10 +217,19 @@ function WorkspaceHeader({
  * The inset every workspace page starts in, after the header divider. Pages
  * do not set their own top or side padding; this is the one frame.
  */
-function WorkspacePage({ children }: { children: ReactNode }) {
+function WorkspacePage({
+  children,
+  overlay,
+}: {
+  children: ReactNode;
+  overlay?: ReactNode;
+}) {
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto px-xxl pt-xxl pb-xxl">
-      {children}
+    <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-xxl pt-xxl pb-xxl">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
+        {children}
+      </div>
+      {overlay}
     </div>
   );
 }
@@ -237,6 +260,8 @@ function WorkspaceFrame({
   user,
   profiles,
   fileSections,
+  skills: initialSkills,
+  documents,
   children,
 }: Omit<WorkspaceShellProps, "replies" | "previews">) {
   const pathname = usePathname();
@@ -257,6 +282,71 @@ function WorkspaceFrame({
   const chatColumn = chatColumnFor(pathname);
   const docked = chatColumn !== undefined;
   const [panel, setPanel] = useState<ChatPanelMode | null>(null);
+  const [railBeforeFiles, setRailBeforeFiles] = useState(false);
+  const [skills, setSkills] = useState(initialSkills);
+  const [activeFileId, setActiveFileId] = useState<string>();
+  const [openDocumentIds, setOpenDocumentIds] = useState<readonly string[]>([]);
+  const [activeEditorId, setActiveEditorId] = useState(WORKSPACE_TAB_ID);
+  const [documentValues, setDocumentValues] = useState<Record<string, string>>(
+    () =>
+      Object.fromEntries(
+        documents.map((document) => [document.id, document.value]),
+      ),
+  );
+  const [savedDocumentValues, setSavedDocumentValues] = useState<
+    Record<string, string>
+  >(() =>
+    Object.fromEntries(
+      documents.map((document) => [document.id, document.value]),
+    ),
+  );
+
+  function changePanel(next: ChatPanelMode | null) {
+    if (next === "files" && panel !== "files") {
+      setRailBeforeFiles(collapsed);
+      setCollapsed(true);
+    } else if (panel === "files" && next !== "files") {
+      setCollapsed(railBeforeFiles);
+    }
+    setPanel(next);
+  }
+
+  function openEditor(id: string) {
+    if (!documents.some((document) => document.id === id)) return;
+    setActiveFileId(id);
+    setOpenDocumentIds((current) =>
+      current.includes(id) ? current : [...current, id],
+    );
+    setActiveEditorId(id);
+  }
+
+  function closeEditor(id: string) {
+    setOpenDocumentIds((current) => current.filter((open) => open !== id));
+    if (activeEditorId === id) setActiveEditorId(WORKSPACE_TAB_ID);
+  }
+
+  const activeDocument =
+    activeEditorId === WORKSPACE_TAB_ID
+      ? undefined
+      : documents.find((document) => document.id === activeEditorId);
+  const editorTabs: readonly EditorTab[] = [
+    { id: WORKSPACE_TAB_ID, label: "Current chat" },
+    ...openDocumentIds.flatMap((id) => {
+      const document = documents.find((candidate) => candidate.id === id);
+      return document === undefined
+        ? []
+        : [
+            {
+              id,
+              label: document.meta.title,
+              closable: true,
+              dirty:
+                (documentValues[id] ?? document.value) !==
+                (savedDocumentValues[id] ?? document.value),
+            },
+          ];
+    }),
+  ];
 
   // On the agent page with a conversation open, the header belongs to the
   // thread: its name in the middle, its controls on the right. Beside the
@@ -285,7 +375,7 @@ function WorkspaceFrame({
       {...(chatTitle === undefined ? {} : { chatTitle })}
       chatOpen={chatOpen}
       panel={panel}
-      onPanelChange={setPanel}
+      onPanelChange={changePanel}
       user={user}
       onOpenAccount={() => {
         router.push("/settings");
@@ -295,7 +385,75 @@ function WorkspaceFrame({
       }}
     />
   );
-  const page = <WorkspacePage>{children}</WorkspacePage>;
+  const editorLayer =
+    activeKey !== "agent" || openDocumentIds.length === 0 ? null : (
+      <motion.div
+        key="workspace-editor"
+        initial={{ opacity: 0, y: -6 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -6 }}
+        transition={fade.fast}
+        className={cn(
+          "pointer-events-none absolute inset-x-0 top-0 z-20 px-xxl",
+          activeDocument !== undefined && "bottom-28 bg-imagine-surface",
+        )}
+      >
+        <EditorTabStrip
+          tabs={editorTabs}
+          activeId={activeEditorId}
+          onActivate={setActiveEditorId}
+          onClose={closeEditor}
+          className={cn(
+            "pointer-events-auto",
+            activeDocument !== undefined && "h-full",
+          )}
+        >
+          <AnimatePresence initial={false} mode="wait">
+            {activeDocument === undefined ? null : (
+              <motion.div
+                key={activeDocument.id}
+                initial={{ opacity: 0, x: 8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -8 }}
+                transition={fade.fast}
+                className="h-full overflow-y-auto"
+              >
+                <MarkdownEditor
+                  meta={activeDocument.meta}
+                  value={
+                    documentValues[activeDocument.id] ?? activeDocument.value
+                  }
+                  savedValue={
+                    savedDocumentValues[activeDocument.id] ??
+                    activeDocument.value
+                  }
+                  onValueChange={(value) => {
+                    setDocumentValues((current) => ({
+                      ...current,
+                      [activeDocument.id]: value,
+                    }));
+                  }}
+                  onSave={() => {
+                    setSavedDocumentValues((current) => ({
+                      ...current,
+                      [activeDocument.id]:
+                        documentValues[activeDocument.id] ??
+                        activeDocument.value,
+                    }));
+                  }}
+                  className="mx-auto p-xxl"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </EditorTabStrip>
+      </motion.div>
+    );
+  const page = (
+    <WorkspacePage {...(editorLayer === null ? {} : { overlay: editorLayer })}>
+      {children}
+    </WorkspacePage>
+  );
   const column =
     chatColumn === undefined ? null : (
       <ChatColumn
@@ -303,14 +461,49 @@ function WorkspaceFrame({
         page={chatColumn}
         title={chatTitle ?? "New chat"}
         panel={panel}
-        onPanelChange={setPanel}
+        onPanelChange={changePanel}
       />
     );
   const contextPanel =
-    panel === null || chatTitle === undefined || !(chatOpen || docked) ? null : (
+    panel === null ||
+    chatTitle === undefined ||
+    !(chatOpen || docked) ? null : panel === "files" ? (
+      <motion.div
+        key="files-panel"
+        initial={{ width: 0, opacity: 0 }}
+        animate={{ width: 320, opacity: 1 }}
+        exit={{ width: 0, opacity: 0 }}
+        transition={spring.soft}
+        className="flex min-h-0 shrink-0 justify-end overflow-hidden border-l border-imagine-border"
+      >
+        <FilesPanel
+          title={orgName}
+          {...(orgLogoUrl === undefined ? {} : { logoUrl: orgLogoUrl })}
+          sections={fileSections}
+          skills={skills}
+          {...(activeFileId === undefined ? {} : { activeFileId })}
+          onOpenFile={setActiveFileId}
+          onEditFile={openEditor}
+          onToggleSkill={(id, enabled) => {
+            setSkills((current) =>
+              current.map((skill) =>
+                skill.id === id ? { ...skill, enabled } : skill,
+              ),
+            );
+          }}
+          onOpenSkillFile={openEditor}
+          {...(activeEditorId === WORKSPACE_TAB_ID
+            ? {}
+            : { openSkillId: activeEditorId })}
+          onClose={() => {
+            changePanel(null);
+          }}
+        />
+      </motion.div>
+    ) : (
       <ChatContextPanel
         key="context-panel"
-        mode={panel}
+        mode="history"
         threads={threads}
         fileSections={fileSections}
         currentThreadId={chat.threadId}
@@ -319,7 +512,7 @@ function WorkspaceFrame({
           router.push(`/agent/${id}`);
         }}
         onClose={() => {
-          setPanel(null);
+          changePanel(null);
         }}
       />
     );
@@ -338,12 +531,12 @@ function WorkspaceFrame({
           onNavigate={(key) => {
             // A preview left open would follow the chat into its column.
             chat.setPreview(null);
-            setPanel(null);
+            changePanel(null);
             router.push(`/${key}`);
           }}
           onNewPost={() => {
             chat.reset();
-            setPanel(null);
+            changePanel(null);
             router.push("/agent");
           }}
           onOpenThread={(id) => {

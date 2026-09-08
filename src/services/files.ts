@@ -25,8 +25,31 @@ function directory(sourceFile: string): string {
   return parts.length > 1 ? parts.slice(0, -1).join("/") : "";
 }
 
+interface GroupedFile {
+  id: string;
+  sourceFile: string;
+  content: string;
+}
+
+/** `workspace_search` stores chunks; the UI works with one document per source. */
+function groupFiles(rows: readonly WorkspaceFileRow[]): readonly GroupedFile[] {
+  const bySource = new Map<string, WorkspaceFileRow[]>();
+  for (const row of rows) {
+    bySource.set(row.metadata.sourceFile, [
+      ...(bySource.get(row.metadata.sourceFile) ?? []),
+      row,
+    ]);
+  }
+
+  return [...bySource.entries()].map(([sourceFile, chunks]) => ({
+    id: chunks[0]?.id ?? sourceFile,
+    sourceFile,
+    content: chunks.map((chunk) => chunk.content).join("\n\n"),
+  }));
+}
+
 /** Files at the root, then a folder per directory. One level is enough here. */
-function toNodes(rows: readonly WorkspaceFileRow[]): readonly FileNode[] {
+function toNodes(rows: readonly GroupedFile[]): readonly FileNode[] {
   const folders = new Map<string, FileNode[]>();
   const root: FileNode[] = [];
 
@@ -34,9 +57,9 @@ function toNodes(rows: readonly WorkspaceFileRow[]): readonly FileNode[] {
     const node: FileNode = {
       type: "file",
       id: row.id,
-      name: fileName(row.metadata.sourceFile),
+      name: fileName(row.sourceFile),
     };
-    const folder = directory(row.metadata.sourceFile);
+    const folder = directory(row.sourceFile);
     if (folder === "") {
       root.push(node);
       continue;
@@ -64,18 +87,59 @@ export function getFileSections(): readonly FileSection[] {
   const db = getDb();
   const org = getOrganization();
   const files = db.mastra.workspace_search;
+  const clients = db.app.clients.map(transformClientRow);
+  const companyNodes = clients
+    .filter((client) => client.isCompany)
+    .flatMap<FileNode>((client) => {
+      const clientFiles = groupFiles(
+        files.filter(
+          (file) =>
+            file.metadata.orgId === org.id &&
+            file.metadata.clientId === client.id,
+        ),
+      );
+      const assets = getClientAssets(client.id);
+      return [
+        ...toNodes(clientFiles),
+        ...(assets.length === 0
+          ? []
+          : [
+              {
+                type: "assets" as const,
+                id: `assets:${client.id}`,
+                name: "Assets",
+                assets: assets.map(toAssetTile),
+              },
+            ]),
+      ];
+    });
 
   const orgSection: FileSection = {
     id: org.id,
     title: org.name,
     kind: "organization",
-    nodes: toNodes(files.filter((row) => row.metadata.clientId === undefined)),
+    nodes: [
+      ...toNodes(
+        groupFiles(
+          files.filter(
+            (row) =>
+              row.metadata.orgId === org.id &&
+              row.metadata.clientId === undefined,
+          ),
+        ),
+      ),
+      ...companyNodes,
+    ],
   };
 
-  const personSections = db.app.clients.flatMap<FileSection>((row) => {
-    const client = transformClientRow(row);
-    const clientFiles = files.filter(
-      (file) => file.metadata.clientId === client.id,
+  const personSections = clients.flatMap<FileSection>((client) => {
+    if (client.isCompany) return [];
+    const clientFiles = groupFiles(
+      files.filter(
+        (file) =>
+          file.metadata.orgId === org.id &&
+          file.metadata.clientId === client.id,
+      ),
     );
     const clientAssets = getClientAssets(client.id);
     if (clientFiles.length === 0 && clientAssets.length === 0) return [];
@@ -96,7 +160,7 @@ export function getFileSections(): readonly FileSection[] {
       {
         id: client.id,
         title: client.name,
-        kind: client.isCompany ? "organization" : "person",
+        kind: "person",
         ...(client.profilePicturePath === null
           ? {}
           : { avatarUrl: client.profilePicturePath }),
@@ -119,27 +183,27 @@ export function getSkills(): readonly Skill[] {
   }));
 }
 
-/** A workspace file or a skill file, ready for the editor. */
-export function getDocument(id: string): OpenDocument | null {
+/** Every workspace and skill file, grouped and ready for the editor. */
+export function getDocuments(): readonly OpenDocument[] {
   const db = getDb();
-
-  const file = db.mastra.workspace_search.find((row) => row.id === id);
-  if (file !== undefined) {
-    return {
+  const org = getOrganization();
+  return [
+    ...groupFiles(
+      db.mastra.workspace_search.filter((row) => row.metadata.orgId === org.id),
+    ).map((file) => ({
       id: file.id,
-      meta: { title: fileName(file.metadata.sourceFile) },
+      meta: { title: fileName(file.sourceFile) },
       value: file.content,
-    };
-  }
-
-  const skill = db.mastra.mastra_skills.find((row) => row.id === id);
-  if (skill !== undefined) {
-    return {
+    })),
+    ...db.mastra.mastra_skills.map((skill) => ({
       id: skill.id,
       meta: { title: skill.file_name },
       value: skill.content,
-    };
-  }
+    })),
+  ];
+}
 
-  return null;
+/** A workspace file or a skill file, ready for the editor. */
+export function getDocument(id: string): OpenDocument | null {
+  return getDocuments().find((document) => document.id === id) ?? null;
 }
