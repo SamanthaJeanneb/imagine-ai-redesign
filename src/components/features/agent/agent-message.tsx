@@ -168,7 +168,7 @@ function Part({
 
 /**
  * One agent turn: parts stream in one after another. No avatar and no
- * bubble; the agent speaks on the surface, the user speaks in a raised bubble.
+ * bubble; the agent speaks on the surface, the user speaks in a flat bubble.
  */
 export function AgentMessage({
   parts,
@@ -203,7 +203,7 @@ interface UserMessageProps {
   className?: string;
 }
 
-/** The user's turn: a raised bubble on the right, attachments above it. */
+/** The user's turn: a flat bubble on the right, attachments above it. */
 export function UserMessage({
   text,
   attachments,
@@ -221,7 +221,7 @@ export function UserMessage({
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={fade.base}
-        className="max-w-[80%] rounded-panel bg-imagine-surface px-l py-m type-body shadow-raised"
+        className="max-w-[80%] rounded-panel bg-imagine-background px-l py-m type-body text-imagine-foreground"
       >
         {text}
       </motion.p>

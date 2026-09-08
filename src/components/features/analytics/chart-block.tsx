@@ -2,17 +2,19 @@
 
 import { cn } from "cn";
 import { motion, useReducedMotion } from "motion/react";
-import { useState } from "react";
+import { useId, useState } from "react";
 import {
   Area,
+  AreaChart,
   Bar,
   BarChart,
+  type BarShapeProps,
   CartesianGrid,
   ComposedChart,
   LabelList,
   Line,
   Rectangle,
-  type RectangleProps,
+  ReferenceDot,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -121,11 +123,22 @@ function composedColors(series: readonly ChartSeries[]): Map<string, string> {
   return colors;
 }
 
-/** Axis and label type. Small, tabular, and legible in both themes. */
+/* Recharts defaults, themed. Everything below is a stock prop on a stock part. */
 const TICK = { fontSize: 11, fill: COLOR.muted } as const;
 const LABEL = { fontSize: 10, fill: COLOR.muted } as const;
-const GRID = { stroke: COLOR.border, strokeDasharray: "2 4" } as const;
-const BASELINE = { stroke: COLOR.border } as const;
+const GRID = { stroke: COLOR.border, strokeDasharray: "3 3" } as const;
+const AXIS = { tickLine: false, axisLine: false } as const;
+const TOOLTIP_STYLE = {
+  contentStyle: {
+    background: COLOR.surface,
+    border: `1px solid ${COLOR.border}`,
+    borderRadius: 0,
+    padding: "6px 10px",
+    fontSize: 12,
+  },
+  labelStyle: { color: COLOR.muted, marginBottom: 2 },
+  itemStyle: { color: COLOR.foreground, padding: 0 },
+} as const;
 /** Room to the right of the plot for the mean rule's label. Pixels. */
 const MEAN_GUTTER = 44;
 
@@ -177,73 +190,48 @@ function seriesStats(
   return { total, max, mean: count > 0 ? total / count : 0, last };
 }
 
-/* Marks. Squares, not circles: the family has no rounded corners. */
-
-type BarShapeProps = RectangleProps & {
-  index?: number;
-  payload?: { label?: string };
-};
-
-/** Draws one bar solid (today, the selected post) and the rest in the series color. */
-function highlightBar(highlightLabel: string | undefined, color: string) {
-  return function HighlightBar(props: BarShapeProps) {
-    const { fill, payload, index: _index, ...rest } = props;
-    const isHighlight =
-      highlightLabel !== undefined && payload?.label === highlightLabel;
-    return <Rectangle {...rest} radius={0} fill={isHighlight ? color : fill} />;
-  };
-}
-
-interface DotProps {
-  cx?: number;
-  cy?: number;
-  index?: number;
-}
-
-function squareDot(size: number, fill: string, stroke?: string) {
-  return function SquareDot({ cx, cy, index }: DotProps) {
-    if (cx === undefined || cy === undefined) return <g key={index} />;
-    const half = size / 2;
-    return (
-      <rect
-        key={index}
-        x={cx - half}
-        y={cy - half}
-        width={size}
-        height={size}
-        fill={fill}
-        stroke={stroke}
-        strokeWidth={stroke ? 1.5 : 0}
-      />
-    );
-  };
-}
-
-/** A solid point on the last datum only, with its value printed above. */
-function endMarker(lastIndex: number, fill: string) {
-  return function EndMarker({
-    cx,
-    cy,
-    index,
-    value,
-  }: DotProps & { value?: unknown }) {
-    if (cx === undefined || cy === undefined || index !== lastIndex) {
-      return <g key={index} />;
-    }
-    return (
-      <g key={index}>
-        <circle cx={cx} cy={cy} r={4} fill={fill} />
-        <text
-          x={cx}
-          y={cy - 10}
-          textAnchor="end"
-          fontSize={12}
-          fontWeight={600}
-          fill={COLOR.foreground}
+/**
+ * The stock Recharts area gradient: the series color near the line, clear at
+ * the baseline. One per series, keyed off the block's id so several charts
+ * can share a page.
+ */
+function AreaGradients({
+  blockId,
+  colors,
+}: {
+  blockId: string;
+  colors: ReadonlyMap<string, string>;
+}) {
+  return (
+    <defs>
+      {[...colors].map(([key, color]) => (
+        <linearGradient
+          key={key}
+          id={`${blockId}-${key}`}
+          x1="0"
+          y1="0"
+          x2="0"
+          y2="1"
         >
-          {labelFormatter(value)}
-        </text>
-      </g>
+          <stop offset="5%" stopColor={color} stopOpacity={0.6} />
+          <stop offset="95%" stopColor={color} stopOpacity={0} />
+        </linearGradient>
+      ))}
+    </defs>
+  );
+}
+
+/**
+ * The Recharts way to color one bar differently (the `Cell` replacement): a
+ * `shape` that draws the stock `Rectangle` and swaps the fill by index.
+ */
+function highlightBar(highlightIndex: number | undefined, color: string) {
+  return function HighlightBar(props: BarShapeProps) {
+    return (
+      <Rectangle
+        {...props}
+        fill={props.index === highlightIndex ? color : props.fill}
+      />
     );
   };
 }
@@ -278,60 +266,11 @@ function Swatch({
   );
 }
 
-/* Tooltip. A hairline box with a label row and one tabular row per series. */
-
-interface TooltipItem {
-  name?: unknown;
-  dataKey?: unknown;
-  value?: unknown;
-  color?: string;
-  fill?: string;
-}
-
-function SharpTooltip({
-  active,
-  payload,
-  label,
-  labels,
-}: {
-  active?: boolean;
-  payload?: readonly TooltipItem[];
-  label?: unknown;
-  labels: ReadonlyMap<string, string>;
-}) {
-  if (!active || !payload || payload.length === 0) return null;
-  return (
-    <div className="min-w-36 border border-imagine-border bg-imagine-surface shadow-floating">
-      <div className="border-b border-imagine-border px-s py-xs type-micro font-medium text-imagine-foreground-muted uppercase">
-        {text(label)}
-      </div>
-      <dl className="flex flex-col gap-xxs px-s py-xs">
-        {payload.map((item, index) => {
-          const key = text(item.dataKey) || text(item.name) || String(index);
-          return (
-            <div key={key} className="flex items-center justify-between gap-l">
-              <dt className="flex items-center gap-xs type-small text-imagine-foreground-muted">
-                <svg aria-hidden="true" viewBox="0 0 8 8" className="size-2">
-                  <rect width="8" height="8" fill={item.color ?? item.fill} />
-                </svg>
-                {labels.get(key) ?? key}
-              </dt>
-              <dd className="type-small font-medium tabular-nums">
-                {formatFull(item.value)}
-              </dd>
-            </div>
-          );
-        })}
-      </dl>
-    </div>
-  );
-}
-
 /**
  * A chart in a hairline frame. One header line carries the title and either
- * the total or a key with per-series numbers; the plot has dashed gridlines, a
- * baseline, square marks, and a mean rule. Used in agent replies, the landing
- * rail, and the analytics page.
+ * the total or a key with per-series numbers; the plot is stock Recharts with
+ * the palette applied. Used in agent replies, the landing rail, and the
+ * analytics page.
  */
 export function ChartBlock({
   kind,
@@ -350,6 +289,8 @@ export function ChartBlock({
   className,
 }: ChartBlockProps) {
   const reduceMotion = useReducedMotion();
+  // `useId` puts colons in the id; `url(#…)` fragments are happier without.
+  const blockId = useId().replace(/:/g, "");
   const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
   const visible = series.filter((item) => !hidden.has(item.key));
   const primary = series[0];
@@ -374,8 +315,6 @@ export function ChartBlock({
   };
 
   const highlightColor = tone === "accent" ? COLOR.foreground : COLOR.secondary;
-  const highlightLabel =
-    highlightIndex === undefined ? undefined : data[highlightIndex]?.label;
 
   const restMax = Math.max(
     0,
@@ -397,31 +336,31 @@ export function ChartBlock({
     primary !== undefined &&
     data.length > 2;
   const hasRightAxis = composed && series.some((item) => item.axis === "right");
-  const lastIndex = data.length - 1;
+  const last = data[data.length - 1];
 
   const mutable = data.map((datum) => ({ ...datum }));
   const animate = !reduceMotion;
 
   const tooltip = (
     <Tooltip
+      {...TOOLTIP_STYLE}
       cursor={
         kind === "area" || composed
-          ? { stroke: COLOR.faint, strokeWidth: 1, strokeDasharray: "3 3" }
+          ? { stroke: COLOR.faint, strokeDasharray: "3 3" }
           : { fill: COLOR.foreground, fillOpacity: 0.05 }
       }
       isAnimationActive={false}
-      content={(props) => (
-        <SharpTooltip
-          active={props.active}
-          payload={props.payload}
-          label={props.label}
-          labels={labelOf}
-        />
-      )}
+      formatter={(value: unknown, name: unknown) => [
+        formatFull(value),
+        labelOf.get(text(name)) ?? text(name),
+      ]}
     />
   );
 
-  const barShape = highlightBar(highlightLabel, highlightColor);
+  const barShape =
+    highlightIndex === undefined
+      ? undefined
+      : highlightBar(highlightIndex, highlightColor);
 
   return (
     <motion.div
@@ -526,13 +465,11 @@ export function ChartBlock({
                 top: annotations.length > 0 ? 20 : 12,
                 bottom: 0,
               }}
-              barCategoryGap="30%"
             >
               <CartesianGrid vertical={false} {...GRID} />
               <XAxis
                 dataKey="label"
-                tickLine={false}
-                axisLine={BASELINE}
+                {...AXIS}
                 tickMargin={8}
                 interval={xTicks ? 0 : "preserveStartEnd"}
                 ticks={xTicks ? [...xTicks] : undefined}
@@ -540,8 +477,7 @@ export function ChartBlock({
               />
               <YAxis
                 yAxisId="left"
-                tickLine={false}
-                axisLine={false}
+                {...AXIS}
                 tickMargin={6}
                 width={36}
                 tickCount={5}
@@ -553,8 +489,7 @@ export function ChartBlock({
                 <YAxis
                   yAxisId="right"
                   orientation="right"
-                  tickLine={false}
-                  axisLine={false}
+                  {...AXIS}
                   tickMargin={6}
                   width={32}
                   tickCount={5}
@@ -570,7 +505,7 @@ export function ChartBlock({
                   yAxisId="left"
                   x={note.at}
                   stroke={COLOR.faint}
-                  strokeDasharray="2 3"
+                  strokeDasharray="3 3"
                   label={{
                     value: note.label.toUpperCase(),
                     position: "top",
@@ -589,7 +524,6 @@ export function ChartBlock({
                       yAxisId={axis}
                       dataKey={item.key}
                       fill={color}
-                      radius={0}
                       maxBarSize={24}
                       isAnimationActive={animate}
                     />
@@ -600,18 +534,44 @@ export function ChartBlock({
                     key={item.key}
                     yAxisId={axis}
                     dataKey={item.key}
-                    type={mark === "step" ? "stepAfter" : "linear"}
+                    type={mark === "step" ? "stepAfter" : "monotone"}
                     stroke={color}
-                    strokeWidth={mark === "step" ? 2 : 1.5}
-                    dot={item.endLabel ? endMarker(lastIndex, color) : false}
-                    activeDot={squareDot(7, color, COLOR.surface)}
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 4 }}
                     isAnimationActive={animate}
+                  />
+                );
+              })}
+              {/* The end marker is a reference dot on the last datum. */}
+              {visible.map((item) => {
+                const value = last?.[item.key];
+                if (!item.endLabel || typeof value !== "number" || !last) {
+                  return null;
+                }
+                const color = colorOf.get(item.key) ?? COLOR.muted;
+                return (
+                  <ReferenceDot
+                    key={`${item.key}-end`}
+                    yAxisId={item.axis ?? "left"}
+                    x={last.label}
+                    y={value}
+                    r={4}
+                    fill={color}
+                    stroke="none"
+                    label={{
+                      value: formatCompact(value),
+                      position: "top",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      fill: COLOR.foreground,
+                    }}
                   />
                 );
               })}
             </ComposedChart>
           ) : kind === "area" ? (
-            <ComposedChart
+            <AreaChart
               data={mutable}
               margin={{
                 left: 0,
@@ -620,11 +580,11 @@ export function ChartBlock({
                 bottom: 0,
               }}
             >
+              <AreaGradients blockId={blockId} colors={colorOf} />
               <CartesianGrid vertical={false} {...GRID} />
               <XAxis
                 dataKey="label"
-                tickLine={false}
-                axisLine={BASELINE}
+                {...AXIS}
                 tickMargin={8}
                 interval={dense ? "preserveStartEnd" : tickInterval}
                 tick={dense ? false : TICK}
@@ -633,8 +593,7 @@ export function ChartBlock({
               <YAxis
                 yAxisId="left"
                 hide={dense}
-                tickLine={false}
-                axisLine={false}
+                {...AXIS}
                 tickMargin={6}
                 width={36}
                 tickCount={5}
@@ -647,8 +606,7 @@ export function ChartBlock({
                   yAxisId="right"
                   orientation="right"
                   hide={dense}
-                  tickLine={false}
-                  axisLine={false}
+                  {...AXIS}
                   tickMargin={6}
                   width={32}
                   tickCount={5}
@@ -663,7 +621,7 @@ export function ChartBlock({
                   yAxisId="left"
                   y={primaryStats.mean}
                   stroke={COLOR.faint}
-                  strokeDasharray="4 3"
+                  strokeDasharray="3 3"
                   label={{
                     value: `avg ${formatCompact(Math.round(primaryStats.mean))}`,
                     position: splitScale ? "insideBottomLeft" : "right",
@@ -676,48 +634,23 @@ export function ChartBlock({
                 const isPrimary = item.key === primary?.key;
                 const axis =
                   splitScale && !isPrimary && index > 0 ? "right" : "left";
-                if (isPrimary) {
-                  return (
-                    <Area
-                      key={item.key}
-                      yAxisId="left"
-                      dataKey={item.key}
-                      type="linear"
-                      fill={color}
-                      fillOpacity={0.12}
-                      stroke={color}
-                      strokeWidth={1.5}
-                      dot={dense ? false : squareDot(4, color)}
-                      activeDot={squareDot(7, color, COLOR.surface)}
-                      isAnimationActive={animate}
-                    >
-                      {showValues ? (
-                        <LabelList
-                          dataKey={item.key}
-                          position="top"
-                          offset={8}
-                          formatter={labelFormatter}
-                          {...LABEL}
-                        />
-                      ) : null}
-                    </Area>
-                  );
-                }
                 return (
-                  <Line
+                  <Area
                     key={item.key}
                     yAxisId={axis}
                     dataKey={item.key}
-                    type="linear"
+                    type="monotone"
                     stroke={color}
-                    strokeWidth={1.5}
-                    dot={dense ? false : squareDot(4, color)}
-                    activeDot={squareDot(7, color, COLOR.surface)}
+                    strokeWidth={2}
+                    fill={`url(#${blockId}-${item.key})`}
+                    fillOpacity={1}
+                    dot={false}
+                    activeDot={{ r: 4 }}
                     isAnimationActive={animate}
                   />
                 );
               })}
-            </ComposedChart>
+            </AreaChart>
           ) : kind === "hbar" ? (
             <BarChart
               data={mutable}
@@ -730,8 +663,7 @@ export function ChartBlock({
               <YAxis
                 dataKey="label"
                 type="category"
-                tickLine={false}
-                axisLine={BASELINE}
+                {...AXIS}
                 width={dense ? 56 : 76}
                 interval={0}
                 tick={{ fontSize: 12, fill: COLOR.foreground }}
@@ -745,7 +677,6 @@ export function ChartBlock({
                     key={item.key}
                     dataKey={item.key}
                     fill={color}
-                    radius={0}
                     maxBarSize={dense ? 10 : 14}
                     shape={isPrimary ? barShape : undefined}
                     isAnimationActive={animate}
@@ -779,8 +710,7 @@ export function ChartBlock({
               {dense ? null : <CartesianGrid vertical={false} {...GRID} />}
               <XAxis
                 dataKey="label"
-                tickLine={false}
-                axisLine={BASELINE}
+                {...AXIS}
                 tickMargin={8}
                 interval={dense ? "preserveStartEnd" : tickInterval}
                 tick={dense ? false : TICK}
@@ -788,8 +718,7 @@ export function ChartBlock({
               />
               <YAxis
                 hide={dense}
-                tickLine={false}
-                axisLine={false}
+                {...AXIS}
                 tickMargin={6}
                 width={36}
                 tickCount={5}
@@ -802,7 +731,7 @@ export function ChartBlock({
                 <ReferenceLine
                   y={primaryStats.mean}
                   stroke={COLOR.faint}
-                  strokeDasharray="4 3"
+                  strokeDasharray="3 3"
                   label={{
                     value: `avg ${formatCompact(Math.round(primaryStats.mean))}`,
                     position: "right",
@@ -818,7 +747,6 @@ export function ChartBlock({
                     key={item.key}
                     dataKey={item.key}
                     fill={color}
-                    radius={0}
                     maxBarSize={dense ? 28 : 40}
                     shape={isPrimary ? barShape : undefined}
                     isAnimationActive={animate}

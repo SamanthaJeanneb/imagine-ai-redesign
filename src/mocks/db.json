@@ -7,7 +7,7 @@
         "id": "usr_sam",
         "email": "sam@acme.com",
         "name": "Samantha Brown",
-        "avatar_url": null
+        "avatar_url": "https://i.pravatar.cc/96?img=26"
       },
       {
         "id": "usr_sarah",
@@ -1363,7 +1363,7 @@
             },
             {
               "type": "text",
-              "text": "I drafted one from the product review she mentioned on Tuesday. It is scheduled for 9:00 and you can move it."
+              "text": "I drafted one from the product review she mentioned on Tuesday."
             },
             {
               "type": "post_draft",

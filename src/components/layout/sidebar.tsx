@@ -35,17 +35,19 @@ const HELP_ITEMS: readonly {
 ];
 
 /**
- * The Help center reveal. The clip springs open while the children are
+ * The Help center reveal. Opening, the clip springs up while the children are
  * staggered from the last item, the one nearest the hairline, so the menu
- * surfaces out of the line. Closing runs the same stagger in reverse.
+ * surfaces out of the line. Closing is one motion, not two: the clip and the
+ * items sink together on the same ease-out (no spring, so nothing overshoots
+ * past zero height and snaps), top item first, so the shrinking top edge
+ * swallows each row as it drops.
  */
 const HELP_MENU: Variants = {
   hidden: {
     height: 0,
     transition: {
-      ...spring.soft,
-      when: "afterChildren",
-      delayChildren: staggerChildren(stagger.list / 2),
+      ...fade.base,
+      delayChildren: staggerChildren(stagger.grid),
     },
   },
   show: {
@@ -59,7 +61,7 @@ const HELP_MENU: Variants = {
 
 /** Full opacity throughout: the items float up out of the clip, nothing fades. */
 const HELP_ITEM: Variants = {
-  hidden: { y: 16, transition: fade.fast },
+  hidden: { y: 16, transition: fade.base },
   show: { y: 0, transition: spring.soft },
 };
 
@@ -330,28 +332,28 @@ export function Sidebar({
         {collapsed ? (
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                size="icon-sm"
-                variant="soft"
+              <button
+                type="button"
                 aria-label="New chat"
                 onClick={onNewPost}
-                className="bg-imagine-surface text-imagine-foreground shadow-control hover:bg-imagine-surface hover:shadow-control dark:bg-imagine-surface-raised dark:shadow-none"
+                className="flex h-8 w-8 items-center justify-center rounded-control text-imagine-foreground-muted transition-colors outline-none select-none hover:bg-imagine-foreground/5 hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
               >
-                <Icon name="plus" />
-              </Button>
+                <Icon name="pen-to-square" size="s" />
+              </button>
             </TooltipTrigger>
             <TooltipContent side="right">New chat</TooltipContent>
           </Tooltip>
         ) : (
-          <Button
-            className="w-full bg-imagine-surface text-imagine-foreground shadow-control hover:bg-imagine-surface hover:shadow-control dark:bg-imagine-surface-raised dark:shadow-none"
-            size="sm"
-            variant="soft"
+          <button
+            type="button"
             onClick={onNewPost}
+            className="flex h-8 items-center gap-xs rounded-control pr-s pl-xs text-left text-imagine-foreground-muted transition-colors outline-none select-none hover:bg-imagine-foreground/5 hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
           >
-            <Icon name="plus" data-icon="inline-start" />
-            New chat
-          </Button>
+            <span className="flex size-6 shrink-0 items-center justify-center">
+              <Icon name="pen-to-square" size="s" />
+            </span>
+            <span className="type-small font-medium">New chat</span>
+          </button>
         )}
       </div>
 

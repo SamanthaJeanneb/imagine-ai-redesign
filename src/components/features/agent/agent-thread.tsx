@@ -29,7 +29,7 @@ interface AgentThreadProps {
 }
 
 /**
- * The conversation. The user speaks in a raised bubble on the right, the agent
+ * The conversation. The user speaks in a flat bubble on the right, the agent
  * on the surface. The view follows the last part as the reply arrives.
  */
 export function AgentThread({
