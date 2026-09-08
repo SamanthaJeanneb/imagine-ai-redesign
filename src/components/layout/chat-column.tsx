@@ -6,6 +6,8 @@ import { AgentThread } from "@/components/features/agent/agent-thread";
 import { ChatDock } from "@/components/features/agent/chat-dock";
 import { useChat } from "@/components/features/agent/chat-provider";
 import type { ComposerPreview } from "@/components/features/agent/composer";
+import type { ChatPanelMode } from "@/components/layout/chat-context-panel";
+import { ChatControls, ChatTitle } from "@/components/layout/chat-controls";
 import { fade, spring } from "@/styles/motion";
 
 const EMPTY_COPY: Record<ComposerPreview, string> = {
@@ -20,14 +22,24 @@ const COLUMN_WIDTH = 384;
 interface ChatColumnProps {
   /** The page beside the chat. Its own preview chip is not offered. */
   page: ComposerPreview;
+  title: string;
+  panel: ChatPanelMode | null;
+  onPanelChange: (panel: ChatPanelMode | null) => void;
 }
 
 /**
  * The chat as a right column, beside the calendar and analytics pages. The
- * same conversation as `/agent`, narrower: the thread scrolls, the composer
- * holds the foot, and the preview that opens this page is not on offer.
+ * same conversation as `/agent`, narrower: it takes the full height of the
+ * surface, the title and history sit at the top of the open column, the
+ * thread scrolls, the composer holds the foot, and the preview that opens
+ * this page is not on offer.
  */
-export function ChatColumn({ page }: ChatColumnProps) {
+export function ChatColumn({
+  page,
+  title,
+  panel,
+  onPanelChange,
+}: ChatColumnProps) {
   const reduceMotion = useReducedMotion();
   const chat = useChat();
   const previews: readonly ComposerPreview[] =
@@ -47,33 +59,44 @@ export function ChatColumn({ page }: ChatColumnProps) {
           : { width: 0, opacity: 0, transition: fade.base }
       }
       transition={spring.soft}
-      className="flex shrink-0 justify-end overflow-hidden"
+      className="flex min-h-0 shrink-0 justify-end overflow-hidden"
     >
-      <div className="flex min-h-0 w-96 shrink-0 flex-col overflow-y-auto border-l border-imagine-foreground/12 px-l">
-        {chat.messages.length === 0 ? (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ ...fade.base, delay: 0.15 }}
-            className="mt-auto pb-l type-small text-imagine-foreground-muted"
-          >
-            {EMPTY_COPY[page]}
-          </motion.p>
-        ) : (
-          <AgentThread
-            messages={chat.messages}
-            thinking={chat.thinking}
-            {...(chat.thinkingStatuses === undefined
-              ? {}
-              : { thinkingStatuses: chat.thinkingStatuses })}
-            onIntent={chat.sendIntent}
+      <div className="flex min-h-0 w-96 shrink-0 flex-col border-l border-imagine-foreground/12 px-l">
+        <div className="mt-m flex h-8 shrink-0 items-center gap-s">
+          <ChatTitle title={title} />
+          <ChatControls
+            panel={panel}
+            onPanelChange={onPanelChange}
+            showFiles={false}
+            className="-mr-s ml-auto"
           />
-        )}
-        <ChatDock
-          previews={previews}
-          animateLayout={!reduceMotion}
-          className="sticky bottom-l z-10 mt-l"
-        />
+        </div>
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+          {chat.messages.length === 0 ? (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ ...fade.base, delay: 0.15 }}
+              className="mt-auto pb-l type-small text-imagine-foreground-muted"
+            >
+              {EMPTY_COPY[page]}
+            </motion.p>
+          ) : (
+            <AgentThread
+              messages={chat.messages}
+              thinking={chat.thinking}
+              {...(chat.thinkingStatuses === undefined
+                ? {}
+                : { thinkingStatuses: chat.thinkingStatuses })}
+              onIntent={chat.sendIntent}
+            />
+          )}
+          <ChatDock
+            previews={previews}
+            animateLayout={!reduceMotion}
+            className="sticky bottom-l z-10 mt-l"
+          />
+        </div>
       </div>
     </motion.aside>
   );

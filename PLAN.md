@@ -504,15 +504,21 @@ on a chip, and one line that speaks when it has something to say: how the search
 or that the range is empty and the agent can fill it.
 - Selecting a post fills its chip solid and attaches it to the chat beside the page.
 
-### Phase 8 — Analytics page
+### Phase 8 — Analytics page ✅
 
 Wireframes: `analytics/analytics-page.png`, plus the landing right rail.
 
-- Controls (range toggle, profile select, Export), four stat tiles, impressions over
-time, a breakdown by post label, by profile bars, and top posts.
-- Filters recompute through the selectors on change.
-- Done when: charts are token-colored at the reference pink density, filters respond, and
-the page morphs from the preview.
+- The range and profile controls switch across a server-built matrix of selector results,
+  so the static mock responds immediately without putting `db.json` in the client bundle.
+  Export downloads the visible impressions series as CSV.
+- Four headline totals lead into the shared impressions chart, followed by impressions
+  grouped by post label, profile comparison bars, and the ranked posts behind the totals.
+- Charts, profile rows, and top posts attach their subject to the docked chat. The
+  impressions chart carries the preview's shared layout id, so expanding morphs it into
+  the full page.
+- Verified at the docked page width in light and dark: token-colored charts retain the
+  reference pink density, long post labels stay legible, filters animate, and compact
+  top-post rows do not crowd.
 
 ### Phase 9 — Files
 

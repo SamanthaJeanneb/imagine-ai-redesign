@@ -2,6 +2,7 @@
 
 import { cn } from "cn";
 
+import type { PostChipData } from "@/components/features/calendar/post-chip";
 import { type AssetTileData } from "@/components/features/files/asset-tile";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,8 @@ export interface TopPost {
   /** "Sarah Chen · 3 Sep". */
   meta: string;
   thumbnail?: AssetTileData;
+  /** The same post shape the chat attaches from the calendar. */
+  post?: PostChipData;
   metrics: readonly { label: string; value: string }[];
 }
 
@@ -20,6 +23,7 @@ interface TopPostsProps {
   items: readonly TopPost[];
   onOpen?: (post: TopPost) => void;
   onViewAll?: () => void;
+  selectedId?: string;
   className?: string;
 }
 
@@ -31,13 +35,14 @@ export function TopPosts({
   items,
   onOpen,
   onViewAll,
+  selectedId,
   className,
 }: TopPostsProps) {
   return (
     <div
       data-slot="top-posts"
       className={cn(
-        "flex flex-col gap-m border border-imagine-border bg-imagine-surface p-l",
+        "@container flex flex-col gap-m border border-imagine-border bg-imagine-surface p-l",
         className,
       )}
     >
@@ -57,7 +62,12 @@ export function TopPosts({
       <Stagger kind="list" className="flex flex-col">
         {items.map((post, index) => (
           <StaggerItem key={post.id}>
-            <div className="group/row -mx-s flex items-center gap-m rounded-control px-s py-s transition-colors hover:bg-imagine-surface">
+            <div
+              className={cn(
+                "group/row -mx-s flex items-center gap-m rounded-control px-s py-s transition-colors hover:bg-imagine-surface-raised",
+                post.id === selectedId && "bg-imagine-surface-raised",
+              )}
+            >
               <span className="w-4 shrink-0 text-center type-small text-imagine-foreground-faint tabular-nums">
                 {index + 1}
               </span>
@@ -82,7 +92,7 @@ export function TopPosts({
                   {post.meta}
                 </span>
               </span>
-              <dl className="hidden items-center gap-l sm:flex">
+              <dl className="hidden items-center gap-l @2xl:flex">
                 {post.metrics.map((metric) => (
                   <div
                     key={metric.label}
@@ -95,14 +105,17 @@ export function TopPosts({
                   </div>
                 ))}
               </dl>
-              <Button
-                size="sm"
-                variant="soft"
-                className="bg-imagine-surface group-hover/row:bg-imagine-surface-raised"
-                onClick={() => onOpen?.(post)}
-              >
-                Open
-              </Button>
+              {onOpen ? (
+                <Button
+                  size="sm"
+                  variant="soft"
+                  onClick={() => {
+                    onOpen(post);
+                  }}
+                >
+                  {post.id === selectedId ? "Attached" : "Open"}
+                </Button>
+              ) : null}
             </div>
           </StaggerItem>
         ))}

@@ -671,7 +671,7 @@ export function ChartBlock({
                 dataKey="label"
                 type="category"
                 {...AXIS}
-                width={dense ? 56 : 76}
+                width={dense ? 56 : 112}
                 interval={0}
                 tick={{ fontSize: 12, fill: COLOR.foreground }}
               />

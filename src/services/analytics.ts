@@ -24,6 +24,7 @@ import {
   indexAssetsByPath,
   indexClients,
   publishedPosts,
+  toPostChip,
   toPostMedia,
 } from "@/services/posts";
 
@@ -45,8 +46,21 @@ export interface AnalyticsOverview {
   /** Toolbar options: `all` plus every profile. */
   profiles: readonly ProfileOption[];
   impressions: AnalyticsChart;
+  /** Impressions grouped by the post label configured on the workspace. */
+  byLabel: AnalyticsChart;
   byProfile: readonly ProfileMetric[];
   topPosts: readonly TopPost[];
+}
+
+export interface AnalyticsSnapshot {
+  range: TimeRange;
+  profileId: string;
+  overview: Omit<AnalyticsOverview, "profiles">;
+}
+
+export interface AnalyticsPageData {
+  profiles: readonly ProfileOption[];
+  snapshots: readonly AnalyticsSnapshot[];
 }
 
 const IMPRESSION_SERIES: readonly ChartSeries[] = [
@@ -59,6 +73,7 @@ const ENGAGEMENT_SERIES: readonly ChartSeries[] = [
 
 /** How many recent posts the per-post cuts show. */
 const RECENT_POSTS = 8;
+const PAGE_RANGES = ["7d", "1m", "3m"] as const satisfies readonly TimeRange[];
 
 const EMPTY_TOTALS: AnalyticsTotals = {
   totalImpressions: 0,
@@ -148,11 +163,17 @@ export function getAnalyticsOverview(
   const previousTotals = totals(previous);
 
   const impressionsByProfile = new Map<string, number>();
+  const impressionsByLabel = new Map<string, number>();
   for (const post of current) {
+    const impressions = post.analytics?.impressions ?? 0;
     impressionsByProfile.set(
       post.clientId,
-      (impressionsByProfile.get(post.clientId) ?? 0) +
-        (post.analytics?.impressions ?? 0),
+      (impressionsByProfile.get(post.clientId) ?? 0) + impressions,
+    );
+    const label = post.postLabel ?? "Unlabelled";
+    impressionsByLabel.set(
+      label,
+      (impressionsByLabel.get(label) ?? 0) + impressions,
     );
   }
 
@@ -164,11 +185,15 @@ export function getAnalyticsOverview(
     .slice(0, 3)
     .map((post) => {
       const [thumbnail] = toPostMedia(post, assets);
+      const client = clients.get(post.clientId);
       return {
         id: post.id,
         title: post.content.split("\n", 1)[0] ?? post.content,
-        meta: `${clients.get(post.clientId)?.name ?? "Unknown profile"} · ${formatDayMonth(publishedAt(post))}`,
+        meta: `${client?.name ?? "Unknown profile"} · ${formatDayMonth(publishedAt(post))}`,
         ...(thumbnail === undefined ? {} : { thumbnail }),
+        ...(client === undefined
+          ? {}
+          : { post: toPostChip(post, client, assets) }),
         metrics: [
           {
             label: "Impressions",
@@ -230,6 +255,12 @@ export function getAnalyticsOverview(
         })),
       series: IMPRESSION_SERIES,
     },
+    byLabel: {
+      data: [...impressionsByLabel.entries()]
+        .toSorted(([, a], [, b]) => b - a)
+        .map(([label, impressions]) => ({ label, impressions })),
+      series: IMPRESSION_SERIES,
+    },
     byProfile: [...impressionsByProfile.entries()]
       .toSorted(([, a], [, b]) => b - a)
       .map(([clientId, impressions]) => {
@@ -248,6 +279,40 @@ export function getAnalyticsOverview(
       }),
     topPosts,
   };
+}
+
+function withoutProfiles(
+  overview: AnalyticsOverview,
+): Omit<AnalyticsOverview, "profiles"> {
+  return {
+    stats: overview.stats,
+    impressions: overview.impressions,
+    byLabel: overview.byLabel,
+    byProfile: overview.byProfile,
+    topPosts: overview.topPosts,
+  };
+}
+
+/**
+ * Every small filter result the client page can switch between. This is a
+ * static mock, so precomputing the matrix is simpler than inventing an API
+ * route that the real app would immediately replace.
+ */
+export function getAnalyticsPageData(): AnalyticsPageData {
+  const profiles = getAnalyticsOverview("1m").profiles;
+  const snapshots: AnalyticsSnapshot[] = [];
+
+  for (const range of PAGE_RANGES) {
+    for (const profile of profiles) {
+      snapshots.push({
+        range,
+        profileId: profile.id,
+        overview: withoutProfiles(getAnalyticsOverview(range, profile.id)),
+      });
+    }
+  }
+
+  return { profiles, snapshots };
 }
 
 export interface LandingRail {

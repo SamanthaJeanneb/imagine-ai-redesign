@@ -10,7 +10,7 @@ export function PagePlaceholder({
   note: string;
 }) {
   return (
-    <div className="flex flex-1 flex-col gap-s px-xl pb-xxl">
+    <div className="flex flex-1 flex-col gap-s">
       <h1 className="type-title">{title}</h1>
       <p className="type-body text-imagine-foreground-muted">{note}</p>
     </div>

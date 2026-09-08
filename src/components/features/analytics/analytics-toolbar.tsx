@@ -7,6 +7,7 @@ import { Icon } from "@/components/ui/icon";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -31,7 +32,12 @@ interface AnalyticsToolbarProps {
 }
 
 /** The three the toolbar offers, out of the app's full `TimeRange`. */
-const RANGES: readonly TimeRange[] = ["7d", "1m", "3m"];
+const RANGES = ["7d", "1m", "3m"] as const satisfies readonly TimeRange[];
+const RANGE_LABEL: Record<(typeof RANGES)[number], string> = {
+  "7d": "7d",
+  "1m": "30d",
+  "3m": "90d",
+};
 
 /** Range, profile filter, and export. */
 export function AnalyticsToolbar({
@@ -59,7 +65,7 @@ export function AnalyticsToolbar({
       >
         {RANGES.map((item) => (
           <ToggleGroupItem key={item} value={item}>
-            {item}
+            {RANGE_LABEL[item]}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
@@ -68,12 +74,13 @@ export function AnalyticsToolbar({
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All profiles</SelectItem>
-          {profiles.map((profile) => (
-            <SelectItem key={profile.id} value={profile.id}>
-              {profile.name}
-            </SelectItem>
-          ))}
+          <SelectGroup>
+            {profiles.map((profile) => (
+              <SelectItem key={profile.id} value={profile.id}>
+                {profile.name}
+              </SelectItem>
+            ))}
+          </SelectGroup>
         </SelectContent>
       </Select>
       {onExport ? (

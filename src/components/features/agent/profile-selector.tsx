@@ -34,6 +34,8 @@ interface ProfileSelectorProps {
   align?: "start" | "end";
   /** Faces and the chevron only, for a header that has something else to say. */
   compact?: boolean;
+  /** The "Posting as" lead-in. Off when the header is tight and the name is enough. */
+  prefix?: boolean;
   className?: string;
 }
 
@@ -49,6 +51,14 @@ const LABEL = {
   initial: { width: 0, marginLeft: 0, opacity: 0 },
   animate: { width: "auto", marginLeft: spacing.s, opacity: 1 },
   exit: { width: 0, marginLeft: 0, opacity: 0 },
+  transition: { ...spring.snappy, opacity: fade.fast },
+} as const;
+
+/** The lead-in folds on its own so the name can stay when the sentence shortens. */
+const PREFIX = {
+  initial: { width: 0, marginRight: 0, opacity: 0 },
+  animate: { width: "auto", marginRight: spacing.xs, opacity: 1 },
+  exit: { width: 0, marginRight: 0, opacity: 0 },
   transition: { ...spring.snappy, opacity: fade.fast },
 } as const;
 
@@ -128,6 +138,7 @@ export function ProfileSelector({
   onSelectedIdsChange,
   align = "start",
   compact = false,
+  prefix = true,
   className,
 }: ProfileSelectorProps) {
   const [open, setOpen] = useState(false);
@@ -272,11 +283,19 @@ export function ProfileSelector({
               <motion.span
                 key="label"
                 {...LABEL}
-                className="flex items-baseline gap-xs overflow-hidden whitespace-nowrap"
+                className="flex items-baseline overflow-hidden whitespace-nowrap"
               >
-                <span className="font-normal text-imagine-foreground-muted">
-                  Posting as
-                </span>
+                <AnimatePresence initial={false}>
+                  {prefix ? (
+                    <motion.span
+                      key="prefix"
+                      {...PREFIX}
+                      className="overflow-hidden font-normal text-imagine-foreground-muted"
+                    >
+                      Posting as
+                    </motion.span>
+                  ) : null}
+                </AnimatePresence>
                 <span className="font-medium">
                   {summary(profiles, selected)}
                 </span>

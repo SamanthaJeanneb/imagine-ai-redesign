@@ -133,10 +133,10 @@ export function AgentWorkspace({
   );
 
   return (
-    <div className="flex min-h-full flex-1 px-xxl">
+    <div className="flex min-h-full flex-1">
       <div
         className={cn(
-          "flex min-h-full min-w-0 flex-1 flex-col pt-m pb-xl",
+          "flex min-h-full min-w-0 flex-1 flex-col",
           // The gap to the rail. Centered has no rail.
           !centered && "pr-xxl",
         )}
@@ -230,7 +230,7 @@ export function AgentWorkspace({
             key="rail"
             exit={{ opacity: 0, x: 24 }}
             transition={fade.base}
-            className="self-stretch border-l border-imagine-foreground/12 pt-m pl-xxl"
+            className="self-stretch border-l border-imagine-foreground/12 pl-xxl"
           >
             <LandingRail
               stats={landing.stats}

@@ -2,6 +2,7 @@
 
 import { cn } from "cn";
 import { motion } from "motion/react";
+import { useState } from "react";
 
 import { AssetPicker } from "@/components/features/agent/asset-picker";
 import {
@@ -76,6 +77,66 @@ function assertNever(value: never): never {
   throw new Error(`Unhandled message part: ${JSON.stringify(value)}`);
 }
 
+type DraftPartData = Extract<MessagePart, { type: "post_draft" }>;
+
+/**
+ * A draft in the thread. Edit opens the body in place; Done keeps the
+ * change in this session. Schedule and another angle still go to the agent.
+ */
+function DraftPart({
+  part,
+  onIntent,
+}: {
+  part: DraftPartData;
+  onIntent?: (intent: string, postId?: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [body, setBody] = useState(part.body);
+
+  return (
+    <LinkedInPostDraft
+      author={part.author}
+      body={body}
+      media={part.media}
+      editing={editing}
+      onBodyChange={setBody}
+      footer={
+        <>
+          <Button
+            size="sm"
+            onClick={() => {
+              setEditing(false);
+              onIntent?.("schedule", part.postId);
+            }}
+          >
+            Schedule
+          </Button>
+          <Button
+            size="sm"
+            variant="soft"
+            aria-pressed={editing}
+            onClick={() => {
+              setEditing((current) => !current);
+            }}
+          >
+            {editing ? "Done" : "Edit"}
+          </Button>
+          {editing ? null : (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onIntent?.("regenerate", part.postId)}
+            >
+              <Icon name="arrows-rotate" size="s" data-icon="inline-start" />
+              Try another angle
+            </Button>
+          )}
+        </>
+      }
+    />
+  );
+}
+
 function Part({
   part,
   onIntent,
@@ -106,38 +167,7 @@ function Part({
         />
       );
     case "post_draft":
-      return (
-        <LinkedInPostDraft
-          author={part.author}
-          body={part.body}
-          media={part.media}
-          footer={
-            <>
-              <Button
-                size="sm"
-                onClick={() => onIntent?.("schedule", part.postId)}
-              >
-                Schedule
-              </Button>
-              <Button
-                size="sm"
-                variant="soft"
-                onClick={() => onIntent?.("edit", part.postId)}
-              >
-                Edit
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => onIntent?.("regenerate", part.postId)}
-              >
-                <Icon name="arrows-rotate" size="s" data-icon="inline-start" />
-                Try another angle
-              </Button>
-            </>
-          }
-        />
-      );
+      return <DraftPart part={part} onIntent={onIntent} />;
     case "scheduled":
       return (
         <ScheduledGraphic

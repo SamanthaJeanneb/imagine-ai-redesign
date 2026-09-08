@@ -16,17 +16,19 @@ import { fade } from "@/styles/motion";
 interface ChatControlsProps {
   panel: ChatPanelMode | null;
   onPanelChange: (panel: ChatPanelMode | null) => void;
+  /** The files toggle. Off in the docked column, which only needs history. */
+  showFiles?: boolean;
   className?: string;
 }
 
 /**
- * The right end of the page header once a conversation is open: the way into
- * past chats and the toggle for the right panel. Takes the place of the
- * account controls, which the thread has no use for.
+ * History and the files panel toggle. On an open agent thread these take the
+ * place of the account controls; in the docked column only history is shown.
  */
 export function ChatControls({
   panel,
   onPanelChange,
+  showFiles = true,
   className,
 }: ChatControlsProps) {
   const historyOpen = panel === "history";
@@ -55,33 +57,36 @@ export function ChatControls({
         </TooltipTrigger>
         <TooltipContent side="bottom">History</TooltipContent>
       </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            aria-label={filesOpen ? "Hide files" : "Show files"}
-            aria-pressed={filesOpen}
-            onClick={() => {
-              onPanelChange(filesOpen ? null : "files");
-            }}
-            className={cn(
-              "text-imagine-foreground-muted hover:text-imagine-foreground",
-              filesOpen && "bg-imagine-surface-raised text-imagine-foreground",
-            )}
-          >
-            {/* The kit has no right-hand sidebar glyph; mirror the left one.
-                On a wrapper, not the icon: the kit rewrites the icon's own
-                classes when it swaps in the SVG. */}
-            <span className="flex -scale-x-100">
-              <Icon name="sidebar" />
-            </span>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">
-          {filesOpen ? "Hide files" : "Files"}
-        </TooltipContent>
-      </Tooltip>
+      {showFiles ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              aria-label={filesOpen ? "Hide files" : "Show files"}
+              aria-pressed={filesOpen}
+              onClick={() => {
+                onPanelChange(filesOpen ? null : "files");
+              }}
+              className={cn(
+                "text-imagine-foreground-muted hover:text-imagine-foreground",
+                filesOpen &&
+                  "bg-imagine-surface-raised text-imagine-foreground",
+              )}
+            >
+              {/* The kit has no right-hand sidebar glyph; mirror the left one.
+                  On a wrapper, not the icon: the kit rewrites the icon's own
+                  classes when it swaps in the SVG. */}
+              <span className="flex -scale-x-100">
+                <Icon name="sidebar" />
+              </span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            {filesOpen ? "Hide files" : "Files"}
+          </TooltipContent>
+        </Tooltip>
+      ) : null}
     </div>
   );
 }

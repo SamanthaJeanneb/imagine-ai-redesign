@@ -103,7 +103,7 @@ export function CalendarPage({ postsByDay, today }: CalendarPageProps) {
   );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-xl px-xxl pb-xxl">
+    <div className="flex min-h-0 flex-1 flex-col gap-xl">
       <CalendarToolbar
         rangeLabel={range.rangeLabel}
         view={view}

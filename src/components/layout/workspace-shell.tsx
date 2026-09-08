@@ -100,6 +100,117 @@ const HEADER_SWAP = {
   transition: fade.fast,
 } as const;
 
+interface WorkspaceHeaderProps {
+  collapsed: boolean;
+  onExpand: () => void;
+  profiles: readonly ProfileSummary[];
+  selectedProfileIds: readonly string[];
+  onSelectedIdsChange: (ids: readonly string[]) => void;
+  compact: boolean;
+  prefix: boolean;
+  chatTitle?: string;
+  chatOpen: boolean;
+  panel: ChatPanelMode | null;
+  onPanelChange: (panel: ChatPanelMode | null) => void;
+  user: AccountUser;
+  onOpenAccount: () => void;
+  onOpenSettings: () => void;
+}
+
+/**
+ * The page header row. On the left, the way out of the collapsed rail and
+ * then which profiles the agent is posting as. On the right, the account.
+ * With a conversation open the profiles shrink to their faces, its name
+ * follows them, and its controls take the right. When the chat is docked
+ * this row stays over the page so the column can take the full right side.
+ * The space below the divider is `WorkspacePage`, not this row.
+ */
+function WorkspaceHeader({
+  collapsed,
+  onExpand,
+  profiles,
+  selectedProfileIds,
+  onSelectedIdsChange,
+  compact,
+  prefix,
+  chatTitle,
+  chatOpen,
+  panel,
+  onPanelChange,
+  user,
+  onOpenAccount,
+  onOpenSettings,
+}: WorkspaceHeaderProps) {
+  return (
+    <div className="relative mt-m mb-m flex h-8 shrink-0 items-center gap-s px-xxl after:absolute after:inset-x-0 after:-bottom-m after:border-b after:border-imagine-border">
+      <AnimatePresence initial={false}>
+        {collapsed ? (
+          <SidebarExpandButton
+            key="expand"
+            onExpand={onExpand}
+            // Optically aligns the chevron with the page's text column.
+            className="-ml-2.5"
+          />
+        ) : null}
+      </AnimatePresence>
+      {profiles.length > 0 ? (
+        <ProfileSelector
+          profiles={profiles}
+          selectedIds={selectedProfileIds}
+          onSelectedIdsChange={onSelectedIdsChange}
+          compact={compact}
+          {...(prefix ? {} : { prefix: false })}
+          // First in the row, the faces sit on the page's text column;
+          // after the expand chevron they take the row's gap instead.
+          className={cn(!collapsed && "-ml-1.5")}
+        />
+      ) : null}
+      <AnimatePresence initial={false}>
+        {!chatOpen || chatTitle === undefined ? null : (
+          <ChatTitle key="title" title={chatTitle} />
+        )}
+      </AnimatePresence>
+      {/* Both clusters end on the same glyph edge: the gear's or the
+          panel toggle's, pulled in by the icon button's own padding. */}
+      <AnimatePresence initial={false} mode="wait">
+        {chatOpen ? (
+          <motion.div
+            key="chat"
+            {...HEADER_SWAP}
+            className="-mr-s ml-auto flex"
+          >
+            <ChatControls panel={panel} onPanelChange={onPanelChange} />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="account"
+            {...HEADER_SWAP}
+            className="-mr-s ml-auto flex"
+          >
+            <AccountControls
+              user={user}
+              onOpenAccount={onOpenAccount}
+              onOpenSettings={onOpenSettings}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/**
+ * The inset every workspace page starts in, after the header divider. Pages
+ * do not set their own top or side padding; this is the one frame.
+ */
+function WorkspacePage({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto px-xxl pt-xxl pb-xxl">
+      {children}
+    </div>
+  );
+}
+
 /**
  * The signed-in shell: rail on the background, page on a surface that rounds
  * into it. Everything lives in one `LayoutGroup` so shared `layoutId`s survive
@@ -144,16 +255,74 @@ function WorkspaceFrame({
   const activeKey = navKeyFor(pathname);
   const activeThreadId = threadIdFor(pathname);
   const chatColumn = chatColumnFor(pathname);
+  const docked = chatColumn !== undefined;
   const [panel, setPanel] = useState<ChatPanelMode | null>(null);
 
   // On the agent page with a conversation open, the header belongs to the
-  // thread: its name in the middle, its controls on the right.
+  // thread: its name in the middle, its controls on the right. Beside the
+  // calendar and analytics the chat takes the right side instead, so the
+  // page header keeps the account and drops "Posting as".
   const chatOpen = activeKey === "agent" && chat.threadId !== null;
-  const chatTitle = chatOpen
-    ? (threads.find((thread) => thread.id === chat.threadId)?.title ??
-      titleFrom(chat.messages) ??
-      "New chat")
-    : undefined;
+  const chatTitle =
+    chat.threadId !== null
+      ? (threads.find((thread) => thread.id === chat.threadId)?.title ??
+        titleFrom(chat.messages) ??
+        "New chat")
+      : docked
+        ? "New chat"
+        : undefined;
+  const header = (
+    <WorkspaceHeader
+      collapsed={collapsed}
+      onExpand={() => {
+        setCollapsed(false);
+      }}
+      profiles={profiles}
+      selectedProfileIds={selectedProfileIds}
+      onSelectedIdsChange={setSelectedProfileIds}
+      compact={chatOpen}
+      prefix={!docked}
+      {...(chatTitle === undefined ? {} : { chatTitle })}
+      chatOpen={chatOpen}
+      panel={panel}
+      onPanelChange={setPanel}
+      user={user}
+      onOpenAccount={() => {
+        router.push("/settings");
+      }}
+      onOpenSettings={() => {
+        router.push("/settings");
+      }}
+    />
+  );
+  const page = <WorkspacePage>{children}</WorkspacePage>;
+  const column =
+    chatColumn === undefined ? null : (
+      <ChatColumn
+        key="chat"
+        page={chatColumn}
+        title={chatTitle ?? "New chat"}
+        panel={panel}
+        onPanelChange={setPanel}
+      />
+    );
+  const contextPanel =
+    panel === null || chatTitle === undefined || !(chatOpen || docked) ? null : (
+      <ChatContextPanel
+        key="context-panel"
+        mode={panel}
+        threads={threads}
+        fileSections={fileSections}
+        currentThreadId={chat.threadId}
+        currentTitle={chatTitle}
+        onSelectThread={(id) => {
+          router.push(`/agent/${id}`);
+        }}
+        onClose={() => {
+          setPanel(null);
+        }}
+      />
+    );
 
   return (
     <LayoutGroup>
@@ -183,98 +352,27 @@ function WorkspaceFrame({
           }}
         />
         <div className="flex min-w-0 flex-1 flex-col rounded-l-surface bg-imagine-surface shadow-raised">
-          {/* Page header row. On the left, the way out of the collapsed rail
-              and then which profiles the agent is posting as. On the right,
-              the account. With a conversation open the profiles shrink to
-              their faces, its name follows them, and its controls take the
-              right. Sets the top inset every page starts below. */}
-          <div className="relative mt-m mb-m flex h-8 shrink-0 items-center gap-s px-xxl after:absolute after:inset-x-0 after:-bottom-m after:border-b after:border-imagine-border">
-            <AnimatePresence initial={false}>
-              {collapsed ? (
-                <SidebarExpandButton
-                  key="expand"
-                  onExpand={() => {
-                    setCollapsed(false);
-                  }}
-                  // Optically aligns the chevron with the page's text column.
-                  className="-ml-2.5"
-                />
-              ) : null}
-            </AnimatePresence>
-            {profiles.length > 0 ? (
-              <ProfileSelector
-                profiles={profiles}
-                selectedIds={selectedProfileIds}
-                onSelectedIdsChange={setSelectedProfileIds}
-                compact={chatOpen}
-                // First in the row, the faces sit on the page's text column;
-                // after the expand chevron they take the row's gap instead.
-                className={cn(!collapsed && "-ml-1.5")}
-              />
-            ) : null}
-            <AnimatePresence initial={false}>
-              {chatTitle === undefined ? null : (
-                <ChatTitle key="title" title={chatTitle} />
-              )}
-            </AnimatePresence>
-            {/* Both clusters end on the same glyph edge: the gear's or the
-                panel toggle's, pulled in by the icon button's own padding. */}
-            <AnimatePresence initial={false} mode="wait">
-              {chatOpen ? (
-                <motion.div
-                  key="chat"
-                  {...HEADER_SWAP}
-                  className="-mr-s ml-auto flex"
-                >
-                  <ChatControls panel={panel} onPanelChange={setPanel} />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="account"
-                  {...HEADER_SWAP}
-                  className="-mr-s ml-auto flex"
-                >
-                  <AccountControls
-                    user={user}
-                    onOpenAccount={() => {
-                      router.push("/settings");
-                    }}
-                    onOpenSettings={() => {
-                      router.push("/settings");
-                    }}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-          <div className="flex min-h-0 flex-1">
-            <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
-              {children}
+          {docked ? (
+            <div className="flex min-h-0 flex-1">
+              <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+                {header}
+                {page}
+              </div>
+              <AnimatePresence initial={false}>{column}</AnimatePresence>
+              <AnimatePresence initial={false}>{contextPanel}</AnimatePresence>
             </div>
-            <AnimatePresence initial={false}>
-              {chatColumn === undefined ? null : (
-                <ChatColumn key="chat" page={chatColumn} />
-              )}
-            </AnimatePresence>
-            <AnimatePresence initial={false}>
-              {!chatOpen || panel === null || chatTitle === undefined ? null : (
-                <ChatContextPanel
-                  key="context-panel"
-                  mode={panel}
-                  threads={threads}
-                  fileSections={fileSections}
-                  currentThreadId={chat.threadId}
-                  currentTitle={chatTitle}
-                  onSelectThread={(id) => {
-                    router.push(`/agent/${id}`);
-                  }}
-                  onClose={() => {
-                    setPanel(null);
-                  }}
-                />
-              )}
-            </AnimatePresence>
-          </div>
+          ) : (
+            <>
+              {header}
+              <div className="flex min-h-0 flex-1">
+                {page}
+                <AnimatePresence initial={false}>{column}</AnimatePresence>
+                <AnimatePresence initial={false}>
+                  {contextPanel}
+                </AnimatePresence>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </LayoutGroup>

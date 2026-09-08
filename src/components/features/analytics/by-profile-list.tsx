@@ -23,6 +23,7 @@ interface ByProfileListProps {
   title?: string;
   items: readonly ProfileMetric[];
   onOpen?: (item: ProfileMetric) => void;
+  selectedId?: string;
   className?: string;
 }
 
@@ -42,6 +43,7 @@ export function ByProfileList({
   title = "By profile",
   items,
   onOpen,
+  selectedId,
   className,
 }: ByProfileListProps) {
   const reduceMotion = useReducedMotion();
@@ -68,7 +70,11 @@ export function ByProfileList({
                 disabled={!onOpen}
                 whileTap={onOpen ? pressRow.whileTap : undefined}
                 transition={pressRow.transition}
-                className="flex w-full items-center gap-m rounded-control text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-default"
+                className={cn(
+                  "flex w-full items-center gap-m rounded-control px-xs py-xxs text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-default",
+                  onOpen && "hover:bg-imagine-surface-raised",
+                  item.id === selectedId && "bg-imagine-surface-raised",
+                )}
               >
                 <Avatar
                   size="sm"

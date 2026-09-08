@@ -50,7 +50,7 @@ export function LandingIntro({
   dateLabel: string;
 }) {
   return (
-    <div className="flex flex-col gap-xs pt-xl pb-xl">
+    <div className="flex flex-col gap-xs pb-xl">
       <h1 className="type-title">{greeting}</h1>
       <p className="type-small text-imagine-foreground-muted">{dateLabel}</p>
     </div>

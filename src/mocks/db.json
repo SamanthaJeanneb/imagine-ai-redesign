@@ -182,7 +182,7 @@
       {
         "id": "pst_01",
         "client_id": "cli_sarah",
-        "content": "We shipped the wrong roadmap for two quarters.\n\nEvery item was something a customer had asked for. None of it was something a customer would have paid more for. I could not tell the difference until I put price next to each request.\n\nThe list looks very different when you do that.",
+        "content": "The roadmap review that changed what we ship.\n\nWe used to treat every customer request as a yes. Then I put a price next to each one.\n\nHalf the list disappeared. The half that stayed is what we shipped this quarter, and two of those items are now in the top ten for expansion.",
         "status": "published",
         "scheduled_at": "2026-06-11T09:00:00.000Z",
         "linkedin_post_id": "li_pst_01",
@@ -478,7 +478,7 @@
       {
         "id": "pst_12",
         "client_id": "cli_sarah",
-        "content": "Our best week of product decisions came from reading twelve support tickets out loud in a room.\n\nNo dashboard. No survey. Twelve tickets, read out, in order.",
+        "content": "Our best week of product decisions came from reading twelve support tickets out loud in a room.\n\nNo dashboard. No survey. Twelve tickets, read out, in order.\n\nThree of them became the launch we shipped in August, and that launch is now the one customers mention first.",
         "status": "published",
         "scheduled_at": "2026-08-13T09:00:00.000Z",
         "linkedin_post_id": "li_pst_12",
@@ -591,23 +591,23 @@
       {
         "id": "pst_16",
         "client_id": "cli_sarah",
-        "content": "We hired a designer before we hired a second engineer.\n\nEverything got slower for six weeks and then much faster. I would do it again in the same order.",
+        "content": "We hired a designer before we hired a second engineer.\n\nEverything got slower for six weeks and then much faster. Cycle time is down, the reviews are shorter, and I would hire in that order again.",
         "status": "published",
         "scheduled_at": "2026-08-27T09:00:00.000Z",
         "linkedin_post_id": "li_pst_16",
         "media": null,
         "analytics": {
-          "impressions": 5140,
-          "engagements": 356,
+          "impressions": 7200,
+          "engagements": 499,
           "engagement_rate": 0.0693,
           "clicks": 62,
           "clickthrough_rate": 0.0121,
-          "profile_viewers_from_this_post": 86,
-          "followers_gained_from_this_post": 15,
-          "members_reached": 4009,
-          "reactions": 246,
-          "comments": 33,
-          "reposts": 15
+          "profile_viewers_from_this_post": 118,
+          "followers_gained_from_this_post": 19,
+          "members_reached": 5616,
+          "reactions": 348,
+          "comments": 41,
+          "reposts": 19
         },
         "notes": null,
         "post_label": "Hiring",
@@ -700,23 +700,23 @@
       {
         "id": "pst_20",
         "client_id": "cli_sarah",
-        "content": "The question I ask in every roadmap review now: what did we take off the list to make room for this?\n\nIf the answer is nothing, the list is a wish.",
+        "content": "The question that shortened our roadmap review to twenty minutes.\n\nWhat did we take off the list to make room for this?\n\nIf the answer is nothing, we do not add it. We have said no to eleven items since we started. The four we kept are the ones customers now mention on calls.",
         "status": "published",
         "scheduled_at": "2026-09-04T09:00:00.000Z",
         "linkedin_post_id": "li_pst_20",
         "media": null,
         "analytics": {
-          "impressions": 5460,
-          "engagements": 372,
-          "engagement_rate": 0.0681,
-          "clicks": 66,
+          "impressions": 8920,
+          "engagements": 722,
+          "engagement_rate": 0.081,
+          "clicks": 108,
           "clickthrough_rate": 0.0121,
-          "profile_viewers_from_this_post": 91,
-          "followers_gained_from_this_post": 16,
-          "members_reached": 4259,
-          "reactions": 259,
-          "comments": 31,
-          "reposts": 16
+          "profile_viewers_from_this_post": 148,
+          "followers_gained_from_this_post": 24,
+          "members_reached": 7100,
+          "reactions": 412,
+          "comments": 47,
+          "reposts": 22
         },
         "notes": null,
         "post_label": "Thought leadership",
@@ -740,16 +740,16 @@
       {
         "id": "pst_22",
         "client_id": "cli_sarah",
-        "content": "Six months of running product reviews without a deck.\n\nWe open the app instead. The meeting is half as long and twice as specific.",
+        "content": "Six months of running product reviews without a deck.\n\nThey used to run an hour. We open the app instead. Twenty minutes, and we leave with one decision instead of a parking lot.\n\nThat is the whole change.",
         "status": "scheduled",
         "scheduled_at": "2026-09-08T09:00:00.000Z",
         "linkedin_post_id": null,
         "media": null,
         "analytics": null,
-        "notes": "Follows the roadmap post from Friday.",
+        "notes": "Follows the roadmap post from Friday. Tightened after the edit in chat.",
         "post_label": "Thought leadership",
         "created_at": "2026-09-05T15:00:00.000Z",
-        "updated_at": "2026-09-06T09:00:00.000Z"
+        "updated_at": "2026-09-06T16:22:00.000Z"
       },
       {
         "id": "pst_23",
@@ -801,7 +801,7 @@
       {
         "id": "pst_26",
         "client_id": "cli_sarah",
-        "content": "What I look for in a first product hire, in order: taste, then judgement, then range. Speed is last and it still surprises people.",
+        "content": "We are hiring the first product person to sit with me.\n\nWhat I want, in order: taste, then judgement, then range. Speed is last, and it still surprises people.\n\nIf you have shipped something you are proud of and then killed half of it, I want to talk.",
         "status": "scheduled",
         "scheduled_at": "2026-09-17T09:00:00.000Z",
         "linkedin_post_id": null,
@@ -871,7 +871,7 @@
       {
         "id": "pst_31",
         "client_id": "cli_sarah",
-        "content": "Draft: the customer call where I realised we had built the reporting for the wrong person.",
+        "content": "The customer call that told us who reporting is actually for.\n\nShe did not want another dashboard. She wanted to know, by Friday, which accounts had gone quiet.\n\nWe built that view in two days. It is now the one her team opens every Monday.",
         "status": "idea",
         "scheduled_at": null,
         "linkedin_post_id": null,
@@ -897,9 +897,23 @@
         "updated_at": "2026-09-06T14:00:00.000Z"
       },
       {
+        "id": "pst_34",
+        "client_id": "cli_sarah",
+        "content": "Six months of running product reviews without a deck.\n\nWe open the app instead. The meeting is half as long, and we leave with one decision instead of a parking lot.\n\nI would not go back.",
+        "status": "idea",
+        "scheduled_at": null,
+        "linkedin_post_id": null,
+        "media": null,
+        "analytics": null,
+        "notes": "First draft. Replaced by pst_22 after the edit in chat.",
+        "post_label": "Thought leadership",
+        "created_at": "2026-09-06T15:41:00.000Z",
+        "updated_at": "2026-09-06T15:41:00.000Z"
+      },
+      {
         "id": "pst_33",
         "client_id": "cli_marcus",
-        "content": "Draft: the channel we keep trying and keep abandoning.",
+        "content": "The webinar we ran twice.\n\nSame deck, same offer. The second time a customer told the story instead of us.\n\nIt booked 3x the meetings. We are not going back to the demo-first version.",
         "status": "idea",
         "scheduled_at": null,
         "linkedin_post_id": null,
@@ -1177,7 +1191,7 @@
         "metadata": {
           "post_id": "pst_20",
           "client_id": "cli_sarah",
-          "title": "The question I ask in every roadmap review"
+          "title": "The question that shortened our roadmap review"
         },
         "created_at": "2026-09-04T09:01:00.000Z"
       },
@@ -1217,7 +1231,7 @@
           "post_id": "pst_31",
           "client_id": "cli_sarah",
           "title": "Draft ready for Thursday",
-          "excerpt": "The customer call where I realised we had built the reporting for the wrong person."
+          "excerpt": "The customer call that told us who reporting is actually for."
         },
         "created_at": "2026-09-06T16:20:00.000Z"
       }
@@ -1234,11 +1248,17 @@
         "parts": [
           {
             "type": "text",
-            "text": "Sarah has one open weekday before the end of next week, and her two posts that ran furthest this quarter were both stories about a specific week rather than advice."
+            "text": "Sarah's last five posts climbed every week. Friday is the peak, and the two that ran furthest were both stories about a specific week rather than advice."
+          },
+          {
+            "type": "chart",
+            "clientId": "cli_sarah",
+            "limit": 5,
+            "title": "Sarah, last five posts"
           },
           {
             "type": "emphasis",
-            "text": "So: a story, and hers is already half written."
+            "text": "So: another story. Hers is already half written."
           },
           {
             "type": "text",
@@ -1272,7 +1292,7 @@
       {
         "id": "thr_01",
         "resourceId": "org_acme",
-        "title": "Next week's posts for Sarah",
+        "title": "Sarah's next post from her best week",
         "metadata": {
           "unread": true
         },
@@ -1282,7 +1302,7 @@
       {
         "id": "thr_02",
         "resourceId": "org_acme",
-        "title": "Why did Friday's post underperform",
+        "title": "What made Friday's post take off",
         "metadata": {
           "unread": false
         },
@@ -1292,7 +1312,7 @@
       {
         "id": "thr_03",
         "resourceId": "org_acme",
-        "title": "Company page vs Sarah, last 30 days",
+        "title": "Sarah and the page both grew",
         "metadata": {
           "unread": false
         },
@@ -1312,7 +1332,7 @@
       {
         "id": "thr_05",
         "resourceId": "org_acme",
-        "title": "Rewrite Marcus's failed post",
+        "title": "Marcus's webinar follow-up",
         "metadata": {
           "unread": false
         },
@@ -1322,7 +1342,7 @@
       {
         "id": "thr_06",
         "resourceId": "org_acme",
-        "title": "Hiring posts for Q4",
+        "title": "Sarah's first product hire",
         "metadata": {
           "unread": false
         },
@@ -1340,7 +1360,7 @@
           "parts": [
             {
               "type": "text",
-              "text": "What should Sarah post next week? She has one slot on Tuesday."
+              "text": "Sarah's last few posts have been landing. Draft next Tuesday from whatever ran furthest."
             }
           ]
         },
@@ -1355,15 +1375,55 @@
           "parts": [
             {
               "type": "text",
-              "text": "Her last four posts were all about roadmap decisions. The one that ran furthest was the support-ticket post, which was a story about a specific week."
+              "text": "Her last five posts climbed every week. Friday's roadmap post is the peak at 8.9k impressions and 24 new followers. The support-ticket story is still the one people reply to."
+            },
+            {
+              "type": "chart",
+              "clientId": "cli_sarah",
+              "limit": 5,
+              "title": "Sarah, last five posts"
             },
             {
               "type": "emphasis",
-              "text": "So: another story, not another lesson."
+              "text": "Same shape: a specific week, not a lesson."
             },
             {
               "type": "text",
-              "text": "I drafted one from the product review she mentioned on Tuesday."
+              "text": "I wrote Tuesday from the product reviews she has been running without a deck."
+            },
+            {
+              "type": "post_draft",
+              "postId": "pst_34"
+            }
+          ]
+        },
+        "createdAt": "2026-09-06T15:41:00.000Z"
+      },
+      {
+        "id": "msg_13",
+        "thread_id": "thr_01",
+        "role": "user",
+        "type": "text",
+        "content": {
+          "parts": [
+            {
+              "type": "text",
+              "text": "Tighten the last line. And say the reviews used to run an hour."
+            }
+          ]
+        },
+        "createdAt": "2026-09-06T15:48:00.000Z"
+      },
+      {
+        "id": "msg_14",
+        "thread_id": "thr_01",
+        "role": "assistant",
+        "type": "text",
+        "content": {
+          "parts": [
+            {
+              "type": "text",
+              "text": "The hour is in. The last line is now the change, not a feeling."
             },
             {
               "type": "post_draft",
@@ -1371,7 +1431,41 @@
             }
           ]
         },
-        "createdAt": "2026-09-06T15:41:00.000Z"
+        "createdAt": "2026-09-06T15:49:00.000Z"
+      },
+      {
+        "id": "msg_15",
+        "thread_id": "thr_01",
+        "role": "user",
+        "type": "text",
+        "content": {
+          "parts": [
+            {
+              "type": "text",
+              "text": "Schedule it."
+            }
+          ]
+        },
+        "createdAt": "2026-09-06T16:20:00.000Z"
+      },
+      {
+        "id": "msg_16",
+        "thread_id": "thr_01",
+        "role": "assistant",
+        "type": "text",
+        "content": {
+          "parts": [
+            {
+              "type": "text",
+              "text": "Tuesday at 9:00 is her usual time and the rest of the week is clear, so it goes out first."
+            },
+            {
+              "type": "scheduled",
+              "postId": "pst_22"
+            }
+          ]
+        },
+        "createdAt": "2026-09-06T16:22:00.000Z"
       },
       {
         "id": "msg_03",
@@ -1382,7 +1476,7 @@
           "parts": [
             {
               "type": "text",
-              "text": "Why did Friday's post underperform?"
+              "text": "Friday's post felt different. What actually worked?"
             }
           ]
         },
@@ -1397,7 +1491,7 @@
           "parts": [
             {
               "type": "text",
-              "text": "It did not, relative to her median. It is 12% above. It looks flat because the post before it was her best of the quarter."
+              "text": "It is her best of the quarter: 8.9k impressions, 47 comments, 24 new followers. The climb was already there, so this was a continuation, not a spike from nowhere. Almost every comment is about the question she asked, not the product."
             },
             {
               "type": "chart",
@@ -1418,7 +1512,7 @@
           "parts": [
             {
               "type": "text",
-              "text": "Company page vs Sarah over the last 30 days. Which one is worth more of my time?"
+              "text": "Company page vs Sarah over the last 30 days. Who should I write more for?"
             }
           ]
         },
@@ -1433,7 +1527,7 @@
           "parts": [
             {
               "type": "text",
-              "text": "Sarah reaches more people per post, but the page is the only one gaining followers from posts rather than from the profile visits she drives."
+              "text": "Both grew. Sarah reaches more people per post. The page is the one gaining followers from the posts themselves, especially the changelog and skills launches."
             },
             {
               "type": "chart",
@@ -1479,7 +1573,7 @@
           "parts": [
             {
               "type": "text",
-              "text": "The page had the oldest last post, so it takes the slot. Friday at 9:00, on the feature you shipped this week."
+              "text": "The page had the oldest last post, so it takes the slot. Friday at 9:00, on the attach-to-chat feature you shipped this week. That is the same shape as the skills post, which is still the page's furthest reach."
             },
             {
               "type": "scheduled",
@@ -1498,7 +1592,7 @@
           "parts": [
             {
               "type": "text",
-              "text": "Marcus's Saturday post failed. Rewrite it and hold it until his account is back."
+              "text": "Marcus's webinar post is scheduled for Tuesday. Draft a follow-up he can send after it goes out."
             }
           ]
         },
@@ -1513,7 +1607,7 @@
           "parts": [
             {
               "type": "text",
-              "text": "The original opened on a metric. His posts do better when they open on the decision, so this one starts with what he stopped doing."
+              "text": "His posts that open on a result outperform the ones that open on a metric. This one starts with the 3x meetings from running the webinar twice."
             },
             {
               "type": "post_draft",
@@ -1521,7 +1615,7 @@
             },
             {
               "type": "text",
-              "text": "It stays a draft until his connection is renewed. I will not try to publish it again on its own."
+              "text": "I would send it two days after Tuesday's post, once the comments have come in."
             }
           ]
         },
@@ -1536,7 +1630,7 @@
           "parts": [
             {
               "type": "text",
-              "text": "We are hiring two people in Q4. Start a post from Sarah about the first product hire."
+              "text": "We are hiring two people in Q4. Start a post from Sarah about the first product hire. Make it something people would share."
             }
           ]
         },
@@ -1551,7 +1645,7 @@
           "parts": [
             {
               "type": "text",
-              "text": "Her hiring post from August is the one people replied to, so this follows its shape: what the role does in the first month, then what it does not."
+              "text": "Her hiring post from August is the one people replied to: 7.2k impressions and 19 followers. This follows its shape. What she wants first, then who should write."
             },
             {
               "type": "post_draft",
