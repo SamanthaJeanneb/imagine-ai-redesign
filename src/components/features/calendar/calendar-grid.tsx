@@ -102,6 +102,9 @@ export function CalendarGrid({
       >
         {days.map((day, index) => {
           const overflow = day.posts.length - chipLimit;
+          // Stagger diagonally by row + column rather than by index, so a
+          // six-week month sweeps in over ~0.2s instead of nearly a second.
+          const wave = Math.floor(index / 7) + (index % 7);
           return (
             <motion.div
               key={day.date}
@@ -109,7 +112,7 @@ export function CalendarGrid({
               aria-selected={day.isToday ? true : undefined}
               initial={reduceMotion ? false : { opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ ...fade.base, delay: index * stagger.grid }}
+              transition={{ ...fade.fast, delay: wave * stagger.grid }}
               onClick={
                 onSelectDay
                   ? () => {

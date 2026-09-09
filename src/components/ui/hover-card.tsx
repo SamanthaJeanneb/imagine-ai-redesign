@@ -17,8 +17,8 @@ function HoverCard({
   open,
   defaultOpen = false,
   onOpenChange,
-  openDelay = 250,
-  closeDelay = 120,
+  openDelay = 150,
+  closeDelay = 100,
   children,
   ...props
 }: React.ComponentProps<typeof HoverCardPrimitive.Root>) {

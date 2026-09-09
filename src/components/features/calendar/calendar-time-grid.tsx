@@ -69,7 +69,7 @@ export function CalendarTimeGrid({
       role="grid"
       initial={reduceMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={fade.base}
+      transition={fade.fast}
       className={cn(
         "grid overflow-hidden rounded-panel bg-imagine-border shadow-raised",
         // The hour gutter, then a column per day.
@@ -125,7 +125,7 @@ export function CalendarTimeGrid({
                     initial={reduceMotion ? false : { opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{
-                      ...fade.base,
+                      ...fade.fast,
                       delay: dayIndex * stagger.grid,
                     }}
                   >
