@@ -31,6 +31,7 @@ import {
 } from "@/components/features/agent/timeline";
 import { AnalyticsToolbar } from "@/components/features/analytics/analytics-toolbar";
 import { AnalyticsPage } from "@/components/features/analytics/analytics-page";
+import { AnalyticsPage2 } from "@/components/features/analytics/analytics-page-2";
 import { ByProfileList } from "@/components/features/analytics/by-profile-list";
 import {
   ChartBlock,
@@ -2320,6 +2321,15 @@ export function ComposedWorkspacePagesDemo() {
           <LayoutGroup id="kit-analytics-page">
             <div className="h-[900px] min-w-0 overflow-y-auto border border-imagine-border bg-imagine-surface p-l">
               <AnalyticsPage data={KIT_ANALYTICS_DATA} />
+            </div>
+          </LayoutGroup>
+        </KitChatScope>
+      </Demo>
+      <Demo label="Complete analytics page (/analytics-2)">
+        <KitChatScope>
+          <LayoutGroup id="kit-analytics-page-2">
+            <div className="h-[900px] min-w-0 overflow-y-auto border border-imagine-border bg-imagine-surface p-l">
+              <AnalyticsPage2 data={KIT_ANALYTICS_DATA} />
             </div>
           </LayoutGroup>
         </KitChatScope>

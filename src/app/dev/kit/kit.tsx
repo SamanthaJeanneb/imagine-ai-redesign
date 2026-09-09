@@ -367,7 +367,7 @@ export function Kit({ radiusScale = "default" }: KitProps) {
           <FilesPanelDemo />
         </Section>
 
-        <Section title="Complete Files workspace">
+        <Section title="Files workspace (/files-2)">
           <FilesWorkspacePageDemo />
         </Section>
 
@@ -375,7 +375,7 @@ export function Kit({ radiusScale = "default" }: KitProps) {
           <FilesPartsDemo />
         </Section>
 
-        <Section title="Files page (/files-2)">
+        <Section title="Files page (/files)">
           <FilesLibraryDemo />
         </Section>
 

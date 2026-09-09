@@ -350,7 +350,7 @@ function NameDialog({
 /* ------------------------------------------------------------------------ */
 
 /**
- * The Files workspace at `/files-2`. A full-height sidebar on the left holds
+ * The Files workspace at `/files`. A full-height sidebar on the left holds
  * the tree and the way to add things; the browser on the right shows one
  * location as folders, documents, and images, with a breadcrumb that always
  * says where you are and lets you switch libraries or folders in place.

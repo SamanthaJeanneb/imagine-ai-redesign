@@ -76,6 +76,8 @@ function navKeyFor(pathname: string): SidebarNavKey | undefined {
   if (pathname === "/landing-2") return "agent";
   // The alternate file manager is still Files.
   if (pathname === "/files-2") return "files";
+  // The engagement analytics page is still Analytics.
+  if (pathname === "/analytics-2") return "analytics";
   return NAV_KEYS.find(
     (key) => pathname === `/${key}` || pathname.startsWith(`/${key}/`),
   );
