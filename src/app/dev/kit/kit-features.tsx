@@ -65,13 +65,13 @@ import {
 import { FilesLibrary } from "@/components/features/files/files-library";
 import { FileTreeNav } from "@/components/features/files/file-tree-nav";
 import { LibraryCard } from "@/components/features/files/library-card";
-import { NewMenu } from "@/components/features/files/new-menu";
 import { FilesWorkspacePage } from "@/components/features/files/files-workspace-page";
 import {
   type FileSection,
   FileTree,
 } from "@/components/features/files/file-tree";
 import { MarkdownEditor } from "@/components/features/files/markdown-editor";
+import { NewMenu } from "@/components/features/files/new-menu";
 import {
   type Skill,
   SkillsList,
@@ -1249,9 +1249,8 @@ export function FilesPartsDemo() {
       <div className="grid gap-l lg:grid-cols-[15rem_1fr]">
         <div className="flex flex-col gap-m rounded-panel bg-imagine-surface-raised p-s">
           <NewMenu
-            location="Acme"
             onIntent={(intent) => {
-              toast(`New: ${intent}`);
+              toast(`New ${intent}`);
             }}
           />
           <FileTreeNav

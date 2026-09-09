@@ -21,10 +21,7 @@ import {
   type LibraryCardView,
 } from "@/components/features/files/library-card";
 import { MarkdownEditor } from "@/components/features/files/markdown-editor";
-import {
-  NewMenu,
-  type NewMenuIntent,
-} from "@/components/features/files/new-menu";
+import { NewMenu } from "@/components/features/files/new-menu";
 import type { DraggableResource } from "@/components/features/files/resource-drag";
 import {
   type Skill,
@@ -42,7 +39,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Chip, ChipGroup } from "@/components/ui/chip-group";
-import { DashedAction } from "@/components/ui/dashed-action";
 import {
   Dialog,
   DialogContent,
@@ -789,21 +785,6 @@ export function FilesLibrary({
     setDocuments((current) => current.filter((doc) => doc.id !== id));
   };
 
-  const onNewIntent = (intent: NewMenuIntent) => {
-    switch (intent) {
-      case "folder":
-        setDialog({ kind: "new-folder" });
-        break;
-      case "document":
-        createDocument();
-        break;
-      case "upload-files":
-      case "upload-folder":
-        toast("Uploads are not part of this prototype");
-        break;
-    }
-  };
-
   const onCardAction = (item: BrowserItem, action: string) => {
     switch (action) {
       case "open":
@@ -941,8 +922,11 @@ export function FilesLibrary({
 
         {tab === "files" ? (
           <NewMenu
-            onIntent={onNewIntent}
-            {...(canCreate ? { location: locationTitle } : {})}
+            disabled={!canCreate}
+            onIntent={(intent) => {
+              if (intent === "folder") setDialog({ kind: "new-folder" });
+              else createDocument();
+            }}
           />
         ) : (
           <Button
@@ -976,16 +960,6 @@ export function FilesLibrary({
                   onSelectLocation={goToLocation}
                   onOpenFile={open}
                 />
-                {canCreate ? (
-                  <DashedAction
-                    icon="plus"
-                    onClick={() => {
-                      setDialog({ kind: "new-folder" });
-                    }}
-                  >
-                    New folder
-                  </DashedAction>
-                ) : null}
               </motion.div>
             ) : (
               <motion.div
@@ -1403,29 +1377,13 @@ export function FilesLibrary({
                 />
               ) : (
                 <>
-                  {folders.length > 0 || (canCreate && !searching && filter === "all") ? (
+                  {folders.length > 0 ? (
                     <div className="flex flex-col gap-s">
                       <GroupLabel>
                         {place.kind === "root" ? "Libraries" : "Folders"}
                       </GroupLabel>
                       <Stagger kind="grid" className={gridClass}>
                         {folders.map(renderCard)}
-                        {canCreate && !searching && filter === "all" ? (
-                          <StaggerItem key="new-folder">
-                            <DashedAction
-                              shape="tile"
-                              className={cn(
-                                "h-full min-h-11",
-                                view === "list" && "min-h-9 rounded-control",
-                              )}
-                              onClick={() => {
-                                setDialog({ kind: "new-folder" });
-                              }}
-                            >
-                              New folder
-                            </DashedAction>
-                          </StaggerItem>
-                        ) : null}
                       </Stagger>
                     </div>
                   ) : null}
@@ -1453,8 +1411,8 @@ export function FilesLibrary({
                   folders.length === 0 &&
                   canCreate ? (
                     <p className="px-xs type-small text-imagine-foreground-muted">
-                      Nothing in {locationTitle} yet. Make a folder above, or
-                      use New to add a document.
+                      Nothing in {locationTitle} yet. Use New to add a
+                      document or folder.
                     </p>
                   ) : null}
                 </>
