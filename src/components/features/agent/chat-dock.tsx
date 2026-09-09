@@ -65,6 +65,61 @@ export function ChatDock({
   const isDock = variant === "dock";
   const shown = chat.lastPreview;
   const attached = chat.attached;
+  const attachedPosts = attached.flatMap((item) =>
+    item.kind === "post" ? [item.post] : [],
+  );
+  const placeholder =
+    attached.length > 1
+      ? `Ask about these ${String(attached.length)} items`
+      : attached[0]?.kind === "post"
+        ? "Ask about this post"
+        : attached[0]?.kind === "chart"
+          ? "Ask about this chart"
+          : attached[0]?.kind === "file"
+            ? "Ask about this file"
+            : attached[0]?.kind === "asset"
+              ? "Ask about this asset"
+              : undefined;
+  const attachmentContent =
+    attached.length === 0 ? undefined : (
+      <div className="flex flex-nowrap gap-xs overflow-x-auto pb-xxs">
+        {attached.map((item) => {
+          if (item.kind === "post") {
+            return (
+              <PostContext
+                key={item.post.id}
+                posts={[item.post]}
+                onRemove={chat.clearAttached}
+                className="shrink-0 flex-nowrap"
+              />
+            );
+          }
+          if (item.kind === "chart") {
+            return (
+              <div key={item.chart.id} className="shrink-0">
+                <ChartContext
+                  chart={item.chart}
+                  onRemove={() => {
+                    chat.clearAttached(item.chart.id);
+                  }}
+                />
+              </div>
+            );
+          }
+          const id = item.kind === "file" ? item.file.id : item.asset.id;
+          return (
+            <ResourceContext
+              key={id}
+              resource={item}
+              className="shrink-0"
+              onRemove={() => {
+                chat.clearAttached(id);
+              }}
+            />
+          );
+        })}
+      </div>
+    );
 
   return (
     <Composer
@@ -83,40 +138,10 @@ export function ChatDock({
             ...(previews === undefined ? {} : { previews }),
           }
         : {})}
-      {...(attached === null
+      {...(placeholder === undefined ? {} : { placeholder })}
+      {...(attachmentContent === undefined
         ? {}
-        : attached.kind === "post"
-          ? {
-              placeholder: "Ask about this post",
-              attachments: (
-                <PostContext
-                  posts={[attached.post]}
-                  onRemove={chat.clearAttached}
-                />
-              ),
-            }
-          : attached.kind === "chart"
-            ? {
-                placeholder: "Ask about this chart",
-                attachments: (
-                  <ChartContext
-                    chart={attached.chart}
-                    onRemove={chat.clearAttached}
-                  />
-                ),
-              }
-            : {
-                placeholder:
-                  attached.kind === "file"
-                    ? "Ask about this file"
-                    : "Ask about this asset",
-                attachments: (
-                  <ResourceContext
-                    resource={attached}
-                    onRemove={chat.clearAttached}
-                  />
-                ),
-              })}
+        : { attachments: attachmentContent })}
     >
       {isDock ? (
         <PreviewSurface
@@ -139,9 +164,9 @@ export function ChatDock({
               onOpenPost={(post) => {
                 chat.toggleAttached({ kind: "post", post });
               }}
-              {...(chat.attachedId === null
+              {...(attachedPosts.length === 0
                 ? {}
-                : { selectedPostId: chat.attachedId })}
+                : { selectedPostId: attachedPosts.at(-1)?.id })}
             />
           </Activity>
           <Activity mode={shown === "analytics" ? "visible" : "hidden"}>
@@ -154,7 +179,7 @@ export function ChatDock({
                     key={chart.id}
                     chart={chart}
                     dense
-                    selected={chat.attachedId === chart.id}
+                    selected={chat.attachedIds.includes(chart.id)}
                     onOpen={() => {
                       chat.toggleAttached({ kind: "chart", chart });
                     }}

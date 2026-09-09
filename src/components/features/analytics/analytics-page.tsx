@@ -70,6 +70,9 @@ export function AnalyticsPage({ data }: AnalyticsPageProps) {
   const [profileId, setProfileId] = useState("all");
   const snapshot = snapshotFor(data.snapshots, range, profileId);
   const overview = snapshot.overview;
+  const selectedPostId = chat.attached
+    .flatMap((item) => (item.kind === "post" ? [item.post.id] : []))
+    .at(-1);
   const rangeDescription =
     RANGE_DESCRIPTION[range === "7d" || range === "3m" ? range : "1m"];
   const impressionsChart = useMemo<PreviewChart>(
@@ -145,7 +148,7 @@ export function AnalyticsPage({ data }: AnalyticsPageProps) {
 
       <ChartCard
         chart={impressionsChart}
-        selected={chat.attachedId === impressionsChart.id}
+        selected={chat.attachedIds.includes(impressionsChart.id)}
         onOpen={() => {
           chat.toggleAttached({ kind: "chart", chart: impressionsChart });
         }}
@@ -174,11 +177,9 @@ export function AnalyticsPage({ data }: AnalyticsPageProps) {
 
       <TopPosts
         items={overview.topPosts}
-        selectedId={
-          chat.attached?.kind === "post"
-            ? (chat.attachedId ?? undefined)
-            : undefined
-        }
+        {...(selectedPostId === undefined
+          ? {}
+          : { selectedId: selectedPostId })}
         onOpen={(item) => {
           if (item.post !== undefined) {
             chat.toggleAttached({ kind: "post", post: item.post });

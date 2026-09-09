@@ -347,6 +347,9 @@ function WorkspaceFrame({
           ];
     }),
   ];
+  const attachedAssetId = chat.attached
+    .flatMap((item) => (item.kind === "asset" ? [item.asset.id] : []))
+    .at(-1);
 
   // On the agent page with a conversation open, the header belongs to the
   // thread: its name in the middle, its controls on the right. Beside the
@@ -398,7 +401,7 @@ function WorkspaceFrame({
           "pointer-events-none absolute inset-x-0 top-0 z-20 px-xxl",
           activeDocument !== undefined && "bg-imagine-surface",
           activeDocument !== undefined &&
-            (chat.attached === null ? "bottom-28" : "bottom-48"),
+            (chat.attached.length === 0 ? "bottom-28" : "bottom-48"),
         )}
       >
         <EditorTabStrip
@@ -486,9 +489,9 @@ function WorkspaceFrame({
           skills={skills}
           dragHint
           {...(activeFileId === undefined ? {} : { activeFileId })}
-          {...(chat.attached?.kind === "asset"
-            ? { activeAssetId: chat.attached.asset.id }
-            : {})}
+          {...(attachedAssetId === undefined
+            ? {}
+            : { activeAssetId: attachedAssetId })}
           onOpenFile={setActiveFileId}
           onEditFile={openEditor}
           onAttachFile={(file) => {

@@ -32,11 +32,8 @@ export type ChatAttachment =
   | { kind: "chart"; chart: PreviewChart }
   | DraggableResource;
 
-/** Both kinds carry an id and a title; this is the one the chat speaks about. */
-function subject(
-  attachment: ChatAttachment | null,
-): { id: string; title: string } | null {
-  if (attachment === null) return null;
+/** Every kind carries an id and title; this is what the chat speaks about. */
+function subject(attachment: ChatAttachment): { id: string; title: string } {
   switch (attachment.kind) {
     case "post":
       return attachment.post;
@@ -66,9 +63,9 @@ export interface ChatState {
   thinking: boolean;
   thinkingStatuses: readonly string[] | undefined;
   draft: string;
-  attached: ChatAttachment | null;
-  /** The id of whatever is attached, for marking it selected where it lives. */
-  attachedId: string | null;
+  attached: readonly ChatAttachment[];
+  /** Every attached id, in attachment order. */
+  attachedIds: readonly string[];
   preview: ComposerPreview | null;
   /**
    * The preview last opened. The surface keeps showing it while it closes,
@@ -90,11 +87,12 @@ export interface ChatActions {
   /** A button in a reply, pressed: says the intent on the user's behalf. */
   sendIntent: (intent: string) => void;
   setDraft: (draft: string) => void;
-  /** Replace the next-message context, used by drag and drop. */
+  /** Add next-message context unless it is already attached. */
   attach: (next: ChatAttachment) => void;
   /** Attach context. Attaching the current subject again detaches it. */
   toggleAttached: (next: ChatAttachment) => void;
-  clearAttached: () => void;
+  /** Remove one attachment by id, or everything when no id is supplied. */
+  clearAttached: (id?: string) => void;
   setPreview: (preview: ComposerPreview | null) => void;
   /** Show a stored thread. No-op when it is already the open one. */
   open: (threadId: string, messages: readonly AgentMessage[]) => void;
@@ -145,7 +143,7 @@ export function ChatProvider({
   const [messages, setMessages] = useState<readonly AgentMessage[]>([]);
   const [streaming, setStreaming] = useState<Streaming | null>(null);
   const [draft, setDraft] = useState("");
-  const [attached, setAttached] = useState<ChatAttachment | null>(null);
+  const [attached, setAttached] = useState<readonly ChatAttachment[]>([]);
   const [preview, setPreviewState] = useState<ComposerPreview | null>(null);
   const [lastPreview, setLastPreview] = useState<ComposerPreview>("calendar");
   const [handoff, setHandoff] = useState<ComposerPreview | null>(null);
@@ -190,8 +188,11 @@ export function ChatProvider({
       const turn = String(turns + 1);
       const messageId = `reply-${turn}`;
       // What is attached rides along in the message, the way a person would say it.
-      const about = subject(attached);
-      const spoken = about === null ? text : `About "${about.title}": ${text}`;
+      const about = attached.map(subject);
+      const spoken =
+        about.length === 0
+          ? text
+          : `About ${about.map((item) => `"${item.title}"`).join(", ")}: ${text}`;
 
       setTurns(turns + 1);
       setThreadId((current) => current ?? NEW_THREAD_ID);
@@ -213,23 +214,33 @@ export function ChatProvider({
             : replies.default,
       });
       setDraft("");
-      setAttached(null);
+      setAttached([]);
     },
     [attached, replies, turns],
   );
 
   const toggleAttached = useCallback((next: ChatAttachment) => {
+    const id = subject(next).id;
     setAttached((current) =>
-      subject(current)?.id === subject(next)?.id ? null : next,
+      current.some((item) => subject(item).id === id)
+        ? current.filter((item) => subject(item).id !== id)
+        : [...current, next],
     );
   }, []);
 
   const attach = useCallback((next: ChatAttachment) => {
-    setAttached(next);
+    const id = subject(next).id;
+    setAttached((current) =>
+      current.some((item) => subject(item).id === id)
+        ? current
+        : [...current, next],
+    );
   }, []);
 
-  const clearAttached = useCallback(() => {
-    setAttached(null);
+  const clearAttached = useCallback((id?: string) => {
+    setAttached((current) =>
+      id === undefined ? [] : current.filter((item) => subject(item).id !== id),
+    );
   }, []);
 
   const sendIntent = useCallback(
@@ -245,7 +256,7 @@ export function ChatProvider({
       setThreadId(id);
       setMessages(stored);
       setStreaming(null);
-      setAttached(null);
+      setAttached([]);
     },
     [threadId],
   );
@@ -255,7 +266,7 @@ export function ChatProvider({
     setMessages([]);
     setStreaming(null);
     setDraft("");
-    setAttached(null);
+    setAttached([]);
     setPreviewState(null);
   }, []);
 
@@ -276,7 +287,7 @@ export function ChatProvider({
       thinkingStatuses: streaming?.reply.statuses,
       draft,
       attached,
-      attachedId: subject(attached)?.id ?? null,
+      attachedIds: attached.map((item) => subject(item).id),
       preview,
       lastPreview,
       handoff,

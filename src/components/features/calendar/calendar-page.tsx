@@ -82,7 +82,9 @@ export function CalendarPage({ postsByDay, today }: CalendarPageProps) {
   const [view, setView] = useState<CalendarView>("month");
   const [anchor, setAnchor] = useState(today);
   const [search, setSearch] = useState("");
-  const selected = chat.attachedId;
+  const selected = chat.attached
+    .flatMap((item) => (item.kind === "post" ? [item.post.id] : []))
+    .at(-1);
 
   /** Selecting a post attaches it to the chat, so the next message is about it. */
   function attach(post: PostChipData) {
@@ -129,14 +131,14 @@ export function CalendarPage({ postsByDay, today }: CalendarPageProps) {
           // opens on the month.
           layoutId={PREVIEW_LAYOUT_ID.calendar}
           onOpenPost={attach}
-          {...(selected === null ? {} : { selectedPostId: selected })}
+          {...(selected === undefined ? {} : { selectedPostId: selected })}
           className="flex-1"
         />
       ) : (
         <CalendarTimeGrid
           days={range.days}
           onOpenPost={attach}
-          {...(selected === null ? {} : { selectedPostId: selected })}
+          {...(selected === undefined ? {} : { selectedPostId: selected })}
         />
       )}
 

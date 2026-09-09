@@ -101,6 +101,9 @@ export function AgentWorkspace({
   }, [landing, chat.threadId]);
 
   const centered = landingLayout === "centered";
+  const selectedPostId = chat.attached
+    .flatMap((item) => (item.kind === "post" ? [item.post.id] : []))
+    .at(-1);
   const pending = (landing?.timeline ?? []).filter(
     (entry) => !handled.includes(entry.id),
   );
@@ -200,9 +203,9 @@ export function AgentWorkspace({
                     onOpenCalendar={() => {
                       router.push("/calendar");
                     }}
-                    {...(chat.attachedId === null
+                    {...(selectedPostId === undefined
                       ? {}
-                      : { selectedPostId: chat.attachedId })}
+                      : { selectedPostId })}
                   />
                 </div>
               ) : (
@@ -214,9 +217,7 @@ export function AgentWorkspace({
                     chat.send(action.prompt ?? entry.title, action.intent);
                   }}
                   onOpenPost={attachPost}
-                  {...(chat.attachedId === null
-                    ? {}
-                    : { selectedPostId: chat.attachedId })}
+                  {...(selectedPostId === undefined ? {} : { selectedPostId })}
                 />
               )}
             </motion.div>
