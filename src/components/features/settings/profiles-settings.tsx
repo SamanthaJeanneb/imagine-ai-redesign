@@ -174,7 +174,7 @@ export function ProfilesSettings({
   }
 
   return (
-    <div className="grid min-h-0 flex-1 gap-xl lg:grid-cols-[minmax(0,1fr)_22rem]">
+    <div className="grid min-h-0 flex-1 gap-xl lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
       <ProfileList
         profiles={profiles}
         {...(selectedId === undefined ? {} : { selectedId })}
@@ -183,10 +183,10 @@ export function ProfilesSettings({
           setAdding(true);
         }}
       />
-      {/* Wide: the pane leaves the page inset and sits on the page's own
-          right edge, header divider to bottom, so the white curves into
-          its grey. The grid column only reserves its width. */}
-      <div className="relative min-h-0 lg:absolute lg:inset-y-0 lg:right-0 lg:w-[calc(22rem+var(--spacing-xxl))]">
+      {/* Wide: the pane bleeds out of its grid area to the page's right and
+          bottom edges and up to the tab strip's rule (the layout's gap), so
+          the white curves into its grey right under the tabs. */}
+      <div className="relative min-h-0 lg:-mt-xl lg:-mr-xxl lg:-mb-xxl">
         <AnimatePresence mode="wait" initial={false}>
           {selected === undefined ? (
             <motion.div
