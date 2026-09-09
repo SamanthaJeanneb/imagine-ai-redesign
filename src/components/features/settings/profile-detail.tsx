@@ -5,12 +5,24 @@ import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
 import { type ConnectionStatus } from "@/components/features/settings/profile-list";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
-import { fade } from "@/styles/motion";
+import { Spinner } from "@/components/ui/spinner";
+import { fade, swapUp } from "@/styles/motion";
 
 export interface ProfileDetailData {
   id: string;
@@ -19,17 +31,22 @@ export interface ProfileDetailData {
   avatarUrl?: string;
   kind: "person" | "company";
   status: ConnectionStatus;
+  /** Published posts the agent has read for voice and analytics. */
+  postsIndexed?: number;
   company?: { name: string; logoUrl?: string; url: string };
   persona?: { fileName: string };
 }
 
 interface ProfileDetailProps {
   profile: ProfileDetailData;
+  /** Index posts is running; the button shows it and cannot start another. */
+  indexing?: boolean;
   onReconnect?: () => void;
   onChangeCompany?: () => void;
   onLinkCompany?: (url: string) => void;
   onViewPersona?: () => void;
   onIndexPosts?: () => void;
+  /** Called once the user has confirmed. */
   onRemove?: () => void;
   className?: string;
 }
@@ -85,6 +102,7 @@ function Group({
  */
 export function ProfileDetail({
   profile,
+  indexing = false,
   onReconnect,
   onChangeCompany,
   onLinkCompany,
@@ -157,6 +175,20 @@ export function ProfileDetail({
               </Button>
             ) : null}
           </Row>
+          {profile.postsIndexed === undefined ? null : (
+            <Row label="Posts indexed">
+              <AnimatePresence initial={false} mode="popLayout">
+                <motion.span
+                  key={profile.postsIndexed}
+                  {...swapUp}
+                  transition={fade.fast}
+                  className="tabular-nums"
+                >
+                  {profile.postsIndexed}
+                </motion.span>
+              </AnimatePresence>
+            </Row>
+          )}
         </div>
 
         {profile.kind === "person" ? (
@@ -240,18 +272,48 @@ export function ProfileDetail({
         </Group>
 
         <div className="mt-auto flex items-center justify-between pt-l">
-          <Button variant="ghost" size="sm" onClick={onIndexPosts}>
-            <Icon name="arrows-rotate" size="s" data-icon="inline-start" />
-            Index posts
-          </Button>
           <Button
             variant="ghost"
             size="sm"
-            className="text-destructive hover:text-destructive"
-            onClick={onRemove}
+            disabled={indexing}
+            aria-busy={indexing}
+            onClick={onIndexPosts}
           >
-            Remove
+            {indexing ? (
+              <Spinner size="s" data-icon="inline-start" />
+            ) : (
+              <Icon name="arrows-rotate" size="s" data-icon="inline-start" />
+            )}
+            {indexing ? "Indexing" : "Index posts"}
           </Button>
+          {onRemove ? (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive"
+                >
+                  Remove
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Remove {profile.name}?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    The agent stops posting as this profile and its scheduled
+                    posts are unscheduled. Published posts stay on LinkedIn.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction variant="destructive" onClick={onRemove}>
+                    Remove
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : null}
         </div>
       </motion.div>
     </AnimatePresence>

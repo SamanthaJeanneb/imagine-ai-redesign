@@ -547,18 +547,28 @@ Wireframes: `file-system/file system - right sidebar.png`,
 - Verified in light and dark at the desktop workspace width. Recursive search, editing,
   save feedback, closing back to chat, and the static production build all pass.
 
-### Phase 10 — Settings
+### Phase 10 — Settings ✅
 
 Wireframes: `settings/settings - profiles.png`,
 `settings/settings - integrations (like crm).png`. General and API follow the same
 patterns.
 
-- Tabs as routes with the sliding indicator. General: org name, logo, members with roles,
-theme. Profiles: search, add, list, and a detail pane with connection, company, persona,
-and remove behind an `AlertDialog`. Integrations: connected rows with reconnect and an
-available grid. API: the single key with reveal, copy, rotate, and revoke.
-- Done when: every row and tile has hover and press, forms use `Field`, and destructive
-actions use the Tailwind mapping.
+- `settings/layout.tsx` holds the heading and `SettingsTabs`, so the tab strip persists
+  across `/settings`, `/settings/profiles`, `/settings/integrations`, and `/settings/api`
+  and one `layoutId` indicator slides between them. `SettingsPanel` fades each tab's
+  content in, keyed by pathname.
+- Each tab is a server page reading `services/settings` and handing props to a client
+  component that owns the local state and mocks its writes with `useTransition` and a
+  short `wait`. General: org name and `LogoUpload` in a form with save and discard,
+  `MembersList` with role selects and removal, invite dialog, `ThemeChoice` over
+  `next-themes`. Profiles: `ProfileList` beside `ProfileDetail`, which gained posts
+  indexed with an indexing state and remove behind an `AlertDialog`; add, reconnect, and
+  index are wired. Integrations: LinkedIn is derived from `client_linkedin_auth` and the
+  CRM facts from `crm_connections`; reconnect and add update the rows. API: the single
+  key with reveal, copy, rotate, revoke, and last used / created facts.
+- `page-placeholder.tsx` is gone with the last placeholder.
+- Verified in light and dark: tabs slide, list and detail cross-fade, removals confirm,
+  theme switches without a flash.
 
 ### Phase 11 — Polish and audit
 

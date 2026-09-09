@@ -2,6 +2,10 @@ import type {
   AvailableIntegration,
   ConnectedIntegration,
 } from "@/components/features/settings/integrations";
+import type {
+  Member,
+  MemberRole,
+} from "@/components/features/settings/members-list";
 import type { ProfileDetailData } from "@/components/features/settings/profile-detail";
 import type { ProfileSummary } from "@/components/features/settings/profile-list";
 import type { IconName } from "@/components/ui/icon";
@@ -10,9 +14,52 @@ import {
   toConnectionState,
   transformClientRow,
 } from "@/entities/client";
-import { formatRelative } from "@/lib/format";
+import { formatDayMonth, formatRelative } from "@/lib/format";
 import { getDb, getNow, getOrganization } from "@/mocks/db";
 import { getWorkspaceLogoUrl } from "@/services/workspace";
+
+const MEMBER_ROLES: readonly MemberRole[] = ["owner", "admin", "member"];
+
+function toMemberRole(value: string): MemberRole {
+  return MEMBER_ROLES.find((role) => role === value) ?? "member";
+}
+
+export interface GeneralSettings {
+  orgName: string;
+  logoUrl?: string;
+  members: readonly Member[];
+  /** Whoever is signed in, so the list can mark them. */
+  currentUserId: string;
+}
+
+/** Settings, General. The organization and everyone in it. */
+export function getGeneralSettings(): GeneralSettings {
+  const db = getDb();
+  const org = getOrganization();
+  const logoUrl = getWorkspaceLogoUrl();
+  const usersById = new Map(db.public.users.map((user) => [user.id, user]));
+
+  const members = db.app.organization_members
+    .filter((member) => member.org_id === org.id)
+    .map<Member>((member) => {
+      const user = usersById.get(member.user_id);
+      const avatarUrl = user?.avatar_url ?? null;
+      return {
+        id: member.user_id,
+        name: member.member_name ?? user?.name ?? member.user_id,
+        email: user?.email ?? "",
+        ...(avatarUrl === null ? {} : { avatarUrl }),
+        role: toMemberRole(member.role),
+      };
+    });
+
+  return {
+    orgName: org.name,
+    ...(logoUrl === undefined ? {} : { logoUrl }),
+    members,
+    currentUserId: org.created_by,
+  };
+}
 
 /** The CRMs and channels the org can connect, keyed by `crm_connections.provider`. */
 const PROVIDERS: Record<
@@ -67,11 +114,14 @@ export function getProfiles(): readonly ProfileSummary[] {
     }));
 }
 
-export function getProfileDetail(clientId: string): ProfileDetailData | null {
-  const row = getDb().app.clients.find((client) => client.id === clientId);
-  if (row === undefined) return null;
-  const client = transformClientRow(row);
+/** How many of a profile's posts have gone out, which is what the agent reads. */
+function publishedCount(clientId: string): number {
+  return getDb().app.client_posts.filter(
+    (post) => post.client_id === clientId && post.status === "published",
+  ).length;
+}
 
+function toProfileDetail(client: Client): ProfileDetailData {
   const org = getOrganization();
   const logoUrl = getWorkspaceLogoUrl();
 
@@ -84,17 +134,29 @@ export function getProfileDetail(clientId: string): ProfileDetailData | null {
       : { avatarUrl: client.profilePicturePath }),
     kind: client.isCompany ? "company" : "person",
     status: connectionState(client),
+    postsIndexed: publishedCount(client.id),
     ...(client.isCompany
       ? {}
       : {
           company: {
             name: org.name,
             ...(logoUrl === undefined ? {} : { logoUrl }),
-            url: `https://www.linkedin.com/company/${org.name.toLowerCase()}`,
+            url: `linkedin.com/company/${org.name.toLowerCase()}`,
           },
         }),
-    persona: { fileName: "persona.md" },
+    ...(client.persona.trim() === ""
+      ? {}
+      : { persona: { fileName: "persona.md" } }),
   };
+}
+
+/** Every profile's detail, keyed by id, so the pane can follow the list. */
+export function getProfileDetails(): Record<string, ProfileDetailData> {
+  return Object.fromEntries(
+    getDb()
+      .app.clients.map(transformClientRow)
+      .map((client) => [client.id, toProfileDetail(client)]),
+  );
 }
 
 export interface Integrations {
@@ -102,13 +164,51 @@ export interface Integrations {
   available: readonly AvailableIntegration[];
 }
 
+/**
+ * LinkedIn is connected per profile through `client_linkedin_auth`, so it shows
+ * as one row summarizing them. It needs attention as soon as one has lapsed.
+ */
+function linkedInIntegration(): ConnectedIntegration | null {
+  const auths = getDb().app.client_linkedin_auth;
+  if (auths.length === 0) return null;
+  const lapsed = auths.filter((auth) => auth.status !== "connected").length;
+
+  return {
+    id: "linkedin",
+    name: "LinkedIn",
+    description: "Publishing and analytics for every profile you manage.",
+    icon: "linkedin-in",
+    status: lapsed > 0 ? "expired" : "connected",
+    facts: [
+      `${String(auths.length)} profiles`,
+      lapsed > 0
+        ? `${String(lapsed)} ${lapsed === 1 ? "needs" : "need"} reconnecting`
+        : "All connected",
+    ],
+  };
+}
+
+/** "47 contacts, 9 deals": what a CRM connection has brought in. */
+function crmFacts(connectionId: string): string {
+  const db = getDb();
+  const contacts = db.app.crm_contacts.filter(
+    (contact) => contact.connection_id === connectionId,
+  ).length;
+  const deals = db.app.crm_opportunities.filter(
+    (opportunity) => opportunity.connection_id === connectionId,
+  ).length;
+  return `${String(contacts)} contacts, ${String(deals)} deals`;
+}
+
 /** Settings, Integrations. Connected rows come from `crm_connections`. */
 export function getIntegrations(): Integrations {
   const db = getDb();
   const now = getNow();
+  const linkedIn = linkedInIntegration();
 
-  const connected = db.app.crm_connections.flatMap<ConnectedIntegration>(
-    (connection) => {
+  const connected = [
+    ...(linkedIn === null ? [] : [linkedIn]),
+    ...db.app.crm_connections.flatMap<ConnectedIntegration>((connection) => {
       const provider = PROVIDERS[connection.provider];
       if (provider === undefined) return [];
       return [
@@ -122,12 +222,12 @@ export function getIntegrations(): Integrations {
             connection.last_synced_at === null
               ? "Never synced"
               : `Synced ${formatRelative(connection.last_synced_at, now)}`,
-            "Accounts, contacts, and deals",
+            crmFacts(connection.id),
           ],
         },
       ];
-    },
-  );
+    }),
+  ];
 
   const connectedProviders = new Set(
     db.app.crm_connections.map((connection) => connection.provider),
@@ -146,9 +246,29 @@ export function getIntegrations(): Integrations {
   };
 }
 
-/** Settings, API. One key per workspace, or `null` before one is created. */
-export function getApiKey(): string | null {
+export interface ApiKeyData {
+  /** The full secret, or `null` before one has been created. */
+  secret: string | null;
+  /** "Last used 2h ago", "Created 2 May". Empty without a key. */
+  facts: readonly string[];
+}
+
+/** Settings, API. One key per workspace. */
+export function getApiKeyData(): ApiKeyData {
   const org = getOrganization();
+  const now = getNow();
   const key = getDb().app.api_keys.find((row) => row.org_id === org.id);
-  return key?.key ?? null;
+  if (key === undefined) return { secret: null, facts: [] };
+
+  return {
+    secret: key.key,
+    facts: [
+      key.last_used_at === null
+        ? "Never used"
+        : `Last used ${formatRelative(key.last_used_at, now)}`,
+      key.rotated_at === null
+        ? `Created ${formatDayMonth(key.created_at)}`
+        : `Rotated ${formatDayMonth(key.rotated_at)}`,
+    ],
+  };
 }

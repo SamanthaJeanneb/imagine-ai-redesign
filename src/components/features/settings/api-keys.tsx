@@ -29,6 +29,8 @@ interface ApiKeySectionProps {
   secret: string | null;
   /** Where "API documentation" points. */
   docsHref?: string;
+  /** Short facts about the live key: "Last used 2h ago", "Created 2 May". */
+  facts?: readonly string[];
   onCreate?: () => void;
   /** Issues a new secret and invalidates the old one. */
   onRotate?: () => void;
@@ -110,6 +112,7 @@ function ConfirmAction({
 export function ApiKeySection({
   secret,
   docsHref,
+  facts = [],
   onCreate,
   onRotate,
   onRevoke,
@@ -150,82 +153,92 @@ export function ApiKeySection({
         </div>
       ) : (
         <motion.div
+          key={secret}
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={fade.base}
-          className="flex items-center gap-xs"
+          className="flex flex-col gap-s"
         >
-          <code className="min-w-0 flex-1 truncate rounded-control bg-imagine-surface-raised px-m py-xs font-mono text-xs text-imagine-foreground-muted select-all">
-            {revealed ? secret : `${secret.slice(0, PREFIX_LENGTH)}${MASK}`}
-          </code>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="icon-sm"
-                variant="ghost"
-                aria-label={revealed ? "Hide key" : "Reveal key"}
-                aria-pressed={revealed}
-                onClick={() => {
-                  setRevealed((current) => !current);
-                }}
-              >
-                <Icon name="eye" size="s" active={revealed} />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{revealed ? "Hide" : "Reveal"}</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="icon-sm"
-                variant="ghost"
-                aria-label="Copy key"
-                onClick={() => {
-                  void navigator.clipboard.writeText(secret);
-                  setCopied(true);
-                  window.setTimeout(() => {
-                    setCopied(false);
-                  }, 1500);
-                }}
-              >
-                <AnimatePresence initial={false} mode="popLayout">
-                  <motion.span
-                    key={copied ? "copied" : "copy"}
-                    className="flex"
-                    {...pop}
-                  >
-                    <Icon
-                      name={copied ? "check" : "copy"}
-                      size="s"
-                      active={copied}
-                      className={copied ? "text-success" : undefined}
-                    />
-                  </motion.span>
-                </AnimatePresence>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{copied ? "Copied" : "Copy"}</TooltipContent>
-          </Tooltip>
-          {onRotate ? (
-            <ConfirmAction
-              icon="arrows-rotate"
-              label="Rotate key"
-              title="Rotate API key?"
-              description="A new key is issued and this one stops working. Anything using the old key has to be updated."
-              confirmLabel="Rotate"
-              onConfirm={onRotate}
-            />
-          ) : null}
-          {onRevoke ? (
-            <ConfirmAction
-              icon="trash"
-              label="Revoke key"
-              title="Revoke API key?"
-              description="This key stops working right away and cannot be restored. You can create a new one afterward."
-              confirmLabel="Revoke"
-              destructive
-              onConfirm={onRevoke}
-            />
+          <div className="flex items-center gap-xs">
+            <code className="min-w-0 flex-1 truncate rounded-control bg-imagine-surface-raised px-m py-xs font-mono text-xs text-imagine-foreground-muted select-all">
+              {revealed ? secret : `${secret.slice(0, PREFIX_LENGTH)}${MASK}`}
+            </code>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon-sm"
+                  variant="ghost"
+                  aria-label={revealed ? "Hide key" : "Reveal key"}
+                  aria-pressed={revealed}
+                  onClick={() => {
+                    setRevealed((current) => !current);
+                  }}
+                >
+                  <Icon name="eye" size="s" active={revealed} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{revealed ? "Hide" : "Reveal"}</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon-sm"
+                  variant="ghost"
+                  aria-label="Copy key"
+                  onClick={() => {
+                    void navigator.clipboard.writeText(secret);
+                    setCopied(true);
+                    window.setTimeout(() => {
+                      setCopied(false);
+                    }, 1500);
+                  }}
+                >
+                  <AnimatePresence initial={false} mode="popLayout">
+                    <motion.span
+                      key={copied ? "copied" : "copy"}
+                      className="flex"
+                      {...pop}
+                    >
+                      <Icon
+                        name={copied ? "check" : "copy"}
+                        size="s"
+                        active={copied}
+                        className={copied ? "text-success" : undefined}
+                      />
+                    </motion.span>
+                  </AnimatePresence>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{copied ? "Copied" : "Copy"}</TooltipContent>
+            </Tooltip>
+            {onRotate ? (
+              <ConfirmAction
+                icon="arrows-rotate"
+                label="Rotate key"
+                title="Rotate API key?"
+                description="A new key is issued and this one stops working. Anything using the old key has to be updated."
+                confirmLabel="Rotate"
+                onConfirm={onRotate}
+              />
+            ) : null}
+            {onRevoke ? (
+              <ConfirmAction
+                icon="trash"
+                label="Revoke key"
+                title="Revoke API key?"
+                description="This key stops working right away and cannot be restored. You can create a new one afterward."
+                confirmLabel="Revoke"
+                destructive
+                onConfirm={onRevoke}
+              />
+            ) : null}
+          </div>
+          {facts.length > 0 ? (
+            <span className="flex items-center gap-l px-m type-small text-imagine-foreground-muted">
+              {facts.map((fact) => (
+                <span key={fact}>{fact}</span>
+              ))}
+            </span>
           ) : null}
         </motion.div>
       )}

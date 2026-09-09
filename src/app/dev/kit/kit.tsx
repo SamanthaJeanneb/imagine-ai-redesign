@@ -65,6 +65,7 @@ import {
   ResourceContextDemo,
   ProfilesDemo,
   ScheduledGraphicDemo,
+  SettingsPartsDemo,
   SidebarDemo,
   StatTileDemo,
   TimelineDemo,
@@ -429,6 +430,10 @@ export function Kit({ radiusScale = "default" }: KitProps) {
 
         <Section title="Editor tab strip, markdown editor">
           <EditorDemo />
+        </Section>
+
+        <Section title="Settings: tabs, members, theme">
+          <SettingsPartsDemo />
         </Section>
 
         <Section title="Profiles">

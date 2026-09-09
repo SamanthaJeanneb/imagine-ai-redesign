@@ -93,6 +93,10 @@ import {
   IntegrationRows,
 } from "@/components/features/settings/integrations";
 import {
+  type Member,
+  MembersList,
+} from "@/components/features/settings/members-list";
+import {
   type ProfileDetailData,
   ProfileDetail,
 } from "@/components/features/settings/profile-detail";
@@ -100,6 +104,12 @@ import {
   ProfileList,
   type ProfileSummary,
 } from "@/components/features/settings/profile-list";
+import { SettingsSection } from "@/components/features/settings/settings-section";
+import {
+  SETTINGS_TABS,
+  SettingsTabs,
+} from "@/components/features/settings/settings-tabs";
+import { ThemeChoice } from "@/components/features/settings/theme-choice";
 import { AccountControls } from "@/components/layout/account";
 import { ChatColumn } from "@/components/layout/chat-column";
 import {
@@ -115,6 +125,7 @@ import {
 } from "@/components/layout/sidebar";
 import { LogoLoader } from "@/components/motion/logo-loader";
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import type { TimeRange } from "@/entities/analytics";
 import type { CalendarView, PostsByDay } from "@/lib/calendar";
 import type { ReplyIntent, ScriptedReply } from "@/services/agent";
@@ -666,6 +677,7 @@ const SARAH_DETAIL: ProfileDetailData = {
     logoUrl: ACME_LOGO,
     url: "linkedin.com/company/acme",
   },
+  postsIndexed: 6,
   persona: { fileName: "sarah-persona.md" },
 };
 
@@ -681,6 +693,7 @@ const RAVI_DETAIL: ProfileDetailData = {
     logoUrl: ACME_LOGO,
     url: "linkedin.com/company/acme",
   },
+  postsIndexed: 0,
   persona: { fileName: "ravi-persona.md" },
 };
 
@@ -692,6 +705,7 @@ const PROFILE_DETAILS: Record<string, ProfileDetailData> = {
     kind: "company",
     status: "connected",
     avatarUrl: ACME_LOGO,
+    postsIndexed: 5,
     persona: { fileName: "acme-voice.md" },
   },
   c2: SARAH_DETAIL,
@@ -2389,6 +2403,101 @@ export function EditorDemo() {
   );
 }
 
+const MEMBERS: readonly Member[] = [
+  {
+    id: "usr_sam",
+    name: "Samantha Brown",
+    email: "sam@acme.com",
+    avatarUrl: "https://i.pravatar.cc/96?img=26",
+    role: "owner",
+  },
+  {
+    id: "usr_sarah",
+    name: "Sarah Chen",
+    email: "sarah@acme.com",
+    avatarUrl: "https://i.pravatar.cc/96?img=47",
+    role: "admin",
+  },
+  {
+    id: "usr_marcus",
+    name: "Marcus Webb",
+    email: "marcus@acme.com",
+    role: "member",
+  },
+  {
+    id: "invite-jane",
+    name: "Jane Doe",
+    email: "jane@acme.com",
+    role: "member",
+    pending: true,
+  },
+];
+
+export function SettingsPartsDemo() {
+  const [activeHref, setActiveHref] = useState(
+    SETTINGS_TABS[1]?.href ?? "/settings",
+  );
+  const [members, setMembers] = useState(MEMBERS);
+
+  return (
+    <div className="flex flex-col gap-xl">
+      <Demo label="Settings tabs: routes with one sliding underline">
+        <SettingsTabs
+          activeHref={activeHref}
+          onNavigate={setActiveHref}
+          className="max-w-2xl"
+        />
+      </Demo>
+      <div className="grid gap-xl lg:grid-cols-[1.4fr_1fr]">
+        <Demo label="Members with roles">
+          <SettingsSection
+            title="Members"
+            description="Admins manage profiles and integrations. Members draft and schedule."
+            action={
+              <Button
+                variant="soft"
+                size="sm"
+                onClick={() => {
+                  toast("Invite");
+                }}
+              >
+                <Icon name="plus" size="s" data-icon="inline-start" />
+                Invite
+              </Button>
+            }
+          >
+            <MembersList
+              members={members}
+              currentUserId="usr_sam"
+              onRoleChange={(id, role) => {
+                setMembers((current) =>
+                  current.map((member) =>
+                    member.id === id ? { ...member, role } : member,
+                  ),
+                );
+              }}
+              onRemove={(id) => {
+                setMembers((current) =>
+                  current.filter((member) => member.id !== id),
+                );
+                toast("Removed");
+              }}
+            />
+          </SettingsSection>
+        </Demo>
+        <Demo label="Theme choice">
+          <SettingsSection
+            title="Theme"
+            description="System follows your device."
+          >
+            <ThemeChoice />
+          </SettingsSection>
+        </Demo>
+      </div>
+    </div>
+  );
+}
+
 export function ProfilesDemo() {
   const [selected, setSelected] = useState("c2");
   const detail = PROFILE_DETAILS[selected] ?? SARAH_DETAIL;
@@ -2536,6 +2645,7 @@ export function AccountDemo() {
         <ApiKeySection
           secret={secret}
           docsHref="#"
+          facts={["Last used 2h ago", "Created 2 May"]}
           onCreate={() => {
             setSecret(randomSecret());
             toast("Key created");

@@ -1,10 +1,7 @@
-import { PagePlaceholder } from "@/app/(workspace)/page-placeholder";
+import { GeneralSettings } from "@/components/features/settings/general-settings";
+import { getGeneralSettings } from "@/services/settings";
 
+/** Settings, General: the organization, its members, and the theme. */
 export default function SettingsPage() {
-  return (
-    <PagePlaceholder
-      title="Settings"
-      note="Organization, profiles, the API key, and the team list land here."
-    />
-  );
+  return <GeneralSettings {...getGeneralSettings()} />;
 }
