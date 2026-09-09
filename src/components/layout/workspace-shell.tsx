@@ -224,6 +224,10 @@ function WorkspaceHeader({
 /**
  * The inset every workspace page starts in, after the header divider. Pages
  * do not set their own top or side padding; this is the one frame.
+ *
+ * Padding lives on the scrollport, not the clip around it. `overflow-y-auto`
+ * makes the inner box clip on x as well, and the landing composer sits flush
+ * to that edge — its shadow and left radius disappear if the inset is outside.
  */
 function WorkspacePage({
   children,
@@ -236,13 +240,13 @@ function WorkspacePage({
   flush?: boolean;
 }) {
   return (
-    <div
-      className={cn(
-        "relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden",
-        !flush && "px-xxl pt-xxl pb-xxl",
-      )}
-    >
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
+    <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <div
+        className={cn(
+          "flex min-h-0 min-w-0 flex-1 flex-col overflow-x-clip overflow-y-auto",
+          !flush && "px-xxl pt-xxl pb-xxl",
+        )}
+      >
         {children}
       </div>
       {overlay}
