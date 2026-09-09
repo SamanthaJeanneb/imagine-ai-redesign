@@ -14,7 +14,7 @@ import {
   toConnectionState,
   transformClientRow,
 } from "@/entities/client";
-import { formatDayMonth, formatRelative } from "@/lib/format";
+import { formatRelative } from "@/lib/format";
 import { getDb, getNow, getOrganization } from "@/mocks/db";
 import { getWorkspaceLogoUrl } from "@/services/workspace";
 
@@ -249,26 +249,11 @@ export function getIntegrations(): Integrations {
 export interface ApiKeyData {
   /** The full secret, or `null` before one has been created. */
   secret: string | null;
-  /** "Last used 2h ago", "Created 2 May". Empty without a key. */
-  facts: readonly string[];
 }
 
 /** Settings, API. One key per workspace. */
 export function getApiKeyData(): ApiKeyData {
   const org = getOrganization();
-  const now = getNow();
   const key = getDb().app.api_keys.find((row) => row.org_id === org.id);
-  if (key === undefined) return { secret: null, facts: [] };
-
-  return {
-    secret: key.key,
-    facts: [
-      key.last_used_at === null
-        ? "Never used"
-        : `Last used ${formatRelative(key.last_used_at, now)}`,
-      key.rotated_at === null
-        ? `Created ${formatDayMonth(key.created_at)}`
-        : `Rotated ${formatDayMonth(key.rotated_at)}`,
-    ],
-  };
+  return { secret: key?.key ?? null };
 }

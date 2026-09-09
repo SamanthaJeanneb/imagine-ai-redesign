@@ -2452,7 +2452,6 @@ export function SettingsPartsDemo() {
         <Demo label="Members with roles">
           <SettingsSection
             title="Members"
-            description="Admins manage profiles and integrations. Members draft and schedule."
             action={
               <Button
                 variant="soft"
@@ -2486,10 +2485,7 @@ export function SettingsPartsDemo() {
           </SettingsSection>
         </Demo>
         <Demo label="Theme choice">
-          <SettingsSection
-            title="Theme"
-            description="System follows your device."
-          >
+          <SettingsSection title="Theme">
             <ThemeChoice />
           </SettingsSection>
         </Demo>
@@ -2645,7 +2641,6 @@ export function AccountDemo() {
         <ApiKeySection
           secret={secret}
           docsHref="#"
-          facts={["Last used 2h ago", "Created 2 May"]}
           onCreate={() => {
             setSecret(randomSecret());
             toast("Key created");

@@ -24,32 +24,25 @@ function issueKey(): string {
 
 /**
  * Settings, API. The single workspace key. Rotating and revoking change the
- * key on screen; the facts line reflects what just happened.
+ * key on screen.
  */
-export function ApiSettings({ secret: initialSecret, facts }: ApiKeyData) {
-  const [key, setKey] = useState<ApiKeyData>({ secret: initialSecret, facts });
+export function ApiSettings({ secret: initialSecret }: ApiKeyData) {
+  const [secret, setSecret] = useState(initialSecret);
 
   return (
     <div className="w-full max-w-2xl">
       <ApiKeySection
-        secret={key.secret}
-        facts={key.facts}
+        secret={secret}
         onCreate={() => {
-          setKey({
-            secret: issueKey(),
-            facts: ["Never used", "Created today"],
-          });
+          setSecret(issueKey());
           toast.success("API key created");
         }}
         onRotate={() => {
-          setKey({
-            secret: issueKey(),
-            facts: ["Never used", "Rotated today"],
-          });
+          setSecret(issueKey());
           toast.success("API key rotated. Update anything using the old key.");
         }}
         onRevoke={() => {
-          setKey({ secret: null, facts: [] });
+          setSecret(null);
           toast("API key revoked");
         }}
       />

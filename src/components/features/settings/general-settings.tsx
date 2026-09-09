@@ -189,10 +189,7 @@ export function GeneralSettings({
 
   return (
     <div className="flex w-full max-w-2xl flex-col gap-section">
-      <SettingsSection
-        title="Organization"
-        description="The name and mark shown on every profile you manage."
-      >
+      <SettingsSection title="Organization">
         <form
           className="flex flex-col gap-l"
           onSubmit={(event) => {
@@ -264,7 +261,6 @@ export function GeneralSettings({
 
       <SettingsSection
         title="Members"
-        description="Admins manage profiles and integrations. Members draft and schedule."
         action={
           <Button
             variant="soft"
@@ -313,7 +309,7 @@ export function GeneralSettings({
         />
       </SettingsSection>
 
-      <SettingsSection title="Theme" description="System follows your device.">
+      <SettingsSection title="Theme">
         <ThemeChoice />
       </SettingsSection>
     </div>
