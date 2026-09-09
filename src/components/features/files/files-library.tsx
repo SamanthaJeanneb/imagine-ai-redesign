@@ -77,9 +77,7 @@ interface FilesLibraryProps {
 /** What the browser is looking at. */
 type Place =
   | { kind: "root" }
-  | { kind: "library"; sectionId: string; folderId?: string }
-  | { kind: "shared" }
-  | { kind: "trash" };
+  | { kind: "library"; sectionId: string; folderId?: string };
 
 type Tab = "files" | "skills";
 type Filter = "all" | "documents" | "images";
@@ -96,11 +94,9 @@ interface BrowserItem {
   src?: string;
 }
 
-/** Enough to put something back where it was. */
-interface TrashedItem {
-  id: string;
+/** Enough to put a deleted item back where it was. */
+interface RemovedItem {
   name: string;
-  kind: LibraryCardKind;
   sectionId: string;
   folderId?: string;
   payload:
@@ -133,22 +129,17 @@ const DOCUMENT_ACTIONS: readonly LibraryCardAction[] = [
   { id: "open", label: "Open", icon: "file-lines" },
   { id: "send", label: "Send to chat", icon: "imagine" },
   { id: "rename", label: "Rename", icon: "pen" },
-  { id: "trash", label: "Move to trash", icon: "trash", destructive: true },
+  { id: "delete", label: "Delete", icon: "trash", destructive: true },
 ];
 
 const MEDIA_ACTIONS: readonly LibraryCardAction[] = [
   { id: "send", label: "Send to chat", icon: "imagine" },
-  { id: "trash", label: "Move to trash", icon: "trash", destructive: true },
+  { id: "delete", label: "Delete", icon: "trash", destructive: true },
 ];
 
 const FOLDER_ACTIONS: readonly LibraryCardAction[] = [
   { id: "rename", label: "Rename", icon: "pen" },
-  { id: "trash", label: "Move to trash", icon: "trash", destructive: true },
-];
-
-const TRASH_ACTIONS: readonly LibraryCardAction[] = [
-  { id: "restore", label: "Restore", icon: "arrows-rotate" },
-  { id: "delete", label: "Delete forever", icon: "xmark", destructive: true },
+  { id: "delete", label: "Delete", icon: "trash", destructive: true },
 ];
 
 /* ------------------------------------------------------------------------ */
@@ -283,52 +274,6 @@ function EmptyState({
   );
 }
 
-/** The two fixed rows at the foot of the rail. */
-function RailRow({
-  icon,
-  label,
-  selected,
-  count,
-  onClick,
-}: {
-  icon: IconName;
-  label: string;
-  selected: boolean;
-  count?: number;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      aria-current={selected ? "location" : undefined}
-      onClick={onClick}
-      className={cn(
-        "flex h-8 w-full items-center gap-xs rounded-control pr-s pl-xs text-left transition-colors outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/40",
-        selected
-          ? "bg-imagine-foreground/8 text-imagine-foreground"
-          : "text-imagine-foreground-muted hover:bg-imagine-foreground/5 hover:text-imagine-foreground",
-      )}
-    >
-      <span className="flex size-6 shrink-0 items-center justify-center">
-        <Icon name={icon} size="s" />
-      </span>
-      <span
-        className={cn(
-          "min-w-0 flex-1 truncate type-small",
-          selected ? "font-semibold" : "font-medium",
-        )}
-      >
-        {label}
-      </span>
-      {count === undefined || count === 0 ? null : (
-        <span className="text-xs text-imagine-foreground-faint tabular-nums">
-          {count}
-        </span>
-      )}
-    </button>
-  );
-}
-
 /** Naming a folder, or renaming anything. One field, Enter submits. */
 function NameDialog({
   open,
@@ -409,8 +354,8 @@ function NameDialog({
  * the tree and the way to add things; the browser on the right shows one
  * location as folders, documents, and images, with a breadcrumb that always
  * says where you are and lets you switch libraries or folders in place.
- * Documents open inside the browser; images open in a preview. Trash keeps
- * what was removed until it is restored or deleted for good.
+ * Documents open inside the browser; images open in a preview. Deleting is
+ * immediate, with an undo on the toast.
  */
 export function FilesLibrary({
   title,
@@ -424,7 +369,6 @@ export function FilesLibrary({
   const [sections, setSections] = useState(initialSections);
   const [skills, setSkills] = useState(initialSkills);
   const [documents, setDocuments] = useState(initialDocuments);
-  const [trash, setTrash] = useState<readonly TrashedItem[]>([]);
   const [place, setPlace] = useState<Place>(() => {
     const first = initialSections[0];
     return first === undefined
@@ -493,11 +437,7 @@ export function FilesLibrary({
       ? "Skills"
       : place.kind === "root"
         ? "Files"
-        : place.kind === "shared"
-          ? "Shared with me"
-          : place.kind === "trash"
-            ? "Trash"
-            : (currentFolder?.name ?? currentSection?.title ?? title);
+        : (currentFolder?.name ?? currentSection?.title ?? title);
 
   const canCreate =
     tab === "files" && place.kind === "library" && currentSection !== undefined;
@@ -507,9 +447,7 @@ export function FilesLibrary({
   const scopeNodes =
     place.kind === "library"
       ? (currentSection?.nodes ?? [])
-      : place.kind === "root"
-        ? sections.flatMap((section) => section.nodes)
-        : [];
+      : sections.flatMap((section) => section.nodes);
   const locationNodes =
     place.kind === "library"
       ? (currentFolder?.children ?? scopeNodes)
@@ -546,25 +484,7 @@ export function FilesLibrary({
   };
 
   let items: BrowserItem[];
-  if (place.kind === "trash") {
-    items = trash.map((entry) => {
-      const { payload } = entry;
-      const excerpt =
-        payload.type === "node" && payload.node.type === "file"
-          ? payload.node.excerpt
-          : undefined;
-      const src = payload.type === "asset" ? payload.asset.src : undefined;
-      return {
-        id: entry.id,
-        kind: entry.kind,
-        name: entry.name,
-        ...(excerpt === undefined ? {} : { excerpt }),
-        ...(src === undefined ? {} : { src }),
-      };
-    });
-  } else if (place.kind === "shared") {
-    items = [];
-  } else if (place.kind === "root" && !searching) {
+  if (place.kind === "root" && !searching) {
     items = sections.map((section) => ({
       id: section.id,
       kind: "folder",
@@ -708,26 +628,23 @@ export function FilesLibrary({
     setDialog(null);
   };
 
-  const restore = (id: string, entry?: TrashedItem) => {
-    const found = entry ?? trash.find((it) => it.id === id);
-    if (found === undefined) return;
-    setTrash((current) => current.filter((it) => it.id !== id));
-    if (!sectionById.has(found.sectionId)) return;
-    updateSection(found.sectionId, (nodes) => {
+  const restore = (removed: RemovedItem) => {
+    if (!sectionById.has(removed.sectionId)) return;
+    updateSection(removed.sectionId, (nodes) => {
       // If the folder it came from is gone, it lands at the library root.
       const folderId =
-        found.folderId !== undefined &&
-        findFolder(nodes, found.folderId) !== undefined
-          ? found.folderId
+        removed.folderId !== undefined &&
+        findFolder(nodes, removed.folderId) !== undefined
+          ? removed.folderId
           : undefined;
-      return found.payload.type === "asset"
-        ? insertAsset(nodes, folderId, found.payload.asset)
-        : insertNode(nodes, folderId, found.payload.node);
+      return removed.payload.type === "asset"
+        ? insertAsset(nodes, folderId, removed.payload.asset)
+        : insertNode(nodes, folderId, removed.payload.node);
     });
-    toast(`Restored “${found.name}”`);
+    toast(`Restored “${removed.name}”`);
   };
 
-  const moveToTrash = (item: BrowserItem) => {
+  const remove = (item: BrowserItem) => {
     const at = home.get(item.id);
     if (at === undefined) return;
     const section = sectionById.get(at.sectionId);
@@ -738,29 +655,22 @@ export function FilesLibrary({
         ? undefined
         : (leaves(section.nodes).find((leaf) => leaf.id === item.id) ??
           findFolder(section.nodes, item.id));
-    const payload: TrashedItem["payload"] | undefined =
+    const payload: RemovedItem["payload"] | undefined =
       asset !== undefined
         ? { type: "asset", asset }
         : node !== undefined
           ? { type: "node", node }
           : undefined;
     if (payload === undefined) return;
-    const entry: TrashedItem = {
-      id: item.id,
-      name: item.name,
-      kind: item.kind,
-      ...at,
-      payload,
-    };
+    const removed: RemovedItem = { name: item.name, ...at, payload };
 
-    setTrash((current) => [entry, ...current]);
     updateSection(at.sectionId, (nodes) =>
       asset === undefined
         ? mapNodes(nodes, (current) => (current.id === item.id ? null : current))
         : removeAsset(nodes, item.id),
     );
     if (documentId === item.id) setDocumentId(undefined);
-    // Trashing the open folder, or one above it, sends you up to the library.
+    // Deleting the open folder, or one above it, sends you up to the library.
     if (
       place.kind === "library" &&
       place.folderId !== undefined &&
@@ -770,19 +680,14 @@ export function FilesLibrary({
     ) {
       setPlace({ kind: "library", sectionId: at.sectionId });
     }
-    toast(`Moved “${item.name}” to trash`, {
+    toast(`Deleted “${item.name}”`, {
       action: {
         label: "Undo",
         onClick: () => {
-          restore(item.id, entry);
+          restore(removed);
         },
       },
     });
-  };
-
-  const deleteForever = (id: string) => {
-    setTrash((current) => current.filter((it) => it.id !== id));
-    setDocuments((current) => current.filter((doc) => doc.id !== id));
   };
 
   const onCardAction = (item: BrowserItem, action: string) => {
@@ -801,20 +706,13 @@ export function FilesLibrary({
       case "rename":
         setDialog({ kind: "rename", id: item.id, name: item.name });
         break;
-      case "trash":
-        moveToTrash(item);
-        break;
-      case "restore":
-        restore(item.id);
-        break;
       case "delete":
-        deleteForever(item.id);
+        remove(item);
         break;
     }
   };
 
   const actionsFor = (item: BrowserItem): readonly LibraryCardAction[] => {
-    if (place.kind === "trash") return TRASH_ACTIONS;
     if (item.kind === "folder") {
       return place.kind === "root" ? [] : FOLDER_ACTIONS;
     }
@@ -822,11 +720,10 @@ export function FilesLibrary({
   };
 
   const pressItem = (item: BrowserItem) => {
-    if (place.kind === "trash") return;
     if (item.kind === "folder") {
       if (place.kind === "root") {
         goTo({ kind: "library", sectionId: item.id });
-      } else if (place.kind === "library") {
+      } else {
         goTo({ kind: "library", sectionId: place.sectionId, folderId: item.id });
       }
       return;
@@ -1010,28 +907,6 @@ export function FilesLibrary({
             )}
           </AnimatePresence>
         </div>
-
-        <div className="flex flex-col gap-px border-t border-imagine-border pt-s">
-          <RailRow
-            icon="share-nodes"
-            label="Shared with me"
-            selected={tab === "files" && place.kind === "shared"}
-            onClick={() => {
-              setTab("files");
-              goTo({ kind: "shared" });
-            }}
-          />
-          <RailRow
-            icon="trash"
-            label="Trash"
-            selected={tab === "files" && place.kind === "trash"}
-            count={trash.length}
-            onClick={() => {
-              setTab("files");
-              goTo({ kind: "trash" });
-            }}
-          />
-        </div>
       </aside>
 
       {/* Browser */}
@@ -1070,22 +945,6 @@ export function FilesLibrary({
                 )}
               </BreadcrumbItem>
             )}
-            {tab === "files" && place.kind === "shared" ? (
-              <>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Shared with me</BreadcrumbPage>
-                </BreadcrumbItem>
-              </>
-            ) : null}
-            {tab === "files" && place.kind === "trash" ? (
-              <>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Trash</BreadcrumbPage>
-                </BreadcrumbItem>
-              </>
-            ) : null}
             {tab === "files" && currentSection !== undefined ? (
               <>
                 <BreadcrumbSeparator />
@@ -1331,33 +1190,21 @@ export function FilesLibrary({
                   icon={
                     searching
                       ? "magnifying-glass"
-                      : place.kind === "trash"
-                        ? "trash"
-                        : place.kind === "shared"
-                          ? "share-nodes"
-                          : filter === "images"
-                            ? "image"
-                            : "folder"
+                      : filter === "images"
+                        ? "image"
+                        : "folder"
                   }
                   title={
                     searching
                       ? "Nothing matches"
-                      : place.kind === "trash"
-                        ? "Trash is empty"
-                        : place.kind === "shared"
-                          ? "Nothing shared yet"
-                          : filter === "all"
-                            ? "Nothing here"
-                            : `No ${filter} here`
+                      : filter === "all"
+                        ? "Nothing here"
+                        : `No ${filter} here`
                   }
                   body={
                     searching
                       ? `Nothing in ${locationTitle} is named or mentions “${query.trim()}”.`
-                      : place.kind === "trash"
-                        ? "Files you move to trash stay here until you restore them or delete them for good."
-                        : place.kind === "shared"
-                          ? "Documents other people share with you will show up here."
-                          : "Try another filter, or look in a different folder."
+                      : "Try another filter, or look in a different folder."
                   }
                   {...(!searching && filter !== "all"
                     ? {
@@ -1489,11 +1336,11 @@ export function FilesLibrary({
                       name: previewAsset.caption ?? "Untitled image",
                     };
                     setPreviewId(undefined);
-                    moveToTrash(item);
+                    remove(item);
                   }}
                 >
                   <Icon name="trash" size="s" data-icon="inline-start" />
-                  Move to trash
+                  Delete
                 </Button>
                 <Button
                   onClick={() => {
