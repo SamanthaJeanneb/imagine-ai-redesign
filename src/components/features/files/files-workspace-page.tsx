@@ -185,7 +185,7 @@ export function FilesWorkspacePage({
   };
 
   return (
-    <div className="@container flex min-h-0 flex-1 overflow-hidden border-y border-imagine-border bg-imagine-surface">
+    <div className="@container flex min-h-0 flex-1 overflow-hidden bg-imagine-surface">
       <aside className="flex w-56 shrink-0 flex-col border-r border-imagine-border bg-imagine-surface-raised p-m">
         <div className="flex items-center gap-s px-s pb-l">
           {logoUrl ? (

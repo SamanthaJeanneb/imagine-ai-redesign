@@ -220,12 +220,20 @@ function WorkspaceHeader({
 function WorkspacePage({
   children,
   overlay,
+  flush = false,
 }: {
   children: ReactNode;
   overlay?: ReactNode;
+  /** Pane-based workspaces provide their own internal frame. */
+  flush?: boolean;
 }) {
   return (
-    <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-xxl pt-xxl pb-xxl">
+    <div
+      className={cn(
+        "relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden",
+        !flush && "px-xxl pt-xxl pb-xxl",
+      )}
+    >
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
         {children}
       </div>
@@ -456,7 +464,10 @@ function WorkspaceFrame({
       </motion.div>
     );
   const page = (
-    <WorkspacePage {...(editorLayer === null ? {} : { overlay: editorLayer })}>
+    <WorkspacePage
+      flush={activeKey === "files"}
+      {...(editorLayer === null ? {} : { overlay: editorLayer })}
+    >
       {children}
     </WorkspacePage>
   );
