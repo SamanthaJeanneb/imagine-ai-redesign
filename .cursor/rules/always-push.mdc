@@ -1,0 +1,13 @@
+---
+description: Commit completed work and push to origin after every change
+alwaysApply: true
+---
+
+# Always push after each change
+
+After finishing a change, commit it (if there is anything to commit) and immediately push to the remote. Do not wait to be asked.
+
+- Use `git push -u origin HEAD` when the branch has no upstream
+- Never force-push to `main` or `master`
+- Never skip hooks
+- Do not push secrets or credential files
