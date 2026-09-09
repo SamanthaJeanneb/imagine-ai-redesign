@@ -84,10 +84,11 @@ export function toAssetTile(asset: Asset): AssetTileData {
       ? {}
       : { src: EXAMPLE_ASSET_SRC[asset.id] }),
     ...(asset.caption === null ? {} : { caption: asset.caption }),
+    ...(asset.usedCount > 0 ? { inUse: true } : {}),
   };
 }
 
-function toAuthor(client: Client): PostAuthor {
+export function toAuthor(client: Client): PostAuthor {
   return {
     name: client.name,
     headline: client.description ?? (client.isCompany ? "Company page" : ""),

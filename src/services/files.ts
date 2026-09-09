@@ -29,6 +29,7 @@ interface GroupedFile {
   id: string;
   sourceFile: string;
   content: string;
+  usedByAgent: boolean;
 }
 
 /** `workspace_search` stores chunks; the UI works with one document per source. */
@@ -45,7 +46,24 @@ function groupFiles(rows: readonly WorkspaceFileRow[]): readonly GroupedFile[] {
     id: chunks[0]?.id ?? sourceFile,
     sourceFile,
     content: chunks.map((chunk) => chunk.content).join("\n\n"),
+    usedByAgent: chunks.some((chunk) => chunk.metadata.usedAt !== undefined),
   }));
+}
+
+const HEADING = /^#{1,6}\s+/;
+const BULLET = /^[-*]\s+/;
+
+/**
+ * The first lines of prose, as a card preview. Headings and list markers are
+ * stripped so the excerpt reads as text, not source.
+ */
+function excerpt(content: string, lines = 4): string {
+  return content
+    .split("\n")
+    .map((line) => line.trim().replace(HEADING, "").replace(BULLET, ""))
+    .filter((line) => line !== "")
+    .slice(0, lines)
+    .join("\n");
 }
 
 /** Files at the root, then a folder per directory. One level is enough here. */
@@ -58,6 +76,8 @@ function toNodes(rows: readonly GroupedFile[]): readonly FileNode[] {
       type: "file",
       id: row.id,
       name: fileName(row.sourceFile),
+      excerpt: excerpt(row.content),
+      ...(row.usedByAgent ? { usedByAgent: true } : {}),
     };
     const folder = directory(row.sourceFile);
     if (folder === "") {

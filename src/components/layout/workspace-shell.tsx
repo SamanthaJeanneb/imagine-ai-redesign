@@ -70,6 +70,8 @@ const NAV_KEYS: readonly SidebarNavKey[] = [
 function navKeyFor(pathname: string): SidebarNavKey | undefined {
   // The alternate agent landing is still the agent.
   if (pathname === "/landing-2") return "agent";
+  // The alternate file manager is still Files.
+  if (pathname === "/files-2") return "files";
   return NAV_KEYS.find(
     (key) => pathname === `/${key}` || pathname.startsWith(`/${key}/`),
   );

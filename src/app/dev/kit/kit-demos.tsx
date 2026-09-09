@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -14,7 +15,17 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbMenu,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
+import { Chip, ChipGroup } from "@/components/ui/chip-group";
+import { DashedAction } from "@/components/ui/dashed-action";
 import {
   Dialog,
   DialogContent,
@@ -320,6 +331,76 @@ export function AvatarDemo() {
           <Icon name="building" size="s" />
         </AvatarFallback>
       </Avatar>
+    </div>
+  );
+}
+
+const LIBRARIES = [
+  { id: "acme", label: "Acme", icon: "building" as const },
+  { id: "sarah", label: "Sarah Chen", icon: "user" as const },
+  { id: "ravi", label: "Ravi Patel", icon: "user" as const },
+];
+
+/** Filters, the file manager's breadcrumb, and the dashed "add" affordance. */
+export function FileChromeDemo() {
+  const [filter, setFilter] = useState("all");
+  const [library, setLibrary] = useState("acme");
+  const current = LIBRARIES.find((entry) => entry.id === library);
+
+  return (
+    <div className="flex flex-col gap-xl">
+      <div className="flex flex-wrap items-center justify-between gap-l">
+        <ChipGroup value={filter} onValueChange={setFilter} aria-label="Filter">
+          <Chip value="all">All</Chip>
+          <Chip value="documents">Documents</Chip>
+          <Chip value="images">Images</Chip>
+          <Chip value="agent">Used by agent</Chip>
+        </ChipGroup>
+        <span className="type-small text-imagine-foreground-muted">
+          Chips filter; the toggle group above switches views.
+        </span>
+      </div>
+
+      <Breadcrumb>
+        <BreadcrumbItem>
+          <BreadcrumbLink
+            onClick={() => {
+              toast("Back to Files");
+            }}
+          >
+            Files
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbPage>{current?.label ?? "Acme"}</BreadcrumbPage>
+          <BreadcrumbMenu
+            label="Switch library"
+            items={LIBRARIES}
+            selectedId={library}
+            onSelect={setLibrary}
+          />
+        </BreadcrumbItem>
+      </Breadcrumb>
+
+      <div className="grid gap-m sm:grid-cols-[14rem_1fr]">
+        <DashedAction
+          onClick={() => {
+            toast("New folder");
+          }}
+        >
+          New folder
+        </DashedAction>
+        <DashedAction
+          shape="tile"
+          icon="file-plus"
+          onClick={() => {
+            toast("New document");
+          }}
+        >
+          New document
+        </DashedAction>
+      </div>
     </div>
   );
 }

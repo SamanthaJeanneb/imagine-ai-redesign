@@ -22,7 +22,13 @@ import {
   type TypeToken,
 } from "@/styles/tokens";
 
-import { AvatarDemo, FormDemo, OverlayDemo, SelectionDemo } from "./kit-demos";
+import {
+  AvatarDemo,
+  FileChromeDemo,
+  FormDemo,
+  OverlayDemo,
+  SelectionDemo,
+} from "./kit-demos";
 import {
   AccountDemo,
   AnalyticsPartsDemo,
@@ -36,7 +42,9 @@ import {
   ComposedWorkspacePagesDemo,
   ComposerDemo,
   EditorDemo,
+  FilesLibraryDemo,
   FilesPanelDemo,
+  FilesPartsDemo,
   FilesWorkspacePageDemo,
   IntegrationsDemo,
   LoadingDemo,
@@ -330,6 +338,10 @@ export function Kit({ radiusScale = "default" }: KitProps) {
           <OverlayDemo />
         </Section>
 
+        <Section title="Filter chips, breadcrumb, dashed actions">
+          <FileChromeDemo />
+        </Section>
+
         <Section title="Avatars">
           <AvatarDemo />
         </Section>
@@ -348,6 +360,14 @@ export function Kit({ radiusScale = "default" }: KitProps) {
 
         <Section title="Complete Files workspace">
           <FilesWorkspacePageDemo />
+        </Section>
+
+        <Section title="Files page parts: new menu, tree, cards">
+          <FilesPartsDemo />
+        </Section>
+
+        <Section title="Files page (/files-2)">
+          <FilesLibraryDemo />
         </Section>
 
         <Section title="File and asset chat context">

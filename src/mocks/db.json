@@ -1711,7 +1711,8 @@
         "content": "# Brand voice\n\nAcme writes the way its engineers talk in a review: plainly, with the number attached.\n\n## Always\n\n- Say what changed before saying why it matters.\n- One claim per sentence.\n- Use the customer's words when you have them.\n\n## Never\n\n- \"Excited to announce\".\n- Three adjectives in a row.\n- A metric without a baseline.\n",
         "metadata": {
           "orgId": "org_acme",
-          "sourceFile": "brand-voice.md"
+          "sourceFile": "brand-voice.md",
+          "usedAt": "2026-09-06T15:41:00.000Z"
         }
       },
       {
@@ -1720,7 +1721,8 @@
         "content": "# Posting rules\n\n- Two posts a week per person, three for the company page.\n- Nothing publishes on a Friday after 14:00.\n- Every post names a person, a number, or a decision.\n- Drafts sit for one night before they go out.\n",
         "metadata": {
           "orgId": "org_acme",
-          "sourceFile": "posting-rules.md"
+          "sourceFile": "posting-rules.md",
+          "usedAt": "2026-09-04T09:12:00.000Z"
         }
       },
       {
@@ -1757,7 +1759,8 @@
         "metadata": {
           "orgId": "org_acme",
           "clientId": "cli_sarah",
-          "sourceFile": "persona.md"
+          "sourceFile": "persona.md",
+          "usedAt": "2026-09-06T15:40:00.000Z"
         }
       },
       {
@@ -1777,7 +1780,8 @@
         "metadata": {
           "orgId": "org_acme",
           "clientId": "cli_marcus",
-          "sourceFile": "persona.md"
+          "sourceFile": "persona.md",
+          "usedAt": "2026-09-02T10:05:00.000Z"
         }
       },
       {
@@ -1807,7 +1811,8 @@
         "metadata": {
           "orgId": "org_acme",
           "clientId": "cli_acme",
-          "sourceFile": "persona.md"
+          "sourceFile": "persona.md",
+          "usedAt": "2026-09-05T08:30:00.000Z"
         }
       }
     ]

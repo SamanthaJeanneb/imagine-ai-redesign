@@ -225,7 +225,13 @@ export interface WorkspaceFileRow {
   id: string;
   resourceId: string;
   content: string;
-  metadata: { orgId: string; clientId?: string; sourceFile: string };
+  metadata: {
+    orgId: string;
+    clientId?: string;
+    sourceFile: string;
+    /** When the agent last pulled this file into a reply. Absent if never. */
+    usedAt?: string;
+  };
 }
 
 /** The whole mock database, grouped by Postgres schema. */

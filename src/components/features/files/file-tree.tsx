@@ -17,7 +17,15 @@ import { Icon } from "@/components/ui/icon";
 import { fade, pressRow, spring, stagger } from "@/styles/motion";
 
 export type FileNode =
-  | { type: "file"; id: string; name: string }
+  | {
+      type: "file";
+      id: string;
+      name: string;
+      /** Opening lines of the document, for card previews. */
+      excerpt?: string;
+      /** The agent has read this file into a reply. */
+      usedByAgent?: boolean;
+    }
   | { type: "folder"; id: string; name: string; children: readonly FileNode[] }
   | {
       type: "assets";

@@ -62,6 +62,10 @@ import {
   EditorTabStrip,
   type EditorTab,
 } from "@/components/features/files/editor-tab-strip";
+import { FilesLibrary } from "@/components/features/files/files-library";
+import { FileTreeNav } from "@/components/features/files/file-tree-nav";
+import { LibraryCard } from "@/components/features/files/library-card";
+import { NewMenu } from "@/components/features/files/new-menu";
 import { FilesWorkspacePage } from "@/components/features/files/files-workspace-page";
 import {
   type FileSection,
@@ -640,9 +644,29 @@ const FILE_SECTIONS: FileSection[] = [
     kind: "organization",
     avatarUrl: ACME_LOGO,
     nodes: [
-      { type: "file", id: "f1", name: "brand-voice.md" },
-      { type: "file", id: "f2", name: "content-pillars.md" },
-      { type: "file", id: "f3", name: "audience.md" },
+      {
+        type: "file",
+        id: "f1",
+        name: "brand-voice.md",
+        excerpt:
+          "Brand voice\nAcme writes the way its engineers talk in a review: plainly, with the number attached.\nAlways\nSay what changed before saying why it matters.",
+        usedByAgent: true,
+      },
+      {
+        type: "file",
+        id: "f2",
+        name: "content-pillars.md",
+        excerpt:
+          "Content pillars\nShipping notes, customer numbers, hiring, and the occasional opinion about tooling.",
+      },
+      {
+        type: "file",
+        id: "f3",
+        name: "audience.md",
+        excerpt:
+          "Audience\nEngineering leads at Series A to C companies who own a roadmap and a budget.",
+        usedByAgent: true,
+      },
       {
         type: "folder",
         id: "fo1",
@@ -1192,6 +1216,172 @@ export function FilesWorkspacePageDemo() {
           sections={FILE_SECTIONS}
           skills={SKILLS}
           documents={KIT_DOCUMENTS}
+        />
+      </div>
+    </Demo>
+  );
+}
+
+const DOCUMENT_ACTIONS = [
+  { id: "open", label: "Open", icon: "file-lines" as const },
+  { id: "send", label: "Send to chat", icon: "imagine" as const },
+  { id: "rename", label: "Rename", icon: "pen" as const },
+  {
+    id: "trash",
+    label: "Move to trash",
+    icon: "trash" as const,
+    destructive: true,
+  },
+];
+
+const BRAND_VOICE_EXCERPT =
+  "Brand voice\nAcme writes the way its engineers talk in a review: plainly, with the number attached.\nAlways\nSay what changed before saying why it matters.";
+
+/** The pieces the Files page is built from, shown on their own. */
+export function FilesPartsDemo() {
+  const [selectedId, setSelectedId] = useState("f1");
+  const act = (name: string) => (action: string) => {
+    toast(`${action} · ${name}`);
+  };
+
+  return (
+    <Demo label="New menu, tree, and cards">
+      <div className="grid gap-l lg:grid-cols-[15rem_1fr]">
+        <div className="flex flex-col gap-m rounded-panel bg-imagine-surface-raised p-s">
+          <NewMenu
+            location="Acme"
+            onIntent={(intent) => {
+              toast(`New: ${intent}`);
+            }}
+          />
+          <FileTreeNav
+            sections={FILE_SECTIONS}
+            selectedId={selectedId}
+            onSelectLocation={({ sectionId, folderId }) => {
+              setSelectedId(folderId ?? sectionId);
+            }}
+            onOpenFile={setSelectedId}
+          />
+        </div>
+
+        <div className="flex flex-col gap-l">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-m">
+            <LibraryCard
+              kind="folder"
+              name="Campaigns"
+              meta="2 documents"
+              onPress={() => {
+                toast("Open Campaigns");
+              }}
+              actions={DOCUMENT_ACTIONS.slice(2)}
+              onAction={act("Campaigns")}
+            />
+            <LibraryCard
+              kind="document"
+              name="brand-voice.md"
+              excerpt={BRAND_VOICE_EXCERPT}
+              inUse
+              onPress={() => {
+                toast("Open brand-voice.md");
+              }}
+              actions={DOCUMENT_ACTIONS}
+              onAction={act("brand-voice.md")}
+            />
+            <LibraryCard
+              kind="document"
+              name="untitled.md"
+              selected
+              onPress={() => {
+                toast("Open untitled.md");
+              }}
+              actions={DOCUMENT_ACTIONS}
+              onAction={act("untitled.md")}
+            />
+            <LibraryCard
+              kind="image"
+              name="Team at the offsite"
+              {...(ASSETS[0]?.src === undefined ? {} : { src: ASSETS[0].src })}
+              inUse
+              onPress={() => {
+                toast("Preview image");
+              }}
+              actions={DOCUMENT_ACTIONS.slice(1, 2)}
+              onAction={act("Team at the offsite")}
+            />
+            <LibraryCard
+              kind="video"
+              name="Launch teaser"
+              {...(ASSETS[1]?.src === undefined ? {} : { src: ASSETS[1].src })}
+              onPress={() => {
+                toast("Preview video");
+              }}
+              actions={DOCUMENT_ACTIONS.slice(1, 2)}
+              onAction={act("Launch teaser")}
+            />
+            <LibraryCard
+              kind="image"
+              name="Missing file"
+              onPress={() => {
+                toast("Preview image");
+              }}
+            />
+          </div>
+          <div className="flex flex-col gap-px">
+            <LibraryCard
+              view="list"
+              kind="folder"
+              name="Campaigns"
+              meta="2 documents"
+              onPress={() => {
+                toast("Open Campaigns");
+              }}
+              actions={DOCUMENT_ACTIONS.slice(2)}
+              onAction={act("Campaigns")}
+            />
+            <LibraryCard
+              view="list"
+              kind="document"
+              name="brand-voice.md"
+              meta="Acme"
+              inUse
+              onPress={() => {
+                toast("Open brand-voice.md");
+              }}
+              actions={DOCUMENT_ACTIONS}
+              onAction={act("brand-voice.md")}
+            />
+            <LibraryCard
+              view="list"
+              kind="image"
+              name="Team at the offsite"
+              meta="Acme / Campaigns"
+              onPress={() => {
+                toast("Preview image");
+              }}
+              actions={DOCUMENT_ACTIONS.slice(1, 2)}
+              onAction={act("Team at the offsite")}
+            />
+          </div>
+        </div>
+      </div>
+    </Demo>
+  );
+}
+
+export function FilesLibraryDemo() {
+  return (
+    <Demo label="Rail with tree and New; the browser shows one location as folders, documents, and images">
+      <div className="flex h-[720px] min-w-0 flex-col bg-imagine-surface">
+        <FilesLibrary
+          title="Acme"
+          sections={FILE_SECTIONS}
+          skills={SKILLS}
+          documents={KIT_DOCUMENTS}
+          onSendToChat={(resource) => {
+            toast(
+              `Sent ${resource.kind === "file" ? resource.file.title : (resource.asset.caption ?? "asset")} to chat`,
+            );
+          }}
         />
       </div>
     </Demo>
