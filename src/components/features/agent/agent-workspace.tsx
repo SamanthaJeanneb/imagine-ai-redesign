@@ -130,7 +130,7 @@ export function AgentWorkspace({
           ? centered
             ? "mx-auto w-full min-w-0 max-w-2xl"
             : "w-full min-w-0"
-          : "sticky bottom-l z-10 mx-auto mt-l w-full min-w-0 max-w-3xl"
+          : "sticky bottom-l z-10 mx-auto mt-xl w-full min-w-0 max-w-3xl"
       }
     />
   );

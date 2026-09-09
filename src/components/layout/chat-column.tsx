@@ -94,7 +94,7 @@ export function ChatColumn({
           <ChatDock
             previews={previews}
             animateLayout={!reduceMotion}
-            className="sticky bottom-l z-10 mt-l"
+            className="sticky bottom-l z-10 mt-xl"
           />
         </div>
       </div>
