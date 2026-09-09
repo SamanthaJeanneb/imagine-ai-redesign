@@ -144,8 +144,9 @@ center to sidebar across `/agent` → `/calendar` and `/analytics`.
 - **Settings tabs are routes:** `/settings` (General), `/settings/profiles`,
 `/settings/integrations`, `/settings/api`. No billing route, no usage meter, no storage
 meter: those were cut from the design.
-- **`/files` is a full-page version of the files panel** (same tree, wider preview
-column). The Files nav item goes there; the chat's file icon opens the panel.
+- **`/files` is a standalone file manager** over the same data as the compact chat
+panel: library navigation, folder browsing, search, and a persistent preview/editor.
+The Files nav item goes there; the chat's file icon opens the quick-attach tree.
 - **Never a card inside a card.** Inside a raised or filled container the children are
 plain rows and icons, never wells, tiles, or inner boxes.
 - **Stat tiles and chart blocks are not cards.** They sit on the main surface separated by
@@ -537,8 +538,9 @@ Wireframes: `file-system/file system - right sidebar.png`,
 - Files and media assets can be dragged from the panel into the composer, which becomes
   a clear drop target and keeps multiple attached resources as independently removable
   next-message context. File rows also expose a keyboard-focusable attach action.
-- `/files` reuses the panel at a wider size and places a document or asset preview beside
-  it. Markdown edits save inline; assets select and expand without an inner card stack.
+- `/files` uses a dedicated three-pane file-manager layout: workspace and profile
+  libraries on the left, searchable folder/file/skill browsing in the middle, and a
+  persistent document or asset preview on the right. Markdown edits still save inline.
 - `workspace_search` chunks are grouped by `metadata.sourceFile` and scoped by
   `metadata.orgId`; company-profile files join the organization section while people
   retain their own sections. The Skills tab is built from `mastra_skills`.
