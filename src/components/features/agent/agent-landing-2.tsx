@@ -62,10 +62,11 @@ export function CenteredIntro({
 }
 
 /**
- * Three raised cards, one activity each: a glyph for the kind, the kind and
- * when, the title, and the primary action along the bottom edge. Pressing a
- * card takes that action, which opens a thread with its sentence. Cards sit
- * on the surface, so they are the only container here.
+ * Three compact raised cards, one activity each: a glyph for the kind on the
+ * left, then the kind and when, the title, and the primary action. Unread
+ * shows only as the glyph's tint. Pressing a card takes that action, which
+ * opens a thread with its sentence. Cards sit on the surface, so they are the
+ * only container here.
  */
 export function ActivityCards({
   entries,
@@ -99,46 +100,38 @@ export function ActivityCards({
               onClick={() => {
                 if (primary) onAction(entry, primary);
               }}
-              className="group/card flex min-h-40 w-full flex-col gap-m rounded-panel bg-imagine-surface p-l text-left shadow-raised transition-shadow outline-none hover:shadow-floating focus-visible:ring-2 focus-visible:ring-ring/40"
+              className="group/card flex w-full items-start gap-s rounded-panel bg-imagine-surface p-m text-left shadow-raised transition-shadow outline-none hover:shadow-floating focus-visible:ring-2 focus-visible:ring-ring/40"
             >
-              <span className="flex items-center justify-between gap-s">
-                <span
-                  className={cn(
-                    "flex size-8 shrink-0 items-center justify-center rounded-control",
-                    entry.unread
-                      ? "bg-imagine-secondary-soft text-imagine-secondary-strong"
-                      : "bg-imagine-surface-raised text-imagine-foreground",
-                  )}
-                >
-                  <Icon name={icon} size="m" />
-                </span>
-                {entry.unread ? (
-                  <span
-                    aria-hidden="true"
-                    className="size-1.5 shrink-0 rounded-full bg-imagine-secondary ring-[3px] ring-imagine-secondary-soft"
-                  />
-                ) : null}
+              <span
+                className={cn(
+                  "flex size-7 shrink-0 items-center justify-center rounded-control",
+                  entry.unread
+                    ? "bg-imagine-secondary-soft text-imagine-secondary-strong"
+                    : "bg-imagine-surface-raised text-imagine-foreground",
+                )}
+              >
+                <Icon name={icon} size="s" />
               </span>
-              <span className="flex flex-col gap-xxs">
+              <span className="flex min-w-0 flex-1 flex-col gap-xxs">
                 <span className="truncate type-small text-imagine-foreground-muted">
                   {entry.kind}
                   <span className="text-imagine-foreground-faint"> · </span>
                   {entry.when}
                 </span>
-                <span className="line-clamp-2 type-body font-medium">
+                <span className="line-clamp-2 type-small font-medium">
                   {entry.title}
                 </span>
+                {primary ? (
+                  <span className="mt-xs flex items-center gap-xs type-small font-medium text-imagine-foreground-muted group-hover/card:text-imagine-foreground">
+                    {primary.label}
+                    <Icon
+                      name="arrow-right"
+                      size="s"
+                      className="transition-transform group-hover/card:translate-x-0.5"
+                    />
+                  </span>
+                ) : null}
               </span>
-              {primary ? (
-                <span className="mt-auto flex items-center gap-xs border-t border-imagine-border pt-m type-small font-medium">
-                  {primary.label}
-                  <Icon
-                    name="arrow-right"
-                    size="s"
-                    className="transition-transform group-hover/card:translate-x-0.5"
-                  />
-                </span>
-              ) : null}
             </motion.button>
           </StaggerItem>
         );
