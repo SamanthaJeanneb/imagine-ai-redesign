@@ -354,7 +354,6 @@ export function FileChromeDemo() {
           <Chip value="all">All</Chip>
           <Chip value="documents">Documents</Chip>
           <Chip value="images">Images</Chip>
-          <Chip value="agent">Used by agent</Chip>
         </ChipGroup>
         <span className="type-small text-imagine-foreground-muted">
           Chips filter; the toggle group above switches views.

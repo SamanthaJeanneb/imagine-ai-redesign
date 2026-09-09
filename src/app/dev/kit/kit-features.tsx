@@ -1269,7 +1269,6 @@ export function FilesPartsDemo() {
             <LibraryCard
               kind="folder"
               name="Campaigns"
-              meta="2 documents"
               onPress={() => {
                 toast("Open Campaigns");
               }}
@@ -1280,7 +1279,6 @@ export function FilesPartsDemo() {
               kind="document"
               name="brand-voice.md"
               excerpt={BRAND_VOICE_EXCERPT}
-              inUse
               onPress={() => {
                 toast("Open brand-voice.md");
               }}
@@ -1301,7 +1299,6 @@ export function FilesPartsDemo() {
               kind="image"
               name="Team at the offsite"
               {...(ASSETS[0]?.src === undefined ? {} : { src: ASSETS[0].src })}
-              inUse
               onPress={() => {
                 toast("Preview image");
               }}
@@ -1331,7 +1328,6 @@ export function FilesPartsDemo() {
               view="list"
               kind="folder"
               name="Campaigns"
-              meta="2 documents"
               onPress={() => {
                 toast("Open Campaigns");
               }}
@@ -1342,8 +1338,6 @@ export function FilesPartsDemo() {
               view="list"
               kind="document"
               name="brand-voice.md"
-              meta="Acme"
-              inUse
               onPress={() => {
                 toast("Open brand-voice.md");
               }}
@@ -1354,7 +1348,6 @@ export function FilesPartsDemo() {
               view="list"
               kind="image"
               name="Team at the offsite"
-              meta="Acme / Campaigns"
               onPress={() => {
                 toast("Preview image");
               }}
@@ -1370,8 +1363,8 @@ export function FilesPartsDemo() {
 
 export function FilesLibraryDemo() {
   return (
-    <Demo label="Rail with tree and New; the browser shows one location as folders, documents, and images">
-      <div className="flex h-[720px] min-w-0 flex-col bg-imagine-surface">
+    <Demo label="Full-height white sidebar with the tree; the browser shows one location as folders, documents, and images">
+      <div className="flex h-[720px] min-w-0 flex-col overflow-hidden bg-imagine-surface">
         <FilesLibrary
           title="Acme"
           sections={FILE_SECTIONS}

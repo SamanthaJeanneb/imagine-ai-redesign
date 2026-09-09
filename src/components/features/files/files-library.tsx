@@ -31,7 +31,6 @@ import {
   SkillsList,
 } from "@/components/features/files/skills-list";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
-import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -87,8 +86,8 @@ type Place =
   | { kind: "trash" };
 
 type Tab = "files" | "skills";
-type Filter = "all" | "documents" | "images" | "agent";
-type Sort = "name-asc" | "name-desc" | "in-use";
+type Filter = "all" | "documents" | "images";
+type Sort = "name-asc" | "name-desc";
 
 type FolderNode = Extract<FileNode, { type: "folder" }>;
 
@@ -97,10 +96,8 @@ interface BrowserItem {
   id: string;
   kind: LibraryCardKind;
   name: string;
-  meta?: string;
   excerpt?: string;
   src?: string;
-  inUse: boolean;
 }
 
 /** Enough to put something back where it was. */
@@ -124,19 +121,16 @@ const FILTERS: readonly { value: Filter; label: string }[] = [
   { value: "all", label: "All" },
   { value: "documents", label: "Documents" },
   { value: "images", label: "Images" },
-  { value: "agent", label: "Used by agent" },
 ];
 
 const SORTS: readonly { value: Sort; label: string }[] = [
   { value: "name-asc", label: "Name, A to Z" },
   { value: "name-desc", label: "Name, Z to A" },
-  { value: "in-use", label: "In use first" },
 ];
 
 const SORT_SHORT: Record<Sort, string> = {
   "name-asc": "Name",
   "name-desc": "Name",
-  "in-use": "In use",
 };
 
 const DOCUMENT_ACTIONS: readonly LibraryCardAction[] = [
@@ -165,10 +159,6 @@ const TRASH_ACTIONS: readonly LibraryCardAction[] = [
 /* Tree helpers                                                             */
 /* ------------------------------------------------------------------------ */
 
-function plural(n: number, noun: string): string {
-  return `${String(n)} ${noun}${n === 1 ? "" : "s"}`;
-}
-
 function matches(text: string | undefined, query: string): boolean {
   return text?.toLowerCase().includes(query) ?? false;
 }
@@ -178,19 +168,6 @@ function leaves(nodes: readonly FileNode[]): readonly FileNode[] {
   return nodes.flatMap((node) =>
     node.type === "folder" ? leaves(node.children) : [node],
   );
-}
-
-function countLeaves(nodes: readonly FileNode[]): {
-  documents: number;
-  assets: number;
-} {
-  let documents = 0;
-  let assets = 0;
-  for (const node of leaves(nodes)) {
-    if (node.type === "file") documents += 1;
-    else if (node.type === "assets") assets += node.assets.length;
-  }
-  return { documents, assets };
 }
 
 function findFolder(
@@ -277,24 +254,11 @@ function slug(name: string): string {
 /* Small pieces                                                             */
 /* ------------------------------------------------------------------------ */
 
-function GroupLabel({
-  children,
-  count,
-}: {
-  children: React.ReactNode;
-  count?: number;
-}) {
+function GroupLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-baseline gap-xs">
-      <h3 className="type-small font-medium text-imagine-foreground-muted">
-        {children}
-      </h3>
-      {count === undefined ? null : (
-        <span className="text-xs text-imagine-foreground-faint tabular-nums">
-          {count}
-        </span>
-      )}
-    </div>
+    <h3 className="type-small font-medium text-imagine-foreground-muted">
+      {children}
+    </h3>
   );
 }
 
@@ -445,12 +409,12 @@ function NameDialog({
 /* ------------------------------------------------------------------------ */
 
 /**
- * The Files workspace at `/files-2`. A rail on the left holds the tree and
- * the way to add things; the browser on the right shows one location as
- * folders, documents, and images, with a breadcrumb that always says where
- * you are and lets you switch libraries or folders in place. Documents open
- * inside the browser; images open in a preview. Trash keeps what was removed
- * until it is restored or deleted for good.
+ * The Files workspace at `/files-2`. A full-height sidebar on the left holds
+ * the tree and the way to add things; the browser on the right shows one
+ * location as folders, documents, and images, with a breadcrumb that always
+ * says where you are and lets you switch libraries or folders in place.
+ * Documents open inside the browser; images open in a preview. Trash keeps
+ * what was removed until it is restored or deleted for good.
  */
 export function FilesLibrary({
   title,
@@ -555,56 +519,29 @@ export function FilesLibrary({
       ? (currentFolder?.children ?? scopeNodes)
       : scopeNodes;
 
-  const whereLabel = (id: string): string | undefined => {
-    const at = home.get(id);
-    if (at === undefined) return undefined;
-    const section = sectionById.get(at.sectionId);
-    const folder =
-      at.folderId === undefined || section === undefined
-        ? undefined
-        : findFolder(section.nodes, at.folderId);
-    return [section?.title, folder?.name]
-      .filter((part) => part !== undefined)
-      .join(" / ");
-  };
-
-  const toItems = (nodes: readonly FileNode[], showWhere: boolean) => {
+  const toItems = (nodes: readonly FileNode[]) => {
     const items: BrowserItem[] = [];
     for (const node of nodes) {
       if (node.type === "folder") {
-        const totals = countLeaves(node.children);
         items.push({
           id: node.id,
           kind: "folder",
           name: node.name,
-          meta: [
-            plural(totals.documents, "document"),
-            totals.assets > 0 ? plural(totals.assets, "image") : undefined,
-          ]
-            .filter((part) => part !== undefined)
-            .join(" · "),
-          inUse: false,
         });
       } else if (node.type === "file") {
-        const where = showWhere ? whereLabel(node.id) : undefined;
         items.push({
           id: node.id,
           kind: "document",
           name: node.name,
-          ...(where === undefined ? {} : { meta: where }),
           ...(node.excerpt === undefined ? {} : { excerpt: node.excerpt }),
-          inUse: node.usedByAgent === true,
         });
       } else {
         for (const asset of node.assets) {
-          const where = showWhere ? whereLabel(asset.id) : undefined;
           items.push({
             id: asset.id,
             kind: asset.kind,
             name: asset.caption ?? "Untitled image",
-            ...(where === undefined ? {} : { meta: where }),
             ...(asset.src === undefined ? {} : { src: asset.src }),
-            inUse: asset.inUse === true,
           });
         }
       }
@@ -625,34 +562,27 @@ export function FilesLibrary({
         id: entry.id,
         kind: entry.kind,
         name: entry.name,
-        meta: `From ${sectionById.get(entry.sectionId)?.title ?? title}`,
         ...(excerpt === undefined ? {} : { excerpt }),
         ...(src === undefined ? {} : { src }),
-        inUse: false,
       };
     });
   } else if (place.kind === "shared") {
     items = [];
   } else if (place.kind === "root" && !searching) {
-    items = sections.map((section) => {
-      const totals = countLeaves(section.nodes);
-      return {
-        id: section.id,
-        kind: "folder",
-        name: section.title,
-        meta: `${plural(totals.documents, "document")} · ${plural(totals.assets, "image")}`,
-        inUse: false,
-      };
-    });
+    items = sections.map((section) => ({
+      id: section.id,
+      kind: "folder",
+      name: section.title,
+    }));
   } else if (searching) {
     // Search looks across the whole library, not just the open folder.
-    items = toItems(leaves(scopeNodes), true).filter(
+    items = toItems(leaves(scopeNodes)).filter(
       (item) =>
         matches(item.name, normalizedQuery) ||
         matches(item.excerpt, normalizedQuery),
     );
   } else {
-    items = toItems(locationNodes, false);
+    items = toItems(locationNodes);
   }
 
   const passesFilter = (item: BrowserItem) => {
@@ -663,12 +593,9 @@ export function FilesLibrary({
         return item.kind === "document";
       case "images":
         return item.kind === "image" || item.kind === "video";
-      case "agent":
-        return item.inUse;
     }
   };
   const compare = (a: BrowserItem, b: BrowserItem) => {
-    if (sort === "in-use" && a.inUse !== b.inUse) return a.inUse ? -1 : 1;
     const order = a.name.localeCompare(b.name);
     return sort === "name-desc" ? -order : order;
   };
@@ -966,10 +893,8 @@ export function FilesLibrary({
       <LibraryCard
         kind={item.kind}
         name={item.name}
-        {...(item.meta === undefined ? {} : { meta: item.meta })}
         {...(item.excerpt === undefined ? {} : { excerpt: item.excerpt })}
         {...(item.src === undefined ? {} : { src: item.src })}
-        inUse={item.inUse}
         view={view}
         onPress={() => {
           pressItem(item);
@@ -990,15 +915,12 @@ export function FilesLibrary({
   return (
     <div
       data-slot="files-library"
-      className={cn(
-        "@container flex min-h-0 flex-1 gap-l px-xxl pt-xl pb-xxl",
-        className,
-      )}
+      className={cn("@container flex min-h-0 flex-1", className)}
     >
-      {/* Rail */}
+      {/* Sidebar: flush, full height, page-white. */}
       <aside
         aria-label="Files navigation"
-        className="flex w-60 shrink-0 flex-col gap-m rounded-panel bg-imagine-surface-raised p-s"
+        className="flex h-full w-64 shrink-0 flex-col gap-m bg-imagine-surface px-s pt-l pb-s"
       >
         <Tabs
           variant="line"
@@ -1141,7 +1063,7 @@ export function FilesLibrary({
       {/* Browser */}
       <section
         aria-label="Browser"
-        className="flex min-h-0 min-w-0 flex-1 flex-col gap-m"
+        className="flex min-h-0 min-w-0 flex-1 flex-col gap-m px-xxl pt-xl pb-xxl"
       >
         <header className="flex h-9 shrink-0 items-center gap-l">
           <Breadcrumb className="min-w-0 flex-1">
@@ -1452,7 +1374,7 @@ export function FilesLibrary({
                           ? "Nothing shared yet"
                           : filter === "all"
                             ? "Nothing here"
-                            : `No ${filter === "agent" ? "files used by the agent" : filter} here`
+                            : `No ${filter} here`
                   }
                   body={
                     searching
@@ -1461,9 +1383,7 @@ export function FilesLibrary({
                         ? "Files you move to trash stay here until you restore them or delete them for good."
                         : place.kind === "shared"
                           ? "Documents other people share with you will show up here."
-                          : filter === "agent"
-                            ? "Files the agent has read while working show up here."
-                            : "Try another filter, or look in a different folder."
+                          : "Try another filter, or look in a different folder."
                   }
                   {...(!searching && filter !== "all"
                     ? {
@@ -1512,11 +1432,7 @@ export function FilesLibrary({
 
                   {docs.length > 0 ? (
                     <div className="flex flex-col gap-s">
-                      <GroupLabel
-                        {...(searching ? { count: docs.length } : {})}
-                      >
-                        Documents
-                      </GroupLabel>
+                      <GroupLabel>Documents</GroupLabel>
                       <Stagger kind="grid" className={gridClass}>
                         {docs.map(renderCard)}
                       </Stagger>
@@ -1525,11 +1441,7 @@ export function FilesLibrary({
 
                   {media.length > 0 ? (
                     <div className="flex flex-col gap-s">
-                      <GroupLabel
-                        {...(searching ? { count: media.length } : {})}
-                      >
-                        Images
-                      </GroupLabel>
+                      <GroupLabel>Images</GroupLabel>
                       <Stagger kind="grid" className={gridClass}>
                         {media.map(renderCard)}
                       </Stagger>
@@ -1587,19 +1499,11 @@ export function FilesLibrary({
           {previewAsset === undefined ? null : (
             <>
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-s">
-                  <span className="truncate">
-                    {previewAsset.caption ?? "Untitled image"}
-                  </span>
-                  {previewAsset.inUse ? (
-                    <Badge variant="soft" className="h-5 shrink-0 px-1.5">
-                      In use
-                    </Badge>
-                  ) : null}
+                <DialogTitle className="truncate">
+                  {previewAsset.caption ?? "Untitled image"}
                 </DialogTitle>
-                <DialogDescription>
-                  {previewAsset.kind === "video" ? "Video" : "Image"} in{" "}
-                  {whereLabel(previewAsset.id) ?? title}
+                <DialogDescription className="sr-only">
+                  {previewAsset.kind === "video" ? "Video" : "Image"}
                 </DialogDescription>
               </DialogHeader>
               <div className="overflow-hidden rounded-panel bg-imagine-surface-raised">
@@ -1625,7 +1529,6 @@ export function FilesLibrary({
                       id: previewAsset.id,
                       kind: previewAsset.kind,
                       name: previewAsset.caption ?? "Untitled image",
-                      inUse: previewAsset.inUse === true,
                     };
                     setPreviewId(undefined);
                     moveToTrash(item);

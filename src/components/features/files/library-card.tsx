@@ -3,7 +3,6 @@
 import { cn } from "cn";
 import { motion } from "motion/react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -29,14 +28,10 @@ export interface LibraryCardAction {
 interface LibraryCardProps {
   kind: LibraryCardKind;
   name: string;
-  /** A second line: what is inside a folder, or where a file lives. */
-  meta?: string;
   /** Document preview: its opening lines. */
   excerpt?: string;
   /** Image and video preview. */
   src?: string;
-  /** Read by the agent (documents) or attached to a post (media). */
-  inUse?: boolean;
   selected?: boolean;
   view?: LibraryCardView;
   /** Click. Folders navigate; files select. */
@@ -53,13 +48,6 @@ const KIND_ICON: Record<LibraryCardKind, IconName> = {
   document: "file-lines",
   image: "image",
   video: "video",
-};
-
-const KIND_LABEL: Record<LibraryCardKind, string> = {
-  folder: "Folder",
-  document: "Document",
-  image: "Image",
-  video: "Video",
 };
 
 function ActionsMenu({
@@ -189,15 +177,13 @@ function MediaPreview({ kind, src }: { kind: "image" | "video"; src?: string }) 
 /**
  * One item in the browser. Folders are a single line; documents and media
  * show a face above their name. In list view every kind is a row. The menu
- * appears on hover; "In use" stays, because it is information.
+ * appears on hover.
  */
 export function LibraryCard({
   kind,
   name,
-  meta,
   excerpt,
   src,
-  inUse = false,
   selected = false,
   view = "grid",
   onPress,
@@ -219,24 +205,9 @@ export function LibraryCard({
       <span className="flex size-6 shrink-0 items-center justify-center text-imagine-foreground-muted">
         <Icon name={KIND_ICON[kind]} size="s" active={kind === "folder"} />
       </span>
-      <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate type-small font-medium">{name}</span>
-        {row && meta !== undefined ? (
-          <span className="truncate text-xs text-imagine-foreground-faint">
-            {meta}
-          </span>
-        ) : null}
+      <span className="min-w-0 flex-1 truncate type-small font-medium">
+        {name}
       </span>
-      {view === "list" ? (
-        <span className="hidden w-20 shrink-0 text-xs text-imagine-foreground-faint @3xl:inline">
-          {KIND_LABEL[kind]}
-        </span>
-      ) : null}
-      {inUse ? (
-        <Badge variant="soft" className="h-5 shrink-0 px-1.5">
-          In use
-        </Badge>
-      ) : null}
       {hasMenu ? <span aria-hidden="true" className="w-7 shrink-0" /> : null}
     </span>
   );
