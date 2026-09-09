@@ -65,6 +65,10 @@ function initials(name: string): string {
     .join("");
 }
 
+/** A white row on the panel's grey: company and persona. */
+const CARD =
+  "flex items-center gap-m rounded-control bg-imagine-surface px-m py-s";
+
 function Row({
   label,
   children,
@@ -96,9 +100,9 @@ function Group({
 }
 
 /**
- * The detail pane beside the profile list. Key facts as rows, then Company
- * and Persona groups on soft surfaces, with the destructive action alone at
- * the bottom.
+ * The detail pane beside the profile list: a raised (grey) panel with key
+ * facts as rows, then Company and Persona as white cards on it, and the
+ * destructive action alone at the bottom. Callers shape the panel's edges.
  */
 export function ProfileDetail({
   profile,
@@ -123,7 +127,7 @@ export function ProfileDetail({
         transition={fade.base}
         data-slot="profile-detail"
         className={cn(
-          "flex h-full flex-col gap-xl rounded-panel bg-imagine-surface p-l shadow-raised",
+          "flex h-full flex-col gap-xl overflow-y-auto rounded-panel bg-imagine-surface-raised p-l",
           className,
         )}
       >
@@ -194,7 +198,7 @@ export function ProfileDetail({
         {profile.kind === "person" ? (
           <Group title="Company">
             {profile.company ? (
-              <div className="flex items-center gap-m py-xs">
+              <div className={CARD}>
                 <Avatar size="sm" shape="square">
                   {profile.company.logoUrl ? (
                     <AvatarImage
@@ -251,7 +255,7 @@ export function ProfileDetail({
 
         <Group title="Persona">
           {profile.persona ? (
-            <div className="flex items-center gap-m py-xs">
+            <div className={CARD}>
               <Icon
                 name="file-lines"
                 size="s"
@@ -271,7 +275,7 @@ export function ProfileDetail({
           )}
         </Group>
 
-        <div className="mt-auto flex items-center justify-between pt-l">
+        <div className="mt-auto flex items-center justify-between border-t border-imagine-border pt-l">
           <Button
             variant="ghost"
             size="sm"

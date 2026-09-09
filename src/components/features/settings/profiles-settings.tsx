@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -27,6 +28,13 @@ import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { wait } from "@/lib/wait";
 import { fade } from "@/styles/motion";
+
+/**
+ * The detail pane's edges. Wide, it is the page's own corner: square where it
+ * meets the page's right and bottom edges, the surface radius where the white
+ * curves into it, and the page inset as its padding.
+ */
+const PANE = "lg:rounded-none lg:rounded-tl-surface lg:p-xxl";
 
 interface ProfilesSettingsProps {
   profiles: readonly ProfileSummary[];
@@ -175,7 +183,10 @@ export function ProfilesSettings({
           setAdding(true);
         }}
       />
-      <div className="relative min-h-0">
+      {/* Wide: the pane leaves the page inset and sits on the page's own
+          right edge, header divider to bottom, so the white curves into
+          its grey. The grid column only reserves its width. */}
+      <div className="relative min-h-0 lg:absolute lg:inset-y-0 lg:right-0 lg:w-[calc(22rem+var(--spacing-xxl))]">
         <AnimatePresence mode="wait" initial={false}>
           {selected === undefined ? (
             <motion.div
@@ -184,7 +195,10 @@ export function ProfilesSettings({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={fade.base}
-              className="flex h-full min-h-64 flex-col items-center justify-center gap-m rounded-panel bg-imagine-surface p-l text-center shadow-raised"
+              className={cn(
+                "flex h-full min-h-64 flex-col items-center justify-center gap-m rounded-panel bg-imagine-surface-raised p-l text-center",
+                PANE,
+              )}
             >
               <Icon
                 name="user"
@@ -210,6 +224,7 @@ export function ProfilesSettings({
               // One instance across selections: it cross-fades between
               // profiles itself. Only the empty state swaps in and out.
               key="detail"
+              className={PANE}
               profile={selected}
               indexing={indexing}
               onReconnect={() => {
