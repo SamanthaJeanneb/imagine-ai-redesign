@@ -5,7 +5,14 @@ import type {
   ChartKind,
   ChartSeries,
 } from "@/components/features/analytics/chart-block";
+import type { Insight } from "@/components/features/analytics/ask-imagine";
+import type { BenchmarkData } from "@/components/features/analytics/benchmark-panel";
+import type { BestTimeData } from "@/components/features/analytics/best-time-grid";
+import type { ExplorerData } from "@/components/features/analytics/engagement-explorer";
+import type { IcpData } from "@/components/features/analytics/icp-posts";
+import type { Interaction } from "@/components/features/analytics/interaction-feed";
 import type { StatDelta } from "@/components/features/analytics/stat-tile";
+import type { TeamData } from "@/components/features/analytics/team-performance";
 import type { TopPost } from "@/components/features/analytics/top-posts";
 import {
   type AnalyticsTotals,
@@ -21,12 +28,24 @@ import {
 } from "@/lib/format";
 import { getDb, getNow } from "@/mocks/db";
 import {
+  ASK_PROMPTS,
+  getBenchmark,
+  getBestTimes,
+  getEngagementExplorer,
+  getIcpPosts,
+  getInsights,
+  getInteractions,
+  getTeamPerformance,
+} from "@/services/engagement";
+import {
   indexAssetsByPath,
   indexClients,
   publishedPosts,
   toPostChip,
   toPostMedia,
 } from "@/services/posts";
+
+export { ASK_PROMPTS };
 
 export interface AnalyticsStat {
   value: string;
@@ -56,11 +75,26 @@ export interface AnalyticsSnapshot {
   range: TimeRange;
   profileId: string;
   overview: Omit<AnalyticsOverview, "profiles">;
+  /** The engagement explorer for this range and profile. */
+  explorer: ExplorerData;
+}
+
+/** The panels that read a fixed 90-day window, cut by profile only. */
+export interface AnalyticsSections {
+  profileId: string;
+  insights: readonly Insight[];
+  benchmark: BenchmarkData;
+  icp: IcpData;
+  bestTimes: BestTimeData;
+  interactions: readonly Interaction[];
 }
 
 export interface AnalyticsPageData {
   profiles: readonly ProfileOption[];
   snapshots: readonly AnalyticsSnapshot[];
+  sections: readonly AnalyticsSections[];
+  /** Org-wide; the team does not change with the profile filter. */
+  team: TeamData;
 }
 
 const IMPRESSION_SERIES: readonly ChartSeries[] = [
@@ -308,11 +342,21 @@ export function getAnalyticsPageData(): AnalyticsPageData {
         range,
         profileId: profile.id,
         overview: withoutProfiles(getAnalyticsOverview(range, profile.id)),
+        explorer: getEngagementExplorer(range, profile.id),
       });
     }
   }
 
-  return { profiles, snapshots };
+  const sections: AnalyticsSections[] = profiles.map((profile) => ({
+    profileId: profile.id,
+    insights: getInsights(profile.id),
+    benchmark: getBenchmark(profile.id),
+    icp: getIcpPosts(profile.id),
+    bestTimes: getBestTimes(profile.id),
+    interactions: getInteractions(profile.id),
+  }));
+
+  return { profiles, snapshots, sections, team: getTeamPerformance() };
 }
 
 export interface LandingRail {

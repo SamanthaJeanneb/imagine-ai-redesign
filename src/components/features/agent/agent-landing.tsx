@@ -50,7 +50,7 @@ export function LandingIntro({
   dateLabel: string;
 }) {
   return (
-    <div className="flex flex-col gap-xs pb-xl">
+    <div className="flex min-w-0 flex-col gap-xs pb-xl">
       <h1 className="type-title">{greeting}</h1>
       <p className="type-small text-imagine-foreground-muted">{dateLabel}</p>
     </div>
@@ -136,7 +136,7 @@ export function LandingRail({
   onOpenCalendar: () => void;
 }) {
   return (
-    <div className="flex w-72 flex-col gap-xxl pb-section">
+    <div className="flex w-72 min-w-0 flex-col gap-xxl pb-section">
       {/* Numbers only. The deltas live on the analytics page, where there is
           room for them and a range control to make them mean something. */}
       <Stagger kind="grid" className="grid grid-cols-2 gap-l">

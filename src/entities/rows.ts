@@ -137,6 +137,109 @@ export interface CrmConnectionRow {
   last_synced_at: string | null;
 }
 
+/**
+ * `app.engagement_profiles`. A LinkedIn person who engaged with a client post,
+ * enriched. Only the columns the analytics screens read.
+ */
+export interface EngagementProfileRow {
+  id: string;
+  linkedin_profile_id: string;
+  public_identifier: string | null;
+  name: string | null;
+  headline: string | null;
+  linkedin_url: string | null;
+  profile_picture_path: string | null;
+  current_position: { title: string; company: string } | null;
+  follower_count: number | null;
+}
+
+/** `app.engagement_profile_tags`. ICP scoring of an engaged profile, per client. */
+export interface EngagementProfileTagRow {
+  id: string;
+  client_id: string;
+  profile_id: string;
+  category: string | null;
+  match_score: number | null;
+  signals: string[] | null;
+}
+
+/** `app.engagement_comments`. A comment left on a client post. */
+export interface EngagementCommentRow {
+  id: string;
+  post_id: string;
+  profile_id: string;
+  linkedin_comment_id: string;
+  comment_text: string | null;
+  comment_url: string | null;
+  commented_at: string | null;
+}
+
+/** `app.engagement_reactions`. A reaction left on a client post. */
+export interface EngagementReactionRow {
+  id: string;
+  post_id: string;
+  profile_id: string;
+  reaction_type: string;
+  created_at: string;
+}
+
+/** `app.targeted_accounts`. Accounts a client watches; the benchmark set. */
+export interface TargetedAccountRow {
+  id: string;
+  client_id: string;
+  added_by: string;
+  name: string;
+  headline: string | null;
+  profile_url: string;
+  profile_picture: string | null;
+  created_at: string;
+}
+
+/** `app.targeted_posts`. Posts scraped from a targeted account. */
+export interface TargetedPostRow {
+  id: string;
+  targeted_account_id: string;
+  text: string;
+  post_url: string;
+  posted_at: string | null;
+  author_name: string;
+  author_headline: string | null;
+  engagement_likes: number | null;
+  engagement_comments: number | null;
+  engagement_shares: number | null;
+}
+
+/**
+ * `app.crm_contacts`, the shared CRM columns trimmed to what renders.
+ * `linkedin_source` says how the contact was matched to a LinkedIn profile;
+ * `post_engagement` is the one the pipeline line counts.
+ */
+export interface CrmContactRow {
+  id: string;
+  org_id: string;
+  connection_id: string;
+  merge_id: string;
+  name: string | null;
+  company_name: string | null;
+  linkedin_slug: string | null;
+  linkedin_source: string | null;
+  remote_created_at: string | null;
+}
+
+/** `app.crm_opportunities`, trimmed the same way. */
+export interface CrmOpportunityRow {
+  id: string;
+  org_id: string;
+  connection_id: string;
+  merge_id: string;
+  name: string | null;
+  amount: number | null;
+  status: string | null;
+  stage_name: string | null;
+  contact_merge_ids: string[];
+  remote_created_at: string | null;
+}
+
 /** `agent.activities`, read as the landing timeline. */
 export interface ActivityRow {
   id: string;
@@ -182,7 +285,10 @@ export interface ThreadRow {
  * one loose shape here and `services/agent` narrows it into renderable parts.
  */
 export interface MessagePartRow {
-  /** `text`, `emphasis`, `post_draft`, `scheduled`, `chart`, `asset_picker`. */
+  /**
+   * `text`, `emphasis`, `post_draft`, `scheduled`, `chart`, `asset_picker`,
+   * `comment_draft`.
+   */
   type: string;
   text?: string;
   postId?: string;
@@ -192,6 +298,11 @@ export interface MessagePartRow {
   title?: string;
   /** Asset picker: what the agent is asking for. */
   prompt?: string;
+  /** Comment draft: the engagement comment being replied to. */
+  commentId?: string;
+  /** Comment draft on someone else's post: who, and what they wrote. */
+  profileId?: string;
+  quote?: string;
 }
 
 /** `mastra.mastra_messages` */
@@ -250,6 +361,14 @@ export interface Database {
     assets: AssetRow[];
     api_keys: ApiKeyRow[];
     crm_connections: CrmConnectionRow[];
+    crm_contacts: CrmContactRow[];
+    crm_opportunities: CrmOpportunityRow[];
+    engagement_profiles: EngagementProfileRow[];
+    engagement_profile_tags: EngagementProfileTagRow[];
+    engagement_comments: EngagementCommentRow[];
+    engagement_reactions: EngagementReactionRow[];
+    targeted_accounts: TargetedAccountRow[];
+    targeted_posts: TargetedPostRow[];
   };
   agent: { activities: ActivityRow[]; canned_replies: CannedReplyRow[] };
   mastra: {

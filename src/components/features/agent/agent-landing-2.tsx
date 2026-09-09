@@ -46,7 +46,7 @@ export function CenteredIntro({
   dateLabel: string;
 }) {
   return (
-    <div className="flex flex-col items-center gap-xl pb-xxl text-center">
+    <div className="flex min-w-0 flex-col items-center gap-xl pb-xxl text-center">
       {/* The agent, as a person would be: a circle. Black mark on a white disc
           in both themes, with a plain drop shadow: no ring, no sheen. */}
       <span className="flex size-16 items-center justify-center rounded-full bg-white text-black shadow-[0_2px_6px_rgb(0_0_0/0.08),0_12px_28px_-8px_rgb(0_0_0/0.22)]">
@@ -87,7 +87,7 @@ export function ActivityCards({
       {shown.map((entry) => {
         const primary =
           entry.actions.find((action) => action.primary) ?? entry.actions[0];
-        const icon = KIND_ICON[entry.kind] ?? "sparkles";
+        const icon = KIND_ICON[entry.kind] ?? "imagine";
         return (
           <StaggerItem key={entry.id} className="flex">
             <motion.button

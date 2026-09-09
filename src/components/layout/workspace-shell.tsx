@@ -35,7 +35,11 @@ import {
   type SidebarThread,
 } from "@/components/layout/sidebar";
 import { toTitle } from "@/lib/format";
-import type { AgentMessage, ScriptedReply } from "@/services/agent";
+import type {
+  AgentMessage,
+  ReplyIntent,
+  ScriptedReply,
+} from "@/services/agent";
 import type { OpenDocument } from "@/services/files";
 import { fade, spring } from "@/styles/motion";
 
@@ -53,7 +57,7 @@ interface WorkspaceShellProps {
   /** Every workspace and skill document the editor can open. */
   documents: readonly OpenDocument[];
   /** The agent's scripted answers, for the conversation the shell owns. */
-  replies: { default: ScriptedReply; schedule: ScriptedReply };
+  replies: Record<ReplyIntent, ScriptedReply>;
   /** What the composer's Calendar and Analytics chips open. */
   previews: PreviewData;
   children: ReactNode;

@@ -116,7 +116,7 @@ import { LogoLoader } from "@/components/motion/logo-loader";
 import { Button } from "@/components/ui/button";
 import type { TimeRange } from "@/entities/analytics";
 import type { CalendarView, PostsByDay } from "@/lib/calendar";
-import type { ScriptedReply } from "@/services/agent";
+import type { ReplyIntent, ScriptedReply } from "@/services/agent";
 import type {
   AnalyticsPageData,
   AnalyticsSnapshot,
@@ -125,6 +125,16 @@ import type {
 import type { OpenDocument } from "@/services/files";
 
 /* Kit fixtures. The screens read src/mocks/db.json through src/services/. */
+
+import {
+  KIT_BENCHMARK,
+  KIT_BEST_TIMES,
+  KIT_ICP,
+  KIT_INSIGHTS,
+  KIT_INTERACTIONS,
+  KIT_TEAM,
+  kitExplorer,
+} from "./kit-analytics";
 
 const AVATAR = (n: number) => `https://i.pravatar.cc/96?img=${String(n)}`;
 const ACME_LOGO = "/brand/acme-logo.png";
@@ -288,7 +298,63 @@ const KIT_REPLIES = {
       },
     ],
   },
-} satisfies { default: ScriptedReply; schedule: ScriptedReply };
+  comment: {
+    statuses: ["Reading their comment", "Writing as Sarah"],
+    parts: [
+      {
+        type: "text",
+        text: "Dana runs marketing at a target account, so this is worth a real reply.",
+      },
+      {
+        type: "comment_draft",
+        commentId: "cm1",
+        target: {
+          author: {
+            name: "Dana Whitfield",
+            headline: "VP Marketing at Halcyon",
+            avatarUrl: AVATAR(20),
+          },
+          text: "We went through exactly this last quarter. The hard part was killing the steps the sales team had promised.",
+          context:
+            "on your post \u201cThe roadmap review we stopped doing\u201d",
+        },
+        author: {
+          name: "Sarah Chen",
+          headline: "CEO at Acme",
+          avatarUrl: AVATAR(47),
+        },
+        body: "That was the hard part for us too. What finally worked was showing the drop-off per step, so the argument was about the number rather than the promise.",
+      },
+    ],
+  },
+  outreach: {
+    statuses: ["Reading their latest post", "Finding the angle"],
+    parts: [
+      {
+        type: "text",
+        text: "Their latest post is about forecast honesty. Here is a comment that adds something rather than agreeing.",
+      },
+      {
+        type: "comment_draft",
+        target: {
+          author: {
+            name: "Dana Whitfield",
+            headline: "VP Marketing at Halcyon",
+            avatarUrl: AVATAR(20),
+          },
+          text: "Forecast accuracy is a people problem before it is a data problem.",
+          context: "their latest post",
+        },
+        author: {
+          name: "Sarah Chen",
+          headline: "CEO at Acme",
+          avatarUrl: AVATAR(47),
+        },
+        body: "The people problem shows up in the update cadence too. Reps who update weekly forecast better, not because the data is fresher but because they have to say the number out loud.",
+      },
+    ],
+  },
+} satisfies Record<ReplyIntent, ScriptedReply>;
 
 const AUTHOR_SARAH = {
   name: "Sarah Chen",
@@ -458,6 +524,7 @@ function kitAnalyticsSnapshot(
   return {
     range,
     profileId,
+    explorer: kitExplorer(scale),
     overview: {
       stats: [
         {
@@ -567,6 +634,15 @@ const KIT_ANALYTICS_DATA = {
     kitAnalyticsSnapshot(range, "all", factor),
     kitAnalyticsSnapshot(range, "c2", factor),
   ]),
+  sections: (["all", "c2"] as const).map((profileId) => ({
+    profileId,
+    insights: KIT_INSIGHTS,
+    benchmark: KIT_BENCHMARK,
+    icp: KIT_ICP,
+    bestTimes: KIT_BEST_TIMES,
+    interactions: KIT_INTERACTIONS,
+  })),
+  team: KIT_TEAM,
 } satisfies AnalyticsPageData;
 
 function KitChatScope({ children }: { children: ReactNode }) {

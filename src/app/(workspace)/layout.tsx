@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import { WorkspaceShell } from "@/components/layout/workspace-shell";
-import { getScriptedReply, getThreads } from "@/services/agent";
+import { getScriptedReplies, getThreads } from "@/services/agent";
 import { getPreviewCharts } from "@/services/analytics";
 import { getUpcomingWeeks } from "@/services/calendar";
 import { getDocuments, getFileSections, getSkills } from "@/services/files";
@@ -28,10 +28,7 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
       fileSections={getFileSections()}
       skills={getSkills()}
       documents={getDocuments()}
-      replies={{
-        default: getScriptedReply(),
-        schedule: getScriptedReply("schedule"),
-      }}
+      replies={getScriptedReplies()}
       previews={{
         calendar: getUpcomingWeeks(),
         analytics: getPreviewCharts(),

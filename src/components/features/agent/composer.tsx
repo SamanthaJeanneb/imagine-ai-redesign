@@ -129,7 +129,7 @@ export function Composer({
         onResourceDrop(resource);
       }}
       className={cn(
-        "relative isolate flex w-full flex-col rounded-panel bg-imagine-surface shadow-floating transition-shadow",
+        "relative isolate flex w-full min-w-0 max-w-full flex-col rounded-panel bg-imagine-surface shadow-floating transition-shadow",
         isDock ? "p-xs" : "p-s",
         focused && "ring-2 ring-imagine-secondary-soft",
         className,
@@ -214,7 +214,10 @@ export function Composer({
       ) : null}
 
       <div
-        className={cn("flex items-end gap-xs", isDock ? "p-xs" : "p-xs pl-s")}
+        className={cn(
+          "flex min-w-0 items-end gap-xs",
+          isDock ? "p-xs" : "p-xs pl-s",
+        )}
       >
         {isDock ? (
           <Button
@@ -247,13 +250,13 @@ export function Composer({
             }
           }}
           className={cn(
-            "field-sizing-content max-h-40 min-h-7 flex-1 resize-none bg-transparent px-xs py-xs type-body outline-none placeholder:text-imagine-foreground-faint",
+            "field-sizing-content max-h-40 min-h-7 min-w-0 flex-1 resize-none bg-transparent px-xs py-xs type-body outline-none placeholder:text-imagine-foreground-faint",
             !isDock && "min-h-9 py-2 type-heading font-normal",
           )}
         />
         {/* Sits back at rest and springs forward once there is something to send. */}
         <motion.span
-          className="flex"
+          className="flex shrink-0"
           animate={{ scale: canSend ? 1 : 0.88, opacity: canSend ? 1 : 0.45 }}
           transition={spring.snappy}
         >

@@ -14,7 +14,11 @@ import type { ComposerPreview } from "@/components/features/agent/composer";
 import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
 import type { DraggableResource } from "@/components/features/files/resource-drag";
-import type { AgentMessage, ScriptedReply } from "@/services/agent";
+import type {
+  AgentMessage,
+  ReplyIntent,
+  ScriptedReply,
+} from "@/services/agent";
 import type { PreviewChart } from "@/services/analytics";
 
 /** A conversation started in the browser. It is never stored, so this is its id. */
@@ -113,6 +117,24 @@ const INTENT_PROMPT: Record<string, string> = {
   move: "Move it to another day.",
   unschedule: "Take it off the calendar.",
   "browse-files": "Let me pick from the files.",
+  comment: "Draft a reply to this comment.",
+  reply: "Draft a reply to this comment.",
+  "regenerate-comment": "Try a different reply.",
+  "post-comment": "Post it.",
+  outreach: "Draft a comment on their latest post.",
+};
+
+/**
+ * Which canned reply answers an intent. Mirrors `toReplyIntent` in
+ * `services/agent`, kept here so the provider stays free of server imports.
+ */
+const REPLY_FOR_INTENT: Record<string, ReplyIntent> = {
+  schedule: "schedule",
+  approve: "schedule",
+  comment: "comment",
+  reply: "comment",
+  "regenerate-comment": "comment",
+  outreach: "outreach",
 };
 
 /** How long the thinking state holds, then the gap between parts. */
@@ -122,9 +144,10 @@ const PART_MS = 700;
 interface ChatProviderProps {
   /**
    * Played back part by part on every send, since there is no model here.
-   * Scheduling confirms a slot; everything else drafts.
+   * Scheduling confirms a slot, the comment intents draft a comment,
+   * everything else drafts a post.
    */
-  replies: { default: ScriptedReply; schedule: ScriptedReply };
+  replies: Record<ReplyIntent, ScriptedReply>;
   previews: PreviewData;
   children: ReactNode;
 }
@@ -208,10 +231,7 @@ export function ChatProvider({
       setStreaming({
         messageId,
         revealed: 0,
-        reply:
-          intent === "schedule" || intent === "approve"
-            ? replies.schedule
-            : replies.default,
+        reply: replies[REPLY_FOR_INTENT[intent] ?? "default"],
       });
       setDraft("");
       setAttached([]);

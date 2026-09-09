@@ -22,6 +22,17 @@ import {
   YAxis,
 } from "recharts";
 
+import {
+  CHART_ANIMATION,
+  CHART_AXIS as AXIS,
+  CHART_COLOR as COLOR,
+  CHART_CURSOR_BAND,
+  CHART_CURSOR_LINE,
+  CHART_GRID as GRID,
+  CHART_LABEL as LABEL,
+  CHART_TICK as TICK,
+  ChartTooltip,
+} from "@/components/features/analytics/chart-theme";
 import { fade } from "@/styles/motion";
 
 export type ChartKind = "bar" | "area" | "hbar" | "composed";
@@ -77,19 +88,6 @@ interface ChartBlockProps {
   className?: string;
 }
 
-/*
- * Colors are token variables passed straight to SVG attributes. Recharts needs
- * them as values, so this is the one place they appear as strings.
- */
-const COLOR = {
-  foreground: "var(--color-imagine-foreground)",
-  muted: "var(--color-imagine-foreground-muted)",
-  faint: "var(--color-imagine-foreground-faint)",
-  border: "var(--color-imagine-border)",
-  surface: "var(--color-imagine-surface)",
-  secondary: "var(--color-imagine-secondary)",
-} as const;
-
 /** Series colors by position. The first series carries the block's tone. */
 const PALETTE: Record<Tone, readonly string[]> = {
   accent: [COLOR.secondary, COLOR.muted, COLOR.faint],
@@ -125,22 +123,6 @@ function composedColors(series: readonly ChartSeries[]): Map<string, string> {
   return colors;
 }
 
-/* Recharts defaults, themed. Everything below is a stock prop on a stock part. */
-const TICK = { fontSize: 11, fill: COLOR.muted } as const;
-const LABEL = { fontSize: 10, fill: COLOR.muted } as const;
-const GRID = { stroke: COLOR.border, strokeDasharray: "3 3" } as const;
-const AXIS = { tickLine: false, axisLine: false } as const;
-const TOOLTIP_STYLE = {
-  contentStyle: {
-    background: COLOR.surface,
-    border: `1px solid ${COLOR.border}`,
-    borderRadius: 0,
-    padding: "6px 10px",
-    fontSize: 12,
-  },
-  labelStyle: { color: COLOR.muted, marginBottom: 2 },
-  itemStyle: { color: COLOR.foreground, padding: 0 },
-} as const;
 /** Room to the right of the plot for the mean rule's label. Pixels. */
 const MEAN_GUTTER = 44;
 
@@ -162,11 +144,6 @@ function text(value: unknown): string {
   if (typeof value === "string") return value;
   if (typeof value === "number") return String(value);
   return "";
-}
-
-function formatFull(value: unknown): string {
-  if (typeof value === "number") return value.toLocaleString();
-  return text(value);
 }
 
 /** Bar value labels: compact, carrying the series unit when it has one. */
@@ -348,17 +325,18 @@ export function ChartBlock({
 
   const tooltip = (
     <Tooltip
-      {...TOOLTIP_STYLE}
       cursor={
-        kind === "area" || composed
-          ? { stroke: COLOR.faint, strokeDasharray: "3 3" }
-          : { fill: COLOR.foreground, fillOpacity: 0.05 }
+        kind === "area" || composed ? CHART_CURSOR_LINE : CHART_CURSOR_BAND
       }
       isAnimationActive={false}
-      formatter={(value: unknown, name: unknown) => [
-        formatFull(value) + (unitOf.get(text(name)) ?? ""),
-        labelOf.get(text(name)) ?? text(name),
-      ]}
+      content={
+        <ChartTooltip
+          labelOf={labelOf}
+          format={(value, key) =>
+            value.toLocaleString() + (unitOf.get(key) ?? "")
+          }
+        />
+      }
     />
   );
 
@@ -531,6 +509,7 @@ export function ChartBlock({
                       fill={color}
                       maxBarSize={24}
                       isAnimationActive={animate}
+                      {...CHART_ANIMATION}
                     />
                   );
                 }
@@ -545,6 +524,7 @@ export function ChartBlock({
                     dot={false}
                     activeDot={{ r: 4 }}
                     isAnimationActive={animate}
+                    {...CHART_ANIMATION}
                   />
                 );
               })}
@@ -654,6 +634,7 @@ export function ChartBlock({
                     dot={false}
                     activeDot={{ r: 4 }}
                     isAnimationActive={animate}
+                    {...CHART_ANIMATION}
                   />
                 );
               })}
@@ -687,6 +668,7 @@ export function ChartBlock({
                     maxBarSize={dense ? 10 : 14}
                     shape={isPrimary ? barShape : undefined}
                     isAnimationActive={animate}
+                    {...CHART_ANIMATION}
                   >
                     {isPrimary ? (
                       <LabelList
@@ -757,6 +739,7 @@ export function ChartBlock({
                     maxBarSize={dense ? 28 : 40}
                     shape={isPrimary ? barShape : undefined}
                     isAnimationActive={animate}
+                    {...CHART_ANIMATION}
                   >
                     {isPrimary && showValues ? (
                       <LabelList

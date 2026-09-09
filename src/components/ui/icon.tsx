@@ -72,7 +72,6 @@ export const ICON_NAMES = [
   "share-nodes",
   "sidebar",
   "slack",
-  "sparkles",
   "spinner",
   "sun",
   "thumbs-up",
@@ -83,7 +82,6 @@ export const ICON_NAMES = [
   "user",
   "users",
   "video",
-  "wand-magic-sparkles",
   "x-twitter",
   "xmark",
 ] as const;

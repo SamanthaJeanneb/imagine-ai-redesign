@@ -6,6 +6,10 @@ import type {
 } from "@/components/features/agent/timeline";
 import type { SidebarThread } from "@/components/layout/sidebar";
 import type { Client } from "@/entities/client";
+import {
+  transformEngagementCommentRow,
+  transformEngagementProfileRow,
+} from "@/entities/engagement";
 import type { Post } from "@/entities/post";
 import type { MessagePartRow } from "@/entities/rows";
 import {
@@ -24,6 +28,7 @@ import {
   indexAssetsByPath,
   indexClients,
   toAssetTile,
+  toAuthor,
   toPostContent,
 } from "@/services/posts";
 
@@ -174,6 +179,17 @@ function partResolver(): (row: MessagePartRow) => readonly MessagePart[] {
   const clients = indexClients();
   const assets = indexAssetsByPath();
   const posts = getPosts();
+  const db = getDb().app;
+  const profileAuthor = (profileId: string) => {
+    const row = db.engagement_profiles.find((item) => item.id === profileId);
+    if (row === undefined) return undefined;
+    const profile = transformEngagementProfileRow(row);
+    return {
+      name: profile.name,
+      headline: profile.headline,
+      ...(profile.avatarUrl === null ? {} : { avatarUrl: profile.avatarUrl }),
+    };
+  };
 
   return function resolvePart(row) {
     switch (row.type) {
@@ -229,6 +245,62 @@ function partResolver(): (row: MessagePartRow) => readonly MessagePart[] {
         ];
       }
 
+      case "comment_draft": {
+        if (row.text === undefined) return [];
+
+        // A reply to a comment on one of our posts.
+        if (row.commentId !== undefined) {
+          const commentRow = db.engagement_comments.find(
+            (item) => item.id === row.commentId,
+          );
+          if (commentRow === undefined) return [];
+          const comment = transformEngagementCommentRow(commentRow);
+          const post = posts.find((item) => item.id === comment.postId);
+          const client =
+            post === undefined ? undefined : clients.get(post.clientId);
+          const target = profileAuthor(comment.profileId);
+          if (
+            post === undefined ||
+            client === undefined ||
+            target === undefined
+          ) {
+            return [];
+          }
+          return [
+            {
+              type: "comment_draft",
+              commentId: comment.id,
+              target: {
+                author: target,
+                text: comment.text,
+                context: `on “${toTitle(post.content, 40)}”`,
+              },
+              author: toAuthor(client),
+              body: row.text,
+            },
+          ];
+        }
+
+        // A comment on someone else's post.
+        if (row.profileId === undefined || row.clientId === undefined)
+          return [];
+        const target = profileAuthor(row.profileId);
+        const client = clients.get(row.clientId);
+        if (target === undefined || client === undefined) return [];
+        return [
+          {
+            type: "comment_draft",
+            target: {
+              author: target,
+              text: row.quote ?? "",
+              context: "in their latest post",
+            },
+            author: toAuthor(client),
+            body: row.text,
+          },
+        ];
+      }
+
       default:
         return [];
     }
@@ -254,14 +326,41 @@ export function getThread(threadId: string): AgentThread | null {
   return { id: thread.id, title: thread.title ?? "Untitled", messages };
 }
 
+/** Which canned reply answers an intent. Anything unlisted drafts a post. */
+const REPLY_FOR_INTENT: Record<string, string> = {
+  schedule: "schedule",
+  approve: "schedule",
+  comment: "comment",
+  reply: "comment",
+  "regenerate-comment": "comment",
+  outreach: "outreach",
+};
+
+/** Every reply intent the mock can answer. */
+export const REPLY_INTENTS = [
+  "default",
+  "schedule",
+  "comment",
+  "outreach",
+] as const;
+
+export type ReplyIntent = (typeof REPLY_INTENTS)[number];
+
+/** Narrow any intent to the reply that answers it. */
+export function toReplyIntent(intent: string): ReplyIntent {
+  const wanted = REPLY_FOR_INTENT[intent];
+  return wanted === "schedule" || wanted === "comment" || wanted === "outreach"
+    ? wanted
+    : "default";
+}
+
 /**
- * The reply a send plays back. `schedule` and `approve` confirm a slot;
- * everything else gets the drafting reply.
+ * The reply a send plays back. `schedule` and `approve` confirm a slot, the
+ * comment intents draft a comment, everything else drafts a post.
  */
 export function getScriptedReply(intent = "default"): ScriptedReply {
   const replies = getDb().agent.canned_replies;
-  const wanted =
-    intent === "schedule" || intent === "approve" ? "schedule" : "default";
+  const wanted = toReplyIntent(intent);
   const reply =
     replies.find((row) => row.intent === wanted) ??
     replies.find((row) => row.intent === "default");
@@ -271,6 +370,16 @@ export function getScriptedReply(intent = "default"): ScriptedReply {
   return {
     statuses: reply.statuses,
     parts: reply.parts.flatMap(partResolver()),
+  };
+}
+
+/** Every canned reply, keyed by intent, for the chat provider. */
+export function getScriptedReplies(): Record<ReplyIntent, ScriptedReply> {
+  return {
+    default: getScriptedReply("default"),
+    schedule: getScriptedReply("schedule"),
+    comment: getScriptedReply("comment"),
+    outreach: getScriptedReply("outreach"),
   };
 }
 

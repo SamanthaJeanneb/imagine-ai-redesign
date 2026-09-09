@@ -6,6 +6,10 @@ import { useState } from "react";
 
 import { AssetPicker } from "@/components/features/agent/asset-picker";
 import {
+  CommentDraft,
+  type CommentDraftContent,
+} from "@/components/features/agent/comment-draft";
+import {
   LinkedInPostDraft,
   type PostAuthor,
 } from "@/components/features/agent/linkedin-post-draft";
@@ -60,7 +64,8 @@ export type MessagePart =
       occupied?: readonly number[];
       chips: readonly ScheduledChip[];
     }
-  | { type: "asset_picker"; prompt: string; assets: readonly AssetTileData[] };
+  | { type: "asset_picker"; prompt: string; assets: readonly AssetTileData[] }
+  | ({ type: "comment_draft"; commentId?: string } & CommentDraftContent);
 
 interface AgentMessageProps {
   parts: readonly MessagePart[];
@@ -189,6 +194,16 @@ function Part({
           assets={part.assets}
           onConfirm={(asset) => onIntent?.(`use-asset:${asset.id}`)}
           onBrowse={() => onIntent?.("browse-files")}
+        />
+      );
+    case "comment_draft":
+      return (
+        <CommentDraft
+          target={part.target}
+          author={part.author}
+          body={part.body}
+          onPost={() => onIntent?.("post-comment", part.commentId)}
+          onRegenerate={() => onIntent?.("regenerate-comment", part.commentId)}
         />
       );
     default:

@@ -87,7 +87,7 @@ export const SIDEBAR_NAV: readonly SidebarNavItem[] = [
 
 interface SidebarProps {
   orgName: string;
-  /** The organization's mark. Falls back to the Imagine sparkle. */
+  /** The organization's mark. Falls back to the Imagine mark. */
   orgLogoUrl?: string;
   /** Omitted on routes outside the nav, like settings, where nothing is selected. */
   active?: SidebarNavKey;
@@ -272,7 +272,7 @@ export function Sidebar({
             />
           ) : (
             <span className="flex size-6 shrink-0 items-center justify-center rounded-control accent-gradient text-imagine-secondary-foreground">
-              <Icon name="sparkles" size="s" active />
+              <Icon name="imagine" size="s" active />
             </span>
           )}
           <AnimatePresence initial={false}>
@@ -390,7 +390,11 @@ export function Sidebar({
                 <Icon
                   name={item.icon}
                   size="s"
-                  active={selected && item.key !== "agent"}
+                  active={
+                    selected &&
+                    item.key !== "agent" &&
+                    item.key !== "analytics"
+                  }
                 />
               </span>
               {collapsed ? null : (

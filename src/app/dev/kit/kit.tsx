@@ -23,6 +23,15 @@ import {
 } from "@/styles/tokens";
 
 import {
+  AskImagineDemo,
+  BenchmarkDemo,
+  ChartFoundationDemo,
+  EngagementExplorerDemo,
+  IcpPostsDemo,
+  InteractionFeedDemo,
+  TeamAndBestTimeDemo,
+} from "./kit-analytics";
+import {
   AvatarDemo,
   FileChromeDemo,
   FormDemo,
@@ -462,6 +471,34 @@ export function Kit({ radiusScale = "default" }: KitProps) {
 
         <Section title="Charts">
           <ChartBlockDemo />
+        </Section>
+
+        <Section title="Chart loading states">
+          <ChartFoundationDemo />
+        </Section>
+
+        <Section title="Ask Imagine: agent presence">
+          <AskImagineDemo />
+        </Section>
+
+        <Section title="Engagement explorer: reach, rate, followers, posts, pipeline, scrub">
+          <EngagementExplorerDemo />
+        </Section>
+
+        <Section title="Benchmark: competitors vs you">
+          <BenchmarkDemo />
+        </Section>
+
+        <Section title="Posts with ICP: hover for engagers, expand for all">
+          <IcpPostsDemo />
+        </Section>
+
+        <Section title="Team performance by category, best time to post">
+          <TeamAndBestTimeDemo />
+        </Section>
+
+        <Section title="Interactions, comment drafts">
+          <InteractionFeedDemo />
         </Section>
 
         <Section title="Chart cards">

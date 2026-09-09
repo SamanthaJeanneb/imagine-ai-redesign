@@ -284,7 +284,7 @@
           "reposts": 9
         },
         "notes": null,
-        "post_label": "Thought leadership",
+        "post_label": "Case study",
         "created_at": "2026-06-30T15:00:00.000Z",
         "updated_at": "2026-07-03T08:00:00.000Z"
       },
@@ -336,7 +336,7 @@
           "reposts": 6
         },
         "notes": null,
-        "post_label": "Case study",
+        "post_label": "Product",
         "created_at": "2026-07-14T10:00:00.000Z",
         "updated_at": "2026-07-17T08:00:00.000Z"
       },
@@ -362,7 +362,7 @@
           "reposts": 17
         },
         "notes": null,
-        "post_label": "Product",
+        "post_label": "Case study",
         "created_at": "2026-07-21T09:00:00.000Z",
         "updated_at": "2026-07-24T08:00:00.000Z"
       },
@@ -414,7 +414,7 @@
           "reposts": 8
         },
         "notes": null,
-        "post_label": "Thought leadership",
+        "post_label": "Product",
         "created_at": "2026-08-02T11:00:00.000Z",
         "updated_at": "2026-08-05T08:00:00.000Z"
       },
@@ -497,7 +497,7 @@
           "reposts": 13
         },
         "notes": null,
-        "post_label": "Thought leadership",
+        "post_label": "Hiring",
         "created_at": "2026-08-11T15:00:00.000Z",
         "updated_at": "2026-08-14T08:00:00.000Z"
       },
@@ -610,7 +610,7 @@
           "reposts": 19
         },
         "notes": null,
-        "post_label": "Hiring",
+        "post_label": "Case study",
         "created_at": "2026-08-25T15:00:00.000Z",
         "updated_at": "2026-08-28T08:00:00.000Z"
       },
@@ -636,7 +636,7 @@
           "reposts": 11
         },
         "notes": null,
-        "post_label": "Thought leadership",
+        "post_label": "Product",
         "created_at": "2026-08-30T11:00:00.000Z",
         "updated_at": "2026-09-02T08:00:00.000Z"
       },
@@ -662,7 +662,7 @@
           "reposts": 13
         },
         "notes": null,
-        "post_label": "Case study",
+        "post_label": "Product",
         "created_at": "2026-08-31T10:00:00.000Z",
         "updated_at": "2026-09-03T08:00:00.000Z"
       },
@@ -693,7 +693,7 @@
           "reposts": 28
         },
         "notes": null,
-        "post_label": "Product",
+        "post_label": "Case study",
         "created_at": "2026-09-01T09:00:00.000Z",
         "updated_at": "2026-09-04T08:00:00.000Z"
       },
@@ -1151,6 +1151,3818 @@
         "external_account_id": "mrg_acme_hubspot",
         "last_synced_at": "2026-09-07T07:00:00.000Z"
       }
+    ],
+    "crm_contacts": [
+      {
+        "id": "crc_043",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_043",
+        "name": "Theo Laurent",
+        "company_name": "Relay Systems",
+        "linkedin_slug": null,
+        "linkedin_source": "manual",
+        "remote_created_at": "2026-06-14T10:00:00.000Z"
+      },
+      {
+        "id": "crc_001",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_001",
+        "name": "Anika Hale",
+        "company_name": "Harbor Labs",
+        "linkedin_slug": "anikahale",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-06-16T11:40:00.000Z"
+      },
+      {
+        "id": "crc_002",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_002",
+        "name": "Maya Alvarez",
+        "company_name": "Kestrel Security",
+        "linkedin_slug": "mayaalvarez",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-06-24T17:20:00.000Z"
+      },
+      {
+        "id": "crc_003",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_003",
+        "name": "Dana Whitfield",
+        "company_name": "Northbeam Analytics",
+        "linkedin_slug": "danawhitfield",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-07-02T11:05:00.000Z"
+      },
+      {
+        "id": "crc_004",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_004",
+        "name": "Zoe Iyer",
+        "company_name": "Quill",
+        "linkedin_slug": "zoeiyer",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-07-04T15:20:00.000Z"
+      },
+      {
+        "id": "crc_005",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_005",
+        "name": "Ines Iyer",
+        "company_name": "Cardinal",
+        "linkedin_slug": "inesiyer",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-07-06T16:10:00.000Z"
+      },
+      {
+        "id": "crc_006",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_006",
+        "name": "Tomas Lindqvist",
+        "company_name": "Fathom",
+        "linkedin_slug": "tomaslindqvist",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-07-06T17:05:00.000Z"
+      },
+      {
+        "id": "crc_007",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_007",
+        "name": "Mateo Karimi",
+        "company_name": "Openfield",
+        "linkedin_slug": "mateokarimi",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-07-08T11:20:00.000Z"
+      },
+      {
+        "id": "crc_008",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_008",
+        "name": "Mira Holm",
+        "company_name": "Openfield",
+        "linkedin_slug": "miraholm",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-07-10T15:20:00.000Z"
+      },
+      {
+        "id": "crc_009",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_009",
+        "name": "Aisha Okafor",
+        "company_name": "Relay Systems",
+        "linkedin_slug": "aishaokafor",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-07-13T15:40:00.000Z"
+      },
+      {
+        "id": "crc_047",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_047",
+        "name": "Maya Whitmore",
+        "company_name": "Ledgerly",
+        "linkedin_slug": null,
+        "linkedin_source": "manual",
+        "remote_created_at": "2026-07-14T10:00:00.000Z"
+      },
+      {
+        "id": "crc_010",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_010",
+        "name": "Elias Iyer",
+        "company_name": "Ledgerly",
+        "linkedin_slug": "eliasiyer",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-07-17T15:05:00.000Z"
+      },
+      {
+        "id": "crc_011",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_011",
+        "name": "Hugo Novak",
+        "company_name": "Harbor Labs",
+        "linkedin_slug": "hugonovak",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-07-22T11:40:00.000Z"
+      },
+      {
+        "id": "crc_012",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_012",
+        "name": "Ben Carter",
+        "company_name": "Cardinal",
+        "linkedin_slug": "bencarter",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-07-24T17:05:00.000Z"
+      },
+      {
+        "id": "crc_013",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_013",
+        "name": "Theo Nakamura",
+        "company_name": "Tidewater Software",
+        "linkedin_slug": "theonakamura",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-07-25T17:20:00.000Z"
+      },
+      {
+        "id": "crc_014",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_014",
+        "name": "Mateo Achterberg",
+        "company_name": "Sundial",
+        "linkedin_slug": "mateoachterberg",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-07-26T15:05:00.000Z"
+      },
+      {
+        "id": "crc_042",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_042",
+        "name": "Theo Katz",
+        "company_name": "Kestrel Security",
+        "linkedin_slug": null,
+        "linkedin_source": "manual",
+        "remote_created_at": "2026-07-27T10:00:00.000Z"
+      },
+      {
+        "id": "crc_015",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_015",
+        "name": "Elena Petrova",
+        "company_name": "Halcyon",
+        "linkedin_slug": "elenapetrova",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-07-30T11:05:00.000Z"
+      },
+      {
+        "id": "crc_016",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_016",
+        "name": "Arjun Novak",
+        "company_name": "Quill",
+        "linkedin_slug": "arjunnovak",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-01T15:05:00.000Z"
+      },
+      {
+        "id": "crc_017",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_017",
+        "name": "Tara Iyer",
+        "company_name": "Openfield",
+        "linkedin_slug": "taraiyer",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-03T16:10:00.000Z"
+      },
+      {
+        "id": "crc_018",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_018",
+        "name": "Grace Adeyemi",
+        "company_name": "Cardinal",
+        "linkedin_slug": "graceadeyemi",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-03T17:40:00.000Z"
+      },
+      {
+        "id": "crc_019",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_019",
+        "name": "Tara Bennett",
+        "company_name": "Relay Systems",
+        "linkedin_slug": "tarabennett",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-07T09:05:00.000Z"
+      },
+      {
+        "id": "crc_020",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_020",
+        "name": "Anika Bennett",
+        "company_name": "Cardinal",
+        "linkedin_slug": "anikabennett",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-08T17:40:00.000Z"
+      },
+      {
+        "id": "crc_021",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_021",
+        "name": "Daniel Osei",
+        "company_name": "Ledgerly",
+        "linkedin_slug": "danielosei",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-11T09:40:00.000Z"
+      },
+      {
+        "id": "crc_044",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_044",
+        "name": "Caleb Doyle",
+        "company_name": "Arbor Logistics",
+        "linkedin_slug": null,
+        "linkedin_source": "manual",
+        "remote_created_at": "2026-08-11T10:00:00.000Z"
+      },
+      {
+        "id": "crc_022",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_022",
+        "name": "Anika Park",
+        "company_name": "Harbor Labs",
+        "linkedin_slug": "anikapark",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-12T09:40:00.000Z"
+      },
+      {
+        "id": "crc_045",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_045",
+        "name": "Idris Alvarez",
+        "company_name": "Tidewater Software",
+        "linkedin_slug": null,
+        "linkedin_source": "manual",
+        "remote_created_at": "2026-08-14T10:00:00.000Z"
+      },
+      {
+        "id": "crc_023",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_023",
+        "name": "Kian Bennett",
+        "company_name": "Relay Systems",
+        "linkedin_slug": "kianbennett",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-17T09:05:00.000Z"
+      },
+      {
+        "id": "crc_046",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_046",
+        "name": "Anika Ferreira",
+        "company_name": "Relay Systems",
+        "linkedin_slug": null,
+        "linkedin_source": "manual",
+        "remote_created_at": "2026-08-19T10:00:00.000Z"
+      },
+      {
+        "id": "crc_024",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_024",
+        "name": "Ethan Walsh",
+        "company_name": "Tidewater Software",
+        "linkedin_slug": "ethanwalsh",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-19T17:40:00.000Z"
+      },
+      {
+        "id": "crc_025",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_025",
+        "name": "Mira Nakamura",
+        "company_name": "Openfield",
+        "linkedin_slug": "miranakamura",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-20T16:10:00.000Z"
+      },
+      {
+        "id": "crc_026",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_026",
+        "name": "Jude Achterberg",
+        "company_name": "Fathom",
+        "linkedin_slug": "judeachterberg",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-20T17:20:00.000Z"
+      },
+      {
+        "id": "crc_027",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_027",
+        "name": "Nora Haddad",
+        "company_name": "Cardinal",
+        "linkedin_slug": "norahaddad",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-21T09:20:00.000Z"
+      },
+      {
+        "id": "crc_028",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_028",
+        "name": "Bea Bello",
+        "company_name": "Pinecone Retail",
+        "linkedin_slug": "beabello",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-22T17:40:00.000Z"
+      },
+      {
+        "id": "crc_029",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_029",
+        "name": "Lior Stein",
+        "company_name": "Kestrel Security",
+        "linkedin_slug": "liorstein",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-23T15:40:00.000Z"
+      },
+      {
+        "id": "crc_030",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_030",
+        "name": "Mei Tanaka",
+        "company_name": "Fathom",
+        "linkedin_slug": "meitanaka",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-24T15:20:00.000Z"
+      },
+      {
+        "id": "crc_031",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_031",
+        "name": "Liam Bennett",
+        "company_name": "Ledgerly",
+        "linkedin_slug": "liambennett",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-25T17:05:00.000Z"
+      },
+      {
+        "id": "crc_032",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_032",
+        "name": "Liam Karimi",
+        "company_name": "Quill",
+        "linkedin_slug": "liamkarimi",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-26T09:20:00.000Z"
+      },
+      {
+        "id": "crc_033",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_033",
+        "name": "Priyanka Rao",
+        "company_name": "Relay Systems",
+        "linkedin_slug": "priyankarao",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-28T09:05:00.000Z"
+      },
+      {
+        "id": "crc_034",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_034",
+        "name": "Jude Park",
+        "company_name": "Meridian Health",
+        "linkedin_slug": "judepark",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-29T17:40:00.000Z"
+      },
+      {
+        "id": "crc_035",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_035",
+        "name": "Jude Iyer",
+        "company_name": "Ledgerly",
+        "linkedin_slug": "judeiyer",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-30T15:40:00.000Z"
+      },
+      {
+        "id": "crc_036",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_036",
+        "name": "Amara Diallo",
+        "company_name": "Halcyon",
+        "linkedin_slug": "amaradiallo",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-08-30T16:10:00.000Z"
+      },
+      {
+        "id": "crc_037",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_037",
+        "name": "Rowan Brooks",
+        "company_name": "Halcyon",
+        "linkedin_slug": "rowanbrooks",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-09-01T17:05:00.000Z"
+      },
+      {
+        "id": "crc_038",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_038",
+        "name": "Nadia Brooks",
+        "company_name": "Relay Systems",
+        "linkedin_slug": "nadiabrooks",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-09-02T09:05:00.000Z"
+      },
+      {
+        "id": "crc_039",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_039",
+        "name": "Sana Bello",
+        "company_name": "Kestrel Security",
+        "linkedin_slug": "sanabello",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-09-03T09:40:00.000Z"
+      },
+      {
+        "id": "crc_040",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_040",
+        "name": "Bea Doyle",
+        "company_name": "Relay Systems",
+        "linkedin_slug": "beadoyle",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-09-05T11:05:00.000Z"
+      },
+      {
+        "id": "crc_041",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_c_041",
+        "name": "Hugo Ferreira",
+        "company_name": "Halcyon",
+        "linkedin_slug": "hugoferreira",
+        "linkedin_source": "post_engagement",
+        "remote_created_at": "2026-09-06T15:20:00.000Z"
+      }
+    ],
+    "crm_opportunities": [
+      {
+        "id": "cro_01",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_o_01",
+        "name": "Northbeam Analytics annual",
+        "amount": 48000,
+        "status": "open",
+        "stage_name": "Proposal",
+        "contact_merge_ids": ["mrg_c_003"],
+        "remote_created_at": "2026-08-28T14:00:00.000Z"
+      },
+      {
+        "id": "cro_02",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_o_02",
+        "name": "Relay Systems annual",
+        "amount": 72000,
+        "status": "open",
+        "stage_name": "Discovery",
+        "contact_merge_ids": ["mrg_c_009"],
+        "remote_created_at": "2026-09-02T10:30:00.000Z"
+      },
+      {
+        "id": "cro_03",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_o_03",
+        "name": "Tidewater Software annual",
+        "amount": 36000,
+        "status": "won",
+        "stage_name": "Closed won",
+        "contact_merge_ids": ["mrg_c_024"],
+        "remote_created_at": "2026-08-14T16:00:00.000Z"
+      },
+      {
+        "id": "cro_04",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_o_04",
+        "name": "Cardinal annual",
+        "amount": 54000,
+        "status": "open",
+        "stage_name": "Negotiation",
+        "contact_merge_ids": ["mrg_c_012", "mrg_c_027", "mrg_c_018"],
+        "remote_created_at": "2026-08-21T11:00:00.000Z"
+      },
+      {
+        "id": "cro_05",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_o_05",
+        "name": "Halcyon annual",
+        "amount": 28000,
+        "status": "open",
+        "stage_name": "Discovery",
+        "contact_merge_ids": ["mrg_c_015"],
+        "remote_created_at": "2026-09-05T09:15:00.000Z"
+      },
+      {
+        "id": "cro_06",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_o_06",
+        "name": "Fathom annual",
+        "amount": 41000,
+        "status": "lost",
+        "stage_name": "Closed lost",
+        "contact_merge_ids": ["mrg_c_006"],
+        "remote_created_at": "2026-07-22T13:00:00.000Z"
+      },
+      {
+        "id": "cro_07",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_o_07",
+        "name": "Ledgerly annual",
+        "amount": 22000,
+        "status": "won",
+        "stage_name": "Closed won",
+        "contact_merge_ids": ["mrg_c_021"],
+        "remote_created_at": "2026-07-30T15:30:00.000Z"
+      },
+      {
+        "id": "cro_08",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_o_08",
+        "name": "Vantage annual",
+        "amount": 19000,
+        "status": "open",
+        "stage_name": "Proposal",
+        "contact_merge_ids": [],
+        "remote_created_at": "2026-08-06T12:00:00.000Z"
+      },
+      {
+        "id": "cro_09",
+        "org_id": "org_acme",
+        "connection_id": "crm_01",
+        "merge_id": "mrg_o_09",
+        "name": "Openfield annual",
+        "amount": 33000,
+        "status": "open",
+        "stage_name": "Discovery",
+        "contact_merge_ids": [],
+        "remote_created_at": "2026-06-26T09:45:00.000Z"
+      }
+    ],
+    "engagement_profiles": [
+      {
+        "id": "epr_01",
+        "linkedin_profile_id": "li_epr_01",
+        "public_identifier": "danawhitfield",
+        "name": "Dana Whitfield",
+        "headline": "VP Marketing at Northbeam Analytics",
+        "linkedin_url": "https://www.linkedin.com/in/danawhitfield",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=5",
+        "current_position": {
+          "title": "VP Marketing",
+          "company": "Northbeam Analytics"
+        },
+        "follower_count": 8400
+      },
+      {
+        "id": "epr_02",
+        "linkedin_profile_id": "li_epr_02",
+        "public_identifier": "tomaslindqvist",
+        "name": "Tomas Lindqvist",
+        "headline": "Head of Demand Generation at Fathom",
+        "linkedin_url": "https://www.linkedin.com/in/tomaslindqvist",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=33",
+        "current_position": {
+          "title": "Head of Demand Generation",
+          "company": "Fathom"
+        },
+        "follower_count": 5200
+      },
+      {
+        "id": "epr_03",
+        "linkedin_profile_id": "li_epr_03",
+        "public_identifier": "aishaokafor",
+        "name": "Aisha Okafor",
+        "headline": "CMO at Relay Systems",
+        "linkedin_url": "https://www.linkedin.com/in/aishaokafor",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=49",
+        "current_position": {
+          "title": "CMO",
+          "company": "Relay Systems"
+        },
+        "follower_count": 12100
+      },
+      {
+        "id": "epr_04",
+        "linkedin_profile_id": "li_epr_04",
+        "public_identifier": "bencarter",
+        "name": "Ben Carter",
+        "headline": "Founder at Cardinal",
+        "linkedin_url": "https://www.linkedin.com/in/bencarter",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=8",
+        "current_position": {
+          "title": "Founder",
+          "company": "Cardinal"
+        },
+        "follower_count": 15600
+      },
+      {
+        "id": "epr_05",
+        "linkedin_profile_id": "li_epr_05",
+        "public_identifier": "meitanaka",
+        "name": "Mei Tanaka",
+        "headline": "Content Lead at Fathom",
+        "linkedin_url": "https://www.linkedin.com/in/meitanaka",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=16",
+        "current_position": {
+          "title": "Content Lead",
+          "company": "Fathom"
+        },
+        "follower_count": 3900
+      },
+      {
+        "id": "epr_06",
+        "linkedin_profile_id": "li_epr_06",
+        "public_identifier": "jonahreyes",
+        "name": "Jonah Reyes",
+        "headline": "RevOps Manager at Northbeam Analytics",
+        "linkedin_url": "https://www.linkedin.com/in/jonahreyes",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=11",
+        "current_position": {
+          "title": "RevOps Manager",
+          "company": "Northbeam Analytics"
+        },
+        "follower_count": 2100
+      },
+      {
+        "id": "epr_07",
+        "linkedin_profile_id": "li_epr_07",
+        "public_identifier": "elenapetrova",
+        "name": "Elena Petrova",
+        "headline": "Head of Product Marketing at Halcyon",
+        "linkedin_url": "https://www.linkedin.com/in/elenapetrova",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=20",
+        "current_position": {
+          "title": "Head of Product Marketing",
+          "company": "Halcyon"
+        },
+        "follower_count": 6700
+      },
+      {
+        "id": "epr_08",
+        "linkedin_profile_id": "li_epr_08",
+        "public_identifier": "kwamemensah",
+        "name": "Kwame Mensah",
+        "headline": "Growth Lead at Ledgerly",
+        "linkedin_url": "https://www.linkedin.com/in/kwamemensah",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=14",
+        "current_position": {
+          "title": "Growth Lead",
+          "company": "Ledgerly"
+        },
+        "follower_count": 4400
+      },
+      {
+        "id": "epr_09",
+        "linkedin_profile_id": "li_epr_09",
+        "public_identifier": "priyankarao",
+        "name": "Priyanka Rao",
+        "headline": "Senior Product Marketing Manager at Relay Systems",
+        "linkedin_url": "https://www.linkedin.com/in/priyankarao",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=23",
+        "current_position": {
+          "title": "Senior PMM",
+          "company": "Relay Systems"
+        },
+        "follower_count": 3100
+      },
+      {
+        "id": "epr_10",
+        "linkedin_profile_id": "li_epr_10",
+        "public_identifier": "olivergrant",
+        "name": "Oliver Grant",
+        "headline": "Staff Engineer at Vantage",
+        "linkedin_url": "https://www.linkedin.com/in/olivergrant",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=3",
+        "current_position": {
+          "title": "Staff Engineer",
+          "company": "Vantage"
+        },
+        "follower_count": 2600
+      },
+      {
+        "id": "epr_11",
+        "linkedin_profile_id": "li_epr_11",
+        "public_identifier": "hannahkim",
+        "name": "Hannah Kim",
+        "headline": "Product Designer at Halcyon",
+        "linkedin_url": "https://www.linkedin.com/in/hannahkim",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=29",
+        "current_position": {
+          "title": "Product Designer",
+          "company": "Halcyon"
+        },
+        "follower_count": 1900
+      },
+      {
+        "id": "epr_12",
+        "linkedin_profile_id": "li_epr_12",
+        "public_identifier": "lucasmoreau",
+        "name": "Lucas Moreau",
+        "headline": "Data Engineer at Fathom",
+        "linkedin_url": "https://www.linkedin.com/in/lucasmoreau",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=13",
+        "current_position": {
+          "title": "Data Engineer",
+          "company": "Fathom"
+        },
+        "follower_count": 1400
+      },
+      {
+        "id": "epr_13",
+        "linkedin_profile_id": "li_epr_13",
+        "public_identifier": "graceadeyemi",
+        "name": "Grace Adeyemi",
+        "headline": "Sales Director at Cardinal",
+        "linkedin_url": "https://www.linkedin.com/in/graceadeyemi",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=32",
+        "current_position": {
+          "title": "Sales Director",
+          "company": "Cardinal"
+        },
+        "follower_count": 4800
+      },
+      {
+        "id": "epr_14",
+        "linkedin_profile_id": "li_epr_14",
+        "public_identifier": "noahfischer",
+        "name": "Noah Fischer",
+        "headline": "Technical Recruiter at Hiredly",
+        "linkedin_url": "https://www.linkedin.com/in/noahfischer",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=15",
+        "current_position": {
+          "title": "Technical Recruiter",
+          "company": "Hiredly"
+        },
+        "follower_count": 9800
+      },
+      {
+        "id": "epr_15",
+        "linkedin_profile_id": "li_epr_15",
+        "public_identifier": "isabelduarte",
+        "name": "Isabel Duarte",
+        "headline": "MBA Candidate at Wharton",
+        "linkedin_url": "https://www.linkedin.com/in/isabelduarte",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=41",
+        "current_position": {
+          "title": "MBA Candidate",
+          "company": "Wharton"
+        },
+        "follower_count": 900
+      },
+      {
+        "id": "epr_16",
+        "linkedin_profile_id": "li_epr_16",
+        "public_identifier": "ravishankar",
+        "name": "Ravi Shankar",
+        "headline": "VP Product at Openfield",
+        "linkedin_url": "https://www.linkedin.com/in/ravishankar",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=60",
+        "current_position": {
+          "title": "VP Product",
+          "company": "Openfield"
+        },
+        "follower_count": 7300
+      },
+      {
+        "id": "epr_17",
+        "linkedin_profile_id": "li_epr_17",
+        "public_identifier": "chloemartin",
+        "name": "Chloe Martin",
+        "headline": "Founder at Studio Marin",
+        "linkedin_url": "https://www.linkedin.com/in/chloemartin",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=43",
+        "current_position": {
+          "title": "Founder",
+          "company": "Studio Marin"
+        },
+        "follower_count": 5600
+      },
+      {
+        "id": "epr_18",
+        "linkedin_profile_id": "li_epr_18",
+        "public_identifier": "danielosei",
+        "name": "Daniel Osei",
+        "headline": "Head of Growth at Ledgerly",
+        "linkedin_url": "https://www.linkedin.com/in/danielosei",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=53",
+        "current_position": {
+          "title": "Head of Growth",
+          "company": "Ledgerly"
+        },
+        "follower_count": 3700
+      },
+      {
+        "id": "epr_19",
+        "linkedin_profile_id": "li_epr_19",
+        "public_identifier": "sofiarossi",
+        "name": "Sofia Rossi",
+        "headline": "Marketing Operations at Vantage",
+        "linkedin_url": "https://www.linkedin.com/in/sofiarossi",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=45",
+        "current_position": {
+          "title": "Marketing Operations",
+          "company": "Vantage"
+        },
+        "follower_count": 1700
+      },
+      {
+        "id": "epr_20",
+        "linkedin_profile_id": "li_epr_20",
+        "public_identifier": "ethanwalsh",
+        "name": "Ethan Walsh",
+        "headline": "CEO at Tidewater Software",
+        "linkedin_url": "https://www.linkedin.com/in/ethanwalsh",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=56",
+        "current_position": {
+          "title": "CEO",
+          "company": "Tidewater Software"
+        },
+        "follower_count": 11200
+      },
+      {
+        "id": "epr_21",
+        "linkedin_profile_id": "li_epr_21",
+        "public_identifier": "yukisato",
+        "name": "Yuki Sato",
+        "headline": "Engineering Manager at Openfield",
+        "linkedin_url": "https://www.linkedin.com/in/yukisato",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=36",
+        "current_position": {
+          "title": "Engineering Manager",
+          "company": "Openfield"
+        },
+        "follower_count": 2300
+      },
+      {
+        "id": "epr_22",
+        "linkedin_profile_id": "li_epr_22",
+        "public_identifier": "amaradiallo",
+        "name": "Amara Diallo",
+        "headline": "Demand Generation Manager at Halcyon",
+        "linkedin_url": "https://www.linkedin.com/in/amaradiallo",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=48",
+        "current_position": {
+          "title": "Demand Generation Manager",
+          "company": "Halcyon"
+        },
+        "follower_count": 2800
+      },
+      {
+        "id": "epr_23",
+        "linkedin_profile_id": "li_epr_23",
+        "public_identifier": "felixbaumann",
+        "name": "Felix Baumann",
+        "headline": "Freelance B2B Copywriter",
+        "linkedin_url": "https://www.linkedin.com/in/felixbaumann",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=59",
+        "current_position": {
+          "title": "Copywriter",
+          "company": "Freelance"
+        },
+        "follower_count": 4100
+      },
+      {
+        "id": "epr_24",
+        "linkedin_profile_id": "li_epr_24",
+        "public_identifier": "norahaddad",
+        "name": "Nora Haddad",
+        "headline": "Head of Marketing at Cardinal",
+        "linkedin_url": "https://www.linkedin.com/in/norahaddad",
+        "profile_picture_path": "https://i.pravatar.cc/96?img=27",
+        "current_position": {
+          "title": "Head of Marketing",
+          "company": "Cardinal"
+        },
+        "follower_count": 5900
+      }
+    ],
+    "engagement_profile_tags": [
+      {
+        "id": "ept_01",
+        "client_id": "cli_acme",
+        "profile_id": "epr_01",
+        "category": "Decision maker",
+        "match_score": 92,
+        "signals": [
+          "Owns marketing budget",
+          "Series B to D company",
+          "Hiring for content"
+        ]
+      },
+      {
+        "id": "ept_02",
+        "client_id": "cli_acme",
+        "profile_id": "epr_02",
+        "category": "Decision maker",
+        "match_score": 88,
+        "signals": [
+          "Owns marketing budget",
+          "Series B to D company",
+          "Hiring for content"
+        ]
+      },
+      {
+        "id": "ept_03",
+        "client_id": "cli_acme",
+        "profile_id": "epr_03",
+        "category": "Decision maker",
+        "match_score": 95,
+        "signals": [
+          "Owns marketing budget",
+          "Series B to D company",
+          "Hiring for content"
+        ]
+      },
+      {
+        "id": "ept_04",
+        "client_id": "cli_acme",
+        "profile_id": "epr_04",
+        "category": "Decision maker",
+        "match_score": 84,
+        "signals": [
+          "Owns marketing budget",
+          "Series B to D company",
+          "Hiring for content"
+        ]
+      },
+      {
+        "id": "ept_05",
+        "client_id": "cli_acme",
+        "profile_id": "epr_05",
+        "category": "Champion",
+        "match_score": 74,
+        "signals": [
+          "Marketing or revenue team",
+          "Company matches ICP",
+          "Engaged three or more times"
+        ]
+      },
+      {
+        "id": "ept_06",
+        "client_id": "cli_acme",
+        "profile_id": "epr_06",
+        "category": "Champion",
+        "match_score": 71,
+        "signals": [
+          "Marketing or revenue team",
+          "Company matches ICP",
+          "Engaged three or more times"
+        ]
+      },
+      {
+        "id": "ept_07",
+        "client_id": "cli_acme",
+        "profile_id": "epr_07",
+        "category": "Decision maker",
+        "match_score": 86,
+        "signals": [
+          "Owns marketing budget",
+          "Series B to D company",
+          "Hiring for content"
+        ]
+      },
+      {
+        "id": "ept_08",
+        "client_id": "cli_acme",
+        "profile_id": "epr_08",
+        "category": "Champion",
+        "match_score": 68,
+        "signals": [
+          "Marketing or revenue team",
+          "Company matches ICP",
+          "Engaged three or more times"
+        ]
+      },
+      {
+        "id": "ept_09",
+        "client_id": "cli_acme",
+        "profile_id": "epr_09",
+        "category": "Champion",
+        "match_score": 77,
+        "signals": [
+          "Marketing or revenue team",
+          "Company matches ICP",
+          "Engaged three or more times"
+        ]
+      },
+      {
+        "id": "ept_10",
+        "client_id": "cli_acme",
+        "profile_id": "epr_10",
+        "category": "Practitioner",
+        "match_score": 58,
+        "signals": ["Builds the product", "Company matches ICP"]
+      },
+      {
+        "id": "ept_11",
+        "client_id": "cli_acme",
+        "profile_id": "epr_11",
+        "category": "Practitioner",
+        "match_score": 52,
+        "signals": ["Builds the product", "Company matches ICP"]
+      },
+      {
+        "id": "ept_12",
+        "client_id": "cli_acme",
+        "profile_id": "epr_12",
+        "category": "Practitioner",
+        "match_score": 55,
+        "signals": ["Builds the product", "Company matches ICP"]
+      },
+      {
+        "id": "ept_13",
+        "client_id": "cli_acme",
+        "profile_id": "epr_13",
+        "category": "Champion",
+        "match_score": 79,
+        "signals": [
+          "Marketing or revenue team",
+          "Company matches ICP",
+          "Engaged three or more times"
+        ]
+      },
+      {
+        "id": "ept_14",
+        "client_id": "cli_acme",
+        "profile_id": "epr_14",
+        "category": "Outside ICP",
+        "match_score": 12,
+        "signals": ["No buying role", "Company outside target segment"]
+      },
+      {
+        "id": "ept_15",
+        "client_id": "cli_acme",
+        "profile_id": "epr_15",
+        "category": "Outside ICP",
+        "match_score": 8,
+        "signals": ["No buying role", "Company outside target segment"]
+      },
+      {
+        "id": "ept_16",
+        "client_id": "cli_acme",
+        "profile_id": "epr_16",
+        "category": "Peer",
+        "match_score": 44,
+        "signals": ["Similar role, non-buyer", "Founder or product lead"]
+      },
+      {
+        "id": "ept_17",
+        "client_id": "cli_acme",
+        "profile_id": "epr_17",
+        "category": "Peer",
+        "match_score": 38,
+        "signals": ["Similar role, non-buyer", "Founder or product lead"]
+      },
+      {
+        "id": "ept_18",
+        "client_id": "cli_acme",
+        "profile_id": "epr_18",
+        "category": "Decision maker",
+        "match_score": 83,
+        "signals": [
+          "Owns marketing budget",
+          "Series B to D company",
+          "Hiring for content"
+        ]
+      },
+      {
+        "id": "ept_19",
+        "client_id": "cli_acme",
+        "profile_id": "epr_19",
+        "category": "Champion",
+        "match_score": 66,
+        "signals": [
+          "Marketing or revenue team",
+          "Company matches ICP",
+          "Engaged three or more times"
+        ]
+      },
+      {
+        "id": "ept_20",
+        "client_id": "cli_acme",
+        "profile_id": "epr_20",
+        "category": "Decision maker",
+        "match_score": 90,
+        "signals": [
+          "Owns marketing budget",
+          "Series B to D company",
+          "Hiring for content"
+        ]
+      },
+      {
+        "id": "ept_21",
+        "client_id": "cli_acme",
+        "profile_id": "epr_21",
+        "category": "Practitioner",
+        "match_score": 49,
+        "signals": ["Builds the product", "Company matches ICP"]
+      },
+      {
+        "id": "ept_22",
+        "client_id": "cli_acme",
+        "profile_id": "epr_22",
+        "category": "Champion",
+        "match_score": 72,
+        "signals": [
+          "Marketing or revenue team",
+          "Company matches ICP",
+          "Engaged three or more times"
+        ]
+      },
+      {
+        "id": "ept_23",
+        "client_id": "cli_acme",
+        "profile_id": "epr_23",
+        "category": "Outside ICP",
+        "match_score": 18,
+        "signals": ["No buying role", "Company outside target segment"]
+      },
+      {
+        "id": "ept_24",
+        "client_id": "cli_acme",
+        "profile_id": "epr_24",
+        "category": "Decision maker",
+        "match_score": 89,
+        "signals": [
+          "Owns marketing budget",
+          "Series B to D company",
+          "Hiring for content"
+        ]
+      }
+    ],
+    "engagement_comments": [
+      {
+        "id": "ecm_01",
+        "post_id": "pst_20",
+        "profile_id": "epr_01",
+        "linkedin_comment_id": "li_c_001",
+        "comment_text": "What was the question? We run ours quarterly and it still takes a full day.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_20?commentUrn=li_c_001",
+        "commented_at": "2026-09-04T10:12:00.000Z"
+      },
+      {
+        "id": "ecm_02",
+        "post_id": "pst_20",
+        "profile_id": "epr_20",
+        "linkedin_comment_id": "li_c_002",
+        "comment_text": "We tried this and the hard part was getting sales to accept the shorter list. How did you handle that?",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_20?commentUrn=li_c_002",
+        "commented_at": "2026-09-04T13:40:00.000Z"
+      },
+      {
+        "id": "ecm_03",
+        "post_id": "pst_20",
+        "profile_id": "epr_09",
+        "linkedin_comment_id": "li_c_003",
+        "comment_text": "Saving this for our next planning cycle.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_20?commentUrn=li_c_003",
+        "commented_at": "2026-09-04T16:05:00.000Z"
+      },
+      {
+        "id": "ecm_04",
+        "post_id": "pst_20",
+        "profile_id": "epr_15",
+        "linkedin_comment_id": "li_c_004",
+        "comment_text": "Great insight, thanks for sharing!",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_20?commentUrn=li_c_004",
+        "commented_at": "2026-09-05T08:30:00.000Z"
+      },
+      {
+        "id": "ecm_05",
+        "post_id": "pst_19",
+        "profile_id": "epr_10",
+        "linkedin_comment_id": "li_c_005",
+        "comment_text": "Does the file live in the repo or in your storage? Curious how you version it.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_19?commentUrn=li_c_005",
+        "commented_at": "2026-09-03T11:20:00.000Z"
+      },
+      {
+        "id": "ecm_06",
+        "post_id": "pst_19",
+        "profile_id": "epr_07",
+        "linkedin_comment_id": "li_c_006",
+        "comment_text": "This is the first agent product I have seen that treats configuration as content. Smart.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_19?commentUrn=li_c_006",
+        "commented_at": "2026-09-03T15:02:00.000Z"
+      },
+      {
+        "id": "ecm_07",
+        "post_id": "pst_19",
+        "profile_id": "epr_12",
+        "linkedin_comment_id": "li_c_007",
+        "comment_text": "Markdown as the interface is underrated.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_19?commentUrn=li_c_007",
+        "commented_at": "2026-09-04T09:15:00.000Z"
+      },
+      {
+        "id": "ecm_08",
+        "post_id": "pst_18",
+        "profile_id": "epr_02",
+        "linkedin_comment_id": "li_c_008",
+        "comment_text": "We saw the same on pricing. Illustrations pulled the eye away from the button.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_18?commentUrn=li_c_008",
+        "commented_at": "2026-09-02T14:10:00.000Z"
+      },
+      {
+        "id": "ecm_09",
+        "post_id": "pst_18",
+        "profile_id": "epr_22",
+        "linkedin_comment_id": "li_c_009",
+        "comment_text": "How long did you run it? We keep killing tests at two weeks.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_18?commentUrn=li_c_009",
+        "commented_at": "2026-09-02T17:45:00.000Z"
+      },
+      {
+        "id": "ecm_10",
+        "post_id": "pst_18",
+        "profile_id": "epr_17",
+        "linkedin_comment_id": "li_c_010",
+        "comment_text": "Depends heavily on the audience though. Our consumer clients see the opposite.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_18?commentUrn=li_c_010",
+        "commented_at": "2026-09-03T08:05:00.000Z"
+      },
+      {
+        "id": "ecm_11",
+        "post_id": "pst_17",
+        "profile_id": "epr_21",
+        "linkedin_comment_id": "li_c_011",
+        "comment_text": "How do you decide what gets summarised versus dropped?",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_17?commentUrn=li_c_011",
+        "commented_at": "2026-09-01T16:30:00.000Z"
+      },
+      {
+        "id": "ecm_12",
+        "post_id": "pst_17",
+        "profile_id": "epr_10",
+        "linkedin_comment_id": "li_c_012",
+        "comment_text": "We went the other way and regretted it. Context cost scaled faster than quality.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_17?commentUrn=li_c_012",
+        "commented_at": "2026-09-01T18:12:00.000Z"
+      },
+      {
+        "id": "ecm_13",
+        "post_id": "pst_16",
+        "profile_id": "epr_04",
+        "linkedin_comment_id": "li_c_013",
+        "comment_text": "Did the same at Cardinal. The design hire changed what the engineers built, not just how it looked.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_16?commentUrn=li_c_013",
+        "commented_at": "2026-08-27T11:00:00.000Z"
+      },
+      {
+        "id": "ecm_14",
+        "post_id": "pst_16",
+        "profile_id": "epr_14",
+        "linkedin_comment_id": "li_c_014",
+        "comment_text": "Hiring designers? Happy to connect you with great candidates.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_16?commentUrn=li_c_014",
+        "commented_at": "2026-08-27T12:30:00.000Z"
+      },
+      {
+        "id": "ecm_15",
+        "post_id": "pst_16",
+        "profile_id": "epr_11",
+        "linkedin_comment_id": "li_c_015",
+        "comment_text": "As a designer who joined a two-engineer team: yes.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_16?commentUrn=li_c_015",
+        "commented_at": "2026-08-27T19:20:00.000Z"
+      },
+      {
+        "id": "ecm_16",
+        "post_id": "pst_16",
+        "profile_id": "epr_24",
+        "linkedin_comment_id": "li_c_016",
+        "comment_text": "Curious what the first project was.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_16?commentUrn=li_c_016",
+        "commented_at": "2026-08-28T07:50:00.000Z"
+      },
+      {
+        "id": "ecm_17",
+        "post_id": "pst_15",
+        "profile_id": "epr_05",
+        "linkedin_comment_id": "li_c_017",
+        "comment_text": "This solves a real problem for us. Every profile re-crops the same hero image.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_15?commentUrn=li_c_017",
+        "commented_at": "2026-08-25T10:40:00.000Z"
+      },
+      {
+        "id": "ecm_18",
+        "post_id": "pst_15",
+        "profile_id": "epr_19",
+        "linkedin_comment_id": "li_c_018",
+        "comment_text": "Does it handle video thumbnails too?",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_15?commentUrn=li_c_018",
+        "commented_at": "2026-08-25T14:15:00.000Z"
+      },
+      {
+        "id": "ecm_19",
+        "post_id": "pst_14",
+        "profile_id": "epr_18",
+        "linkedin_comment_id": "li_c_019",
+        "comment_text": "What was the lag before pipeline dipped? We are trying to model that.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_14?commentUrn=li_c_019",
+        "commented_at": "2026-08-20T13:20:00.000Z"
+      },
+      {
+        "id": "ecm_20",
+        "post_id": "pst_14",
+        "profile_id": "epr_03",
+        "linkedin_comment_id": "li_c_020",
+        "comment_text": "Brave test. Most teams would not survive the board conversation.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_14?commentUrn=li_c_020",
+        "commented_at": "2026-08-20T15:55:00.000Z"
+      },
+      {
+        "id": "ecm_21",
+        "post_id": "pst_14",
+        "profile_id": "epr_06",
+        "linkedin_comment_id": "li_c_021",
+        "comment_text": "Would love to see the attribution model behind this.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_14?commentUrn=li_c_021",
+        "commented_at": "2026-08-21T09:10:00.000Z"
+      },
+      {
+        "id": "ecm_22",
+        "post_id": "pst_12",
+        "profile_id": "epr_16",
+        "linkedin_comment_id": "li_c_022",
+        "comment_text": "Reading support tickets is the most underrated product ritual.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_12?commentUrn=li_c_022",
+        "commented_at": "2026-08-13T10:30:00.000Z"
+      },
+      {
+        "id": "ecm_23",
+        "post_id": "pst_12",
+        "profile_id": "epr_13",
+        "linkedin_comment_id": "li_c_023",
+        "comment_text": "Sending this to our whole sales team.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_12?commentUrn=li_c_023",
+        "commented_at": "2026-08-13T16:40:00.000Z"
+      },
+      {
+        "id": "ecm_24",
+        "post_id": "pst_11",
+        "profile_id": "epr_01",
+        "linkedin_comment_id": "li_c_024",
+        "comment_text": "Does it suggest times based on past performance or just gaps?",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_11?commentUrn=li_c_024",
+        "commented_at": "2026-08-11T10:05:00.000Z"
+      },
+      {
+        "id": "ecm_25",
+        "post_id": "pst_11",
+        "profile_id": "epr_23",
+        "linkedin_comment_id": "li_c_025",
+        "comment_text": "Nice launch post. Clean copy.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_11?commentUrn=li_c_025",
+        "commented_at": "2026-08-11T12:20:00.000Z"
+      },
+      {
+        "id": "ecm_26",
+        "post_id": "pst_10",
+        "profile_id": "epr_08",
+        "linkedin_comment_id": "li_c_026",
+        "comment_text": "We gated ours for leads and got 40 signups in six months. Ungating now.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_10?commentUrn=li_c_026",
+        "commented_at": "2026-08-06T14:00:00.000Z"
+      },
+      {
+        "id": "ecm_27",
+        "post_id": "pst_08",
+        "profile_id": "epr_20",
+        "linkedin_comment_id": "li_c_027",
+        "comment_text": "The three people who used it are the hardest conversation in product.",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_08?commentUrn=li_c_027",
+        "commented_at": "2026-07-30T11:15:00.000Z"
+      },
+      {
+        "id": "ecm_28",
+        "post_id": "pst_08",
+        "profile_id": "epr_07",
+        "linkedin_comment_id": "li_c_028",
+        "comment_text": "How did you communicate it to them?",
+        "comment_url": "https://www.linkedin.com/feed/update/li_pst_08?commentUrn=li_c_028",
+        "commented_at": "2026-07-30T13:50:00.000Z"
+      }
+    ],
+    "engagement_reactions": [
+      {
+        "id": "erx_001",
+        "post_id": "pst_01",
+        "profile_id": "epr_07",
+        "reaction_type": "insightful",
+        "created_at": "2026-06-12T15:19:00.000Z"
+      },
+      {
+        "id": "erx_002",
+        "post_id": "pst_01",
+        "profile_id": "epr_14",
+        "reaction_type": "insightful",
+        "created_at": "2026-06-12T19:59:00.000Z"
+      },
+      {
+        "id": "erx_003",
+        "post_id": "pst_01",
+        "profile_id": "epr_24",
+        "reaction_type": "like",
+        "created_at": "2026-06-12T01:16:00.000Z"
+      },
+      {
+        "id": "erx_004",
+        "post_id": "pst_02",
+        "profile_id": "epr_12",
+        "reaction_type": "celebrate",
+        "created_at": "2026-06-18T13:49:00.000Z"
+      },
+      {
+        "id": "erx_005",
+        "post_id": "pst_02",
+        "profile_id": "epr_17",
+        "reaction_type": "insightful",
+        "created_at": "2026-06-19T14:14:00.000Z"
+      },
+      {
+        "id": "erx_006",
+        "post_id": "pst_02",
+        "profile_id": "epr_10",
+        "reaction_type": "like",
+        "created_at": "2026-06-18T21:02:00.000Z"
+      },
+      {
+        "id": "erx_007",
+        "post_id": "pst_03",
+        "profile_id": "epr_02",
+        "reaction_type": "like",
+        "created_at": "2026-06-26T12:22:00.000Z"
+      },
+      {
+        "id": "erx_008",
+        "post_id": "pst_03",
+        "profile_id": "epr_20",
+        "reaction_type": "love",
+        "created_at": "2026-06-25T17:08:00.000Z"
+      },
+      {
+        "id": "erx_009",
+        "post_id": "pst_03",
+        "profile_id": "epr_01",
+        "reaction_type": "like",
+        "created_at": "2026-06-27T01:43:00.000Z"
+      },
+      {
+        "id": "erx_010",
+        "post_id": "pst_03",
+        "profile_id": "epr_06",
+        "reaction_type": "insightful",
+        "created_at": "2026-06-27T02:02:00.000Z"
+      },
+      {
+        "id": "erx_011",
+        "post_id": "pst_04",
+        "profile_id": "epr_18",
+        "reaction_type": "like",
+        "created_at": "2026-07-03T00:20:00.000Z"
+      },
+      {
+        "id": "erx_012",
+        "post_id": "pst_04",
+        "profile_id": "epr_04",
+        "reaction_type": "celebrate",
+        "created_at": "2026-07-02T12:28:00.000Z"
+      },
+      {
+        "id": "erx_013",
+        "post_id": "pst_04",
+        "profile_id": "epr_07",
+        "reaction_type": "support",
+        "created_at": "2026-07-03T04:20:00.000Z"
+      },
+      {
+        "id": "erx_014",
+        "post_id": "pst_04",
+        "profile_id": "epr_11",
+        "reaction_type": "like",
+        "created_at": "2026-07-03T05:04:00.000Z"
+      },
+      {
+        "id": "erx_015",
+        "post_id": "pst_05",
+        "profile_id": "epr_13",
+        "reaction_type": "insightful",
+        "created_at": "2026-07-11T02:21:00.000Z"
+      },
+      {
+        "id": "erx_016",
+        "post_id": "pst_05",
+        "profile_id": "epr_06",
+        "reaction_type": "celebrate",
+        "created_at": "2026-07-11T10:13:00.000Z"
+      },
+      {
+        "id": "erx_017",
+        "post_id": "pst_05",
+        "profile_id": "epr_08",
+        "reaction_type": "like",
+        "created_at": "2026-07-10T15:34:00.000Z"
+      },
+      {
+        "id": "erx_018",
+        "post_id": "pst_05",
+        "profile_id": "epr_07",
+        "reaction_type": "celebrate",
+        "created_at": "2026-07-09T20:37:00.000Z"
+      },
+      {
+        "id": "erx_019",
+        "post_id": "pst_05",
+        "profile_id": "epr_11",
+        "reaction_type": "like",
+        "created_at": "2026-07-09T14:49:00.000Z"
+      },
+      {
+        "id": "erx_020",
+        "post_id": "pst_05",
+        "profile_id": "epr_01",
+        "reaction_type": "support",
+        "created_at": "2026-07-09T18:45:00.000Z"
+      },
+      {
+        "id": "erx_021",
+        "post_id": "pst_06",
+        "profile_id": "epr_10",
+        "reaction_type": "like",
+        "created_at": "2026-07-18T00:35:00.000Z"
+      },
+      {
+        "id": "erx_022",
+        "post_id": "pst_06",
+        "profile_id": "epr_21",
+        "reaction_type": "celebrate",
+        "created_at": "2026-07-18T02:20:00.000Z"
+      },
+      {
+        "id": "erx_023",
+        "post_id": "pst_06",
+        "profile_id": "epr_19",
+        "reaction_type": "like",
+        "created_at": "2026-07-16T14:28:00.000Z"
+      },
+      {
+        "id": "erx_024",
+        "post_id": "pst_06",
+        "profile_id": "epr_06",
+        "reaction_type": "like",
+        "created_at": "2026-07-17T19:46:00.000Z"
+      },
+      {
+        "id": "erx_025",
+        "post_id": "pst_06",
+        "profile_id": "epr_23",
+        "reaction_type": "like",
+        "created_at": "2026-07-18T07:55:00.000Z"
+      },
+      {
+        "id": "erx_026",
+        "post_id": "pst_06",
+        "profile_id": "epr_04",
+        "reaction_type": "insightful",
+        "created_at": "2026-07-18T12:16:00.000Z"
+      },
+      {
+        "id": "erx_027",
+        "post_id": "pst_07",
+        "profile_id": "epr_17",
+        "reaction_type": "insightful",
+        "created_at": "2026-07-23T12:33:00.000Z"
+      },
+      {
+        "id": "erx_028",
+        "post_id": "pst_07",
+        "profile_id": "epr_11",
+        "reaction_type": "celebrate",
+        "created_at": "2026-07-25T05:07:00.000Z"
+      },
+      {
+        "id": "erx_029",
+        "post_id": "pst_07",
+        "profile_id": "epr_06",
+        "reaction_type": "insightful",
+        "created_at": "2026-07-24T14:26:00.000Z"
+      },
+      {
+        "id": "erx_030",
+        "post_id": "pst_07",
+        "profile_id": "epr_03",
+        "reaction_type": "like",
+        "created_at": "2026-07-24T18:58:00.000Z"
+      },
+      {
+        "id": "erx_031",
+        "post_id": "pst_07",
+        "profile_id": "epr_15",
+        "reaction_type": "celebrate",
+        "created_at": "2026-07-25T00:43:00.000Z"
+      },
+      {
+        "id": "erx_032",
+        "post_id": "pst_07",
+        "profile_id": "epr_10",
+        "reaction_type": "like",
+        "created_at": "2026-07-23T17:54:00.000Z"
+      },
+      {
+        "id": "erx_033",
+        "post_id": "pst_07",
+        "profile_id": "epr_12",
+        "reaction_type": "celebrate",
+        "created_at": "2026-07-24T09:50:00.000Z"
+      },
+      {
+        "id": "erx_034",
+        "post_id": "pst_08",
+        "profile_id": "epr_20",
+        "reaction_type": "insightful",
+        "created_at": "2026-07-31T03:14:00.000Z"
+      },
+      {
+        "id": "erx_035",
+        "post_id": "pst_08",
+        "profile_id": "epr_03",
+        "reaction_type": "like",
+        "created_at": "2026-07-30T09:26:00.000Z"
+      },
+      {
+        "id": "erx_036",
+        "post_id": "pst_08",
+        "profile_id": "epr_09",
+        "reaction_type": "love",
+        "created_at": "2026-07-30T11:09:00.000Z"
+      },
+      {
+        "id": "erx_037",
+        "post_id": "pst_08",
+        "profile_id": "epr_21",
+        "reaction_type": "like",
+        "created_at": "2026-07-31T08:23:00.000Z"
+      },
+      {
+        "id": "erx_038",
+        "post_id": "pst_08",
+        "profile_id": "epr_14",
+        "reaction_type": "like",
+        "created_at": "2026-08-01T04:50:00.000Z"
+      },
+      {
+        "id": "erx_039",
+        "post_id": "pst_08",
+        "profile_id": "epr_16",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-01T04:59:00.000Z"
+      },
+      {
+        "id": "erx_040",
+        "post_id": "pst_08",
+        "profile_id": "epr_01",
+        "reaction_type": "like",
+        "created_at": "2026-08-01T08:56:00.000Z"
+      },
+      {
+        "id": "erx_041",
+        "post_id": "pst_09",
+        "profile_id": "epr_22",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-05T23:42:00.000Z"
+      },
+      {
+        "id": "erx_042",
+        "post_id": "pst_09",
+        "profile_id": "epr_18",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-05T10:07:00.000Z"
+      },
+      {
+        "id": "erx_043",
+        "post_id": "pst_09",
+        "profile_id": "epr_23",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-06T03:47:00.000Z"
+      },
+      {
+        "id": "erx_044",
+        "post_id": "pst_09",
+        "profile_id": "epr_03",
+        "reaction_type": "support",
+        "created_at": "2026-08-05T17:41:00.000Z"
+      },
+      {
+        "id": "erx_045",
+        "post_id": "pst_09",
+        "profile_id": "epr_02",
+        "reaction_type": "support",
+        "created_at": "2026-08-05T19:31:00.000Z"
+      },
+      {
+        "id": "erx_046",
+        "post_id": "pst_09",
+        "profile_id": "epr_01",
+        "reaction_type": "like",
+        "created_at": "2026-08-05T15:47:00.000Z"
+      },
+      {
+        "id": "erx_047",
+        "post_id": "pst_09",
+        "profile_id": "epr_11",
+        "reaction_type": "like",
+        "created_at": "2026-08-05T02:28:00.000Z"
+      },
+      {
+        "id": "erx_048",
+        "post_id": "pst_09",
+        "profile_id": "epr_20",
+        "reaction_type": "love",
+        "created_at": "2026-08-06T00:16:00.000Z"
+      },
+      {
+        "id": "erx_049",
+        "post_id": "pst_09",
+        "profile_id": "epr_13",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-05T14:34:00.000Z"
+      },
+      {
+        "id": "erx_050",
+        "post_id": "pst_10",
+        "profile_id": "epr_06",
+        "reaction_type": "like",
+        "created_at": "2026-08-08T10:29:00.000Z"
+      },
+      {
+        "id": "erx_051",
+        "post_id": "pst_10",
+        "profile_id": "epr_05",
+        "reaction_type": "love",
+        "created_at": "2026-08-07T06:30:00.000Z"
+      },
+      {
+        "id": "erx_052",
+        "post_id": "pst_10",
+        "profile_id": "epr_14",
+        "reaction_type": "celebrate",
+        "created_at": "2026-08-08T11:31:00.000Z"
+      },
+      {
+        "id": "erx_053",
+        "post_id": "pst_10",
+        "profile_id": "epr_24",
+        "reaction_type": "love",
+        "created_at": "2026-08-08T03:37:00.000Z"
+      },
+      {
+        "id": "erx_054",
+        "post_id": "pst_10",
+        "profile_id": "epr_19",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-06T16:34:00.000Z"
+      },
+      {
+        "id": "erx_055",
+        "post_id": "pst_10",
+        "profile_id": "epr_20",
+        "reaction_type": "support",
+        "created_at": "2026-08-07T21:24:00.000Z"
+      },
+      {
+        "id": "erx_056",
+        "post_id": "pst_10",
+        "profile_id": "epr_04",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-07T19:07:00.000Z"
+      },
+      {
+        "id": "erx_057",
+        "post_id": "pst_10",
+        "profile_id": "epr_16",
+        "reaction_type": "support",
+        "created_at": "2026-08-07T10:19:00.000Z"
+      },
+      {
+        "id": "erx_058",
+        "post_id": "pst_10",
+        "profile_id": "epr_03",
+        "reaction_type": "support",
+        "created_at": "2026-08-08T09:23:00.000Z"
+      },
+      {
+        "id": "erx_059",
+        "post_id": "pst_11",
+        "profile_id": "epr_22",
+        "reaction_type": "like",
+        "created_at": "2026-08-13T07:26:00.000Z"
+      },
+      {
+        "id": "erx_060",
+        "post_id": "pst_11",
+        "profile_id": "epr_06",
+        "reaction_type": "like",
+        "created_at": "2026-08-12T00:28:00.000Z"
+      },
+      {
+        "id": "erx_061",
+        "post_id": "pst_11",
+        "profile_id": "epr_23",
+        "reaction_type": "love",
+        "created_at": "2026-08-13T05:01:00.000Z"
+      },
+      {
+        "id": "erx_062",
+        "post_id": "pst_11",
+        "profile_id": "epr_11",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-12T11:46:00.000Z"
+      },
+      {
+        "id": "erx_063",
+        "post_id": "pst_11",
+        "profile_id": "epr_12",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-13T04:25:00.000Z"
+      },
+      {
+        "id": "erx_064",
+        "post_id": "pst_11",
+        "profile_id": "epr_15",
+        "reaction_type": "support",
+        "created_at": "2026-08-12T12:45:00.000Z"
+      },
+      {
+        "id": "erx_065",
+        "post_id": "pst_11",
+        "profile_id": "epr_20",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-12T00:26:00.000Z"
+      },
+      {
+        "id": "erx_066",
+        "post_id": "pst_11",
+        "profile_id": "epr_21",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-11T11:30:00.000Z"
+      },
+      {
+        "id": "erx_067",
+        "post_id": "pst_11",
+        "profile_id": "epr_03",
+        "reaction_type": "love",
+        "created_at": "2026-08-11T21:14:00.000Z"
+      },
+      {
+        "id": "erx_068",
+        "post_id": "pst_12",
+        "profile_id": "epr_15",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-14T13:04:00.000Z"
+      },
+      {
+        "id": "erx_069",
+        "post_id": "pst_12",
+        "profile_id": "epr_22",
+        "reaction_type": "celebrate",
+        "created_at": "2026-08-14T06:36:00.000Z"
+      },
+      {
+        "id": "erx_070",
+        "post_id": "pst_12",
+        "profile_id": "epr_17",
+        "reaction_type": "like",
+        "created_at": "2026-08-13T14:46:00.000Z"
+      },
+      {
+        "id": "erx_071",
+        "post_id": "pst_12",
+        "profile_id": "epr_20",
+        "reaction_type": "support",
+        "created_at": "2026-08-14T19:41:00.000Z"
+      },
+      {
+        "id": "erx_072",
+        "post_id": "pst_12",
+        "profile_id": "epr_19",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-14T18:50:00.000Z"
+      },
+      {
+        "id": "erx_073",
+        "post_id": "pst_12",
+        "profile_id": "epr_03",
+        "reaction_type": "like",
+        "created_at": "2026-08-14T22:18:00.000Z"
+      },
+      {
+        "id": "erx_074",
+        "post_id": "pst_12",
+        "profile_id": "epr_16",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-14T09:57:00.000Z"
+      },
+      {
+        "id": "erx_075",
+        "post_id": "pst_12",
+        "profile_id": "epr_21",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-14T09:35:00.000Z"
+      },
+      {
+        "id": "erx_076",
+        "post_id": "pst_13",
+        "profile_id": "epr_23",
+        "reaction_type": "support",
+        "created_at": "2026-08-18T16:46:00.000Z"
+      },
+      {
+        "id": "erx_077",
+        "post_id": "pst_13",
+        "profile_id": "epr_11",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-19T12:22:00.000Z"
+      },
+      {
+        "id": "erx_078",
+        "post_id": "pst_13",
+        "profile_id": "epr_18",
+        "reaction_type": "like",
+        "created_at": "2026-08-18T18:26:00.000Z"
+      },
+      {
+        "id": "erx_079",
+        "post_id": "pst_13",
+        "profile_id": "epr_05",
+        "reaction_type": "like",
+        "created_at": "2026-08-20T09:04:00.000Z"
+      },
+      {
+        "id": "erx_080",
+        "post_id": "pst_13",
+        "profile_id": "epr_13",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-20T12:02:00.000Z"
+      },
+      {
+        "id": "erx_081",
+        "post_id": "pst_13",
+        "profile_id": "epr_10",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-19T10:53:00.000Z"
+      },
+      {
+        "id": "erx_082",
+        "post_id": "pst_13",
+        "profile_id": "epr_04",
+        "reaction_type": "celebrate",
+        "created_at": "2026-08-20T02:20:00.000Z"
+      },
+      {
+        "id": "erx_083",
+        "post_id": "pst_13",
+        "profile_id": "epr_09",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-19T02:11:00.000Z"
+      },
+      {
+        "id": "erx_084",
+        "post_id": "pst_13",
+        "profile_id": "epr_07",
+        "reaction_type": "celebrate",
+        "created_at": "2026-08-20T06:51:00.000Z"
+      },
+      {
+        "id": "erx_085",
+        "post_id": "pst_14",
+        "profile_id": "epr_06",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-21T07:29:00.000Z"
+      },
+      {
+        "id": "erx_086",
+        "post_id": "pst_14",
+        "profile_id": "epr_05",
+        "reaction_type": "like",
+        "created_at": "2026-08-21T20:27:00.000Z"
+      },
+      {
+        "id": "erx_087",
+        "post_id": "pst_14",
+        "profile_id": "epr_01",
+        "reaction_type": "support",
+        "created_at": "2026-08-20T12:59:00.000Z"
+      },
+      {
+        "id": "erx_088",
+        "post_id": "pst_14",
+        "profile_id": "epr_17",
+        "reaction_type": "love",
+        "created_at": "2026-08-20T17:48:00.000Z"
+      },
+      {
+        "id": "erx_089",
+        "post_id": "pst_14",
+        "profile_id": "epr_21",
+        "reaction_type": "like",
+        "created_at": "2026-08-21T22:22:00.000Z"
+      },
+      {
+        "id": "erx_090",
+        "post_id": "pst_14",
+        "profile_id": "epr_11",
+        "reaction_type": "support",
+        "created_at": "2026-08-22T03:19:00.000Z"
+      },
+      {
+        "id": "erx_091",
+        "post_id": "pst_14",
+        "profile_id": "epr_04",
+        "reaction_type": "support",
+        "created_at": "2026-08-21T17:47:00.000Z"
+      },
+      {
+        "id": "erx_092",
+        "post_id": "pst_14",
+        "profile_id": "epr_22",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-21T22:48:00.000Z"
+      },
+      {
+        "id": "erx_093",
+        "post_id": "pst_14",
+        "profile_id": "epr_19",
+        "reaction_type": "like",
+        "created_at": "2026-08-21T03:38:00.000Z"
+      },
+      {
+        "id": "erx_094",
+        "post_id": "pst_15",
+        "profile_id": "epr_05",
+        "reaction_type": "like",
+        "created_at": "2026-08-26T11:06:00.000Z"
+      },
+      {
+        "id": "erx_095",
+        "post_id": "pst_15",
+        "profile_id": "epr_19",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-26T05:55:00.000Z"
+      },
+      {
+        "id": "erx_096",
+        "post_id": "pst_15",
+        "profile_id": "epr_16",
+        "reaction_type": "support",
+        "created_at": "2026-08-26T03:30:00.000Z"
+      },
+      {
+        "id": "erx_097",
+        "post_id": "pst_15",
+        "profile_id": "epr_02",
+        "reaction_type": "celebrate",
+        "created_at": "2026-08-27T07:45:00.000Z"
+      },
+      {
+        "id": "erx_098",
+        "post_id": "pst_15",
+        "profile_id": "epr_10",
+        "reaction_type": "like",
+        "created_at": "2026-08-26T21:00:00.000Z"
+      },
+      {
+        "id": "erx_099",
+        "post_id": "pst_15",
+        "profile_id": "epr_14",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-25T22:52:00.000Z"
+      },
+      {
+        "id": "erx_100",
+        "post_id": "pst_15",
+        "profile_id": "epr_09",
+        "reaction_type": "love",
+        "created_at": "2026-08-25T15:09:00.000Z"
+      },
+      {
+        "id": "erx_101",
+        "post_id": "pst_15",
+        "profile_id": "epr_18",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-26T00:47:00.000Z"
+      },
+      {
+        "id": "erx_102",
+        "post_id": "pst_15",
+        "profile_id": "epr_07",
+        "reaction_type": "like",
+        "created_at": "2026-08-26T15:36:00.000Z"
+      },
+      {
+        "id": "erx_103",
+        "post_id": "pst_15",
+        "profile_id": "epr_03",
+        "reaction_type": "like",
+        "created_at": "2026-08-27T07:49:00.000Z"
+      },
+      {
+        "id": "erx_104",
+        "post_id": "pst_16",
+        "profile_id": "epr_17",
+        "reaction_type": "like",
+        "created_at": "2026-08-27T23:12:00.000Z"
+      },
+      {
+        "id": "erx_105",
+        "post_id": "pst_16",
+        "profile_id": "epr_19",
+        "reaction_type": "support",
+        "created_at": "2026-08-27T20:36:00.000Z"
+      },
+      {
+        "id": "erx_106",
+        "post_id": "pst_16",
+        "profile_id": "epr_23",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-27T14:17:00.000Z"
+      },
+      {
+        "id": "erx_107",
+        "post_id": "pst_16",
+        "profile_id": "epr_09",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-27T12:46:00.000Z"
+      },
+      {
+        "id": "erx_108",
+        "post_id": "pst_16",
+        "profile_id": "epr_18",
+        "reaction_type": "celebrate",
+        "created_at": "2026-08-28T22:04:00.000Z"
+      },
+      {
+        "id": "erx_109",
+        "post_id": "pst_16",
+        "profile_id": "epr_13",
+        "reaction_type": "support",
+        "created_at": "2026-08-28T14:46:00.000Z"
+      },
+      {
+        "id": "erx_110",
+        "post_id": "pst_16",
+        "profile_id": "epr_22",
+        "reaction_type": "celebrate",
+        "created_at": "2026-08-28T10:30:00.000Z"
+      },
+      {
+        "id": "erx_111",
+        "post_id": "pst_16",
+        "profile_id": "epr_06",
+        "reaction_type": "celebrate",
+        "created_at": "2026-08-28T00:37:00.000Z"
+      },
+      {
+        "id": "erx_112",
+        "post_id": "pst_16",
+        "profile_id": "epr_07",
+        "reaction_type": "insightful",
+        "created_at": "2026-08-29T08:42:00.000Z"
+      },
+      {
+        "id": "erx_113",
+        "post_id": "pst_16",
+        "profile_id": "epr_08",
+        "reaction_type": "support",
+        "created_at": "2026-08-29T06:30:00.000Z"
+      },
+      {
+        "id": "erx_114",
+        "post_id": "pst_16",
+        "profile_id": "epr_16",
+        "reaction_type": "like",
+        "created_at": "2026-08-29T02:30:00.000Z"
+      },
+      {
+        "id": "erx_115",
+        "post_id": "pst_17",
+        "profile_id": "epr_17",
+        "reaction_type": "celebrate",
+        "created_at": "2026-09-01T16:18:00.000Z"
+      },
+      {
+        "id": "erx_116",
+        "post_id": "pst_17",
+        "profile_id": "epr_12",
+        "reaction_type": "celebrate",
+        "created_at": "2026-09-02T18:28:00.000Z"
+      },
+      {
+        "id": "erx_117",
+        "post_id": "pst_17",
+        "profile_id": "epr_18",
+        "reaction_type": "like",
+        "created_at": "2026-09-02T07:50:00.000Z"
+      },
+      {
+        "id": "erx_118",
+        "post_id": "pst_17",
+        "profile_id": "epr_01",
+        "reaction_type": "support",
+        "created_at": "2026-09-02T15:08:00.000Z"
+      },
+      {
+        "id": "erx_119",
+        "post_id": "pst_17",
+        "profile_id": "epr_06",
+        "reaction_type": "insightful",
+        "created_at": "2026-09-03T13:35:00.000Z"
+      },
+      {
+        "id": "erx_120",
+        "post_id": "pst_17",
+        "profile_id": "epr_09",
+        "reaction_type": "support",
+        "created_at": "2026-09-02T09:48:00.000Z"
+      },
+      {
+        "id": "erx_121",
+        "post_id": "pst_17",
+        "profile_id": "epr_16",
+        "reaction_type": "like",
+        "created_at": "2026-09-03T09:26:00.000Z"
+      },
+      {
+        "id": "erx_122",
+        "post_id": "pst_17",
+        "profile_id": "epr_11",
+        "reaction_type": "celebrate",
+        "created_at": "2026-09-02T01:18:00.000Z"
+      },
+      {
+        "id": "erx_123",
+        "post_id": "pst_17",
+        "profile_id": "epr_21",
+        "reaction_type": "like",
+        "created_at": "2026-09-01T23:19:00.000Z"
+      },
+      {
+        "id": "erx_124",
+        "post_id": "pst_17",
+        "profile_id": "epr_07",
+        "reaction_type": "like",
+        "created_at": "2026-09-02T01:31:00.000Z"
+      },
+      {
+        "id": "erx_125",
+        "post_id": "pst_17",
+        "profile_id": "epr_13",
+        "reaction_type": "insightful",
+        "created_at": "2026-09-01T19:42:00.000Z"
+      },
+      {
+        "id": "erx_126",
+        "post_id": "pst_17",
+        "profile_id": "epr_05",
+        "reaction_type": "insightful",
+        "created_at": "2026-09-03T08:40:00.000Z"
+      },
+      {
+        "id": "erx_127",
+        "post_id": "pst_18",
+        "profile_id": "epr_17",
+        "reaction_type": "like",
+        "created_at": "2026-09-03T15:53:00.000Z"
+      },
+      {
+        "id": "erx_128",
+        "post_id": "pst_18",
+        "profile_id": "epr_07",
+        "reaction_type": "like",
+        "created_at": "2026-09-04T03:08:00.000Z"
+      },
+      {
+        "id": "erx_129",
+        "post_id": "pst_18",
+        "profile_id": "epr_23",
+        "reaction_type": "support",
+        "created_at": "2026-09-03T11:42:00.000Z"
+      },
+      {
+        "id": "erx_130",
+        "post_id": "pst_18",
+        "profile_id": "epr_08",
+        "reaction_type": "like",
+        "created_at": "2026-09-03T16:53:00.000Z"
+      },
+      {
+        "id": "erx_131",
+        "post_id": "pst_18",
+        "profile_id": "epr_04",
+        "reaction_type": "love",
+        "created_at": "2026-09-02T20:27:00.000Z"
+      },
+      {
+        "id": "erx_132",
+        "post_id": "pst_18",
+        "profile_id": "epr_01",
+        "reaction_type": "like",
+        "created_at": "2026-09-02T13:27:00.000Z"
+      },
+      {
+        "id": "erx_133",
+        "post_id": "pst_18",
+        "profile_id": "epr_18",
+        "reaction_type": "insightful",
+        "created_at": "2026-09-03T20:49:00.000Z"
+      },
+      {
+        "id": "erx_134",
+        "post_id": "pst_18",
+        "profile_id": "epr_24",
+        "reaction_type": "support",
+        "created_at": "2026-09-03T01:40:00.000Z"
+      },
+      {
+        "id": "erx_135",
+        "post_id": "pst_18",
+        "profile_id": "epr_21",
+        "reaction_type": "like",
+        "created_at": "2026-09-03T15:14:00.000Z"
+      },
+      {
+        "id": "erx_136",
+        "post_id": "pst_18",
+        "profile_id": "epr_12",
+        "reaction_type": "like",
+        "created_at": "2026-09-04T02:43:00.000Z"
+      },
+      {
+        "id": "erx_137",
+        "post_id": "pst_18",
+        "profile_id": "epr_16",
+        "reaction_type": "celebrate",
+        "created_at": "2026-09-03T00:37:00.000Z"
+      },
+      {
+        "id": "erx_138",
+        "post_id": "pst_18",
+        "profile_id": "epr_15",
+        "reaction_type": "like",
+        "created_at": "2026-09-02T19:24:00.000Z"
+      },
+      {
+        "id": "erx_139",
+        "post_id": "pst_19",
+        "profile_id": "epr_01",
+        "reaction_type": "like",
+        "created_at": "2026-09-04T04:30:00.000Z"
+      },
+      {
+        "id": "erx_140",
+        "post_id": "pst_19",
+        "profile_id": "epr_24",
+        "reaction_type": "like",
+        "created_at": "2026-09-03T15:12:00.000Z"
+      },
+      {
+        "id": "erx_141",
+        "post_id": "pst_19",
+        "profile_id": "epr_08",
+        "reaction_type": "insightful",
+        "created_at": "2026-09-03T12:18:00.000Z"
+      },
+      {
+        "id": "erx_142",
+        "post_id": "pst_19",
+        "profile_id": "epr_21",
+        "reaction_type": "insightful",
+        "created_at": "2026-09-03T12:36:00.000Z"
+      },
+      {
+        "id": "erx_143",
+        "post_id": "pst_19",
+        "profile_id": "epr_03",
+        "reaction_type": "insightful",
+        "created_at": "2026-09-04T18:45:00.000Z"
+      },
+      {
+        "id": "erx_144",
+        "post_id": "pst_19",
+        "profile_id": "epr_09",
+        "reaction_type": "insightful",
+        "created_at": "2026-09-04T19:18:00.000Z"
+      },
+      {
+        "id": "erx_145",
+        "post_id": "pst_19",
+        "profile_id": "epr_15",
+        "reaction_type": "like",
+        "created_at": "2026-09-03T23:30:00.000Z"
+      },
+      {
+        "id": "erx_146",
+        "post_id": "pst_19",
+        "profile_id": "epr_06",
+        "reaction_type": "like",
+        "created_at": "2026-09-03T18:28:00.000Z"
+      },
+      {
+        "id": "erx_147",
+        "post_id": "pst_19",
+        "profile_id": "epr_13",
+        "reaction_type": "insightful",
+        "created_at": "2026-09-04T03:32:00.000Z"
+      },
+      {
+        "id": "erx_148",
+        "post_id": "pst_19",
+        "profile_id": "epr_23",
+        "reaction_type": "celebrate",
+        "created_at": "2026-09-03T21:31:00.000Z"
+      },
+      {
+        "id": "erx_149",
+        "post_id": "pst_19",
+        "profile_id": "epr_19",
+        "reaction_type": "insightful",
+        "created_at": "2026-09-03T18:02:00.000Z"
+      },
+      {
+        "id": "erx_150",
+        "post_id": "pst_20",
+        "profile_id": "epr_17",
+        "reaction_type": "like",
+        "created_at": "2026-09-04T18:11:00.000Z"
+      },
+      {
+        "id": "erx_151",
+        "post_id": "pst_20",
+        "profile_id": "epr_09",
+        "reaction_type": "love",
+        "created_at": "2026-09-04T14:19:00.000Z"
+      },
+      {
+        "id": "erx_152",
+        "post_id": "pst_20",
+        "profile_id": "epr_01",
+        "reaction_type": "like",
+        "created_at": "2026-09-05T15:19:00.000Z"
+      },
+      {
+        "id": "erx_153",
+        "post_id": "pst_20",
+        "profile_id": "epr_06",
+        "reaction_type": "celebrate",
+        "created_at": "2026-09-05T11:37:00.000Z"
+      },
+      {
+        "id": "erx_154",
+        "post_id": "pst_20",
+        "profile_id": "epr_16",
+        "reaction_type": "like",
+        "created_at": "2026-09-05T08:54:00.000Z"
+      },
+      {
+        "id": "erx_155",
+        "post_id": "pst_20",
+        "profile_id": "epr_13",
+        "reaction_type": "celebrate",
+        "created_at": "2026-09-05T18:15:00.000Z"
+      },
+      {
+        "id": "erx_156",
+        "post_id": "pst_20",
+        "profile_id": "epr_10",
+        "reaction_type": "celebrate",
+        "created_at": "2026-09-04T20:13:00.000Z"
+      },
+      {
+        "id": "erx_157",
+        "post_id": "pst_20",
+        "profile_id": "epr_04",
+        "reaction_type": "like",
+        "created_at": "2026-09-05T14:37:00.000Z"
+      },
+      {
+        "id": "erx_158",
+        "post_id": "pst_20",
+        "profile_id": "epr_19",
+        "reaction_type": "insightful",
+        "created_at": "2026-09-04T12:18:00.000Z"
+      },
+      {
+        "id": "erx_159",
+        "post_id": "pst_20",
+        "profile_id": "epr_02",
+        "reaction_type": "love",
+        "created_at": "2026-09-05T13:50:00.000Z"
+      },
+      {
+        "id": "erx_160",
+        "post_id": "pst_20",
+        "profile_id": "epr_18",
+        "reaction_type": "support",
+        "created_at": "2026-09-05T14:15:00.000Z"
+      },
+      {
+        "id": "erx_161",
+        "post_id": "pst_20",
+        "profile_id": "epr_23",
+        "reaction_type": "celebrate",
+        "created_at": "2026-09-05T16:06:00.000Z"
+      }
+    ],
+    "targeted_accounts": [
+      {
+        "id": "tac_01",
+        "client_id": "cli_acme",
+        "added_by": "usr_sam",
+        "name": "Northbeam",
+        "headline": "Revenue attribution for B2B marketing teams",
+        "profile_url": "https://www.linkedin.com/company/northbeam",
+        "profile_picture": null,
+        "created_at": "2026-05-20T10:00:00.000Z"
+      },
+      {
+        "id": "tac_02",
+        "client_id": "cli_acme",
+        "added_by": "usr_sam",
+        "name": "Lena Hartmann",
+        "headline": "CEO at Fathom. Writing about B2B content that sells",
+        "profile_url": "https://www.linkedin.com/in/lenahartmann",
+        "profile_picture": "https://i.pravatar.cc/96?img=38",
+        "created_at": "2026-05-20T10:00:00.000Z"
+      },
+      {
+        "id": "tac_03",
+        "client_id": "cli_acme",
+        "added_by": "usr_sam",
+        "name": "Beacon",
+        "headline": "LinkedIn automation for sales teams",
+        "profile_url": "https://www.linkedin.com/company/beacon",
+        "profile_picture": null,
+        "created_at": "2026-05-20T10:00:00.000Z"
+      },
+      {
+        "id": "tac_04",
+        "client_id": "cli_acme",
+        "added_by": "usr_sam",
+        "name": "Jordan Blake",
+        "headline": "Founder at Ledgerly. Finance ops, in public",
+        "profile_url": "https://www.linkedin.com/in/jordanblake",
+        "profile_picture": "https://i.pravatar.cc/96?img=57",
+        "created_at": "2026-05-20T10:00:00.000Z"
+      }
+    ],
+    "targeted_posts": [
+      {
+        "id": "tps_001",
+        "targeted_account_id": "tac_01",
+        "text": "Attribution is not a report. It is a decision about what you are willing to stop doing.\n\nThree questions we ask before adding a channel to the model.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_001",
+        "posted_at": "2026-09-06T09:30:00.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 61,
+        "engagement_comments": 7,
+        "engagement_shares": 2
+      },
+      {
+        "id": "tps_079",
+        "targeted_account_id": "tac_04",
+        "text": "Month 14 of Ledgerly. Revenue, churn, and the one number I stopped looking at.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_04_079",
+        "posted_at": "2026-09-05T12:45:00.000Z",
+        "author_name": "Jordan Blake",
+        "author_headline": "Founder at Ledgerly. Finance ops, in public",
+        "engagement_likes": 363,
+        "engagement_comments": 54,
+        "engagement_shares": 14
+      },
+      {
+        "id": "tps_067",
+        "targeted_account_id": "tac_03",
+        "text": "Beacon now auto-engages with 50 target accounts a day. Set your list, we handle the rest.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_03_067",
+        "posted_at": "2026-09-04T08:45:00.000Z",
+        "author_name": "Beacon",
+        "author_headline": "LinkedIn automation for sales teams",
+        "engagement_likes": 38,
+        "engagement_comments": 2,
+        "engagement_shares": 1
+      },
+      {
+        "id": "tps_027",
+        "targeted_account_id": "tac_02",
+        "text": "I read every comment on our company posts for a month. The pattern was obvious and a little embarrassing.\n\nThe posts that got questions were the ones where we admitted something did not work.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_027",
+        "posted_at": "2026-09-04T08:00:00.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 749,
+        "engagement_comments": 56,
+        "engagement_shares": 41
+      },
+      {
+        "id": "tps_028",
+        "targeted_account_id": "tac_02",
+        "text": "Unpopular opinion: your content calendar is why your content is boring.\n\nWe replaced ours with a list of things we learned this week.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_028",
+        "posted_at": "2026-09-02T12:15:24.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 541,
+        "engagement_comments": 43,
+        "engagement_shares": 22
+      },
+      {
+        "id": "tps_002",
+        "targeted_account_id": "tac_01",
+        "text": "New in Northbeam: multi-touch paths now show the first content touch, not just the first form fill.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_002",
+        "posted_at": "2026-09-01T09:45:43.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 134,
+        "engagement_comments": 14,
+        "engagement_shares": 8
+      },
+      {
+        "id": "tps_029",
+        "targeted_account_id": "tac_02",
+        "text": "Hired a writer instead of a second SDR. Six months later pipeline is up and the writer costs less. The full numbers, no rounding.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_029",
+        "posted_at": "2026-08-31T12:30:32.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 507,
+        "engagement_comments": 55,
+        "engagement_shares": 21
+      },
+      {
+        "id": "tps_080",
+        "targeted_account_id": "tac_04",
+        "text": "We raised prices 30% and lost two customers. Both were the ones filing the most tickets. Sometimes churn is a feature.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_04_080",
+        "posted_at": "2026-08-31T09:00:16.000Z",
+        "author_name": "Jordan Blake",
+        "author_headline": "Founder at Ledgerly. Finance ops, in public",
+        "engagement_likes": 183,
+        "engagement_comments": 26,
+        "engagement_shares": 10
+      },
+      {
+        "id": "tps_030",
+        "targeted_account_id": "tac_02",
+        "text": "Founders: stop posting about your product. Post about the decision that led to it.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_030",
+        "posted_at": "2026-08-29T12:15:52.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 840,
+        "engagement_comments": 82,
+        "engagement_shares": 37
+      },
+      {
+        "id": "tps_003",
+        "targeted_account_id": "tac_01",
+        "text": "Your CFO does not want more dashboards. They want one number they trust. Here is how we get there with customers in the first 30 days.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_003",
+        "posted_at": "2026-08-29T12:15:37.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 79,
+        "engagement_comments": 9,
+        "engagement_shares": 5
+      },
+      {
+        "id": "tps_068",
+        "targeted_account_id": "tac_03",
+        "text": "Introducing smart reply: comments in your voice, on the posts that matter to your pipeline.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_03_068",
+        "posted_at": "2026-08-28T14:45:11.000Z",
+        "author_name": "Beacon",
+        "author_headline": "LinkedIn automation for sales teams",
+        "engagement_likes": 36,
+        "engagement_comments": 3,
+        "engagement_shares": 1
+      },
+      {
+        "id": "tps_031",
+        "targeted_account_id": "tac_02",
+        "text": "The best B2B post I saw this week had zero hashtags, one number, and a question at the end. That is the whole formula.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_031",
+        "posted_at": "2026-08-27T12:15:39.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 606,
+        "engagement_comments": 73,
+        "engagement_shares": 27
+      },
+      {
+        "id": "tps_004",
+        "targeted_account_id": "tac_01",
+        "text": "We analysed 1,200 B2B pipelines. Content-sourced deals close 23% faster. Full breakdown in the comments.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_004",
+        "posted_at": "2026-08-26T08:00:34.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 56,
+        "engagement_comments": 7,
+        "engagement_shares": 4
+      },
+      {
+        "id": "tps_081",
+        "targeted_account_id": "tac_04",
+        "text": "Finance teams do not want automation. They want to stop being surprised. Different product.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_04_081",
+        "posted_at": "2026-08-25T09:15:55.000Z",
+        "author_name": "Jordan Blake",
+        "author_headline": "Founder at Ledgerly. Finance ops, in public",
+        "engagement_likes": 367,
+        "engagement_comments": 47,
+        "engagement_shares": 11
+      },
+      {
+        "id": "tps_032",
+        "targeted_account_id": "tac_02",
+        "text": "We killed our newsletter. Open rates were fine. Nobody replied. Replies are the metric.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_032",
+        "posted_at": "2026-08-24T09:30:03.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 736,
+        "engagement_comments": 78,
+        "engagement_shares": 28
+      },
+      {
+        "id": "tps_005",
+        "targeted_account_id": "tac_01",
+        "text": "Webinar Thursday: building an attribution model your sales team will actually believe.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_005",
+        "posted_at": "2026-08-22T09:15:24.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 92,
+        "engagement_comments": 11,
+        "engagement_shares": 6
+      },
+      {
+        "id": "tps_082",
+        "targeted_account_id": "tac_04",
+        "text": "Our first enterprise deal came from a comment thread, not a form. The thread was about payroll timing, of all things.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_04_082",
+        "posted_at": "2026-08-22T08:30:57.000Z",
+        "author_name": "Jordan Blake",
+        "author_headline": "Founder at Ledgerly. Finance ops, in public",
+        "engagement_likes": 182,
+        "engagement_comments": 27,
+        "engagement_shares": 7
+      },
+      {
+        "id": "tps_033",
+        "targeted_account_id": "tac_02",
+        "text": "Three posts a week is the minimum for LinkedIn to remember you exist. Two is invisible. Here is how we sustain it with a team of four.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_033",
+        "posted_at": "2026-08-21T12:30:53.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 557,
+        "engagement_comments": 39,
+        "engagement_shares": 29
+      },
+      {
+        "id": "tps_006",
+        "targeted_account_id": "tac_01",
+        "text": "The 30 day attribution window is a habit, not a strategy. What happens when you look at 90.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_006",
+        "posted_at": "2026-08-19T14:30:37.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 116,
+        "engagement_comments": 10,
+        "engagement_shares": 9
+      },
+      {
+        "id": "tps_069",
+        "targeted_account_id": "tac_03",
+        "text": "New integration: Beacon + Salesforce. Every engagement becomes an activity on the contact.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_03_069",
+        "posted_at": "2026-08-19T14:15:57.000Z",
+        "author_name": "Beacon",
+        "author_headline": "LinkedIn automation for sales teams",
+        "engagement_likes": 49,
+        "engagement_comments": 3,
+        "engagement_shares": 1
+      },
+      {
+        "id": "tps_034",
+        "targeted_account_id": "tac_02",
+        "text": "What a sales call sounds like after someone has read six of your posts. Shorter, and you skip the pitch.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_034",
+        "posted_at": "2026-08-19T12:45:17.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 576,
+        "engagement_comments": 44,
+        "engagement_shares": 19
+      },
+      {
+        "id": "tps_083",
+        "targeted_account_id": "tac_04",
+        "text": "Every founder should do their own books for the first year. Not to save money. To feel where the process breaks.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_04_083",
+        "posted_at": "2026-08-18T12:45:18.000Z",
+        "author_name": "Jordan Blake",
+        "author_headline": "Founder at Ledgerly. Finance ops, in public",
+        "engagement_likes": 355,
+        "engagement_comments": 45,
+        "engagement_shares": 17
+      },
+      {
+        "id": "tps_035",
+        "targeted_account_id": "tac_02",
+        "text": "Case study format that works: the problem in one line, the number that changed, and what you would do differently.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_035",
+        "posted_at": "2026-08-17T14:15:31.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 807,
+        "engagement_comments": 58,
+        "engagement_shares": 49
+      },
+      {
+        "id": "tps_036",
+        "targeted_account_id": "tac_02",
+        "text": "If your content team cannot name the deal their last post touched, attribution is not the problem. Distance from the customer is.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_036",
+        "posted_at": "2026-08-15T09:45:37.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 577,
+        "engagement_comments": 60,
+        "engagement_shares": 19
+      },
+      {
+        "id": "tps_007",
+        "targeted_account_id": "tac_01",
+        "text": "Customer story: how Relay Systems cut reporting time from a week to an afternoon.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_007",
+        "posted_at": "2026-08-14T08:15:52.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 95,
+        "engagement_comments": 12,
+        "engagement_shares": 4
+      },
+      {
+        "id": "tps_084",
+        "targeted_account_id": "tac_04",
+        "text": "Hiring a Head of Growth. If you have read this far, you probably know someone.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_04_084",
+        "posted_at": "2026-08-13T12:45:01.000Z",
+        "author_name": "Jordan Blake",
+        "author_headline": "Founder at Ledgerly. Finance ops, in public",
+        "engagement_likes": 352,
+        "engagement_comments": 48,
+        "engagement_shares": 11
+      },
+      {
+        "id": "tps_008",
+        "targeted_account_id": "tac_01",
+        "text": "Marketing and sales disagree about pipeline because they are counting different things. Fix the definitions before the tooling.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_008",
+        "posted_at": "2026-08-12T12:45:54.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 109,
+        "engagement_comments": 9,
+        "engagement_shares": 7
+      },
+      {
+        "id": "tps_037",
+        "targeted_account_id": "tac_02",
+        "text": "The Fathom content playbook is now public. 14 pages, no gate.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_037",
+        "posted_at": "2026-08-12T09:15:51.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 561,
+        "engagement_comments": 56,
+        "engagement_shares": 37
+      },
+      {
+        "id": "tps_070",
+        "targeted_account_id": "tac_03",
+        "text": "The average rep spends 40 minutes a day on LinkedIn. Beacon gets that to five.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_03_070",
+        "posted_at": "2026-08-11T09:00:26.000Z",
+        "author_name": "Beacon",
+        "author_headline": "LinkedIn automation for sales teams",
+        "engagement_likes": 29,
+        "engagement_comments": 3,
+        "engagement_shares": 1
+      },
+      {
+        "id": "tps_038",
+        "targeted_account_id": "tac_02",
+        "text": "Posted every weekday for a year. Here is what changed and what did not.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_038",
+        "posted_at": "2026-08-10T09:00:53.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 590,
+        "engagement_comments": 52,
+        "engagement_shares": 26
+      },
+      {
+        "id": "tps_009",
+        "targeted_account_id": "tac_01",
+        "text": "Attribution is not a report. It is a decision about what you are willing to stop doing.\n\nThree questions we ask before adding a channel to the model.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_009",
+        "posted_at": "2026-08-09T12:15:45.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 131,
+        "engagement_comments": 9,
+        "engagement_shares": 9
+      },
+      {
+        "id": "tps_039",
+        "targeted_account_id": "tac_02",
+        "text": "I read every comment on our company posts for a month. The pattern was obvious and a little embarrassing.\n\nThe posts that got questions were the ones where we admitted something did not work.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_039",
+        "posted_at": "2026-08-08T12:15:09.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 871,
+        "engagement_comments": 69,
+        "engagement_shares": 29
+      },
+      {
+        "id": "tps_085",
+        "targeted_account_id": "tac_04",
+        "text": "The spreadsheet we replaced had 41 tabs. The person who built it is now our best customer.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_04_085",
+        "posted_at": "2026-08-07T12:45:32.000Z",
+        "author_name": "Jordan Blake",
+        "author_headline": "Founder at Ledgerly. Finance ops, in public",
+        "engagement_likes": 416,
+        "engagement_comments": 49,
+        "engagement_shares": 19
+      },
+      {
+        "id": "tps_040",
+        "targeted_account_id": "tac_02",
+        "text": "Unpopular opinion: your content calendar is why your content is boring.\n\nWe replaced ours with a list of things we learned this week.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_040",
+        "posted_at": "2026-08-06T14:45:53.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 419,
+        "engagement_comments": 32,
+        "engagement_shares": 21
+      },
+      {
+        "id": "tps_010",
+        "targeted_account_id": "tac_01",
+        "text": "New in Northbeam: multi-touch paths now show the first content touch, not just the first form fill.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_010",
+        "posted_at": "2026-08-05T09:45:11.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 110,
+        "engagement_comments": 12,
+        "engagement_shares": 6
+      },
+      {
+        "id": "tps_041",
+        "targeted_account_id": "tac_02",
+        "text": "Hired a writer instead of a second SDR. Six months later pipeline is up and the writer costs less. The full numbers, no rounding.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_041",
+        "posted_at": "2026-08-03T12:45:34.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 591,
+        "engagement_comments": 43,
+        "engagement_shares": 21
+      },
+      {
+        "id": "tps_086",
+        "targeted_account_id": "tac_04",
+        "text": "Month 14 of Ledgerly. Revenue, churn, and the one number I stopped looking at.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_04_086",
+        "posted_at": "2026-08-03T09:30:02.000Z",
+        "author_name": "Jordan Blake",
+        "author_headline": "Founder at Ledgerly. Finance ops, in public",
+        "engagement_likes": 231,
+        "engagement_comments": 38,
+        "engagement_shares": 9
+      },
+      {
+        "id": "tps_071",
+        "targeted_account_id": "tac_03",
+        "text": "Product update: schedule your engagement windows so activity looks natural across time zones.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_03_071",
+        "posted_at": "2026-08-02T12:00:01.000Z",
+        "author_name": "Beacon",
+        "author_headline": "LinkedIn automation for sales teams",
+        "engagement_likes": 48,
+        "engagement_comments": 4,
+        "engagement_shares": 1
+      },
+      {
+        "id": "tps_011",
+        "targeted_account_id": "tac_01",
+        "text": "Your CFO does not want more dashboards. They want one number they trust. Here is how we get there with customers in the first 30 days.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_011",
+        "posted_at": "2026-08-01T12:45:32.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 60,
+        "engagement_comments": 5,
+        "engagement_shares": 3
+      },
+      {
+        "id": "tps_042",
+        "targeted_account_id": "tac_02",
+        "text": "Founders: stop posting about your product. Post about the decision that led to it.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_042",
+        "posted_at": "2026-08-01T08:15:38.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 578,
+        "engagement_comments": 69,
+        "engagement_shares": 19
+      },
+      {
+        "id": "tps_087",
+        "targeted_account_id": "tac_04",
+        "text": "We raised prices 30% and lost two customers. Both were the ones filing the most tickets. Sometimes churn is a feature.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_04_087",
+        "posted_at": "2026-07-31T12:00:55.000Z",
+        "author_name": "Jordan Blake",
+        "author_headline": "Founder at Ledgerly. Finance ops, in public",
+        "engagement_likes": 172,
+        "engagement_comments": 29,
+        "engagement_shares": 5
+      },
+      {
+        "id": "tps_043",
+        "targeted_account_id": "tac_02",
+        "text": "The best B2B post I saw this week had zero hashtags, one number, and a question at the end. That is the whole formula.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_043",
+        "posted_at": "2026-07-30T12:30:40.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 426,
+        "engagement_comments": 35,
+        "engagement_shares": 13
+      },
+      {
+        "id": "tps_012",
+        "targeted_account_id": "tac_01",
+        "text": "We analysed 1,200 B2B pipelines. Content-sourced deals close 23% faster. Full breakdown in the comments.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_012",
+        "posted_at": "2026-07-29T09:30:52.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 75,
+        "engagement_comments": 7,
+        "engagement_shares": 5
+      },
+      {
+        "id": "tps_044",
+        "targeted_account_id": "tac_02",
+        "text": "We killed our newsletter. Open rates were fine. Nobody replied. Replies are the metric.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_044",
+        "posted_at": "2026-07-28T08:45:57.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 399,
+        "engagement_comments": 41,
+        "engagement_shares": 17
+      },
+      {
+        "id": "tps_088",
+        "targeted_account_id": "tac_04",
+        "text": "Finance teams do not want automation. They want to stop being surprised. Different product.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_04_088",
+        "posted_at": "2026-07-27T12:15:45.000Z",
+        "author_name": "Jordan Blake",
+        "author_headline": "Founder at Ledgerly. Finance ops, in public",
+        "engagement_likes": 363,
+        "engagement_comments": 44,
+        "engagement_shares": 12
+      },
+      {
+        "id": "tps_045",
+        "targeted_account_id": "tac_02",
+        "text": "Three posts a week is the minimum for LinkedIn to remember you exist. Two is invisible. Here is how we sustain it with a team of four.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_045",
+        "posted_at": "2026-07-26T09:45:12.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 471,
+        "engagement_comments": 35,
+        "engagement_shares": 27
+      },
+      {
+        "id": "tps_072",
+        "targeted_account_id": "tac_03",
+        "text": "Beacon now auto-engages with 50 target accounts a day. Set your list, we handle the rest.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_03_072",
+        "posted_at": "2026-07-25T12:30:47.000Z",
+        "author_name": "Beacon",
+        "author_headline": "LinkedIn automation for sales teams",
+        "engagement_likes": 42,
+        "engagement_comments": 5,
+        "engagement_shares": 1
+      },
+      {
+        "id": "tps_013",
+        "targeted_account_id": "tac_01",
+        "text": "Webinar Thursday: building an attribution model your sales team will actually believe.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_013",
+        "posted_at": "2026-07-24T08:45:47.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 97,
+        "engagement_comments": 8,
+        "engagement_shares": 4
+      },
+      {
+        "id": "tps_046",
+        "targeted_account_id": "tac_02",
+        "text": "What a sales call sounds like after someone has read six of your posts. Shorter, and you skip the pitch.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_046",
+        "posted_at": "2026-07-23T08:45:32.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 890,
+        "engagement_comments": 70,
+        "engagement_shares": 53
+      },
+      {
+        "id": "tps_089",
+        "targeted_account_id": "tac_04",
+        "text": "Our first enterprise deal came from a comment thread, not a form. The thread was about payroll timing, of all things.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_04_089",
+        "posted_at": "2026-07-21T14:45:51.000Z",
+        "author_name": "Jordan Blake",
+        "author_headline": "Founder at Ledgerly. Finance ops, in public",
+        "engagement_likes": 330,
+        "engagement_comments": 56,
+        "engagement_shares": 12
+      },
+      {
+        "id": "tps_047",
+        "targeted_account_id": "tac_02",
+        "text": "Case study format that works: the problem in one line, the number that changed, and what you would do differently.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_047",
+        "posted_at": "2026-07-21T14:00:44.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 539,
+        "engagement_comments": 47,
+        "engagement_shares": 31
+      },
+      {
+        "id": "tps_014",
+        "targeted_account_id": "tac_01",
+        "text": "The 30 day attribution window is a habit, not a strategy. What happens when you look at 90.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_014",
+        "posted_at": "2026-07-19T14:15:24.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 137,
+        "engagement_comments": 15,
+        "engagement_shares": 10
+      },
+      {
+        "id": "tps_048",
+        "targeted_account_id": "tac_02",
+        "text": "If your content team cannot name the deal their last post touched, attribution is not the problem. Distance from the customer is.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_048",
+        "posted_at": "2026-07-18T09:15:20.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 892,
+        "engagement_comments": 106,
+        "engagement_shares": 39
+      },
+      {
+        "id": "tps_073",
+        "targeted_account_id": "tac_03",
+        "text": "Introducing smart reply: comments in your voice, on the posts that matter to your pipeline.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_03_073",
+        "posted_at": "2026-07-18T08:30:08.000Z",
+        "author_name": "Beacon",
+        "author_headline": "LinkedIn automation for sales teams",
+        "engagement_likes": 27,
+        "engagement_comments": 3,
+        "engagement_shares": 1
+      },
+      {
+        "id": "tps_049",
+        "targeted_account_id": "tac_02",
+        "text": "The Fathom content playbook is now public. 14 pages, no gate.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_049",
+        "posted_at": "2026-07-16T09:00:11.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 378,
+        "engagement_comments": 41,
+        "engagement_shares": 19
+      },
+      {
+        "id": "tps_050",
+        "targeted_account_id": "tac_02",
+        "text": "Posted every weekday for a year. Here is what changed and what did not.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_050",
+        "posted_at": "2026-07-15T14:15:35.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 410,
+        "engagement_comments": 40,
+        "engagement_shares": 23
+      },
+      {
+        "id": "tps_090",
+        "targeted_account_id": "tac_04",
+        "text": "Every founder should do their own books for the first year. Not to save money. To feel where the process breaks.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_04_090",
+        "posted_at": "2026-07-15T08:30:51.000Z",
+        "author_name": "Jordan Blake",
+        "author_headline": "Founder at Ledgerly. Finance ops, in public",
+        "engagement_likes": 292,
+        "engagement_comments": 50,
+        "engagement_shares": 13
+      },
+      {
+        "id": "tps_015",
+        "targeted_account_id": "tac_01",
+        "text": "Customer story: how Relay Systems cut reporting time from a week to an afternoon.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_015",
+        "posted_at": "2026-07-15T08:30:07.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 118,
+        "engagement_comments": 13,
+        "engagement_shares": 6
+      },
+      {
+        "id": "tps_051",
+        "targeted_account_id": "tac_02",
+        "text": "I read every comment on our company posts for a month. The pattern was obvious and a little embarrassing.\n\nThe posts that got questions were the ones where we admitted something did not work.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_051",
+        "posted_at": "2026-07-12T14:00:49.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 609,
+        "engagement_comments": 63,
+        "engagement_shares": 26
+      },
+      {
+        "id": "tps_016",
+        "targeted_account_id": "tac_01",
+        "text": "Marketing and sales disagree about pipeline because they are counting different things. Fix the definitions before the tooling.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_016",
+        "posted_at": "2026-07-11T12:30:14.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 132,
+        "engagement_comments": 14,
+        "engagement_shares": 7
+      },
+      {
+        "id": "tps_074",
+        "targeted_account_id": "tac_03",
+        "text": "New integration: Beacon + Salesforce. Every engagement becomes an activity on the contact.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_03_074",
+        "posted_at": "2026-07-11T12:00:00.000Z",
+        "author_name": "Beacon",
+        "author_headline": "LinkedIn automation for sales teams",
+        "engagement_likes": 42,
+        "engagement_comments": 3,
+        "engagement_shares": 1
+      },
+      {
+        "id": "tps_091",
+        "targeted_account_id": "tac_04",
+        "text": "Hiring a Head of Growth. If you have read this far, you probably know someone.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_04_091",
+        "posted_at": "2026-07-11T08:15:28.000Z",
+        "author_name": "Jordan Blake",
+        "author_headline": "Founder at Ledgerly. Finance ops, in public",
+        "engagement_likes": 219,
+        "engagement_comments": 34,
+        "engagement_shares": 10
+      },
+      {
+        "id": "tps_052",
+        "targeted_account_id": "tac_02",
+        "text": "Unpopular opinion: your content calendar is why your content is boring.\n\nWe replaced ours with a list of things we learned this week.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_052",
+        "posted_at": "2026-07-10T12:00:13.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 853,
+        "engagement_comments": 63,
+        "engagement_shares": 57
+      },
+      {
+        "id": "tps_017",
+        "targeted_account_id": "tac_01",
+        "text": "Attribution is not a report. It is a decision about what you are willing to stop doing.\n\nThree questions we ask before adding a channel to the model.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_017",
+        "posted_at": "2026-07-07T12:45:49.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 137,
+        "engagement_comments": 16,
+        "engagement_shares": 10
+      },
+      {
+        "id": "tps_053",
+        "targeted_account_id": "tac_02",
+        "text": "Hired a writer instead of a second SDR. Six months later pipeline is up and the writer costs less. The full numbers, no rounding.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_053",
+        "posted_at": "2026-07-07T08:30:49.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 715,
+        "engagement_comments": 72,
+        "engagement_shares": 26
+      },
+      {
+        "id": "tps_092",
+        "targeted_account_id": "tac_04",
+        "text": "The spreadsheet we replaced had 41 tabs. The person who built it is now our best customer.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_04_092",
+        "posted_at": "2026-07-06T12:00:38.000Z",
+        "author_name": "Jordan Blake",
+        "author_headline": "Founder at Ledgerly. Finance ops, in public",
+        "engagement_likes": 345,
+        "engagement_comments": 42,
+        "engagement_shares": 11
+      },
+      {
+        "id": "tps_054",
+        "targeted_account_id": "tac_02",
+        "text": "Founders: stop posting about your product. Post about the decision that led to it.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_054",
+        "posted_at": "2026-07-05T09:15:03.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 476,
+        "engagement_comments": 55,
+        "engagement_shares": 25
+      },
+      {
+        "id": "tps_018",
+        "targeted_account_id": "tac_01",
+        "text": "New in Northbeam: multi-touch paths now show the first content touch, not just the first form fill.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_018",
+        "posted_at": "2026-07-04T09:30:31.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 74,
+        "engagement_comments": 5,
+        "engagement_shares": 4
+      },
+      {
+        "id": "tps_075",
+        "targeted_account_id": "tac_03",
+        "text": "The average rep spends 40 minutes a day on LinkedIn. Beacon gets that to five.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_03_075",
+        "posted_at": "2026-07-02T14:15:08.000Z",
+        "author_name": "Beacon",
+        "author_headline": "LinkedIn automation for sales teams",
+        "engagement_likes": 30,
+        "engagement_comments": 3,
+        "engagement_shares": 1
+      },
+      {
+        "id": "tps_055",
+        "targeted_account_id": "tac_02",
+        "text": "The best B2B post I saw this week had zero hashtags, one number, and a question at the end. That is the whole formula.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_055",
+        "posted_at": "2026-07-02T08:15:31.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 349,
+        "engagement_comments": 37,
+        "engagement_shares": 12
+      },
+      {
+        "id": "tps_093",
+        "targeted_account_id": "tac_04",
+        "text": "Month 14 of Ledgerly. Revenue, churn, and the one number I stopped looking at.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_04_093",
+        "posted_at": "2026-07-01T14:30:56.000Z",
+        "author_name": "Jordan Blake",
+        "author_headline": "Founder at Ledgerly. Finance ops, in public",
+        "engagement_likes": 204,
+        "engagement_comments": 34,
+        "engagement_shares": 6
+      },
+      {
+        "id": "tps_019",
+        "targeted_account_id": "tac_01",
+        "text": "Your CFO does not want more dashboards. They want one number they trust. Here is how we get there with customers in the first 30 days.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_019",
+        "posted_at": "2026-06-30T12:00:26.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 90,
+        "engagement_comments": 7,
+        "engagement_shares": 4
+      },
+      {
+        "id": "tps_056",
+        "targeted_account_id": "tac_02",
+        "text": "We killed our newsletter. Open rates were fine. Nobody replied. Replies are the metric.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_056",
+        "posted_at": "2026-06-29T08:00:04.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 748,
+        "engagement_comments": 67,
+        "engagement_shares": 25
+      },
+      {
+        "id": "tps_020",
+        "targeted_account_id": "tac_01",
+        "text": "We analysed 1,200 B2B pipelines. Content-sourced deals close 23% faster. Full breakdown in the comments.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_020",
+        "posted_at": "2026-06-27T14:30:21.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 96,
+        "engagement_comments": 11,
+        "engagement_shares": 5
+      },
+      {
+        "id": "tps_076",
+        "targeted_account_id": "tac_03",
+        "text": "Product update: schedule your engagement windows so activity looks natural across time zones.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_03_076",
+        "posted_at": "2026-06-27T09:30:10.000Z",
+        "author_name": "Beacon",
+        "author_headline": "LinkedIn automation for sales teams",
+        "engagement_likes": 33,
+        "engagement_comments": 4,
+        "engagement_shares": 1
+      },
+      {
+        "id": "tps_057",
+        "targeted_account_id": "tac_02",
+        "text": "Three posts a week is the minimum for LinkedIn to remember you exist. Two is invisible. Here is how we sustain it with a team of four.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_057",
+        "posted_at": "2026-06-27T08:30:59.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 421,
+        "engagement_comments": 46,
+        "engagement_shares": 14
+      },
+      {
+        "id": "tps_094",
+        "targeted_account_id": "tac_04",
+        "text": "We raised prices 30% and lost two customers. Both were the ones filing the most tickets. Sometimes churn is a feature.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_04_094",
+        "posted_at": "2026-06-26T09:30:22.000Z",
+        "author_name": "Jordan Blake",
+        "author_headline": "Founder at Ledgerly. Finance ops, in public",
+        "engagement_likes": 264,
+        "engagement_comments": 42,
+        "engagement_shares": 7
+      },
+      {
+        "id": "tps_058",
+        "targeted_account_id": "tac_02",
+        "text": "What a sales call sounds like after someone has read six of your posts. Shorter, and you skip the pitch.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_058",
+        "posted_at": "2026-06-25T14:30:05.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 838,
+        "engagement_comments": 94,
+        "engagement_shares": 35
+      },
+      {
+        "id": "tps_021",
+        "targeted_account_id": "tac_01",
+        "text": "Webinar Thursday: building an attribution model your sales team will actually believe.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_021",
+        "posted_at": "2026-06-24T08:15:48.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 116,
+        "engagement_comments": 11,
+        "engagement_shares": 8
+      },
+      {
+        "id": "tps_059",
+        "targeted_account_id": "tac_02",
+        "text": "Case study format that works: the problem in one line, the number that changed, and what you would do differently.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_059",
+        "posted_at": "2026-06-23T08:45:31.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 483,
+        "engagement_comments": 40,
+        "engagement_shares": 26
+      },
+      {
+        "id": "tps_060",
+        "targeted_account_id": "tac_02",
+        "text": "If your content team cannot name the deal their last post touched, attribution is not the problem. Distance from the customer is.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_060",
+        "posted_at": "2026-06-21T08:45:29.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 453,
+        "engagement_comments": 53,
+        "engagement_shares": 20
+      },
+      {
+        "id": "tps_095",
+        "targeted_account_id": "tac_04",
+        "text": "Finance teams do not want automation. They want to stop being surprised. Different product.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_04_095",
+        "posted_at": "2026-06-21T08:30:31.000Z",
+        "author_name": "Jordan Blake",
+        "author_headline": "Founder at Ledgerly. Finance ops, in public",
+        "engagement_likes": 217,
+        "engagement_comments": 28,
+        "engagement_shares": 10
+      },
+      {
+        "id": "tps_022",
+        "targeted_account_id": "tac_01",
+        "text": "The 30 day attribution window is a habit, not a strategy. What happens when you look at 90.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_022",
+        "posted_at": "2026-06-21T08:15:59.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 89,
+        "engagement_comments": 7,
+        "engagement_shares": 4
+      },
+      {
+        "id": "tps_061",
+        "targeted_account_id": "tac_02",
+        "text": "The Fathom content playbook is now public. 14 pages, no gate.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_061",
+        "posted_at": "2026-06-20T08:45:23.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 693,
+        "engagement_comments": 80,
+        "engagement_shares": 34
+      },
+      {
+        "id": "tps_077",
+        "targeted_account_id": "tac_03",
+        "text": "Beacon now auto-engages with 50 target accounts a day. Set your list, we handle the rest.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_03_077",
+        "posted_at": "2026-06-18T08:15:38.000Z",
+        "author_name": "Beacon",
+        "author_headline": "LinkedIn automation for sales teams",
+        "engagement_likes": 28,
+        "engagement_comments": 2,
+        "engagement_shares": 1
+      },
+      {
+        "id": "tps_096",
+        "targeted_account_id": "tac_04",
+        "text": "Our first enterprise deal came from a comment thread, not a form. The thread was about payroll timing, of all things.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_04_096",
+        "posted_at": "2026-06-17T14:30:33.000Z",
+        "author_name": "Jordan Blake",
+        "author_headline": "Founder at Ledgerly. Finance ops, in public",
+        "engagement_likes": 349,
+        "engagement_comments": 36,
+        "engagement_shares": 15
+      },
+      {
+        "id": "tps_023",
+        "targeted_account_id": "tac_01",
+        "text": "Customer story: how Relay Systems cut reporting time from a week to an afternoon.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_023",
+        "posted_at": "2026-06-17T08:15:30.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 88,
+        "engagement_comments": 9,
+        "engagement_shares": 5
+      },
+      {
+        "id": "tps_062",
+        "targeted_account_id": "tac_02",
+        "text": "Posted every weekday for a year. Here is what changed and what did not.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_062",
+        "posted_at": "2026-06-17T08:00:02.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 823,
+        "engagement_comments": 65,
+        "engagement_shares": 47
+      },
+      {
+        "id": "tps_063",
+        "targeted_account_id": "tac_02",
+        "text": "I read every comment on our company posts for a month. The pattern was obvious and a little embarrassing.\n\nThe posts that got questions were the ones where we admitted something did not work.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_063",
+        "posted_at": "2026-06-15T14:00:43.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 388,
+        "engagement_comments": 40,
+        "engagement_shares": 14
+      },
+      {
+        "id": "tps_024",
+        "targeted_account_id": "tac_01",
+        "text": "Marketing and sales disagree about pipeline because they are counting different things. Fix the definitions before the tooling.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_024",
+        "posted_at": "2026-06-15T12:45:48.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 89,
+        "engagement_comments": 7,
+        "engagement_shares": 5
+      },
+      {
+        "id": "tps_064",
+        "targeted_account_id": "tac_02",
+        "text": "Unpopular opinion: your content calendar is why your content is boring.\n\nWe replaced ours with a list of things we learned this week.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_064",
+        "posted_at": "2026-06-13T14:00:07.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 675,
+        "engagement_comments": 71,
+        "engagement_shares": 21
+      },
+      {
+        "id": "tps_025",
+        "targeted_account_id": "tac_01",
+        "text": "Attribution is not a report. It is a decision about what you are willing to stop doing.\n\nThree questions we ask before adding a channel to the model.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_025",
+        "posted_at": "2026-06-12T14:15:29.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 61,
+        "engagement_comments": 7,
+        "engagement_shares": 3
+      },
+      {
+        "id": "tps_097",
+        "targeted_account_id": "tac_04",
+        "text": "Every founder should do their own books for the first year. Not to save money. To feel where the process breaks.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_04_097",
+        "posted_at": "2026-06-12T09:00:28.000Z",
+        "author_name": "Jordan Blake",
+        "author_headline": "Founder at Ledgerly. Finance ops, in public",
+        "engagement_likes": 188,
+        "engagement_comments": 29,
+        "engagement_shares": 9
+      },
+      {
+        "id": "tps_078",
+        "targeted_account_id": "tac_03",
+        "text": "Introducing smart reply: comments in your voice, on the posts that matter to your pipeline.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_03_078",
+        "posted_at": "2026-06-11T14:15:39.000Z",
+        "author_name": "Beacon",
+        "author_headline": "LinkedIn automation for sales teams",
+        "engagement_likes": 25,
+        "engagement_comments": 3,
+        "engagement_shares": 1
+      },
+      {
+        "id": "tps_065",
+        "targeted_account_id": "tac_02",
+        "text": "Hired a writer instead of a second SDR. Six months later pipeline is up and the writer costs less. The full numbers, no rounding.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_065",
+        "posted_at": "2026-06-11T08:00:55.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 540,
+        "engagement_comments": 60,
+        "engagement_shares": 33
+      },
+      {
+        "id": "tps_026",
+        "targeted_account_id": "tac_01",
+        "text": "New in Northbeam: multi-touch paths now show the first content touch, not just the first form fill.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_01_026",
+        "posted_at": "2026-06-09T08:15:09.000Z",
+        "author_name": "Northbeam",
+        "author_headline": "Revenue attribution for B2B marketing teams",
+        "engagement_likes": 70,
+        "engagement_comments": 6,
+        "engagement_shares": 3
+      },
+      {
+        "id": "tps_066",
+        "targeted_account_id": "tac_02",
+        "text": "Founders: stop posting about your product. Post about the decision that led to it.",
+        "post_url": "https://www.linkedin.com/feed/update/li_tac_02_066",
+        "posted_at": "2026-06-08T12:15:04.000Z",
+        "author_name": "Lena Hartmann",
+        "author_headline": "CEO at Fathom. Writing about B2B content that sells",
+        "engagement_likes": 484,
+        "engagement_comments": 57,
+        "engagement_shares": 17
+      }
     ]
   },
   "agent": {
@@ -1282,6 +5094,56 @@
           {
             "type": "scheduled",
             "postId": "pst_22"
+          }
+        ]
+      },
+      {
+        "id": "rpl_comment",
+        "intent": "comment",
+        "statuses": [
+          "Reading Dana's comment",
+          "Checking Sarah's voice",
+          "Drafting a reply"
+        ],
+        "parts": [
+          {
+            "type": "text",
+            "text": "Dana runs marketing at Northbeam, which is squarely who Sarah writes for, so this one deserves an answer rather than a thank you. Here is a reply in Sarah's voice."
+          },
+          {
+            "type": "comment_draft",
+            "commentId": "ecm_01",
+            "text": "It was one question, asked of every item: who is the customer we lose if we do not ship this? Half the list had no answer. The other half became the quarter. A full day sounds like the list is still doing the arguing for you."
+          },
+          {
+            "type": "text",
+            "text": "Post it as is, or edit the wording first. I can also draft a comment on Dana's latest post if you want to keep the thread going."
+          }
+        ]
+      },
+      {
+        "id": "rpl_outreach",
+        "intent": "outreach",
+        "statuses": [
+          "Reading Dana's latest post",
+          "Finding the angle",
+          "Drafting a comment"
+        ],
+        "parts": [
+          {
+            "type": "text",
+            "text": "Dana's latest post is about attribution windows, which is close to what Marcus tested last month. A comment that adds one number will land better than praise."
+          },
+          {
+            "type": "comment_draft",
+            "clientId": "cli_acme",
+            "profileId": "epr_01",
+            "quote": "We moved our attribution window from 30 to 90 days and pipeline grew 40% overnight. Nothing changed except the maths. What window do you use, and why?",
+            "text": "We ran the opposite experiment: paid to zero for three weeks, then watched what pipeline did. It took 19 days to move. The window was never the problem, the lag was. Marcus wrote it up if useful."
+          },
+          {
+            "type": "text",
+            "text": "This goes out from the Acme page unless you would rather it came from Marcus."
           }
         ]
       }

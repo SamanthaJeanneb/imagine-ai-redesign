@@ -128,15 +128,15 @@ export function AgentWorkspace({
       className={
         onLanding
           ? centered
-            ? "mx-auto max-w-2xl"
-            : undefined
-          : "sticky bottom-l z-10 mx-auto mt-l max-w-3xl"
+            ? "mx-auto w-full min-w-0 max-w-2xl"
+            : "w-full min-w-0"
+          : "sticky bottom-l z-10 mx-auto mt-l w-full min-w-0 max-w-3xl"
       }
     />
   );
 
   return (
-    <div className="flex min-h-full flex-1">
+    <div className="flex min-h-full min-w-0 flex-1">
       <div
         className={cn(
           "flex min-h-full min-w-0 flex-1 flex-col",
@@ -231,7 +231,7 @@ export function AgentWorkspace({
             key="rail"
             exit={{ opacity: 0, x: 24 }}
             transition={fade.base}
-            className="self-stretch border-l border-imagine-foreground/12 pl-xxl"
+            className="shrink-0 self-stretch border-l border-imagine-foreground/12 pl-xxl"
           >
             <LandingRail
               stats={landing.stats}
