@@ -20,7 +20,8 @@ import { hoverLift, pressRow } from "@/styles/motion";
 /**
  * The centered landing, `/landing-2`. One column, everything on the axis: the
  * agent's mark and greeting, the composer, a row of what needs the user, and
- * the month below. No right rail. Like the split landing these pieces do not
+ * the next two weeks below. No right rail. The column starts a section down
+ * from the top so the composer sits nearer the middle of the viewport. Like the split landing these pieces do not
  * animate themselves; the workspace wraps each one so the first send exits
  * them together.
  */
@@ -46,7 +47,7 @@ export function CenteredIntro({
   dateLabel: string;
 }) {
   return (
-    <div className="flex min-w-0 flex-col items-center gap-xl pb-xxl text-center">
+    <div className="flex min-w-0 flex-col items-center gap-xl pt-section pb-xxl text-center">
       {/* The agent, as a person would be: a circle. Black mark on a white disc
           in both themes, with a plain drop shadow: no ring, no sheen. */}
       <span className="flex size-16 items-center justify-center rounded-full bg-white text-black shadow-[0_2px_6px_rgb(0_0_0/0.08),0_12px_28px_-8px_rgb(0_0_0/0.22)]">
@@ -146,7 +147,7 @@ export function ActivityCards({
   );
 }
 
-/** The whole month, the way the calendar page shows it, with a way there. */
+/** The weeks ahead, the way the calendar page shows them, with a way there. */
 export function MonthCalendar({
   label,
   days,
