@@ -122,7 +122,7 @@ function DocumentPreview({ excerpt }: { excerpt?: string }) {
   return (
     <span
       aria-hidden="true"
-      className="relative flex aspect-[7/4] w-full flex-col gap-xs overflow-hidden rounded-t-panel bg-imagine-surface-raised/70 px-m pt-m"
+      className="relative flex aspect-[7/4] w-full flex-col gap-xs overflow-hidden rounded-t-control bg-imagine-surface-raised/70 px-m pt-m"
     >
       {lines.length === 0 ? (
         <span className="mt-auto mb-m flex items-center justify-center text-imagine-foreground-faint">
@@ -150,7 +150,7 @@ function DocumentPreview({ excerpt }: { excerpt?: string }) {
 
 function MediaPreview({ kind, src }: { kind: "image" | "video"; src?: string }) {
   return (
-    <span className="relative block aspect-[7/4] w-full overflow-hidden rounded-t-panel bg-imagine-surface-raised">
+    <span className="relative block aspect-[7/4] w-full overflow-hidden rounded-t-control bg-imagine-surface-raised">
       {src === undefined ? (
         <span className="flex size-full items-center justify-center text-imagine-foreground-faint">
           <Icon name={KIND_ICON[kind]} size="xl" />
@@ -223,10 +223,11 @@ export function LibraryCard({
       transition={pressRow.transition}
       className={cn(
         "group/card relative min-w-0 transition-[background-color,border-color,box-shadow]",
+        "rounded-control border border-imagine-border",
         row
-          ? "rounded-panel border border-imagine-border hover:bg-imagine-surface-raised/60"
-          : "rounded-panel border border-imagine-border bg-imagine-surface hover:shadow-raised",
-        view === "list" && "rounded-control border-transparent",
+          ? "hover:bg-imagine-surface-raised/60"
+          : "bg-imagine-surface hover:shadow-raised",
+        view === "list" && "border-transparent",
         selected && "border-imagine-foreground shadow-control",
         className,
       )}
@@ -243,11 +244,8 @@ export function LibraryCard({
           }
         }}
         className={cn(
-          "flex w-full min-w-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
-          row
-            ? "items-center rounded-panel"
-            : "flex-col rounded-panel",
-          view === "list" && "rounded-control",
+          "flex w-full min-w-0 rounded-control text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+          row ? "items-center" : "flex-col",
         )}
       >
         {row ? null : kind === "document" ? (
