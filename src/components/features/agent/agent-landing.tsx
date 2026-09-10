@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "cn";
 import { motion, useReducedMotion } from "motion/react";
 import { useState } from "react";
 
@@ -34,6 +35,13 @@ import { fade, spring } from "@/styles/motion";
 const RAIL_WIDTH = { default: 336, min: 288, max: 480 } as const;
 
 /**
+ * The split landing's column. Capped and centred so that on a wide screen the
+ * timeline's actions stay within reach of their titles instead of drifting to
+ * the far edge. The composer takes the same classes so it lines up.
+ */
+export const LANDING_COLUMN = "mx-auto w-full max-w-4xl min-w-0";
+
+/**
  * The landing, in three pieces so the composer can sit between them and slide
  * into the thread dock. The pieces animate nowhere themselves: the workspace
  * wraps each one, because the first send exits them all together.
@@ -45,7 +53,7 @@ export interface LandingStat {
 }
 
 /** How many activities show before the list has to be opened. */
-const PREVIEW = 2;
+const PREVIEW = 3;
 
 export function LandingIntro({
   greeting,
@@ -55,7 +63,7 @@ export function LandingIntro({
   dateLabel: string;
 }) {
   return (
-    <div className="flex min-w-0 flex-col gap-xs pb-xl">
+    <div className={cn(LANDING_COLUMN, "flex flex-col gap-xs pb-xl")}>
       <h1 className="type-title">{greeting}</h1>
       <p className="type-small text-imagine-foreground-muted">{dateLabel}</p>
     </div>
@@ -79,11 +87,14 @@ export function LandingBelow({
   const rest = entries.length - PREVIEW;
 
   return (
-    <div className="flex flex-1 flex-col gap-xxl pt-xl pb-l">
+    // The same beat above the first section as between the sections, so the
+    // composer does not crowd the timeline. No bottom padding of its own: the
+    // page's inset already matches the top.
+    <div className={cn(LANDING_COLUMN, "flex flex-1 flex-col gap-xxl pt-xxl")}>
       {entries.length === 0 ? null : (
         <section className="flex flex-col gap-l">
           <h2 className="type-heading">While you were away</h2>
-          {/* The first two are the preview. The timeline animates the rest in,
+          {/* The first few are the preview. The timeline animates the rest in,
               so opening it grows the list rather than swapping it. */}
           <Timeline
             entries={open ? entries : entries.slice(0, PREVIEW)}

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useState } from "react";
 
 import {
+  LANDING_COLUMN,
   LandingBelow,
   LandingIntro,
   LandingRail,
@@ -129,14 +130,14 @@ export function AgentWorkspace({
     <ChatDock
       variant={onLanding ? "hero" : "dock"}
       animateLayout={!reduceMotion}
-      // Split: spans the column, so it lines up with the calendar under it.
-      // Centered: narrower than the cards and the month, so it reads as the
-      // prompt and not another block. Thread: the message column.
+      // Split: the landing's column, so it lines up with the calendar under
+      // it. Centered: narrower than the cards and the month, so it reads as
+      // the prompt and not another block. Thread: the message column.
       className={
         onLanding
           ? centered
             ? "mx-auto w-full max-w-2xl min-w-0"
-            : "w-full min-w-0"
+            : LANDING_COLUMN
           : "sticky bottom-l z-10 mx-auto mt-xl w-full max-w-3xl min-w-0"
       }
     />

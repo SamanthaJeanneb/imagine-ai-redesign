@@ -39,8 +39,10 @@ interface CalendarGridProps {
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
+// The strip sits under the timeline and fills what is left, so its floor is
+// only what the day number and one full chip need.
 const CELL_HEIGHT: Record<CalendarDensity, string> = {
-  strip: "min-h-40",
+  strip: "min-h-24",
   preview: "min-h-14",
   page: "min-h-32",
 };
