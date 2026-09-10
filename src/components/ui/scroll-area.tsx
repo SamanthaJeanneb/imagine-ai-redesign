@@ -4,6 +4,10 @@ import * as React from "react";
 import { cn } from "cn";
 import { ScrollArea as ScrollAreaPrimitive } from "radix-ui";
 
+/*
+ * Scrollbars are hidden app-wide (see globals.css), so the area renders only
+ * its viewport. Pass a `ScrollBar` as a child to opt one back in.
+ */
 function ScrollArea({
   className,
   children,
@@ -21,8 +25,6 @@ function ScrollArea({
       >
         {children}
       </ScrollAreaPrimitive.Viewport>
-      <ScrollBar />
-      <ScrollAreaPrimitive.Corner />
     </ScrollAreaPrimitive.Root>
   );
 }
