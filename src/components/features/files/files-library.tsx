@@ -355,8 +355,9 @@ function NameDialog({
  * the tree and the way to add things; the browser on the right shows one
  * location as folders, documents, and images, with a breadcrumb that always
  * says where you are and lets you switch libraries or folders in place.
- * Documents open inside the browser; images open in a preview. Deleting is
- * immediate, with an undo on the toast.
+ * Documents open in an editor panel on the right, so you can keep browsing
+ * while one is open; images open in a preview. Deleting is immediate, with
+ * an undo on the toast.
  */
 export function FilesLibrary({
   title,
@@ -377,6 +378,9 @@ export function FilesLibrary({
       : { kind: "library", sectionId: first.id };
   });
   const [documentId, setDocumentId] = useState<string>();
+  // What the tree highlights: the document just opened, or the place being
+  // browsed. Browsing with the editor open moves the highlight back to it.
+  const [highlight, setHighlight] = useState<"document" | "place">("place");
   const [previewId, setPreviewId] = useState<string>();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
@@ -390,6 +394,12 @@ export function FilesLibrary({
     min: 208,
     max: 420,
     edge: "end",
+  });
+  const editorResize = useResizable({
+    defaultWidth: 480,
+    min: 360,
+    max: 720,
+    edge: "start",
   });
   // Ids for things made here; only ever read inside event handlers.
   const counter = useRef(0);
@@ -537,7 +547,7 @@ export function FilesLibrary({
 
   const goTo = (next: Place) => {
     setPlace(next);
-    setDocumentId(undefined);
+    setHighlight("place");
     setQuery("");
   };
 
@@ -546,9 +556,15 @@ export function FilesLibrary({
     goTo({ kind: "library", sectionId, ...(folderId ? { folderId } : {}) });
   };
 
-  /** Documents open over the browser, so the location underneath stays put. */
+  /** Documents open beside the browser, so the location stays put. */
   const open = (id: string) => {
-    if (documentById.has(id)) setDocumentId(id);
+    if (!documentById.has(id)) return;
+    setDocumentId(id);
+    setHighlight("document");
+  };
+
+  const closeEditor = () => {
+    setDocumentId(undefined);
   };
 
   const send = (resource: DraggableResource) => {
@@ -769,10 +785,31 @@ export function FilesLibrary({
         );
 
   const treeSelectedId =
-    documentId ??
-    (place.kind === "library"
-      ? (place.folderId ?? place.sectionId)
-      : undefined);
+    highlight === "document" && documentId !== undefined
+      ? documentId
+      : place.kind === "library"
+        ? (place.folderId ?? place.sectionId)
+        : undefined;
+
+  // Where the open document lives, for the editor's header.
+  const openDocumentHome =
+    openDocument === undefined ? undefined : home.get(openDocument.id);
+  const openDocumentSection =
+    openDocumentHome === undefined
+      ? undefined
+      : sectionById.get(openDocumentHome.sectionId);
+  const openDocumentFolder =
+    openDocumentHome?.folderId === undefined || openDocumentSection === undefined
+      ? undefined
+      : findFolder(openDocumentSection.nodes, openDocumentHome.folderId);
+  const openDocumentPlace =
+    openDocument === undefined
+      ? undefined
+      : openDocumentSection === undefined
+        ? "Skill"
+        : [openDocumentSection.title, openDocumentFolder?.name]
+            .filter((part) => part !== undefined)
+            .join(" / ");
 
   const bodyKey =
     tab === "skills"
@@ -1184,6 +1221,105 @@ export function FilesLibrary({
         </div>
       </section>
 
+      {/* Editor: a panel beside the browser. Opening compresses the browser
+          rather than covering it, so browsing continues with a document open. */}
+      <AnimatePresence initial={false}>
+        {openDocument === undefined ? null : (
+          <motion.aside
+            key="editor"
+            aria-label="Editor"
+            data-slot="files-editor"
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: editorResize.width, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={editorResize.transition}
+            className="relative flex min-h-0 shrink-0 justify-end overflow-hidden border-l border-imagine-border"
+          >
+            <ResizeHandle
+              edge="start"
+              binding={editorResize.handle}
+              dragging={editorResize.dragging}
+              label="Resize editor"
+            />
+            <div
+              style={{ width: editorResize.width }}
+              className="flex min-h-0 shrink-0 flex-col bg-imagine-surface"
+            >
+              <header className="flex h-12 shrink-0 items-center gap-s border-b border-imagine-border pr-s pl-l">
+                <Icon
+                  name="file-lines"
+                  size="s"
+                  className="shrink-0 text-imagine-foreground-muted"
+                />
+                <span className="min-w-0 flex-1 truncate type-small text-imagine-foreground-muted">
+                  {openDocumentPlace}
+                </span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="shrink-0"
+                  onClick={() => {
+                    send({
+                      kind: "file",
+                      file: {
+                        id: openDocument.id,
+                        title: openDocument.meta.title,
+                      },
+                    });
+                  }}
+                >
+                  <Icon name="imagine" size="s" data-icon="inline-start" />
+                  Send to chat
+                </Button>
+                <Button
+                  size="icon-sm"
+                  variant="ghost"
+                  aria-label="Close editor"
+                  onClick={closeEditor}
+                  className="shrink-0 text-imagine-foreground-muted hover:text-imagine-foreground"
+                >
+                  <Icon name="xmark" size="s" />
+                </Button>
+              </header>
+              <div className="min-h-0 flex-1 overflow-y-auto">
+                <AnimatePresence initial={false} mode="wait">
+                  <motion.div
+                    key={openDocument.id}
+                    initial={{ opacity: 0, x: 8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -8 }}
+                    transition={fade.fast}
+                    className="p-xl"
+                  >
+                    <MarkdownEditor
+                      meta={openDocument.meta}
+                      value={values[openDocument.id] ?? openDocument.value}
+                      savedValue={
+                        savedValues[openDocument.id] ?? openDocument.value
+                      }
+                      onValueChange={(value) => {
+                        setValues((current) => ({
+                          ...current,
+                          [openDocument.id]: value,
+                        }));
+                      }}
+                      onSave={() => {
+                        setSavedValues((current) => ({
+                          ...current,
+                          [openDocument.id]:
+                            values[openDocument.id] ?? openDocument.value,
+                        }));
+                      }}
+                      className="max-w-none"
+                    />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+          </motion.aside>
+        )}
+      </AnimatePresence>
+
       {/* Naming */}
       {dialog === null ? null : (
         <NameDialog
@@ -1207,79 +1343,6 @@ export function FilesLibrary({
           }}
         />
       )}
-
-      {/* Document: the editor over the browser, so closing lands you back
-          where you were. */}
-      <Dialog
-        open={openDocument !== undefined}
-        onOpenChange={(next) => {
-          if (!next) setDocumentId(undefined);
-        }}
-      >
-        <DialogContent
-          // The editor's own Save and Revert take the corner; Escape and the
-          // backdrop still close.
-          showCloseButton={false}
-          className="flex max-h-[85vh] flex-col gap-l sm:max-w-3xl"
-        >
-          {openDocument === undefined ? null : (
-            <>
-              <DialogHeader className="sr-only">
-                <DialogTitle>{openDocument.meta.title}</DialogTitle>
-                <DialogDescription>Markdown document</DialogDescription>
-              </DialogHeader>
-              <div className="-mx-xs min-h-0 flex-1 overflow-y-auto px-xs">
-                <MarkdownEditor
-                  meta={openDocument.meta}
-                  value={values[openDocument.id] ?? openDocument.value}
-                  savedValue={
-                    savedValues[openDocument.id] ?? openDocument.value
-                  }
-                  onValueChange={(value) => {
-                    setValues((current) => ({
-                      ...current,
-                      [openDocument.id]: value,
-                    }));
-                  }}
-                  onSave={() => {
-                    setSavedValues((current) => ({
-                      ...current,
-                      [openDocument.id]:
-                        values[openDocument.id] ?? openDocument.value,
-                    }));
-                  }}
-                />
-              </div>
-              <DialogFooter>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setDocumentId(undefined);
-                  }}
-                >
-                  Close
-                </Button>
-                <Button
-                  variant="soft"
-                  onClick={() => {
-                    setDocumentId(undefined);
-                    send({
-                      kind: "file",
-                      file: {
-                        id: openDocument.id,
-                        title: openDocument.meta.title,
-                      },
-                    });
-                  }}
-                >
-                  <Icon name="imagine" size="s" data-icon="inline-start" />
-                  Send to chat
-                </Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* Image preview */}
       <Dialog
