@@ -12,7 +12,6 @@ import type { EventChipData } from "@/components/features/calendar/event-chip";
 import {
   type PostChipData,
   type PostChipStatus,
-  type PostChipTone,
   postChipStyle,
 } from "@/components/features/calendar/post-chip";
 import { Icon, type IconName } from "@/components/ui/icon";
@@ -39,65 +38,28 @@ interface CalendarPageProps {
 
 const POST_SEARCH_ICON = {
   draft: "pen",
+  in_review: "eye",
   scheduled: "clock",
   published: "circle-check",
   failed: "triangle-exclamation",
 } as const satisfies Record<PostChipStatus, IconName>;
 
-/** Status reads as a glyph on the chip, so the key shows the glyph. */
-const STATUS_KEY: readonly {
-  status: PostChipStatus;
-  icon: IconName;
-  label: string;
-}[] = [
-  { status: "published", icon: "check", label: "Published" },
-  { status: "failed", icon: "triangle-exclamation", label: "Failed" },
+const STATUS_KEY: readonly { status: PostChipStatus; label: string }[] = [
+  { status: "scheduled", label: "Scheduled" },
+  { status: "in_review", label: "In review" },
+  { status: "published", label: "Published" },
+  { status: "draft", label: "Draft" },
+  { status: "failed", label: "Failed" },
 ];
 
-interface LegendEntry {
-  label: string;
-  tone?: PostChipTone;
-  status: PostChipStatus;
-}
-
-/**
- * One swatch per label the posts on hand use, in the order the organization
- * lists them (which is the order their tones were dealt), plus one for posts
- * with no label, which fall back to their status color.
- */
-function legendFor(postsByDay: PostsByDay): LegendEntry[] {
-  const byLabel = new Map<string, LegendEntry>();
-  let unlabelled = false;
-  for (const posts of Object.values(postsByDay)) {
-    for (const post of posts) {
-      if (post.label === undefined || post.tone === undefined) {
-        unlabelled = true;
-        continue;
-      }
-      if (!byLabel.has(post.label)) {
-        byLabel.set(post.label, {
-          label: post.label,
-          tone: post.tone,
-          status: post.status,
-        });
-      }
-    }
-  }
-  const entries = [...byLabel.values()].toSorted(
-    (a, b) => (a.tone ?? 0) - (b.tone ?? 0),
-  );
-  if (unlabelled) entries.push({ label: "No label", status: "scheduled" });
-  return entries;
-}
-
-/** Color is the label on a chip, so the page says which color is which. */
-function Legend({ postsByDay }: { postsByDay: PostsByDay }) {
+/** Color is status, so the page says which color is which. */
+function Legend() {
   return (
     <div className="flex flex-wrap items-center gap-x-l gap-y-xs">
-      {legendFor(postsByDay).map((item) => (
+      {STATUS_KEY.map((item) => (
         <span
-          key={item.label}
-          style={postChipStyle(item.status, item.tone)}
+          key={item.status}
+          style={postChipStyle(item.status)}
           className="flex items-center gap-xs type-small text-imagine-foreground-muted"
         >
           <span
@@ -112,21 +74,6 @@ function Legend({ postsByDay }: { postsByDay: PostsByDay }) {
         <Icon name="calendar" size="s" />
         Event
       </span>
-      {STATUS_KEY.map((item) => (
-        <span
-          key={item.status}
-          className="flex items-center gap-xs type-small text-imagine-foreground-muted"
-        >
-          <Icon
-            name={item.icon}
-            size="s"
-            className={
-              item.status === "failed" ? "text-destructive" : undefined
-            }
-          />
-          {item.label}
-        </span>
-      ))}
     </div>
   );
 }
@@ -276,7 +223,7 @@ export function CalendarPage({
       )}
 
       <div className="flex shrink-0 items-center justify-between gap-l">
-        <Legend postsByDay={postsByDay} />
+        <Legend />
         <AnimatePresence initial={false} mode="popLayout">
           {note === null ? null : (
             <motion.p

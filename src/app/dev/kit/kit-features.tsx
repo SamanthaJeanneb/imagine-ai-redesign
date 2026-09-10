@@ -396,7 +396,6 @@ const POST_LAUNCH: PostChipData = {
   profile: "Sarah",
   status: "scheduled",
   label: "Product",
-  tone: 4,
   preview: {
     author: AUTHOR_SARAH,
     body: "We rebuilt onboarding from scratch.\n\nThree steps instead of nine. The first post goes out in under ten minutes.\n\nWhat we cut, and why it was harder than adding.",
@@ -408,9 +407,8 @@ const POST_FOUNDERS: PostChipData = {
   title: "Why founders post weekly",
   time: "12:30",
   profile: "Acme",
-  status: "draft",
+  status: "in_review",
   label: "Thought leadership",
-  tone: 1,
   preview: {
     author: AUTHOR_ACME,
     body: "Founders who post once a week grow their audience 3x faster than those who post when inspired.\n\nConsistency beats brilliance. Here is the cadence we recommend.",
@@ -423,7 +421,6 @@ const POST_HIRING: PostChipData = {
   profile: "Ravi",
   status: "published",
   label: "Hiring",
-  tone: 3,
   preview: {
     author: AUTHOR_RAVI,
     body: "We are hiring a senior product designer.\n\nSmall team, real ownership, and a product people use every day. Remote across Europe.\n\nDM me or apply below.",
@@ -443,7 +440,6 @@ const POST_NORTHWIND: PostChipData = {
   profile: "Sarah",
   status: "failed",
   label: "Case study",
-  tone: 2,
   preview: {
     author: AUTHOR_SARAH,
     body: "Northwind cut their onboarding time from three weeks to four days.\n\nHere is how their ops team did it, in their own words.",
@@ -1910,7 +1906,7 @@ export function PostChipDemo() {
           }}
         />
       </Demo>
-      <Demo label="no label (status color)" className="w-44">
+      <Demo label="scheduled, no label" className="w-44">
         <PostChip post={POST_Q3} />
       </Demo>
       <Demo label="dense (preview)" className="w-44">

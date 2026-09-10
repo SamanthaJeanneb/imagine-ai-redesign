@@ -16,11 +16,9 @@ import {
 } from "@/components/ui/hover-card";
 import { Icon } from "@/components/ui/icon";
 import { hoverLift, press } from "@/styles/motion";
-import type { TagTone } from "@/styles/tokens";
 
-export type PostChipStatus = "draft" | "scheduled" | "published" | "failed";
-
-export type PostChipTone = TagTone;
+export type PostChipStatus =
+  "draft" | "in_review" | "scheduled" | "published" | "failed";
 
 export interface PostChipData {
   id: string;
@@ -33,8 +31,6 @@ export interface PostChipData {
   status: PostChipStatus;
   /** The post's label, e.g. "Case study". Shown under the name. */
   label?: string;
-  /** Which of the label accents colors the chip. Falls back to status. */
-  tone?: PostChipTone;
   /** When present, hovering the chip previews the post as it will appear. */
   preview?: LinkedInPostContent;
 }
@@ -63,11 +59,20 @@ interface ChipColor {
   darkWash: boolean;
 }
 
-/** What a chip falls back to when the post has no label. */
+/**
+ * Color is status: rose for scheduled, dusty blue for in review, sage for
+ * published. Draft and failed stay muted and destructive so they still read
+ * as unfinished or broken.
+ */
 const STATUS_COLOR = {
   draft: {
     color: "var(--imagine-foreground-muted)",
     contrast: "var(--imagine-surface)",
+    darkWash: false,
+  },
+  in_review: {
+    color: "var(--imagine-tag-3)",
+    contrast: "var(--imagine-secondary-foreground)",
     darkWash: false,
   },
   scheduled: {
@@ -76,9 +81,9 @@ const STATUS_COLOR = {
     darkWash: false,
   },
   published: {
-    color: "var(--imagine-foreground)",
-    contrast: "var(--imagine-surface)",
-    darkWash: true,
+    color: "var(--imagine-tag-2)",
+    contrast: "var(--imagine-secondary-foreground)",
+    darkWash: false,
   },
   failed: {
     color: "var(--destructive)",
@@ -87,25 +92,12 @@ const STATUS_COLOR = {
   },
 } as const satisfies Record<PostChipStatus, ChipColor>;
 
-function chipColor(status: PostChipStatus, tone?: PostChipTone): ChipColor {
-  if (tone === undefined) return STATUS_COLOR[status];
-  return {
-    color: `var(--imagine-tag-${String(tone)})`,
-    contrast: "var(--imagine-secondary-foreground)",
-    darkWash: false,
-  };
-}
-
 /**
  * Exposes the chip's colors as `--chip-color` and `--chip-contrast` for
  * `chip-wash`, `chip-solid`, the rail, and anything else that echoes a post.
- * Labelled posts take their label's tone; the rest take their status color.
  */
-export function postChipStyle(
-  status: PostChipStatus,
-  tone?: PostChipTone,
-): CSSProperties {
-  const { color, contrast } = chipColor(status, tone);
+export function postChipStyle(status: PostChipStatus): CSSProperties {
+  const { color, contrast } = STATUS_COLOR[status];
   const style: CSSProperties & {
     "--chip-color": string;
     "--chip-contrast": string;
@@ -137,10 +129,9 @@ function toExcerpt(post: PostChipData): string {
  * A post inside a calendar cell, laid out like a card: who it goes out from,
  * the label, as much of the post as the cell allows, and the time. Every chip
  * has a solid left rail and a gradient wash of its color, deepest at the rail.
- * The color is the label's tone, so a month reads as a mix of what is going
- * out rather than a wall of one accent. Status is a glyph beside the name:
- * a check once published, a warning when it failed, a dashed edge on drafts.
- * Selecting a chip fills it solid in its color and lifts it.
+ * The color is the post's status, so a month reads as scheduled, in review,
+ * or published at a glance. A check once published, a warning when it failed,
+ * a dashed edge on drafts. Selecting a chip fills it solid and lifts it.
  */
 export function PostChip({
   post,
@@ -150,7 +141,7 @@ export function PostChip({
   onOpen,
   className,
 }: PostChipProps) {
-  const inverted = selected || chipColor(post.status, post.tone).darkWash;
+  const inverted = selected || STATUS_COLOR[post.status].darkWash;
   const author = post.preview?.author;
   const muted = inverted ? "opacity-80" : "text-imagine-foreground-muted";
   const chip = (
@@ -165,7 +156,7 @@ export function PostChip({
       data-selected={selected || undefined}
       aria-current={selected ? "true" : undefined}
       aria-label={`${post.title}, ${post.time}, ${post.profile}, ${post.status}`}
-      style={postChipStyle(post.status, post.tone)}
+      style={postChipStyle(post.status)}
       className={cn(
         "relative flex w-full min-w-0 flex-col gap-xxs overflow-hidden rounded-control px-s py-xs pl-m text-left transition-[box-shadow,color] outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-imagine-surface",
         // In a narrow cell (the chat column's composer preview) the chip
@@ -198,6 +189,13 @@ export function PostChip({
         <span className="min-w-0 flex-1 truncate type-caption font-semibold @max-[6rem]/chip:hidden">
           {post.profile}
         </span>
+        {post.status === "in_review" ? (
+          <Icon
+            name="eye"
+            size="s"
+            className={cn("shrink-0 @max-[6rem]/chip:hidden", muted)}
+          />
+        ) : null}
         {post.status === "published" ? (
           <Icon
             name="check"

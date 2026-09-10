@@ -49,11 +49,10 @@ export type ColorToken =
   | "tag-5";
 
 /**
- * Categorical accents for post labels on the calendar. Numbered, not named for
- * a hue, because a label picks one by position in the organization's list.
- * Mid tones: light enough to tint a chip, deep enough to carry white text.
- * The first is the brand rose so the calendar still belongs to Imagine; the
- * rest are neighbours on the same warm palette (sage, dusty blue, ochre, plum).
+ * Categorical accents. The calendar uses sage and dusty blue for published
+ * and in-review chips; scheduled uses the brand rose. Numbered, not named
+ * for a hue. Mid tones: light enough to tint a chip, deep enough to carry
+ * white text.
  */
 export const TAG_TONES = [1, 2, 3, 4, 5] as const;
 

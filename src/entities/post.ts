@@ -54,13 +54,13 @@ export interface Post {
 }
 
 /**
- * Six database statuses, four things a chip can look like: everything before
- * scheduling reads as a draft.
+ * Six database statuses, five chip looks: ideas and planned posts read as
+ * drafts; in review keeps its own color on the calendar.
  */
 const CHIP_STATUS: Record<ClientPostStatus, PostChipStatus> = {
   idea: "draft",
   planned: "draft",
-  in_review: "draft",
+  in_review: "in_review",
   scheduled: "scheduled",
   published: "published",
   failed: "failed",
