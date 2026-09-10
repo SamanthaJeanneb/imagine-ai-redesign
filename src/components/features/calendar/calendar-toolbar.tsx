@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import { SearchField } from "@/components/ui/search-field";
+import { SearchBox, type SearchBoxResult } from "@/components/ui/search-box";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { CalendarView } from "@/lib/calendar";
 import { fade } from "@/styles/motion";
@@ -20,6 +20,10 @@ interface CalendarToolbarProps {
   onToday: () => void;
   search: string;
   onSearchChange: (value: string) => void;
+  /** Posts matching the search, listed under the field. */
+  searchResults: readonly SearchBoxResult[];
+  /** A result was chosen; the id is the post's. */
+  onSearchSelect: (postId: string) => void;
   className?: string;
 }
 
@@ -39,6 +43,8 @@ export function CalendarToolbar({
   onToday,
   search,
   onSearchChange,
+  searchResults,
+  onSearchSelect,
   className,
 }: CalendarToolbarProps) {
   return (
@@ -77,7 +83,7 @@ export function CalendarToolbar({
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            transition={fade.fast}
+            transition={fade.base}
             className="min-w-32 type-heading"
           >
             {rangeLabel}
@@ -100,11 +106,15 @@ export function CalendarToolbar({
         ))}
       </ToggleGroup>
 
-      <SearchField
+      <SearchBox
         value={search}
         onValueChange={onSearchChange}
+        results={searchResults}
+        onSelect={onSearchSelect}
         placeholder="Search posts"
-        className="w-56 justify-self-end"
+        emptyLabel={`No posts match “${search.trim()}”`}
+        listLabel="Posts"
+        className="w-64 justify-self-end"
       />
     </div>
   );

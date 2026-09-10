@@ -93,8 +93,9 @@ interface RowProps {
 }
 
 /**
- * One line of the tree. The chevron and the label are separate buttons so a
- * folder can be opened to look inside without becoming the location.
+ * One line of the tree. The label and the chevron are separate buttons so a
+ * folder can be opened to look inside without becoming the location. The
+ * chevron sits at the row's end and points down when open.
  */
 function Row({
   selected,
@@ -110,7 +111,8 @@ function Row({
     <div
       data-selected={selected || undefined}
       className={cn(
-        "group/row relative flex h-8 items-center rounded-control pr-xs transition-colors",
+        "group/row relative flex h-8 items-center rounded-control pl-xs transition-colors",
+        onToggle === undefined && "pr-xs",
         selected
           ? "text-imagine-foreground"
           : "text-imagine-foreground-muted hover:bg-imagine-foreground/5 hover:text-imagine-foreground",
@@ -124,25 +126,6 @@ function Row({
           className="absolute inset-0 rounded-control bg-imagine-foreground/8"
         />
       ) : null}
-      {onToggle === undefined ? (
-        <span aria-hidden="true" className="relative z-10 w-5 shrink-0" />
-      ) : (
-        <button
-          type="button"
-          aria-expanded={open}
-          aria-label={open ? `Collapse ${label}` : `Expand ${label}`}
-          onClick={onToggle}
-          className="relative z-10 flex h-full w-5 shrink-0 items-center justify-center rounded-xs text-imagine-foreground-faint outline-none hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
-        >
-          <motion.span
-            animate={{ rotate: open ? 90 : 0 }}
-            transition={spring.snappy}
-            className="flex"
-          >
-            <Icon name="chevron-right" size="s" />
-          </motion.span>
-        </button>
-      )}
       <motion.button
         type="button"
         aria-current={selected ? "location" : undefined}
@@ -163,6 +146,23 @@ function Row({
           {label}
         </span>
       </motion.button>
+      {onToggle === undefined ? null : (
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-label={open ? `Collapse ${label}` : `Expand ${label}`}
+          onClick={onToggle}
+          className="relative z-10 flex h-full w-7 shrink-0 items-center justify-center rounded-xs text-imagine-foreground-faint outline-none hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
+        >
+          <motion.span
+            animate={{ rotate: open ? 180 : 0 }}
+            transition={spring.snappy}
+            className="flex"
+          >
+            <Icon name="chevron-down" size="s" />
+          </motion.span>
+        </button>
+      )}
     </div>
   );
 }
@@ -195,7 +195,13 @@ function Branch({
   if (visible.length === 0) return null;
 
   return (
-    <ul className={cn("flex flex-col gap-px", depth > 0 && "pl-l")}>
+    <ul
+      className={cn(
+        "flex flex-col gap-px",
+        // A guide line drops from under the parent's mark along its children.
+        depth > 0 && "ml-l border-l border-imagine-border pl-s",
+      )}
+    >
       {visible.map((node, index) => (
         <motion.li
           key={node.id}

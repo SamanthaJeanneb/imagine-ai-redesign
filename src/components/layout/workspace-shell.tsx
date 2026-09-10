@@ -29,6 +29,8 @@ import {
 } from "@/components/layout/chat-context-panel";
 import { ChatControls, ChatTitle } from "@/components/layout/chat-controls";
 import { FilesPanel } from "@/components/layout/files-panel";
+import { ResizeHandle } from "@/components/ui/resize-handle";
+import { useResizable } from "@/lib/use-resizable";
 import {
   Sidebar,
   SidebarExpandButton,
@@ -42,7 +44,7 @@ import type {
   ScriptedReply,
 } from "@/services/agent";
 import type { OpenDocument } from "@/services/files";
-import { fade, spring } from "@/styles/motion";
+import { fade } from "@/styles/motion";
 
 interface WorkspaceShellProps {
   orgName: string;
@@ -289,6 +291,12 @@ function WorkspaceFrame({
   const router = useRouter();
   const chat = useChat();
   const [collapsed, setCollapsed] = useState(false);
+  const filesResize = useResizable({
+    defaultWidth: 320,
+    min: 264,
+    max: 520,
+    edge: "start",
+  });
   // Everyone still connected, to start. Whoever has lapsed needs reconnecting
   // before the agent can post as them, so they wait to be chosen on purpose.
   const [selectedProfileIds, setSelectedProfileIds] = useState<
@@ -315,8 +323,7 @@ function WorkspaceFrame({
       : threadIdFor(pathname);
   // The rail highlights one thing. With the new chat selected under Chats,
   // Agent above it stays quiet; `activeKey` still drives the page itself.
-  const navActive =
-    activeThreadId === NEW_THREAD_ID ? undefined : activeKey;
+  const navActive = activeThreadId === NEW_THREAD_ID ? undefined : activeKey;
   const chatColumn = chatColumnFor(pathname);
   const docked = chatColumn !== undefined;
   const [panel, setPanel] = useState<ChatPanelMode | null>(null);
@@ -533,12 +540,19 @@ function WorkspaceFrame({
       <motion.div
         key="files-panel"
         initial={{ width: 0, opacity: 0 }}
-        animate={{ width: 320, opacity: 1 }}
+        animate={{ width: filesResize.width, opacity: 1 }}
         exit={{ width: 0, opacity: 0 }}
-        transition={spring.soft}
-        className="flex min-h-0 shrink-0 justify-end overflow-hidden border-l border-imagine-border"
+        transition={filesResize.transition}
+        className="relative flex min-h-0 shrink-0 justify-end overflow-hidden border-l border-imagine-border"
       >
+        <ResizeHandle
+          edge="start"
+          binding={filesResize.handle}
+          dragging={filesResize.dragging}
+          label="Resize files"
+        />
         <FilesPanel
+          width={filesResize.width}
           title={orgName}
           {...(orgLogoUrl === undefined ? {} : { logoUrl: orgLogoUrl })}
           sections={fileSections}

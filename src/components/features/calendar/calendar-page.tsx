@@ -13,13 +13,17 @@ import {
   type PostChipStatus,
   postChipStyle,
 } from "@/components/features/calendar/post-chip";
+import type { IconName } from "@/components/ui/icon";
+import type { SearchBoxResult } from "@/components/ui/search-box";
 import {
   buildCalendarRange,
   type CalendarView,
   countPosts,
   type PostsByDay,
+  searchPosts,
   shiftAnchor,
 } from "@/lib/calendar";
+import { formatDayShort } from "@/lib/format";
 import { fade } from "@/styles/motion";
 
 interface CalendarPageProps {
@@ -34,6 +38,13 @@ const LEGEND: readonly { status: PostChipStatus; label: string }[] = [
   { status: "published", label: "Published" },
   { status: "failed", label: "Failed" },
 ];
+
+const POST_SEARCH_ICON = {
+  draft: "pen",
+  scheduled: "clock",
+  published: "circle-check",
+  failed: "triangle-exclamation",
+} as const satisfies Record<PostChipStatus, IconName>;
 
 /** Color is the only status signal on a chip, so the page says what it means. */
 function StatusLegend() {
@@ -93,6 +104,22 @@ export function CalendarPage({ postsByDay, today }: CalendarPageProps) {
 
   const range = buildCalendarRange(view, anchor, postsByDay, today, search);
   const query = search.trim();
+  // The dropdown searches every post, not just the range on screen.
+  const hits = searchPosts(postsByDay, query);
+  const searchResults: SearchBoxResult[] = hits.map(({ date, post }) => ({
+    id: post.id,
+    icon: POST_SEARCH_ICON[post.status],
+    title: post.title,
+    detail: `${formatDayShort(date)} · ${post.time} · ${post.profile}`,
+  }));
+  /** Go to the post's day and attach it, as if its chip had been clicked. */
+  function openHit(postId: string) {
+    const hit = hits.find((entry) => entry.post.id === postId);
+    if (hit === undefined) return;
+    setSearch("");
+    setAnchor(hit.date);
+    if (selected !== hit.post.id) attach(hit.post);
+  }
   const shown = countPosts(range.days);
   const note = noteFor(
     query,
@@ -121,6 +148,8 @@ export function CalendarPage({ postsByDay, today }: CalendarPageProps) {
         }}
         search={search}
         onSearchChange={setSearch}
+        searchResults={searchResults}
+        onSearchSelect={openHit}
       />
 
       {view === "month" ? (
@@ -151,7 +180,7 @@ export function CalendarPage({ postsByDay, today }: CalendarPageProps) {
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
-              transition={fade.fast}
+              transition={fade.base}
               className="type-small text-imagine-foreground-muted"
             >
               {note}

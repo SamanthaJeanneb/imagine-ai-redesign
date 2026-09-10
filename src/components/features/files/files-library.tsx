@@ -6,6 +6,11 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 import type { AssetTileData } from "@/components/features/files/asset-tile";
+import {
+  searchFiles,
+  searchSkills,
+  toSearchResults,
+} from "@/components/features/files/file-search";
 import type {
   FileNode,
   FileSection,
@@ -57,9 +62,11 @@ import {
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Icon, type IconName } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
-import { SearchField } from "@/components/ui/search-field";
+import { ResizeHandle } from "@/components/ui/resize-handle";
+import { SearchBox } from "@/components/ui/search-box";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useResizable } from "@/lib/use-resizable";
 import type { OpenDocument } from "@/services/files";
 import { fade } from "@/styles/motion";
 
@@ -76,8 +83,7 @@ interface FilesLibraryProps {
 
 /** What the browser is looking at. */
 type Place =
-  | { kind: "root" }
-  | { kind: "library"; sectionId: string; folderId?: string };
+  { kind: "root" } | { kind: "library"; sectionId: string; folderId?: string };
 
 type Tab = "files" | "skills";
 type Filter = "all" | "documents" | "images";
@@ -100,14 +106,11 @@ interface RemovedItem {
   sectionId: string;
   folderId?: string;
   payload:
-    | { type: "node"; node: FileNode }
-    | { type: "asset"; asset: AssetTileData };
+    { type: "node"; node: FileNode } | { type: "asset"; asset: AssetTileData };
 }
 
 type DialogState =
-  | { kind: "new-folder" }
-  | { kind: "rename"; id: string; name: string }
-  | null;
+  { kind: "new-folder" } | { kind: "rename"; id: string; name: string } | null;
 
 const FILTERS: readonly { value: Filter; label: string }[] = [
   { value: "all", label: "All" },
@@ -145,10 +148,6 @@ const FOLDER_ACTIONS: readonly LibraryCardAction[] = [
 /* ------------------------------------------------------------------------ */
 /* Tree helpers                                                             */
 /* ------------------------------------------------------------------------ */
-
-function matches(text: string | undefined, query: string): boolean {
-  return text?.toLowerCase().includes(query) ?? false;
-}
 
 /** Leaves only; folders are walked into. */
 function leaves(nodes: readonly FileNode[]): readonly FileNode[] {
@@ -205,7 +204,9 @@ function insertAsset(
   asset: AssetTileData,
 ): FileNode[] {
   const target =
-    folderId === undefined ? nodes : (findFolder(nodes, folderId)?.children ?? []);
+    folderId === undefined
+      ? nodes
+      : (findFolder(nodes, folderId)?.children ?? []);
   const group = target.find((node) => node.type === "assets");
   if (group === undefined) {
     return insertNode(nodes, folderId, {
@@ -380,19 +381,22 @@ export function FilesLibrary({
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [sort, setSort] = useState<Sort>("name-asc");
-  const [view, setView] = useState<LibraryCardView>("grid");
+  const [view, setView] = useState<LibraryCardView>("list");
   const [dialog, setDialog] = useState<DialogState>(null);
   const [values, setValues] = useState<Record<string, string>>({});
   const [savedValues, setSavedValues] = useState<Record<string, string>>({});
+  const resize = useResizable({
+    defaultWidth: 256,
+    min: 208,
+    max: 420,
+    edge: "end",
+  });
   // Ids for things made here; only ever read inside event handlers.
   const counter = useRef(0);
   const nextId = () => {
     counter.current += 1;
     return String(counter.current);
   };
-
-  const normalizedQuery = query.trim().toLowerCase();
-  const searching = normalizedQuery !== "";
 
   /* --- Where things live ---------------------------------------------- */
 
@@ -483,23 +487,14 @@ export function FilesLibrary({
     return items;
   };
 
-  let items: BrowserItem[];
-  if (place.kind === "root" && !searching) {
-    items = sections.map((section) => ({
-      id: section.id,
-      kind: "folder",
-      name: section.title,
-    }));
-  } else if (searching) {
-    // Search looks across the whole library, not just the open folder.
-    items = toItems(leaves(scopeNodes)).filter(
-      (item) =>
-        matches(item.name, normalizedQuery) ||
-        matches(item.excerpt, normalizedQuery),
-    );
-  } else {
-    items = toItems(locationNodes);
-  }
+  const items: BrowserItem[] =
+    place.kind === "root"
+      ? sections.map((section) => ({
+          id: section.id,
+          kind: "folder",
+          name: section.title,
+        }))
+      : toItems(locationNodes);
 
   const passesFilter = (item: BrowserItem) => {
     switch (filter) {
@@ -522,14 +517,21 @@ export function FilesLibrary({
     (item) => item.kind === "image" || item.kind === "video",
   );
 
-  const visibleSkills = searching
-    ? skills.filter((skill) =>
-        matches(
-          `${skill.name} ${skill.description} ${skill.fileName}`,
-          normalizedQuery,
+  /* --- Search: results drop down under the field ---------------------- */
+
+  // Search looks across the whole library, folders included, not just the
+  // open folder. Same dropdown the calendar uses; a click opens the hit.
+  const results = toSearchResults(
+    tab === "skills"
+      ? searchSkills(skills, query)
+      : searchFiles(
+          place.kind === "library" && currentSection !== undefined
+            ? [currentSection]
+            : sections,
+          query,
+          { includeFolders: true },
         ),
-      )
-    : skills;
+  );
 
   /* --- Moving around -------------------------------------------------- */
 
@@ -544,17 +546,9 @@ export function FilesLibrary({
     goTo({ kind: "library", sectionId, ...(folderId ? { folderId } : {}) });
   };
 
+  /** Documents open over the browser, so the location underneath stays put. */
   const open = (id: string) => {
-    if (!documentById.has(id)) return;
-    const at = home.get(id);
-    if (at !== undefined) {
-      setTab("files");
-      setPlace({ kind: "library", ...at });
-    } else {
-      setTab("skills");
-    }
-    setDocumentId(id);
-    setQuery("");
+    if (documentById.has(id)) setDocumentId(id);
   };
 
   const send = (resource: DraggableResource) => {
@@ -666,7 +660,9 @@ export function FilesLibrary({
 
     updateSection(at.sectionId, (nodes) =>
       asset === undefined
-        ? mapNodes(nodes, (current) => (current.id === item.id ? null : current))
+        ? mapNodes(nodes, (current) =>
+            current.id === item.id ? null : current,
+          )
         : removeAsset(nodes, item.id),
     );
     if (documentId === item.id) setDocumentId(undefined);
@@ -724,7 +720,11 @@ export function FilesLibrary({
       if (place.kind === "root") {
         goTo({ kind: "library", sectionId: item.id });
       } else {
-        goTo({ kind: "library", sectionId: place.sectionId, folderId: item.id });
+        goTo({
+          kind: "library",
+          sectionId: place.sectionId,
+          folderId: item.id,
+        });
       }
       return;
     }
@@ -733,6 +733,21 @@ export function FilesLibrary({
       return;
     }
     setPreviewId(item.id);
+  };
+
+  /** A search hit: folders become the location, the rest open. */
+  const openResult = (id: string) => {
+    setQuery("");
+    if (tab === "skills" || documentById.has(id)) {
+      open(id);
+      return;
+    }
+    const at = home.get(id);
+    if (assetById.has(id)) {
+      setPreviewId(id);
+    } else if (at !== undefined) {
+      goTo({ kind: "library", sectionId: at.sectionId, folderId: id });
+    }
   };
 
   /* --- Breadcrumb ----------------------------------------------------- */
@@ -760,11 +775,9 @@ export function FilesLibrary({
       : undefined);
 
   const bodyKey =
-    openDocument !== undefined
-      ? `doc:${openDocument.id}`
-      : tab === "skills"
-        ? `skills:${normalizedQuery}`
-        : `${place.kind}:${currentSection?.id ?? ""}:${currentFolder?.id ?? ""}:${normalizedQuery}:${filter}:${view}`;
+    tab === "skills"
+      ? "skills"
+      : `${place.kind}:${currentSection?.id ?? ""}:${currentFolder?.id ?? ""}:${filter}:${view}`;
 
   const renderCard = (item: BrowserItem) => (
     <StaggerItem key={item.id}>
@@ -795,11 +808,18 @@ export function FilesLibrary({
       data-slot="files-library"
       className={cn("@container flex min-h-0 flex-1", className)}
     >
-      {/* Sidebar: flush, full height, page-white. */}
+      {/* Sidebar: full height, page-white, a rule against the browser. */}
       <aside
         aria-label="Files navigation"
-        className="flex h-full w-64 shrink-0 flex-col gap-m bg-imagine-surface px-s pt-l pb-s"
+        style={{ width: resize.width }}
+        className="relative flex h-full shrink-0 flex-col gap-m border-r border-imagine-border bg-imagine-surface px-s pt-l pb-s"
       >
+        <ResizeHandle
+          edge="end"
+          binding={resize.handle}
+          dragging={resize.dragging}
+          label="Resize files sidebar"
+        />
         <Tabs
           variant="line"
           value={tab}
@@ -918,17 +938,7 @@ export function FilesLibrary({
           <Breadcrumb className="min-w-0 flex-1">
             {tab === "skills" ? (
               <BreadcrumbItem>
-                {openDocument === undefined ? (
-                  <BreadcrumbPage>Skills</BreadcrumbPage>
-                ) : (
-                  <BreadcrumbLink
-                    onClick={() => {
-                      setDocumentId(undefined);
-                    }}
-                  >
-                    Skills
-                  </BreadcrumbLink>
-                )}
+                <BreadcrumbPage>Skills</BreadcrumbPage>
               </BreadcrumbItem>
             ) : (
               <BreadcrumbItem>
@@ -949,7 +959,7 @@ export function FilesLibrary({
               <>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  {currentFolder === undefined && openDocument === undefined ? (
+                  {currentFolder === undefined ? (
                     <BreadcrumbPage>{currentSection.title}</BreadcrumbPage>
                   ) : (
                     <BreadcrumbLink
@@ -960,7 +970,7 @@ export function FilesLibrary({
                       {currentSection.title}
                     </BreadcrumbLink>
                   )}
-                  {currentFolder === undefined && openDocument === undefined ? (
+                  {currentFolder === undefined ? (
                     <BreadcrumbMenu
                       label="Switch library"
                       items={libraryMenu}
@@ -979,22 +989,8 @@ export function FilesLibrary({
               <>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  {openDocument === undefined ? (
-                    <BreadcrumbPage>{currentFolder.name}</BreadcrumbPage>
-                  ) : (
-                    <BreadcrumbLink
-                      onClick={() => {
-                        goTo({
-                          kind: "library",
-                          sectionId: currentSection.id,
-                          folderId: currentFolder.id,
-                        });
-                      }}
-                    >
-                      {currentFolder.name}
-                    </BreadcrumbLink>
-                  )}
-                  {openDocument === undefined && folderMenu.length > 1 ? (
+                  <BreadcrumbPage>{currentFolder.name}</BreadcrumbPage>
+                  {folderMenu.length > 1 ? (
                     <BreadcrumbMenu
                       label="Switch folder"
                       items={folderMenu}
@@ -1011,61 +1007,39 @@ export function FilesLibrary({
                 </BreadcrumbItem>
               </>
             ) : null}
-            {openDocument === undefined ? null : (
-              <>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>{openDocument.meta.title}</BreadcrumbPage>
-                </BreadcrumbItem>
-              </>
-            )}
           </Breadcrumb>
 
-          {openDocument === undefined ? (
-            <>
-              <SearchField
-                value={query}
-                onValueChange={setQuery}
-                placeholder={`Search in ${locationTitle}`}
-                className="w-64 shrink-0 bg-imagine-surface-raised"
-              />
-              {tab === "files" ? (
-                <ToggleGroup
-                  size="sm"
-                  value={view}
-                  onValueChange={(next) => {
-                    if (next === "grid" || next === "list") setView(next);
-                  }}
-                  aria-label="Layout"
-                  className="shrink-0"
-                >
-                  <ToggleGroupItem value="grid" aria-label="Grid">
-                    <Icon name="grip" size="s" />
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="list" aria-label="List">
-                    <Icon name="list" size="s" />
-                  </ToggleGroupItem>
-                </ToggleGroup>
-              ) : null}
-            </>
-          ) : (
-            <Button
+          <SearchBox
+            value={query}
+            onValueChange={setQuery}
+            results={results}
+            onSelect={openResult}
+            placeholder={`Search in ${tab === "skills" ? "skills" : (currentSection?.title ?? "all files")}`}
+            emptyLabel={`Nothing matches “${query.trim()}”`}
+            listLabel="Files"
+            className="w-64 shrink-0"
+          />
+          {tab === "files" ? (
+            <ToggleGroup
               size="sm"
-              variant="soft"
-              onClick={() => {
-                send({
-                  kind: "file",
-                  file: { id: openDocument.id, title: openDocument.meta.title },
-                });
+              value={view}
+              onValueChange={(next) => {
+                if (next === "grid" || next === "list") setView(next);
               }}
+              aria-label="Layout"
+              className="shrink-0"
             >
-              <Icon name="imagine" size="s" data-icon="inline-start" />
-              Send to chat
-            </Button>
-          )}
+              <ToggleGroupItem value="list" aria-label="List">
+                <Icon name="list" size="s" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="grid" aria-label="Grid">
+                <Icon name="grip" size="s" />
+              </ToggleGroupItem>
+            </ToggleGroup>
+          ) : null}
         </header>
 
-        {openDocument === undefined && tab === "files" ? (
+        {tab === "files" ? (
           <div className="flex shrink-0 items-center justify-between gap-l">
             <ChipGroup
               value={filter}
@@ -1099,7 +1073,10 @@ export function FilesLibrary({
                   }}
                 >
                   {SORTS.map((entry) => (
-                    <DropdownMenuRadioItem key={entry.value} value={entry.value}>
+                    <DropdownMenuRadioItem
+                      key={entry.value}
+                      value={entry.value}
+                    >
                       {entry.label}
                     </DropdownMenuRadioItem>
                   ))}
@@ -1119,94 +1096,32 @@ export function FilesLibrary({
               transition={fade.fast}
               className="absolute inset-0 flex flex-col gap-xl overflow-y-auto pb-xxl"
             >
-              {openDocument !== undefined ? (
-                <>
-                  <div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        setDocumentId(undefined);
-                      }}
-                      className="-ml-2"
-                    >
-                      <Icon
-                        name="arrow-left"
-                        size="s"
-                        data-icon="inline-start"
-                      />
-                      Back to {locationTitle}
-                    </Button>
-                  </div>
-                  <MarkdownEditor
-                    meta={openDocument.meta}
-                    value={values[openDocument.id] ?? openDocument.value}
-                    savedValue={
-                      savedValues[openDocument.id] ?? openDocument.value
-                    }
-                    onValueChange={(value) => {
-                      setValues((current) => ({
-                        ...current,
-                        [openDocument.id]: value,
-                      }));
-                    }}
-                    onSave={() => {
-                      setSavedValues((current) => ({
-                        ...current,
-                        [openDocument.id]:
-                          values[openDocument.id] ?? openDocument.value,
-                      }));
-                    }}
-                  />
-                </>
-              ) : tab === "skills" ? (
+              {tab === "skills" ? (
                 <>
                   <p className="type-small text-imagine-foreground-muted">
-                    Skills are instructions the agent follows. Switch one off
-                    to pause it, or open its file to change what it does.
+                    Skills are instructions the agent follows. Switch one off to
+                    pause it, or open its file to change what it does.
                   </p>
-                  {visibleSkills.length === 0 ? (
-                    <EmptyState
-                      icon="magnifying-glass"
-                      title="No skills match"
-                      body={`Nothing in skills mentions “${query.trim()}”.`}
-                    />
-                  ) : (
-                    <SkillsList
-                      skills={visibleSkills}
-                      onToggle={(id, enabled) => {
-                        setSkills((current) =>
-                          current.map((skill) =>
-                            skill.id === id ? { ...skill, enabled } : skill,
-                          ),
-                        );
-                      }}
-                      onOpenFile={open}
-                    />
-                  )}
+                  <SkillsList
+                    skills={skills}
+                    onToggle={(id, enabled) => {
+                      setSkills((current) =>
+                        current.map((skill) =>
+                          skill.id === id ? { ...skill, enabled } : skill,
+                        ),
+                      );
+                    }}
+                    onOpenFile={open}
+                  />
                 </>
               ) : shown.length === 0 && !(canCreate && filter === "all") ? (
                 <EmptyState
-                  icon={
-                    searching
-                      ? "magnifying-glass"
-                      : filter === "images"
-                        ? "image"
-                        : "folder"
-                  }
+                  icon={filter === "images" ? "image" : "folder"}
                   title={
-                    searching
-                      ? "Nothing matches"
-                      : filter === "all"
-                        ? "Nothing here"
-                        : `No ${filter} here`
+                    filter === "all" ? "Nothing here" : `No ${filter} here`
                   }
-                  body={
-                    searching
-                      ? `Nothing in ${locationTitle} is named or mentions “${query.trim()}”.`
-                      : "Try another filter, or look in a different folder."
-                  }
-                  {...(!searching && filter !== "all"
+                  body="Try another filter, or look in a different folder."
+                  {...(filter !== "all"
                     ? {
                         action: (
                           <Button
@@ -1258,8 +1173,8 @@ export function FilesLibrary({
                   folders.length === 0 &&
                   canCreate ? (
                     <p className="px-xs type-small text-imagine-foreground-muted">
-                      Nothing in {locationTitle} yet. Use New to add a
-                      document or folder.
+                      Nothing in {locationTitle} yet. Use New to add a document
+                      or folder.
                     </p>
                   ) : null}
                 </>
@@ -1292,6 +1207,79 @@ export function FilesLibrary({
           }}
         />
       )}
+
+      {/* Document: the editor over the browser, so closing lands you back
+          where you were. */}
+      <Dialog
+        open={openDocument !== undefined}
+        onOpenChange={(next) => {
+          if (!next) setDocumentId(undefined);
+        }}
+      >
+        <DialogContent
+          // The editor's own Save and Revert take the corner; Escape and the
+          // backdrop still close.
+          showCloseButton={false}
+          className="flex max-h-[85vh] flex-col gap-l sm:max-w-3xl"
+        >
+          {openDocument === undefined ? null : (
+            <>
+              <DialogHeader className="sr-only">
+                <DialogTitle>{openDocument.meta.title}</DialogTitle>
+                <DialogDescription>Markdown document</DialogDescription>
+              </DialogHeader>
+              <div className="-mx-xs min-h-0 flex-1 overflow-y-auto px-xs">
+                <MarkdownEditor
+                  meta={openDocument.meta}
+                  value={values[openDocument.id] ?? openDocument.value}
+                  savedValue={
+                    savedValues[openDocument.id] ?? openDocument.value
+                  }
+                  onValueChange={(value) => {
+                    setValues((current) => ({
+                      ...current,
+                      [openDocument.id]: value,
+                    }));
+                  }}
+                  onSave={() => {
+                    setSavedValues((current) => ({
+                      ...current,
+                      [openDocument.id]:
+                        values[openDocument.id] ?? openDocument.value,
+                    }));
+                  }}
+                />
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setDocumentId(undefined);
+                  }}
+                >
+                  Close
+                </Button>
+                <Button
+                  variant="soft"
+                  onClick={() => {
+                    setDocumentId(undefined);
+                    send({
+                      kind: "file",
+                      file: {
+                        id: openDocument.id,
+                        title: openDocument.meta.title,
+                      },
+                    });
+                  }}
+                >
+                  <Icon name="imagine" size="s" data-icon="inline-start" />
+                  Send to chat
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Image preview */}
       <Dialog

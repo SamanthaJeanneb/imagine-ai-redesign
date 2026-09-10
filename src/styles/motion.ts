@@ -9,6 +9,8 @@ export const spring = {
   snappy: { type: "spring", stiffness: 500, damping: 40 },
   /** Panels, morphs, previews. */
   soft: { type: "spring", bounce: 0.15, visualDuration: 0.4 },
+  /** Size changes that must not overshoot: a post or document entering edit mode. */
+  settle: { type: "spring", bounce: 0, visualDuration: 0.3 },
 } as const satisfies Record<string, Transition>;
 
 /** Seconds. */
@@ -26,6 +28,8 @@ export const ease = {
 export const stagger = {
   list: 0.04,
   grid: 0.02,
+  /** Calendar cells sweep in diagonally; slower, so the range reads as a place. */
+  calendar: 0.045,
 } as const;
 
 export const fade = {

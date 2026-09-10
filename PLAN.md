@@ -28,7 +28,7 @@ every UI phase, read the PNG files listed in that phase's "Wireframes" line (and
 `pink-application.png` for color density), and check the built screen against them before
 marking the phase done. Follow the general structure and behavior; interpret the rest and
 make it look great.
-- **Reference `imagine-app`, never copy its code.** This is a clean rebuild. `SCHEMA.md`
+- **Reference** `imagine-app`**, never copy its code.** This is a clean rebuild. `SCHEMA.md`
 carries over, and type names and shapes are matched deliberately so the port is cheap.
 Nothing else comes across.
 - **Simplest thing that renders.** No abstraction earns its place until a second caller
@@ -46,8 +46,8 @@ CSS embed in `src/app/layout.tsx`. Sharp Solid is for active/selected only; Bran
 the LinkedIn and provider logos only. No Lucide, no Material Symbols. Feature code uses
 the `Icon` component, never raw `fa-` classes.
 - **Dev kit first.** Every new icon and reusable component gets an interactive specimen
-  on `/dev/kit` before a page uses it. `ICON_NAMES` remains the single list rendered by
-  the icon catalog, so adding an icon there adds its specimen automatically.
+on `/dev/kit` before a page uses it. `ICON_NAMES` remains the single list rendered by
+the icon catalog, so adding an icon there adds its specimen automatically.
 - No inline styles, no raw color values outside the token file.
 - No em dashes in any product copy or mock data (labels, headings, descriptions,
 placeholders, toasts, JSON strings). Use a period, comma, or colon instead.
@@ -60,6 +60,8 @@ the pages for that phase render without console errors before handing off.
 force-push.
 
 ---
+
+
 
 ## 1. Wireframe notes
 
@@ -126,6 +128,8 @@ All interactions have clean motion and animated page transitions, like Apple.
 
 ---
 
+
+
 ## 2. Decisions where the wireframes are open
 
 - **Analytics is a top-level route.** `PROJECT.md`'s tree omits it, the nav includes it.
@@ -135,7 +139,7 @@ landing at `/agent`. An onboarded user (mock flag) goes from `/` straight to `/a
 These live in an `(auth)` route group with their own layout.
 - **Route groups are folder names only.** `(auth)` and `(workspace)` keep parentheses out
 of the URL. Nothing is called "dashboard".
-- **`/agent` is the landing.** Landing and thread are two modes of one persistent
+- `/agent` **is the landing.** Landing and thread are two modes of one persistent
 workspace, not two pages, so the composer can morph. Threads get a URL
 (`/agent/[threadId]`) via history replacement after the animation, without remounting.
 - **Chat is owned by the workspace layout, not by pages.** Its placement (main column,
@@ -144,7 +148,7 @@ center to sidebar across `/agent` → `/calendar` and `/analytics`.
 - **Settings tabs are routes:** `/settings` (General), `/settings/profiles`,
 `/settings/integrations`, `/settings/api`. No billing route, no usage meter, no storage
 meter: those were cut from the design.
-- **`/files` is a standalone file manager** over the same data as the compact chat
+- `/files` **is a standalone file manager** over the same data as the compact chat
 panel: library navigation, folder browsing, search, and a persistent preview/editor.
 The Files nav item goes there; the chat's file icon opens the quick-attach tree.
 - **Never a card inside a card.** Inside a raised or filled container the children are
@@ -164,7 +168,11 @@ persona is a file in that client's section.
 
 ---
 
+
+
 ## 3. Architecture
+
+
 
 ### Routes
 
@@ -183,6 +191,7 @@ the client. Building a fetch layer over local JSON would be thrown away on arriv
 selectors in `src/services/*` → server components → props. Four rules hold it together:
 
 1. `db.json` is annotated where it is imported (`const db: Database = rawDb`). TypeScript
+
 compares the JSON against the row types, so a typo is a compile error. Nothing parses at
 runtime.
 2. `src/entities/rows.ts` describes the tables in database shape: snake_case, the same
@@ -204,6 +213,8 @@ One `LayoutGroup` wraps the rail and the page so shared `layoutId`s resolve acro
 changes. Pages stay thin: select data, compose.
 
 ---
+
+
 
 ## 4. Design system
 
@@ -250,6 +261,8 @@ never a highlight applied per item. Accent on nav, foreground on tabs.
 
 ---
 
+
+
 ## 5. Motion
 
 Presets live in `src/styles/motion.ts`; nothing sets a duration inline. `spring.snappy`
@@ -285,6 +298,8 @@ frame callback.
 
 ---
 
+
+
 ## 6. Mock data
 
 `src/mocks/db.json`. Top-level keys are Postgres schemas, second level is table names,
@@ -295,25 +310,26 @@ Only tables something renders are included. Engagement rollups, CRM entity mirro
 subscriptions, and usage counters are deliberately absent: nothing in the design reads
 them.
 
-| Table | Rows | Feeds |
-| --- | --- | --- |
-| `public.users` | 4 | page header account, members |
-| `app.organizations`, `organization_members` | 1, 4 | workspace name, General, join screen |
-| `app.clients` | 5 (1 company page) | profiles, authors, personas |
-| `app.client_linkedin_auth` | 5, one expired | connection status |
-| `app.client_posts` | 33 | calendar, analytics, drafts in chat |
-| `app.assets` | 12 | asset grid, post media |
-| `app.api_keys` | 1 | Settings, API |
-| `app.crm_connections` | 1 (hubspot) | Settings, Integrations |
-| `agent.activities` | 6 | landing timeline |
-| `mastra.mastra_threads`, `mastra_messages` | 6, 4 | sidebar Posts, one worked thread |
-| `mastra.mastra_skills` | 5 | Skills tab, editable markdown |
-| `mastra.workspace_search` | 11 | file tree, personas, nested folder |
+
+| Table                                       | Rows               | Feeds                                |
+| ------------------------------------------- | ------------------ | ------------------------------------ |
+| `public.users`                              | 4                  | page header account, members         |
+| `app.organizations`, `organization_members` | 1, 4               | workspace name, General, join screen |
+| `app.clients`                               | 5 (1 company page) | profiles, authors, personas          |
+| `app.client_linkedin_auth`                  | 5, one expired     | connection status                    |
+| `app.client_posts`                          | 33                 | calendar, analytics, drafts in chat  |
+| `app.assets`                                | 12                 | asset grid, post media               |
+| `app.api_keys`                              | 1                  | Settings, API                        |
+| `app.crm_connections`                       | 1 (hubspot)        | Settings, Integrations               |
+| `agent.activities`                          | 6                  | landing timeline                     |
+| `mastra.mastra_threads`, `mastra_messages`  | 6, 4               | sidebar Posts, one worked thread     |
+| `mastra.mastra_skills`                      | 5                  | Skills tab, editable markdown        |
+| `mastra.workspace_search`                   | 11                 | file tree, personas, nested folder   |
+
 
 Shapes that must match the real app, because they are what the port swaps onto:
 
-- `client_posts.status` is one of `idea | planned | in_review | scheduled | published |
-failed`. There is no "draft" in the database; the calendar chip maps the first three to
+- `client_posts.status` is one of `idea | planned | in_review | scheduled | published | failed`. There is no "draft" in the database; the calendar chip maps the first three to
 its draft look.
 - `client_posts.media` is `{ bucket, path }[]`, the same as `MediaFile`, not asset ids.
 - `client_posts.analytics` is the LinkedIn payload: `impressions`, `engagements`,
@@ -348,6 +364,8 @@ current user
 
 ---
 
+
+
 ## 7. Code conventions
 
 TypeScript, from `mastering-typescript`:
@@ -380,6 +398,8 @@ for squares; `Field` for forms; `ToggleGroup` for option sets; icons via `data-i
 radii for tokens, and leave a short comment header so upstream diffs stay reviewable.
 
 ---
+
+
 
 ## 8. Build order
 
@@ -420,6 +440,8 @@ component beside them, which owns the form state and the navigation.
 - The `(auth)` group has no layout of its own. Sign-in and the steps share nothing but a
 background, and the group already keeps them out of the workspace shell.
 
+
+
 ### Phase 4 — Workspace shell ✅
 
 Wireframes: `landing/landing(agent).png`, `agent/agent.png`,
@@ -438,6 +460,8 @@ the header row is where the collapsed rail's chevron lives.
 below deletes the one it replaces, and `page-placeholder.tsx` goes with the last of them.
 - Columns for the chat, the files panel, and the right rail are added as siblings of the
 page by the phases that build them.
+
+
 
 ### Phase 5 — Agent: landing and thread ✅
 
@@ -464,6 +488,8 @@ loading it directly redirects to `/agent`; `/agent/[threadId]` deep links normal
 - Done when: send morphs without a flash, a timeline action starts a thread, every part
 renders, reduced motion works. Verified against a production build.
 
+
+
 ### Phase 6 — Previews and expand ✅
 
 Wireframes: `agent/calendar - in agent chat.png`, `agent/analytics - in agent.png`, then
@@ -487,6 +513,8 @@ the box between them, and "New chat" morphs it back into the hero.
 calendar and analytics pages are the minimum that carries the ids; Phases 7 and 8 fill
 them in.
 
+
+
 ### Phase 7 — Calendar page ✅
 
 Wireframes: `calendar/calendar page.png`, plus `landing(agent).png` for the compact
@@ -508,21 +536,25 @@ on a chip, and one line that speaks when it has something to say: how the search
 or that the range is empty and the agent can fill it.
 - Selecting a post fills its chip solid and attaches it to the chat beside the page.
 
+
+
 ### Phase 8 — Analytics page ✅
 
 Wireframes: `analytics/analytics-page.png`, plus the landing right rail.
 
 - The range and profile controls switch across a server-built matrix of selector results,
-  so the static mock responds immediately without putting `db.json` in the client bundle.
-  Export downloads the visible impressions series as CSV.
+so the static mock responds immediately without putting `db.json` in the client bundle.
+Export downloads the visible impressions series as CSV.
 - Four headline totals lead into the shared impressions chart, followed by impressions
-  grouped by post label, profile comparison bars, and the ranked posts behind the totals.
+grouped by post label, profile comparison bars, and the ranked posts behind the totals.
 - Charts, profile rows, and top posts attach their subject to the docked chat. The
-  impressions chart carries the preview's shared layout id, so expanding morphs it into
-  the full page.
+impressions chart carries the preview's shared layout id, so expanding morphs it into
+the full page.
 - Verified at the docked page width in light and dark: token-colored charts retain the
-  reference pink density, long post labels stay legible, filters animate, and compact
-  top-post rows do not crowd.
+reference pink density, long post labels stay legible, filters animate, and compact
+top-post rows do not crowd.
+
+
 
 ### Phase 9 — Files ✅
 
@@ -530,22 +562,24 @@ Wireframes: `file-system/file system - right sidebar.png`,
 `file-system/editing file - opens tab.png`.
 
 - The in-flow Files panel now collapses the navigation rail and provides recursive
-  search, Files and Skills tabs, organization and person sections, nested folders,
-  expandable asset grids, skill toggles, and hover editing.
+search, Files and Skills tabs, organization and person sections, nested folders,
+expandable asset grids, skill toggles, and hover editing.
 - Opening a workspace or skill markdown file adds it beside the persistent Current chat
-  tab. The editor overlays only the conversation body, so save, revert, tab switching,
-  and close animate while the docked composer keeps the same bounds.
+tab. The editor overlays only the conversation body, so save, revert, tab switching,
+and close animate while the docked composer keeps the same bounds.
 - Files and media assets can be dragged from the panel into the composer, which becomes
-  a clear drop target and keeps multiple attached resources as independently removable
-  next-message context. File rows also expose a keyboard-focusable attach action.
+a clear drop target and keeps multiple attached resources as independently removable
+next-message context. File rows also expose a keyboard-focusable attach action.
 - `/files` uses a dedicated three-pane file-manager layout: workspace and profile
-  libraries on the left, searchable folder/file/skill browsing in the middle, and a
-  persistent document or asset preview on the right. Markdown edits still save inline.
+libraries on the left, searchable folder/file/skill browsing in the middle, and a
+persistent document or asset preview on the right. Markdown edits still save inline.
 - `workspace_search` chunks are grouped by `metadata.sourceFile` and scoped by
-  `metadata.orgId`; company-profile files join the organization section while people
-  retain their own sections. The Skills tab is built from `mastra_skills`.
+`metadata.orgId`; company-profile files join the organization section while people
+retain their own sections. The Skills tab is built from `mastra_skills`.
 - Verified in light and dark at the desktop workspace width. Recursive search, editing,
-  save feedback, closing back to chat, and the static production build all pass.
+save feedback, closing back to chat, and the static production build all pass.
+
+
 
 ### Phase 10 — Settings ✅
 
@@ -554,25 +588,26 @@ Wireframes: `settings/settings - profiles.png`,
 patterns.
 
 - `settings/layout.tsx` holds the heading and `SettingsTabs`, so the tab strip persists
-  across `/settings`, `/settings/profiles`, `/settings/integrations`, and `/settings/api`
-  and one `layoutId` indicator slides between them. `SettingsPanel` fades each tab's
-  content in, keyed by pathname.
+across `/settings`, `/settings/profiles`, `/settings/integrations`, and `/settings/api`
+and one `layoutId` indicator slides between them. `SettingsPanel` fades each tab's
+content in, keyed by pathname.
 - Each tab is a server page reading `services/settings` and handing props to a client
-  component that owns the local state and mocks its writes with `useTransition` and a
-  short `wait`. General: org name and `LogoUpload` in a form with save and discard,
-  `MembersList` with role selects and removal, invite dialog, `ThemeChoice` over
-  `next-themes`. Profiles: `ProfileList` beside `ProfileDetail`, which gained posts
-  indexed with an indexing state and remove behind an `AlertDialog`; add, reconnect, and
-  index are wired. Integrations: LinkedIn is derived from `client_linkedin_auth` and the
-  CRM facts from `crm_connections`; reconnect and add update the rows. API: the single
-  key with reveal, copy, rotate, revoke, and last used / created facts.
+component that owns the local state and mocks its writes with `useTransition` and a
+short `wait`. General: org name and `LogoUpload` in a form with save and discard,
+`MembersList` with role selects and removal, invite dialog, `ThemeChoice` over
+`next-themes`. Profiles: `ProfileList` beside `ProfileDetail`, which gained posts
+indexed with an indexing state and remove behind an `AlertDialog`; add, reconnect, and
+index are wired. Integrations: LinkedIn is derived from `client_linkedin_auth` and the
+CRM facts from `crm_connections`; reconnect and add update the rows. API: the single
+key with reveal, copy, rotate, revoke, and last used / created facts.
 - `page-placeholder.tsx` is gone with the last placeholder.
 - Verified in light and dark: tabs slide, list and detail cross-fade, removals confirm,
-  theme switches without a flash.
+theme switches without a flash.
+
+
 
 ### Phase 11 — Polish and audit
 
-- Every wireframe side by side with the running app, screen by screen, in both themes.
 - Keyboard and screen reader pass: focus order through the composer, previews, panel, and
 editor; `aria` on the thinking state; titled dialogs.
 - Confirm the grep gates in §10 pass and every morph animates on a compositor property.
@@ -580,18 +615,22 @@ editor; `aria` on the thinking state; titled dialogs.
 
 ---
 
+
+
 ## 9. Porting to imagine-app
 
 The target is `~/Desktop/imagine-app/apps/web`, whose layering is documented in its
 `CODEBASE.md`. Three of its folder names mean something specific, so the mock avoids
 contradicting them:
 
-| There | Means | Here |
-| --- | --- | --- |
-| `services/` | thin external SDK clients, no product logic | `src/services/` holds selectors. Rename on the way in, or fold each selector into its entity. |
-| `entities/<x>/` | folder per domain object with `repository.ts`, `types/`, `utils/transform-*-row.ts`, an `index.ts` barrel | `src/entities/*.ts`, flat files, same type names |
-| `lib/` | multi-service workflows | `src/lib/` holds formatting helpers, which belong in their `shared/utils/` |
-| `app/api/**` | webhooks, cron, agent API | not used here |
+
+| There           | Means                                                                                                     | Here                                                                                          |
+| --------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `services/`     | thin external SDK clients, no product logic                                                               | `src/services/` holds selectors. Rename on the way in, or fold each selector into its entity. |
+| `entities/<x>/` | folder per domain object with `repository.ts`, `types/`, `utils/transform-*-row.ts`, an `index.ts` barrel | `src/entities/*.ts`, flat files, same type names                                              |
+| `lib/`          | multi-service workflows                                                                                   | `src/lib/` holds formatting helpers, which belong in their `shared/utils/`                    |
+| `app/api/**`    | webhooks, cron, agent API                                                                                 | not used here                                                                                 |
+
 
 What makes the port cheap:
 
@@ -615,6 +654,8 @@ the port maps them deliberately.
 
 ---
 
+
+
 ## 10. Verification
 
 - `pnpm typecheck`, `pnpm lint`, and `pnpm build` pass.
@@ -632,7 +673,10 @@ continuous morph with no blank frame.
 
 ---
 
+
+
 ## 11. Open questions (do not block)
 
 - The file tree shows two sections named "Acme", the workspace and the company page.
 Rename one when Phase 9 lands.
+

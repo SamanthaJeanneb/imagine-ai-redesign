@@ -12,12 +12,18 @@ import { useId, useState } from "react";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";
 import { Icon, type IconName } from "@/components/ui/icon";
+import { ResizeHandle } from "@/components/ui/resize-handle";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useResizable } from "@/lib/use-resizable";
 import { fade, spring, stagger } from "@/styles/motion";
+
+/** The rail's width when open, and how far it can be dragged. */
+const RAIL_WIDTH = { default: 224, min: 184, max: 360 } as const;
+const RAIL_COLLAPSED = 56;
 
 export type SidebarNavKey = "agent" | "calendar" | "analytics" | "files";
 
@@ -127,6 +133,12 @@ export function Sidebar({
 }: SidebarProps) {
   const indicatorId = useId();
   const threadIndicatorId = useId();
+  const resize = useResizable({
+    defaultWidth: RAIL_WIDTH.default,
+    min: RAIL_WIDTH.min,
+    max: RAIL_WIDTH.max,
+    edge: "end",
+  });
 
   const [helpOpen, setHelpOpen] = useState(false);
   const helpId = useId();
@@ -245,15 +257,23 @@ export function Sidebar({
   return (
     <motion.aside
       initial={false}
-      animate={{ width: collapsed ? 56 : 224 }}
-      transition={spring.soft}
+      animate={{ width: collapsed ? RAIL_COLLAPSED : resize.width }}
+      transition={resize.transition}
       data-collapsed={collapsed || undefined}
       className={cn(
-        "flex h-full shrink-0 flex-col overflow-x-hidden bg-imagine-background text-imagine-foreground",
+        "relative flex h-full shrink-0 flex-col overflow-x-hidden bg-imagine-background text-imagine-foreground",
         collapsed ? "items-center px-m py-m" : "px-s py-m",
         className,
       )}
     >
+      {collapsed ? null : (
+        <ResizeHandle
+          edge="end"
+          binding={resize.handle}
+          dragging={resize.dragging}
+          label="Resize sidebar"
+        />
+      )}
       <div className={cn("flex flex-col gap-m", collapsed && "items-center")}>
         {/* Organization */}
         <div
@@ -391,9 +411,7 @@ export function Sidebar({
                   name={item.icon}
                   size="s"
                   active={
-                    selected &&
-                    item.key !== "agent" &&
-                    item.key !== "analytics"
+                    selected && item.key !== "agent" && item.key !== "analytics"
                   }
                 />
               </span>

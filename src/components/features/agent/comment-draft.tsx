@@ -80,7 +80,7 @@ export function CommentDraft({
   return (
     <motion.div
       layout
-      transition={spring.soft}
+      transition={spring.settle}
       data-slot="comment-draft"
       className={cn(
         "flex max-w-lg flex-col gap-m rounded-panel bg-imagine-surface p-l shadow-raised",
@@ -92,7 +92,9 @@ export function CommentDraft({
         <div className="flex min-w-0 flex-1 flex-col gap-xxs">
           <p className="type-small">
             <span className="font-medium">{target.author.name}</span>{" "}
-            <span className="text-imagine-foreground-muted">{target.context}</span>
+            <span className="text-imagine-foreground-muted">
+              {target.context}
+            </span>
           </p>
           <blockquote className="rounded-control bg-imagine-background px-m py-s type-small text-imagine-foreground-muted">
             {target.text}

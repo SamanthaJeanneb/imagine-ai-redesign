@@ -1972,6 +1972,28 @@ export function CalendarToolbarDemo() {
           }}
           search={search}
           onSearchChange={setSearch}
+          searchResults={
+            search.trim() === ""
+              ? []
+              : [
+                  {
+                    id: "demo-1",
+                    icon: "calendar",
+                    title: "Why we stopped weekly planning",
+                    detail: "Tue, 8 Sep · 9:00 · Sarah",
+                  },
+                  {
+                    id: "demo-2",
+                    icon: "calendar",
+                    title: "Webinar follow-up",
+                    detail: "Thu, 10 Sep · 14:00 · Marcus",
+                  },
+                ]
+          }
+          onSearchSelect={(id) => {
+            setSearch("");
+            toast(`Opened ${id}`);
+          }}
         />
       </Demo>
       <Demo label="Up next (right rail)" className="max-w-80">

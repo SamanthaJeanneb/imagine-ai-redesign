@@ -1,16 +1,19 @@
 "use client";
 
 import { cn } from "cn";
-import { motion } from "motion/react";
 import { useState } from "react";
 
 import {
   FileTree,
-  type FileNode,
   type FileSection,
 } from "@/components/features/files/file-tree";
 import type { FileResource } from "@/components/features/files/resource-drag";
 import { type AssetTileData } from "@/components/features/files/asset-tile";
+import {
+  searchFiles,
+  searchSkills,
+  toSearchResults,
+} from "@/components/features/files/file-search";
 import {
   type Skill,
   SkillsList,
@@ -18,9 +21,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { SearchField } from "@/components/ui/search-field";
+import { SearchBox } from "@/components/ui/search-box";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { spring } from "@/styles/motion";
 
 interface FilesPanelProps {
   title: string;
@@ -43,43 +45,12 @@ interface FilesPanelProps {
   onOpenSkillFile?: (id: string) => void;
   openSkillId?: string;
   onClose?: () => void;
+  /** Pixels. The shell drives this when the panel is resizable. */
+  width?: number;
   className?: string;
 }
 
-function matches(query: string, name: string): boolean {
-  return name.toLowerCase().includes(query.trim().toLowerCase());
-}
-
-function filterNodes(
-  nodes: readonly FileNode[],
-  query: string,
-): readonly FileNode[] {
-  return nodes.flatMap((node) => {
-    if (matches(query, node.name)) return [node];
-    if (node.type === "folder") {
-      const children = filterNodes(node.children, query);
-      return children.length === 0 ? [] : [{ ...node, children }];
-    }
-    if (node.type === "assets") {
-      const assets = node.assets.filter((asset) =>
-        matches(query, asset.caption ?? asset.kind),
-      );
-      return assets.length === 0 ? [] : [{ ...node, assets }];
-    }
-    return [];
-  });
-}
-
-function filterSections(
-  sections: readonly FileSection[],
-  query: string,
-): readonly FileSection[] {
-  if (query.trim() === "") return sections;
-  return sections.flatMap((section) => {
-    const nodes = filterNodes(section.nodes, query);
-    return nodes.length > 0 ? [{ ...section, nodes }] : [];
-  });
-}
+const DEFAULT_WIDTH = 320;
 
 /**
  * The right column that pushes the workspace when open: search, Files and
@@ -102,21 +73,44 @@ export function FilesPanel({
   onOpenSkillFile,
   openSkillId,
   onClose,
+  width = DEFAULT_WIDTH,
   className,
 }: FilesPanelProps) {
   const [query, setQuery] = useState("");
+  const [tab, setTab] = useState("files");
   const [expandedAssetIds, setExpandedAssetIds] = useState<readonly string[]>(
     [],
   );
-  const visible = filterSections(sections, query);
+  const hits = [
+    ...searchFiles(sections, query),
+    ...searchSkills(skills, query),
+  ];
+
+  const openHit = (id: string) => {
+    const hit = hits.find((entry) => entry.id === id);
+    setQuery("");
+    if (hit === undefined) return;
+    if (hit.kind === "skill") {
+      setTab("skills");
+      onOpenSkillFile?.(id);
+      return;
+    }
+    setTab("files");
+    if (hit.asset !== undefined) {
+      onOpenAsset?.(hit.asset);
+      return;
+    }
+    onOpenFile?.(id);
+  };
 
   return (
-    <motion.aside
-      layout
-      transition={spring.soft}
+    // Width is set, not animated: the shell animates the column it sits in,
+    // and a drag has to follow the pointer.
+    <aside
       data-slot="files-panel"
+      style={{ width }}
       className={cn(
-        "flex h-full w-80 shrink-0 flex-col gap-m bg-imagine-background px-m py-l",
+        "flex h-full shrink-0 flex-col gap-m bg-imagine-background px-m py-l",
         className,
       )}
     >
@@ -144,43 +138,45 @@ export function FilesPanel({
           </Button>
         ) : null}
       </div>
-      <SearchField
+      <SearchBox
         value={query}
         onValueChange={setQuery}
+        results={toSearchResults(hits)}
+        onSelect={openHit}
         placeholder="Search files"
-        className="bg-imagine-surface"
+        emptyLabel={`Nothing matches “${query.trim()}”`}
+        listLabel="Files"
       />
-      <Tabs defaultValue="files" variant="line" className="min-h-0 flex-1">
+      <Tabs
+        value={tab}
+        onValueChange={setTab}
+        variant="line"
+        className="min-h-0 flex-1"
+      >
         <TabsList className="px-xs">
           <TabsTrigger value="files">Files</TabsTrigger>
           <TabsTrigger value="skills">Skills</TabsTrigger>
         </TabsList>
         <TabsContent value="files" className="min-h-0">
           <ScrollArea className="h-full">
-            {visible.length === 0 ? (
-              <p className="px-s py-l type-small text-imagine-foreground-muted">
-                Nothing matches &quot;{query}&quot;.
-              </p>
-            ) : (
-              <FileTree
-                sections={visible}
-                activeFileId={activeFileId}
-                activeAssetId={activeAssetId}
-                onOpenFile={onOpenFile}
-                onEditFile={onEditFile}
-                onAttachFile={onAttachFile}
-                onOpenAsset={onOpenAsset}
-                onShowAllAssets={(id) => {
-                  setExpandedAssetIds((current) =>
-                    current.includes(id) ? current : [...current, id],
-                  );
-                }}
-                expandedAssetIds={expandedAssetIds}
-                assetSize={assetSize}
-                draggableResources={dragHint}
-                className="pr-s"
-              />
-            )}
+            <FileTree
+              sections={sections}
+              activeFileId={activeFileId}
+              activeAssetId={activeAssetId}
+              onOpenFile={onOpenFile}
+              onEditFile={onEditFile}
+              onAttachFile={onAttachFile}
+              onOpenAsset={onOpenAsset}
+              onShowAllAssets={(id) => {
+                setExpandedAssetIds((current) =>
+                  current.includes(id) ? current : [...current, id],
+                );
+              }}
+              expandedAssetIds={expandedAssetIds}
+              assetSize={assetSize}
+              draggableResources={dragHint}
+              className="pr-s"
+            />
           </ScrollArea>
         </TabsContent>
         <TabsContent value="skills" className="min-h-0">
@@ -201,6 +197,6 @@ export function FilesPanel({
           Drag a file or asset into chat
         </div>
       ) : null}
-    </motion.aside>
+    </aside>
   );
 }

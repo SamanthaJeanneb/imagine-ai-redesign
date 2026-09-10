@@ -10,7 +10,9 @@ import {
 } from "@/components/features/files/file-tree";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { ResizeHandle } from "@/components/ui/resize-handle";
 import type { SidebarThread } from "@/components/layout/sidebar";
+import { useResizable } from "@/lib/use-resizable";
 import { fade, pressRow, spring } from "@/styles/motion";
 
 export type ChatPanelMode = "history" | "files";
@@ -147,22 +149,38 @@ export function ChatContextPanel({
   onClose,
 }: ChatContextPanelProps) {
   const reduceMotion = useReducedMotion();
+  const resize = useResizable({
+    defaultWidth: PANEL_WIDTH,
+    min: 280,
+    max: 560,
+    edge: "start",
+    transition: spring.snappy,
+  });
 
   return (
     <motion.aside
       data-slot="chat-context-panel"
       aria-label={mode === "history" ? "Chat history" : "Files"}
       initial={reduceMotion ? { opacity: 0 } : { width: 0, opacity: 0 }}
-      animate={{ width: PANEL_WIDTH, opacity: 1 }}
+      animate={{ width: resize.width, opacity: 1 }}
       exit={
         reduceMotion
           ? { opacity: 0, transition: fade.fast }
           : { width: 0, opacity: 0, transition: fade.base }
       }
-      transition={spring.snappy}
-      className="flex min-h-0 shrink-0 justify-end overflow-hidden border-l border-imagine-border"
+      transition={resize.transition}
+      className="relative flex min-h-0 shrink-0 justify-end overflow-hidden border-l border-imagine-border"
     >
-      <div className="flex min-h-0 w-96 shrink-0 flex-col bg-imagine-surface">
+      <ResizeHandle
+        edge="start"
+        binding={resize.handle}
+        dragging={resize.dragging}
+        label="Resize panel"
+      />
+      <div
+        style={{ width: resize.width }}
+        className="flex min-h-0 shrink-0 flex-col bg-imagine-surface"
+      >
         <PanelHeader
           title={mode === "history" ? "Chat history" : "Files"}
           onClose={onClose}

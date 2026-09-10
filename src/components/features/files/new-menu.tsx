@@ -19,18 +19,25 @@ interface NewMenuProps {
   className?: string;
 }
 
-const ITEMS: readonly { intent: NewMenuIntent; label: string; icon: IconName }[] =
-  [
-    { intent: "document", label: "Document", icon: "file-plus" },
-    { intent: "folder", label: "Folder", icon: "folder-plus" },
-  ];
+const ITEMS: readonly {
+  intent: NewMenuIntent;
+  label: string;
+  icon: IconName;
+}[] = [
+  { intent: "document", label: "Document", icon: "file-plus" },
+  { intent: "folder", label: "Folder", icon: "folder-plus" },
+];
 
 /**
  * The sidebar's primary action. One button, two intents: a new document or a
  * new folder in the current location. The menu opens under the button at the
  * button's width so it reads as the button unfolding.
  */
-export function NewMenu({ onIntent, disabled = false, className }: NewMenuProps) {
+export function NewMenu({
+  onIntent,
+  disabled = false,
+  className,
+}: NewMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -42,12 +49,6 @@ export function NewMenu({ onIntent, disabled = false, className }: NewMenuProps)
         >
           <Icon name="plus" size="s" data-icon="inline-start" />
           New
-          <Icon
-            name="chevron-down"
-            size="s"
-            data-icon="inline-end"
-            className="text-imagine-primary-foreground/60"
-          />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent

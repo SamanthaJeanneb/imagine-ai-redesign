@@ -8,7 +8,9 @@ import { useChat } from "@/components/features/agent/chat-provider";
 import type { ComposerPreview } from "@/components/features/agent/composer";
 import type { ChatPanelMode } from "@/components/layout/chat-context-panel";
 import { ChatControls, ChatTitle } from "@/components/layout/chat-controls";
-import { fade, spring } from "@/styles/motion";
+import { ResizeHandle } from "@/components/ui/resize-handle";
+import { useResizable } from "@/lib/use-resizable";
+import { fade } from "@/styles/motion";
 
 const EMPTY_COPY: Record<ComposerPreview, string> = {
   calendar:
@@ -42,6 +44,12 @@ export function ChatColumn({
 }: ChatColumnProps) {
   const reduceMotion = useReducedMotion();
   const chat = useChat();
+  const resize = useResizable({
+    defaultWidth: COLUMN_WIDTH,
+    min: 320,
+    max: 640,
+    edge: "start",
+  });
   const previews: readonly ComposerPreview[] =
     page === "calendar" ? ["analytics"] : ["calendar"];
 
@@ -52,16 +60,25 @@ export function ChatColumn({
     <motion.aside
       data-slot="chat-column"
       initial={reduceMotion ? { opacity: 0 } : { width: 0, opacity: 0 }}
-      animate={{ width: COLUMN_WIDTH, opacity: 1 }}
+      animate={{ width: resize.width, opacity: 1 }}
       exit={
         reduceMotion
           ? { opacity: 0, transition: fade.fast }
           : { width: 0, opacity: 0, transition: fade.base }
       }
-      transition={spring.soft}
-      className="flex min-h-0 shrink-0 justify-end overflow-hidden"
+      transition={resize.transition}
+      className="relative flex min-h-0 shrink-0 justify-end overflow-hidden"
     >
-      <div className="flex min-h-0 w-96 shrink-0 flex-col border-l border-imagine-foreground/12 px-l">
+      <ResizeHandle
+        edge="start"
+        binding={resize.handle}
+        dragging={resize.dragging}
+        label="Resize chat"
+      />
+      <div
+        style={{ width: resize.width }}
+        className="flex min-h-0 shrink-0 flex-col border-l border-imagine-foreground/12 px-l"
+      >
         <div className="mt-m flex h-8 shrink-0 items-center gap-s">
           <ChatTitle title={title} />
           <ChatControls

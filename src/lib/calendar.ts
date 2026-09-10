@@ -49,6 +49,25 @@ function matches(chip: PostChipData, query: string): boolean {
   );
 }
 
+export interface PostHit {
+  /** The day the post sits on, as a date key. */
+  date: string;
+  post: PostChipData;
+}
+
+/** Every post matching the query, whatever the range on screen, by date. */
+export function searchPosts(posts: PostsByDay, query: string): PostHit[] {
+  const needle = query.trim().toLowerCase();
+  if (needle === "") return [];
+  return Object.keys(posts)
+    .toSorted()
+    .flatMap((date) =>
+      (posts[date] ?? []).flatMap((post) =>
+        matches(post, needle) ? [{ date, post }] : [],
+      ),
+    );
+}
+
 interface BuildOptions {
   /** Month index the cells belong to, so the ones either side read as outside. */
   month?: number;

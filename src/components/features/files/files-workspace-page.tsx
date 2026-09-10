@@ -18,9 +18,14 @@ import {
   type Skill,
   SkillsList,
 } from "@/components/features/files/skills-list";
+import {
+  searchFiles,
+  searchSkills,
+  toSearchResults,
+} from "@/components/features/files/file-search";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
-import { SearchField } from "@/components/ui/search-field";
+import { SearchBox } from "@/components/ui/search-box";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { OpenDocument } from "@/services/files";
 import { fade, pressRow } from "@/styles/motion";

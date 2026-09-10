@@ -72,7 +72,7 @@ export function LinkedInPost({
   return (
     <motion.article
       layout
-      transition={spring.soft}
+      transition={spring.settle}
       data-slot="linkedin-post"
       className={cn(
         "flex flex-col gap-m overflow-hidden rounded-panel bg-imagine-surface p-l shadow-raised transition-shadow",

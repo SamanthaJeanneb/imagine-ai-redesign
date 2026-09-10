@@ -1,7 +1,8 @@
 "use client";
 
 // Imagine: search input with the magnifying glass inside and a clear affordance
-// once there is a value. Used in the calendar toolbar, files panel, settings.
+// once there is a value. The dropdown lives in SearchBox; this field is the
+// control itself, also used to filter lists that are already on screen.
 
 import { cn } from "cn";
 

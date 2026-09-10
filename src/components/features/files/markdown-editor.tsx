@@ -144,7 +144,7 @@ export function MarkdownEditor({
         </div>
       </header>
 
-      <motion.div layout transition={spring.soft} className="relative">
+      <motion.div layout transition={spring.settle} className="relative">
         {editing ? (
           <textarea
             autoFocus
