@@ -32,7 +32,7 @@ export interface PostChipData {
 
 interface PostChipProps {
   post: PostChipData;
-  /** `dense` for the two-week strip and the composer preview. */
+  /** `dense` for the composer preview, where cells are too short for two lines. */
   dense?: boolean;
   selected?: boolean;
   onOpen?: (post: PostChipData) => void;

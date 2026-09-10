@@ -68,7 +68,9 @@ export function CalendarGrid({
   className,
 }: CalendarGridProps) {
   const reduceMotion = useReducedMotion();
-  const dense = density !== "page";
+  // Preview cells are too short for the time and profile line. The landing
+  // strip and the calendar page both have room for the full chip.
+  const dense = density === "preview";
   const chipLimit = maxChips ?? DEFAULT_MAX_CHIPS[density];
 
   return (
