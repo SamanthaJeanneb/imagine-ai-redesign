@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import {
@@ -231,12 +231,7 @@ export function InviteTeamForm({
       }}
     >
       <Field>
-        <div className="flex flex-col gap-xs">
-          <FieldLabel>Invite by email</FieldLabel>
-          <FieldDescription>
-            Admins can invite and manage members.
-          </FieldDescription>
-        </div>
+        <FieldLabel>Invite by email</FieldLabel>
         <div className="flex flex-col gap-s">
           <AnimatePresence initial={false}>
             {drafts.map((draft, index) => (

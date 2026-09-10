@@ -70,7 +70,7 @@ export function Stepper({ steps, current, onSelect, className }: StepperProps) {
                   : undefined
               }
               className={cn(
-                "flex items-center gap-m pb-xl text-left outline-none focus-visible:underline disabled:cursor-default",
+                "flex items-center gap-m pb-l text-left outline-none focus-visible:underline disabled:cursor-default",
                 last && "pb-0",
               )}
             >

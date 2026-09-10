@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { fade } from "@/styles/motion";
@@ -133,7 +133,6 @@ export function OrganizationForm({
             onChange?.({ name: event.target.value, logoUrl: preview });
           }}
         />
-        <FieldDescription>Shown on every profile you manage.</FieldDescription>
       </Field>
       <Field>
         <FieldLabel>Logo</FieldLabel>
