@@ -32,9 +32,12 @@ import { fade } from "@/styles/motion";
 /**
  * The detail pane's edges. Wide, it is the page's own corner: square where it
  * meets the page's right and bottom edges, the surface radius where the white
- * curves into it, and the page inset as its padding.
+ * curves into it, and the page inset as its padding. On a frame wider than the
+ * page column (`@max-page/frame` no longer holds) the column is centered and
+ * there is no edge to meet, so the pane stays a panel inside it.
  */
-const PANE = "lg:rounded-none lg:rounded-tl-surface lg:p-xxl";
+const PANE =
+  "lg:p-xxl lg:@max-page/frame:rounded-none lg:@max-page/frame:rounded-tl-surface";
 
 interface ProfilesSettingsProps {
   profiles: readonly ProfileSummary[];
@@ -185,8 +188,9 @@ export function ProfilesSettings({
       />
       {/* Wide: the pane bleeds out of its grid area to the page's right and
           bottom edges and up to the tab strip's rule (the layout's gap), so
-          the white curves into its grey right under the tabs. */}
-      <div className="relative min-h-0 lg:-mt-xl lg:-mr-xxl lg:-mb-xxl">
+          the white curves into its grey right under the tabs. Only while the
+          page fills the frame; a centered column has no edge to bleed to. */}
+      <div className="relative min-h-0 lg:@max-page/frame:-mt-xl lg:@max-page/frame:-mr-xxl lg:@max-page/frame:-mb-xxl">
         <AnimatePresence mode="wait" initial={false}>
           {selected === undefined ? (
             <motion.div

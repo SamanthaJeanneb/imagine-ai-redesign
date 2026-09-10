@@ -129,6 +129,17 @@
   --radius-4xl: var(--imagine-radius-surface);
 }
 
+/*
+ * The page column. How wide a workspace page's content runs before the frame's
+ * gutters grow instead, so on a large monitor the page stays a centered column
+ * rather than stretching to the edges. A layout constant like the breakpoints,
+ * not a runtime token: container queries (`@page/frame`) need a static value.
+ * Gives `max-w-page`, and `px-page` below builds its gutter from it.
+ */
+@theme static {
+  --container-page: 90rem;
+}
+
 :root {
   /* shadcn aliases still read by a few components as raw variables. */
   --background: var(--imagine-background);
@@ -196,6 +207,27 @@
     color-mix(in oklab, var(--chip-color) 94%, black) 0%,
     var(--chip-color) 40%
   );
+}
+
+/*
+ * px-page: the horizontal inset every workspace page shares. The page's own
+ * gutter on a narrow frame; on a frame wider than the page column it grows so
+ * a `--container-page` column stays centered. Padding, not a wrapper, so the
+ * page stays a direct child of its scrollport and its height rules hold. The
+ * percentage is the containing block's width, which is why this goes on the
+ * element that spans the frame.
+ */
+@utility px-page {
+  padding-inline: max(
+    var(--imagine-spacing-l),
+    calc((100% - var(--container-page)) / 2)
+  );
+  @variant md {
+    padding-inline: max(
+      var(--imagine-spacing-xxl),
+      calc((100% - var(--container-page)) / 2)
+    );
+  }
 }
 
 /* Type scale. Named type-* (not text-*) so class merging never confuses them

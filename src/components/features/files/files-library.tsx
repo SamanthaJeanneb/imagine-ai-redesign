@@ -1006,7 +1006,8 @@ export function FilesLibrary({
       <div className="relative flex min-h-0 min-w-0 flex-1">
         <section
           aria-label="Browser"
-          className="flex min-h-0 min-w-0 flex-1 flex-col gap-m px-l pt-l pb-l md:px-xxl md:pt-xl md:pb-xxl"
+          // The page's inset: on a wide frame the browser is a centered column.
+          className="flex min-h-0 min-w-0 flex-1 flex-col gap-m px-page pt-l pb-l md:pt-xl md:pb-xxl"
         >
           <header className="flex min-h-9 shrink-0 flex-wrap items-center gap-s">
             <Button

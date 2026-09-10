@@ -281,6 +281,13 @@ function WorkspaceHeader({
  * Padding lives on the scrollport, not the clip around it. `overflow-y-auto`
  * makes the inner box clip on x as well, and the landing composer sits flush
  * to that edge — its shadow and left radius disappear if the inset is outside.
+ *
+ * The side inset is `px-page`: the gutter on a laptop, and on a wide monitor
+ * the space left over once the page is a centered `max-w-page` column. The
+ * header above keeps its controls at the frame's edges, as chrome does. The
+ * scrollport is the `frame` container so a page can ask whether it is running
+ * narrower than the frame (`@page/frame`) and drop a bleed that no longer
+ * reaches an edge.
  */
 function WorkspacePage({
   children,
@@ -296,8 +303,8 @@ function WorkspacePage({
     <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
       <div
         className={cn(
-          "flex min-h-0 min-w-0 flex-1 flex-col overflow-x-clip overflow-y-auto",
-          !flush && "px-l pt-l pb-l md:px-xxl md:pt-xxl md:pb-xxl",
+          "@container/frame flex min-h-0 min-w-0 flex-1 flex-col overflow-x-clip overflow-y-auto",
+          !flush && "px-page pt-l pb-l md:pt-xxl md:pb-xxl",
         )}
       >
         {children}
@@ -543,7 +550,8 @@ function WorkspaceFrame({
         transition={fade.fast}
         data-slot="workspace-editor"
         className={cn(
-          "pointer-events-none absolute inset-x-0 top-0 z-20 px-xxl",
+          // The page's own inset, so the tab strip lines up with the column.
+          "pointer-events-none absolute inset-x-0 top-0 z-20 px-page",
           activeDocument !== undefined && "bg-imagine-surface",
           activeDocument !== undefined &&
             (chat.attached.length === 0 ? "bottom-28" : "bottom-48"),
