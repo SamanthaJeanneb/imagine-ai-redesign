@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
@@ -36,8 +37,15 @@ export default function SignInPage() {
           onEmail={enter}
         />
       </motion.main>
-      {/* Brand panel: pink until the artwork lands. */}
-      <div className="hidden rounded-l-surface bg-imagine-secondary/40 md:block" />
+      <div className="relative hidden overflow-hidden rounded-l-surface md:block">
+        <Image
+          src="/brand/sign-in-graphic.png"
+          alt=""
+          fill
+          sizes="42vw"
+          className="object-cover"
+        />
+      </div>
     </div>
   );
 }
