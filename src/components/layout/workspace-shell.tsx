@@ -313,6 +313,10 @@ function WorkspaceFrame({
     activeKey === "agent" && newThreadTitle !== undefined
       ? NEW_THREAD_ID
       : threadIdFor(pathname);
+  // The rail highlights one thing. With the new chat selected under Chats,
+  // Agent above it stays quiet; `activeKey` still drives the page itself.
+  const navActive =
+    activeThreadId === NEW_THREAD_ID ? undefined : activeKey;
   const chatColumn = chatColumnFor(pathname);
   const docked = chatColumn !== undefined;
   const [panel, setPanel] = useState<ChatPanelMode | null>(null);
@@ -590,7 +594,7 @@ function WorkspaceFrame({
         <Sidebar
           orgName={orgName}
           {...(orgLogoUrl === undefined ? {} : { orgLogoUrl })}
-          {...(activeKey === undefined ? {} : { active: activeKey })}
+          {...(navActive === undefined ? {} : { active: navActive })}
           {...(activeThreadId === undefined ? {} : { activeThreadId })}
           threads={visibleThreads}
           collapsed={collapsed}
