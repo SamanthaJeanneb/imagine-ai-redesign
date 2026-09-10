@@ -265,25 +265,17 @@ export function Sidebar({
           {orgLogoUrl ? (
             // Org logos are user uploads from arbitrary hosts; next/image needs a domain list.
             // eslint-disable-next-line @next/next/no-img-element
-            <motion.img
-              layout="position"
-              layoutDependency={collapsed}
+            <img
               src={orgLogoUrl}
               alt=""
-              transition={spring.soft}
               className="size-6 shrink-0 rounded-control object-cover shadow-control"
             />
           ) : (
-            <motion.span
-              layout="position"
-              layoutDependency={collapsed}
-              transition={spring.soft}
-              className="flex size-6 shrink-0 items-center justify-center rounded-control accent-gradient text-imagine-secondary-foreground"
-            >
+            <span className="flex size-6 shrink-0 items-center justify-center rounded-control accent-gradient text-imagine-secondary-foreground">
               <Icon name="imagine" size="s" active />
-            </motion.span>
+            </span>
           )}
-          <AnimatePresence initial={false}>
+          <AnimatePresence initial={false} mode="popLayout">
             {collapsed ? null : (
               <motion.span
                 key="org"
@@ -306,7 +298,7 @@ export function Sidebar({
           </AnimatePresence>
           {/* Only while expanded. Collapsed, the rail is icons alone and the
               page carries the control; see `SidebarExpandButton`. */}
-          <AnimatePresence initial={false}>
+          <AnimatePresence initial={false} mode="popLayout">
             {onCollapsedChange && !collapsed ? (
               <motion.span
                 key="collapse"
