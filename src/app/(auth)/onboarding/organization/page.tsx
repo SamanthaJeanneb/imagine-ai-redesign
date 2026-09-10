@@ -14,7 +14,7 @@ export default function OrganizationStepPage() {
     <>
       <StepHeading
         title="What's your organization called?"
-        description="This is the workspace your team and the agent will share. Its name and logo appear in the sidebar and on every profile you manage."
+        description="This is the workspace your team and the agent will share. You can change the name and logo later in settings."
         step={1}
         total={3}
       />

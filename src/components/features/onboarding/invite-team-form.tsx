@@ -55,9 +55,17 @@ interface RoleSelectProps {
   onChange: (role: MemberRole) => void;
   disabled?: boolean;
   label: string;
+  /** `default` beside an input, `sm` in a compact row. */
+  size?: "sm" | "default";
 }
 
-function RoleSelect({ value, onChange, disabled, label }: RoleSelectProps) {
+function RoleSelect({
+  value,
+  onChange,
+  disabled,
+  label,
+  size = "default",
+}: RoleSelectProps) {
   return (
     <Select
       value={value}
@@ -66,7 +74,7 @@ function RoleSelect({ value, onChange, disabled, label }: RoleSelectProps) {
         if (next === "admin" || next === "member") onChange(next);
       }}
     >
-      <SelectTrigger size="sm" aria-label={label} className="w-28">
+      <SelectTrigger size={size} aria-label={label} className="w-28">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -87,9 +95,13 @@ export function InviteLinkField({ url, className }: InviteLinkFieldProps) {
   const [copied, setCopied] = useState(false);
 
   return (
-    <InputGroup className={cn("bg-imagine-surface-raised", className)}>
+    // The group is sized for an input; the primitive's own 32px is for the
+    // search field. The button sits inset by the same 4px all round.
+    <InputGroup
+      className={cn("h-control-base bg-imagine-surface-raised", className)}
+    >
       <InputGroupInput readOnly value={url} aria-label="Invite link" />
-      <InputGroupAddon align="inline-end">
+      <InputGroupAddon align="inline-end" className="pr-1 has-[>button]:mr-0">
         <InputGroupButton
           size="xs"
           variant="soft"
@@ -152,6 +164,7 @@ export function TeamMemberRow({
       ) : (
         <>
           <RoleSelect
+            size="sm"
             value={member.role}
             label={`Role for ${label}`}
             onChange={(role) => onRoleChange?.(member.id, role)}
@@ -218,10 +231,10 @@ export function InviteTeamForm({
       }}
     >
       <Field>
-        <div className="flex items-baseline justify-between">
+        <div className="flex flex-col gap-xs">
           <FieldLabel>Invite by email</FieldLabel>
           <FieldDescription>
-            Admins can invite and manage members
+            Admins can invite and manage members.
           </FieldDescription>
         </div>
         <div className="flex flex-col gap-s">
@@ -266,7 +279,7 @@ export function InviteTeamForm({
                 {drafts.length > 1 ? (
                   <Button
                     type="button"
-                    size="icon-sm"
+                    size="icon"
                     variant="ghost"
                     aria-label="Remove"
                     onClick={() => {
@@ -288,7 +301,8 @@ export function InviteTeamForm({
             type="button"
             variant="link"
             size="sm"
-            className="px-0"
+            // Flush with the inputs above; the icon variant would indent it.
+            className="px-0 has-data-[icon=inline-start]:pl-0"
             onClick={() => {
               setDrafts((current) => [
                 ...current,

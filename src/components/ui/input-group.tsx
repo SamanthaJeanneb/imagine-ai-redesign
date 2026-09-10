@@ -67,23 +67,22 @@ function InputGroupAddon({
   );
 }
 
-const inputGroupButtonVariants = cva(
-  "flex items-center gap-2 text-sm shadow-none",
-  {
-    variants: {
-      size: {
-        xs: "h-6 gap-1 rounded-[calc(var(--radius)-3px)] px-1.5 [&>svg:not([class*='size-'])]:size-3.5",
-        sm: "",
-        "icon-xs":
-          "size-6 rounded-[calc(var(--radius)-3px)] p-0 has-[>svg]:p-0",
-        "icon-sm": "size-8 p-0 has-[>svg]:p-0",
-      },
-    },
-    defaultVariants: {
-      size: "xs",
+// Heights come from the Button's own control sizes: the class merger does not
+// know `h-control-*`, so a height set here would fight it and lose. These only
+// tighten radius, padding and gap to sit inside a field.
+const inputGroupButtonVariants = cva("flex items-center gap-2 text-sm", {
+  variants: {
+    size: {
+      xs: "gap-1 rounded-[calc(var(--radius)-3px)] px-1.5 [&>svg:not([class*='size-'])]:size-3.5",
+      sm: "",
+      "icon-xs": "rounded-[calc(var(--radius)-3px)] p-0 has-[>svg]:p-0",
+      "icon-sm": "p-0 has-[>svg]:p-0",
     },
   },
-);
+  defaultVariants: {
+    size: "xs",
+  },
+});
 
 function InputGroupButton({
   className,
@@ -96,7 +95,7 @@ function InputGroupButton({
   return (
     <Button
       type={type}
-      data-size={size}
+      size={size}
       variant={variant}
       className={cn(inputGroupButtonVariants({ size }), className)}
       {...props}
