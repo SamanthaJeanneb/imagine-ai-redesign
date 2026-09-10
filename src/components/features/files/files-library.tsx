@@ -1,8 +1,8 @@
 "use client";
 
 import { cn } from "cn";
-import { AnimatePresence, motion } from "motion/react";
-import { useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import type { AssetTileData } from "@/components/features/files/asset-tile";
@@ -69,7 +69,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { MOBILE_QUERY, useMediaQuery } from "@/lib/use-media-query";
 import { useResizable } from "@/lib/use-resizable";
 import type { OpenDocument } from "@/services/files";
-import { fade } from "@/styles/motion";
+import { fade, spring } from "@/styles/motion";
 
 interface FilesLibraryProps {
   /** Workspace name, the organization library's title. */
@@ -356,9 +356,9 @@ function NameDialog({
  * the tree and the way to add things; the browser on the right shows one
  * location as folders, documents, and images, with a breadcrumb that always
  * says where you are and lets you switch libraries or folders in place.
- * Documents open in an editor panel on the right, so you can keep browsing
- * while one is open; images open in a preview. Deleting is immediate, with
- * an undo on the toast.
+ * Documents open in an editor sheet that slides over the browser from the
+ * right, framed like a page of its own; the tree stays live to switch files.
+ * Images open in a preview. Deleting is immediate, with an undo on the toast.
  */
 export function FilesLibrary({
   title,
@@ -379,9 +379,6 @@ export function FilesLibrary({
       : { kind: "library", sectionId: first.id };
   });
   const [documentId, setDocumentId] = useState<string>();
-  // What the tree highlights: the document just opened, or the place being
-  // browsed. Browsing with the editor open moves the highlight back to it.
-  const [highlight, setHighlight] = useState<"document" | "place">("place");
   const [previewId, setPreviewId] = useState<string>();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
@@ -398,12 +395,14 @@ export function FilesLibrary({
     max: 420,
     edge: "end",
   });
+  // The editor sheet. Wide by default: it is a page, not a side panel.
   const editorResize = useResizable({
-    defaultWidth: 480,
-    min: 360,
-    max: 720,
+    defaultWidth: 880,
+    min: 560,
+    max: 1280,
     edge: "start",
   });
+  const reduceMotion = useReducedMotion();
   // Ids for things made here; only ever read inside event handlers.
   const counter = useRef(0);
   const nextId = () => {
@@ -548,9 +547,10 @@ export function FilesLibrary({
 
   /* --- Moving around -------------------------------------------------- */
 
+  /** The sheet covers the browser, so going somewhere closes it. */
   const goTo = (next: Place) => {
     setPlace(next);
-    setHighlight("place");
+    setDocumentId(undefined);
     setQuery("");
   };
 
@@ -560,17 +560,30 @@ export function FilesLibrary({
     setNavOpen(false);
   };
 
-  /** Documents open beside the browser, so the location stays put. */
+  /** Documents open over the browser, so the location underneath stays put. */
   const open = (id: string) => {
     if (!documentById.has(id)) return;
     setDocumentId(id);
-    setHighlight("document");
     setNavOpen(false);
   };
 
   const closeEditor = () => {
     setDocumentId(undefined);
   };
+
+  // Escape closes the sheet, unless a dialog above it already took the key.
+  useEffect(() => {
+    if (documentId === undefined) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !event.defaultPrevented) {
+        setDocumentId(undefined);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [documentId]);
 
   const send = (resource: DraggableResource) => {
     if (onSendToChat === undefined) {
@@ -790,11 +803,10 @@ export function FilesLibrary({
         );
 
   const treeSelectedId =
-    highlight === "document" && documentId !== undefined
-      ? documentId
-      : place.kind === "library"
-        ? (place.folderId ?? place.sectionId)
-        : undefined;
+    documentId ??
+    (place.kind === "library"
+      ? (place.folderId ?? place.sectionId)
+      : undefined);
 
   // Where the open document lives, for the editor's header.
   const openDocumentHome =
@@ -804,7 +816,8 @@ export function FilesLibrary({
       ? undefined
       : sectionById.get(openDocumentHome.sectionId);
   const openDocumentFolder =
-    openDocumentHome?.folderId === undefined || openDocumentSection === undefined
+    openDocumentHome?.folderId === undefined ||
+    openDocumentSection === undefined
       ? undefined
       : findFolder(openDocumentSection.nodes, openDocumentHome.folderId);
   const openDocumentPlace =
@@ -848,7 +861,10 @@ export function FilesLibrary({
   return (
     <div
       data-slot="files-library"
-      className={cn("@container relative flex min-h-0 min-w-0 flex-1", className)}
+      className={cn(
+        "@container relative flex min-h-0 min-w-0 flex-1",
+        className,
+      )}
     >
       {navOpen ? (
         <button
@@ -986,378 +1002,394 @@ export function FilesLibrary({
         </div>
       </aside>
 
-      {/* Browser */}
-      <section
-        aria-label="Browser"
-        className="flex min-h-0 min-w-0 flex-1 flex-col gap-m px-l pt-l pb-l md:px-xxl md:pt-xl md:pb-xxl"
-      >
-        <header className="flex min-h-9 shrink-0 flex-wrap items-center gap-s">
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            aria-label="Browse files"
-            aria-expanded={navOpen}
-            onClick={() => {
-              setNavOpen(true);
-            }}
-            className="md:hidden"
-          >
-            <Icon name="sidebar" />
-          </Button>
-          <Breadcrumb className="min-w-0 flex-1">
-            {tab === "skills" ? (
-              <BreadcrumbItem>
-                <BreadcrumbPage>Skills</BreadcrumbPage>
-              </BreadcrumbItem>
-            ) : (
-              <BreadcrumbItem>
-                {place.kind === "root" ? (
-                  <BreadcrumbPage>Files</BreadcrumbPage>
-                ) : (
-                  <BreadcrumbLink
-                    onClick={() => {
-                      goTo({ kind: "root" });
-                    }}
-                  >
-                    Files
-                  </BreadcrumbLink>
-                )}
-              </BreadcrumbItem>
-            )}
-            {tab === "files" && currentSection !== undefined ? (
-              <>
-                <BreadcrumbSeparator />
+      {/* Browser, with the editor sheet layered over it. */}
+      <div className="relative flex min-h-0 min-w-0 flex-1">
+        <section
+          aria-label="Browser"
+          className="flex min-h-0 min-w-0 flex-1 flex-col gap-m px-l pt-l pb-l md:px-xxl md:pt-xl md:pb-xxl"
+        >
+          <header className="flex min-h-9 shrink-0 flex-wrap items-center gap-s">
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              aria-label="Browse files"
+              aria-expanded={navOpen}
+              onClick={() => {
+                setNavOpen(true);
+              }}
+              className="md:hidden"
+            >
+              <Icon name="sidebar" />
+            </Button>
+            <Breadcrumb className="min-w-0 flex-1">
+              {tab === "skills" ? (
                 <BreadcrumbItem>
-                  {currentFolder === undefined ? (
-                    <BreadcrumbPage>{currentSection.title}</BreadcrumbPage>
+                  <BreadcrumbPage>Skills</BreadcrumbPage>
+                </BreadcrumbItem>
+              ) : (
+                <BreadcrumbItem>
+                  {place.kind === "root" ? (
+                    <BreadcrumbPage>Files</BreadcrumbPage>
                   ) : (
                     <BreadcrumbLink
                       onClick={() => {
-                        goTo({ kind: "library", sectionId: currentSection.id });
+                        goTo({ kind: "root" });
                       }}
                     >
-                      {currentSection.title}
+                      Files
                     </BreadcrumbLink>
                   )}
-                  {currentFolder === undefined ? (
-                    <BreadcrumbMenu
-                      label="Switch library"
-                      items={libraryMenu}
-                      selectedId={currentSection.id}
-                      onSelect={(id) => {
-                        goTo({ kind: "library", sectionId: id });
-                      }}
-                    />
-                  ) : null}
                 </BreadcrumbItem>
-              </>
-            ) : null}
-            {tab === "files" &&
-            currentSection !== undefined &&
-            currentFolder !== undefined ? (
-              <>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>{currentFolder.name}</BreadcrumbPage>
-                  {folderMenu.length > 1 ? (
-                    <BreadcrumbMenu
-                      label="Switch folder"
-                      items={folderMenu}
-                      selectedId={currentFolder.id}
-                      onSelect={(id) => {
-                        goTo({
-                          kind: "library",
-                          sectionId: currentSection.id,
-                          folderId: id,
-                        });
-                      }}
-                    />
-                  ) : null}
-                </BreadcrumbItem>
-              </>
-            ) : null}
-          </Breadcrumb>
-
-          <SearchBox
-            value={query}
-            onValueChange={setQuery}
-            results={results}
-            onSelect={openResult}
-            placeholder={`Search in ${tab === "skills" ? "skills" : (currentSection?.title ?? "all files")}`}
-            emptyLabel={`Nothing matches “${query.trim()}”`}
-            listLabel="Files"
-            className="w-full min-w-0 sm:w-64 sm:shrink-0"
-          />
-          {tab === "files" ? (
-            <ToggleGroup
-              size="sm"
-              value={view}
-              onValueChange={(next) => {
-                if (next === "grid" || next === "list") setView(next);
-              }}
-              aria-label="Layout"
-              className="shrink-0"
-            >
-              <ToggleGroupItem value="list" aria-label="List">
-                <Icon name="list" size="s" />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="grid" aria-label="Grid">
-                <Icon name="grip" size="s" />
-              </ToggleGroupItem>
-            </ToggleGroup>
-          ) : null}
-        </header>
-
-        {tab === "files" ? (
-          <div className="flex min-w-0 shrink-0 flex-wrap items-center justify-between gap-s">
-            <ChipGroup
-              value={filter}
-              onValueChange={(next) => {
-                setFilter(next as Filter);
-              }}
-              aria-label="Filter"
-            >
-              {FILTERS.map((entry) => (
-                <Chip key={entry.value} value={entry.value}>
-                  {entry.label}
-                </Chip>
-              ))}
-            </ChipGroup>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="shrink-0 text-imagine-foreground-muted data-open:text-imagine-foreground"
-                >
-                  {SORT_SHORT[sort]}
-                  <Icon name="chevron-down" size="s" data-icon="inline-end" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-44">
-                <DropdownMenuRadioGroup
-                  value={sort}
-                  onValueChange={(next) => {
-                    setSort(next as Sort);
-                  }}
-                >
-                  {SORTS.map((entry) => (
-                    <DropdownMenuRadioItem
-                      key={entry.value}
-                      value={entry.value}
-                    >
-                      {entry.label}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        ) : null}
-
-        <div className="relative min-h-0 flex-1">
-          <AnimatePresence initial={false} mode="wait">
-            <motion.div
-              key={bodyKey}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={fade.fast}
-              className="absolute inset-0 flex flex-col gap-xl overflow-y-auto pb-xxl"
-            >
-              {tab === "skills" ? (
-                <>
-                  <p className="type-small text-imagine-foreground-muted">
-                    Skills are instructions the agent follows. Switch one off to
-                    pause it, or open its file to change what it does.
-                  </p>
-                  <SkillsList
-                    skills={skills}
-                    onToggle={(id, enabled) => {
-                      setSkills((current) =>
-                        current.map((skill) =>
-                          skill.id === id ? { ...skill, enabled } : skill,
-                        ),
-                      );
-                    }}
-                    onOpenFile={open}
-                  />
-                </>
-              ) : shown.length === 0 && !(canCreate && filter === "all") ? (
-                <EmptyState
-                  icon={filter === "images" ? "image" : "folder"}
-                  title={
-                    filter === "all" ? "Nothing here" : `No ${filter} here`
-                  }
-                  body="Try another filter, or look in a different folder."
-                  {...(filter !== "all"
-                    ? {
-                        action: (
-                          <Button
-                            size="sm"
-                            variant="soft"
-                            onClick={() => {
-                              setFilter("all");
-                            }}
-                          >
-                            Show everything
-                          </Button>
-                        ),
-                      }
-                    : {})}
-                />
-              ) : (
-                <>
-                  {folders.length > 0 ? (
-                    <div className="flex flex-col gap-s">
-                      <GroupLabel>
-                        {place.kind === "root" ? "Libraries" : "Folders"}
-                      </GroupLabel>
-                      <Stagger kind="grid" className={gridClass}>
-                        {folders.map(renderCard)}
-                      </Stagger>
-                    </div>
-                  ) : null}
-
-                  {docs.length > 0 ? (
-                    <div className="flex flex-col gap-s">
-                      <GroupLabel>Documents</GroupLabel>
-                      <Stagger kind="grid" className={gridClass}>
-                        {docs.map(renderCard)}
-                      </Stagger>
-                    </div>
-                  ) : null}
-
-                  {media.length > 0 ? (
-                    <div className="flex flex-col gap-s">
-                      <GroupLabel>Images</GroupLabel>
-                      <Stagger kind="grid" className={gridClass}>
-                        {media.map(renderCard)}
-                      </Stagger>
-                    </div>
-                  ) : null}
-
-                  {docs.length === 0 &&
-                  media.length === 0 &&
-                  folders.length === 0 &&
-                  canCreate ? (
-                    <p className="px-xs type-small text-imagine-foreground-muted">
-                      Nothing in {locationTitle} yet. Use New to add a document
-                      or folder.
-                    </p>
-                  ) : null}
-                </>
               )}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </section>
+              {tab === "files" && currentSection !== undefined ? (
+                <>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    {currentFolder === undefined ? (
+                      <BreadcrumbPage>{currentSection.title}</BreadcrumbPage>
+                    ) : (
+                      <BreadcrumbLink
+                        onClick={() => {
+                          goTo({
+                            kind: "library",
+                            sectionId: currentSection.id,
+                          });
+                        }}
+                      >
+                        {currentSection.title}
+                      </BreadcrumbLink>
+                    )}
+                    {currentFolder === undefined ? (
+                      <BreadcrumbMenu
+                        label="Switch library"
+                        items={libraryMenu}
+                        selectedId={currentSection.id}
+                        onSelect={(id) => {
+                          goTo({ kind: "library", sectionId: id });
+                        }}
+                      />
+                    ) : null}
+                  </BreadcrumbItem>
+                </>
+              ) : null}
+              {tab === "files" &&
+              currentSection !== undefined &&
+              currentFolder !== undefined ? (
+                <>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>{currentFolder.name}</BreadcrumbPage>
+                    {folderMenu.length > 1 ? (
+                      <BreadcrumbMenu
+                        label="Switch folder"
+                        items={folderMenu}
+                        selectedId={currentFolder.id}
+                        onSelect={(id) => {
+                          goTo({
+                            kind: "library",
+                            sectionId: currentSection.id,
+                            folderId: id,
+                          });
+                        }}
+                      />
+                    ) : null}
+                  </BreadcrumbItem>
+                </>
+              ) : null}
+            </Breadcrumb>
 
-      {/* Editor: a panel beside the browser. Opening compresses the browser
-          rather than covering it, so browsing continues with a document open. */}
-      <AnimatePresence initial={false}>
-        {openDocument === undefined ? null : (
-          <motion.aside
-            key="editor"
-            aria-label="Editor"
-            data-slot="files-editor"
-            initial={{ width: 0, opacity: 0 }}
-            animate={{
-              width: isMobile ? "100%" : editorResize.width,
-              opacity: 1,
-            }}
-            exit={{ width: 0, opacity: 0 }}
-            transition={editorResize.transition}
-            className={cn(
-              "relative flex min-h-0 shrink-0 justify-end overflow-hidden border-l border-imagine-border",
-              "max-md:absolute max-md:inset-0 max-md:z-20",
-            )}
-          >
-            <ResizeHandle
-              edge="start"
-              binding={editorResize.handle}
-              dragging={editorResize.dragging}
-              label="Resize editor"
-              className="max-md:hidden"
+            <SearchBox
+              value={query}
+              onValueChange={setQuery}
+              results={results}
+              onSelect={openResult}
+              placeholder={`Search in ${tab === "skills" ? "skills" : (currentSection?.title ?? "all files")}`}
+              emptyLabel={`Nothing matches “${query.trim()}”`}
+              listLabel="Files"
+              className="w-full min-w-0 sm:w-64 sm:shrink-0"
             />
-            <div
-              style={isMobile ? undefined : { width: editorResize.width }}
-              className="flex min-h-0 w-full shrink-0 flex-col bg-imagine-surface"
-            >
-              <header className="flex h-12 shrink-0 items-center gap-s border-b border-imagine-border pr-s pl-l">
-                <Icon
-                  name="file-lines"
-                  size="s"
-                  className="shrink-0 text-imagine-foreground-muted"
-                />
-                <span className="min-w-0 flex-1 truncate type-small text-imagine-foreground-muted">
-                  {openDocumentPlace}
-                </span>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="shrink-0"
-                  onClick={() => {
-                    send({
-                      kind: "file",
-                      file: {
-                        id: openDocument.id,
-                        title: openDocument.meta.title,
-                      },
-                    });
-                  }}
-                >
-                  <Icon name="imagine" size="s" data-icon="inline-start" />
-                  Send to chat
-                </Button>
-                <Button
-                  size="icon-sm"
-                  variant="ghost"
-                  aria-label="Close editor"
-                  onClick={closeEditor}
-                  className="shrink-0 text-imagine-foreground-muted hover:text-imagine-foreground"
-                >
-                  <Icon name="xmark" size="s" />
-                </Button>
-              </header>
-              <div className="min-h-0 flex-1 overflow-y-auto">
-                <AnimatePresence initial={false} mode="wait">
-                  <motion.div
-                    key={openDocument.id}
-                    initial={{ opacity: 0, x: 8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -8 }}
-                    transition={fade.fast}
-                    className="p-xl"
+            {tab === "files" ? (
+              <ToggleGroup
+                size="sm"
+                value={view}
+                onValueChange={(next) => {
+                  if (next === "grid" || next === "list") setView(next);
+                }}
+                aria-label="Layout"
+                className="shrink-0"
+              >
+                <ToggleGroupItem value="list" aria-label="List">
+                  <Icon name="list" size="s" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="grid" aria-label="Grid">
+                  <Icon name="grip" size="s" />
+                </ToggleGroupItem>
+              </ToggleGroup>
+            ) : null}
+          </header>
+
+          {tab === "files" ? (
+            <div className="flex min-w-0 shrink-0 flex-wrap items-center justify-between gap-s">
+              <ChipGroup
+                value={filter}
+                onValueChange={(next) => {
+                  setFilter(next as Filter);
+                }}
+                aria-label="Filter"
+              >
+                {FILTERS.map((entry) => (
+                  <Chip key={entry.value} value={entry.value}>
+                    {entry.label}
+                  </Chip>
+                ))}
+              </ChipGroup>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="shrink-0 text-imagine-foreground-muted data-open:text-imagine-foreground"
                   >
-                    <MarkdownEditor
-                      meta={openDocument.meta}
-                      value={values[openDocument.id] ?? openDocument.value}
-                      savedValue={
-                        savedValues[openDocument.id] ?? openDocument.value
-                      }
-                      onValueChange={(value) => {
-                        setValues((current) => ({
-                          ...current,
-                          [openDocument.id]: value,
-                        }));
-                      }}
-                      onSave={() => {
-                        setSavedValues((current) => ({
-                          ...current,
-                          [openDocument.id]:
-                            values[openDocument.id] ?? openDocument.value,
-                        }));
-                      }}
-                      className="max-w-none"
-                    />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
+                    {SORT_SHORT[sort]}
+                    <Icon name="chevron-down" size="s" data-icon="inline-end" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-44">
+                  <DropdownMenuRadioGroup
+                    value={sort}
+                    onValueChange={(next) => {
+                      setSort(next as Sort);
+                    }}
+                  >
+                    {SORTS.map((entry) => (
+                      <DropdownMenuRadioItem
+                        key={entry.value}
+                        value={entry.value}
+                      >
+                        {entry.label}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
+          ) : null}
+
+          <div className="relative min-h-0 flex-1">
+            <AnimatePresence initial={false} mode="wait">
+              <motion.div
+                key={bodyKey}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={fade.fast}
+                className="absolute inset-0 flex flex-col gap-xl overflow-y-auto pb-xxl"
+              >
+                {tab === "skills" ? (
+                  <>
+                    <p className="type-small text-imagine-foreground-muted">
+                      Skills are instructions the agent follows. Switch one off
+                      to pause it, or open its file to change what it does.
+                    </p>
+                    <SkillsList
+                      skills={skills}
+                      onToggle={(id, enabled) => {
+                        setSkills((current) =>
+                          current.map((skill) =>
+                            skill.id === id ? { ...skill, enabled } : skill,
+                          ),
+                        );
+                      }}
+                      onOpenFile={open}
+                    />
+                  </>
+                ) : shown.length === 0 && !(canCreate && filter === "all") ? (
+                  <EmptyState
+                    icon={filter === "images" ? "image" : "folder"}
+                    title={
+                      filter === "all" ? "Nothing here" : `No ${filter} here`
+                    }
+                    body="Try another filter, or look in a different folder."
+                    {...(filter !== "all"
+                      ? {
+                          action: (
+                            <Button
+                              size="sm"
+                              variant="soft"
+                              onClick={() => {
+                                setFilter("all");
+                              }}
+                            >
+                              Show everything
+                            </Button>
+                          ),
+                        }
+                      : {})}
+                  />
+                ) : (
+                  <>
+                    {folders.length > 0 ? (
+                      <div className="flex flex-col gap-s">
+                        <GroupLabel>
+                          {place.kind === "root" ? "Libraries" : "Folders"}
+                        </GroupLabel>
+                        <Stagger kind="grid" className={gridClass}>
+                          {folders.map(renderCard)}
+                        </Stagger>
+                      </div>
+                    ) : null}
+
+                    {docs.length > 0 ? (
+                      <div className="flex flex-col gap-s">
+                        <GroupLabel>Documents</GroupLabel>
+                        <Stagger kind="grid" className={gridClass}>
+                          {docs.map(renderCard)}
+                        </Stagger>
+                      </div>
+                    ) : null}
+
+                    {media.length > 0 ? (
+                      <div className="flex flex-col gap-s">
+                        <GroupLabel>Images</GroupLabel>
+                        <Stagger kind="grid" className={gridClass}>
+                          {media.map(renderCard)}
+                        </Stagger>
+                      </div>
+                    ) : null}
+
+                    {docs.length === 0 &&
+                    media.length === 0 &&
+                    folders.length === 0 &&
+                    canCreate ? (
+                      <p className="px-xs type-small text-imagine-foreground-muted">
+                        Nothing in {locationTitle} yet. Use New to add a
+                        document or folder.
+                      </p>
+                    ) : null}
+                  </>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </section>
+
+        {/* Editor: a sheet that slides in over the browser from the right,
+          framed the way a page is (the surface with rounded left corners on
+          a dimmed backdrop). The tree stays reachable to switch documents;
+          the scrim, Escape, and the close button all put the browser back. */}
+        <AnimatePresence initial={false}>
+          {openDocument === undefined ? null : (
+            <motion.div
+              key="editor"
+              data-slot="files-editor-scrim"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={fade.base}
+              className="absolute inset-0 z-20 flex justify-end bg-imagine-foreground/10"
+              onClick={closeEditor}
+            >
+              <motion.div
+                role="dialog"
+                aria-label={openDocument.meta.title}
+                data-slot="files-editor"
+                initial={reduceMotion ? { opacity: 0 } : { x: "100%" }}
+                animate={reduceMotion ? { opacity: 1 } : { x: 0 }}
+                exit={reduceMotion ? { opacity: 0 } : { x: "100%" }}
+                transition={reduceMotion ? fade.base : spring.soft}
+                style={isMobile ? undefined : { width: editorResize.width }}
+                className={cn(
+                  "relative flex h-full max-w-full flex-col overflow-hidden bg-imagine-surface shadow-raised",
+                  "md:rounded-l-surface",
+                  "max-md:w-full",
+                )}
+                onClick={(event) => {
+                  event.stopPropagation();
+                }}
+              >
+                <ResizeHandle
+                  edge="start"
+                  binding={editorResize.handle}
+                  dragging={editorResize.dragging}
+                  label="Resize editor"
+                  className="max-md:hidden"
+                />
+                {/* Where the document lives, and the way out. Stays put while
+                  the page below scrolls. */}
+                <div className="flex shrink-0 items-center gap-s px-l pt-l md:px-xxl md:pt-xl">
+                  <Icon
+                    name="file-lines"
+                    size="s"
+                    className="shrink-0 text-imagine-foreground-muted"
+                  />
+                  <span className="min-w-0 flex-1 truncate type-small text-imagine-foreground-muted">
+                    {openDocumentPlace}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="shrink-0"
+                    onClick={() => {
+                      send({
+                        kind: "file",
+                        file: {
+                          id: openDocument.id,
+                          title: openDocument.meta.title,
+                        },
+                      });
+                    }}
+                  >
+                    <Icon name="imagine" size="s" data-icon="inline-start" />
+                    Send to chat
+                  </Button>
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    aria-label="Close editor"
+                    onClick={closeEditor}
+                    className="-mr-xs shrink-0 text-imagine-foreground-muted hover:text-imagine-foreground"
+                  >
+                    <Icon name="xmark" size="s" />
+                  </Button>
+                </div>
+                <div className="min-h-0 flex-1 overflow-y-auto px-l pt-l pb-l md:px-xxl md:pt-xl md:pb-xxl">
+                  <AnimatePresence initial={false} mode="wait">
+                    <motion.div
+                      key={openDocument.id}
+                      initial={{ opacity: 0, x: 8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -8 }}
+                      transition={fade.fast}
+                    >
+                      <MarkdownEditor
+                        meta={openDocument.meta}
+                        value={values[openDocument.id] ?? openDocument.value}
+                        savedValue={
+                          savedValues[openDocument.id] ?? openDocument.value
+                        }
+                        onValueChange={(value) => {
+                          setValues((current) => ({
+                            ...current,
+                            [openDocument.id]: value,
+                          }));
+                        }}
+                        onSave={() => {
+                          setSavedValues((current) => ({
+                            ...current,
+                            [openDocument.id]:
+                              values[openDocument.id] ?? openDocument.value,
+                          }));
+                        }}
+                        className="max-w-3xl"
+                      />
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Naming */}
       {dialog === null ? null : (
