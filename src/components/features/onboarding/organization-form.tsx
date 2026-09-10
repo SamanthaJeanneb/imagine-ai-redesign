@@ -90,22 +90,30 @@ export function LogoUpload({ value, onChange, className }: LogoUploadProps) {
 
 interface OrganizationFormProps {
   onContinue: (values: { name: string; logo: File | null }) => void;
+  /** What was typed on an earlier visit, so coming back does not clear it. */
+  defaultName?: string;
+  defaultLogoUrl?: string;
+  /** Every keystroke and logo change, for a live preview beside the form. */
+  onChange?: (values: { name: string; logoUrl: string | undefined }) => void;
   className?: string;
 }
 
 /** Onboarding step: organization name and logo. */
 export function OrganizationForm({
   onContinue,
+  defaultName = "",
+  defaultLogoUrl,
+  onChange,
   className,
 }: OrganizationFormProps) {
-  const [name, setName] = useState("");
+  const [name, setName] = useState(defaultName);
   const [logo, setLogo] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | undefined>();
+  const [preview, setPreview] = useState<string | undefined>(defaultLogoUrl);
 
   return (
     <form
       data-slot="organization-form"
-      className={cn("flex w-full max-w-md flex-col gap-xl", className)}
+      className={cn("flex w-full max-w-lg flex-col gap-xl", className)}
       onSubmit={(event) => {
         event.preventDefault();
         if (name.trim()) onContinue({ name: name.trim(), logo });
@@ -118,8 +126,11 @@ export function OrganizationForm({
           value={name}
           autoComplete="organization"
           placeholder="Acme Inc."
+          autoFocus
+          className="h-control-lg px-3 md:text-base"
           onChange={(event) => {
             setName(event.target.value);
+            onChange?.({ name: event.target.value, logoUrl: preview });
           }}
         />
         <FieldDescription>Shown on every profile you manage.</FieldDescription>
@@ -130,8 +141,13 @@ export function OrganizationForm({
           value={preview}
           onChange={(file) => {
             setLogo(file);
-            if (preview) URL.revokeObjectURL(preview);
-            setPreview(file ? URL.createObjectURL(file) : undefined);
+            // A URL that came in as a default is not ours to revoke.
+            if (preview !== undefined && preview !== defaultLogoUrl) {
+              URL.revokeObjectURL(preview);
+            }
+            const next = file ? URL.createObjectURL(file) : undefined;
+            setPreview(next);
+            onChange?.({ name, logoUrl: next });
           }}
         />
       </Field>

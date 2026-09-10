@@ -37,7 +37,7 @@ export function ConnectLinkedIn({
   return (
     <div
       data-slot="connect-linkedin"
-      className={cn("flex w-full max-w-md flex-col gap-xl", className)}
+      className={cn("flex w-full max-w-lg flex-col gap-xl", className)}
     >
       <motion.div
         initial={{ opacity: 0, y: 6 }}

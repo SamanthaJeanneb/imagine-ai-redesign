@@ -95,7 +95,9 @@ export function Stepper({ steps, current, onSelect, className }: StepperProps) {
                     className="absolute inset-0 rounded-full bg-imagine-secondary ring-4 ring-imagine-secondary-soft"
                   />
                 ) : null}
-                <span className="relative">
+                {/* A flex box, not an inline span: inline would sit the icon
+                    on the text baseline and lift it off the disc's center. */}
+                <span className="relative flex items-center justify-center">
                   {state === "done" ? (
                     <Icon name="check" size="s" active />
                   ) : (

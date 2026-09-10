@@ -5,7 +5,12 @@ import { getInviteUrl, getOwner } from "@/services/onboarding";
 export default function TeamStepPage() {
   return (
     <>
-      <StepHeading title="Invite your team" step={2} total={3} />
+      <StepHeading
+        title="Who's on your team?"
+        description="Add the people who write, review, or approve posts. You can always invite more from settings."
+        step={2}
+        total={3}
+      />
       <TeamStep inviteUrl={getInviteUrl()} owner={getOwner()} />
     </>
   );

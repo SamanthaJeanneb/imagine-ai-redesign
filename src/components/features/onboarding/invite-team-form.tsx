@@ -211,7 +211,7 @@ export function InviteTeamForm({
   return (
     <form
       data-slot="invite-team-form"
-      className={cn("flex w-full max-w-md flex-col gap-xl", className)}
+      className={cn("flex w-full max-w-lg flex-col gap-xl", className)}
       onSubmit={(event) => {
         event.preventDefault();
         onContinue();
