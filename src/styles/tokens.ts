@@ -52,6 +52,8 @@ export type ColorToken =
  * Categorical accents for post labels on the calendar. Numbered, not named for
  * a hue, because a label picks one by position in the organization's list.
  * Mid tones: light enough to tint a chip, deep enough to carry white text.
+ * The first is the brand rose so the calendar still belongs to Imagine; the
+ * rest are neighbours on the same warm palette (sage, dusty blue, ochre, plum).
  */
 export const TAG_TONES = [1, 2, 3, 4, 5] as const;
 
@@ -75,11 +77,11 @@ export const colors = {
     destructive: "#dc2626",
     warning: "#d97706",
     success: "#059669",
-    "tag-1": "#7b5cd6",
-    "tag-2": "#2f9e63",
-    "tag-3": "#3b82c4",
-    "tag-4": "#c07a2c",
-    "tag-5": "#1f9aa8",
+    "tag-1": "#d4707c",
+    "tag-2": "#4d8f6a",
+    "tag-3": "#4e7fa8",
+    "tag-4": "#c08a42",
+    "tag-5": "#8a6ba8",
   },
   dark: {
     // Sidebar is the warmer, lighter charcoal; the page sits darker so the
@@ -100,11 +102,11 @@ export const colors = {
     destructive: "#f87171",
     warning: "#fbbf24",
     success: "#34d399",
-    "tag-1": "#9b84e8",
-    "tag-2": "#4cc082",
-    "tag-3": "#5ca1e0",
-    "tag-4": "#d99a4e",
-    "tag-5": "#3fb8c6",
+    "tag-1": "#e0838d",
+    "tag-2": "#5eab7e",
+    "tag-3": "#6a96c0",
+    "tag-4": "#d9a05a",
+    "tag-5": "#a388c4",
   },
 } as const satisfies Record<Theme, Record<ColorToken, string>>;
 

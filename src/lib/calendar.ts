@@ -1,4 +1,5 @@
 import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
+import type { EventChipData } from "@/components/features/calendar/event-chip";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
 import { formatDayMonth, formatDayShort, formatMonthYear } from "@/lib/format";
 
@@ -15,6 +16,9 @@ export type CalendarView = "day" | "week" | "month";
 
 /** Chips keyed by date. A plain object, so it crosses to the client as props. */
 export type PostsByDay = Readonly<Record<string, readonly PostChipData[]>>;
+
+/** Connected-calendar events, keyed the same way. */
+export type EventsByDay = Readonly<Record<string, readonly EventChipData[]>>;
 
 export interface CalendarRange {
   /** "Tue, 8 Sep", "8 to 14 Sep", or "September 2026". */
@@ -49,10 +53,23 @@ function matches(chip: PostChipData, query: string): boolean {
   );
 }
 
+function matchesEvent(event: EventChipData, query: string): boolean {
+  return (
+    event.title.toLowerCase().includes(query) ||
+    event.calendarName.toLowerCase().includes(query) ||
+    (event.location?.toLowerCase().includes(query) ?? false)
+  );
+}
+
 export interface PostHit {
   /** The day the post sits on, as a date key. */
   date: string;
   post: PostChipData;
+}
+
+export interface EventHit {
+  date: string;
+  event: EventChipData;
 }
 
 /** Every post matching the query, whatever the range on screen, by date. */
@@ -68,11 +85,25 @@ export function searchPosts(posts: PostsByDay, query: string): PostHit[] {
     );
 }
 
+/** Every event matching the query, by date. */
+export function searchEvents(events: EventsByDay, query: string): EventHit[] {
+  const needle = query.trim().toLowerCase();
+  if (needle === "") return [];
+  return Object.keys(events)
+    .toSorted()
+    .flatMap((date) =>
+      (events[date] ?? []).flatMap((event) =>
+        matchesEvent(event, needle) ? [{ date, event }] : [],
+      ),
+    );
+}
+
 interface BuildOptions {
   /** Month index the cells belong to, so the ones either side read as outside. */
   month?: number;
   /** Chips that do not match are left out of their day. */
   query?: string;
+  events?: EventsByDay;
 }
 
 /** `count` cells from `start`, each carrying the chips that survive the query. */
@@ -81,7 +112,7 @@ export function buildDays(
   count: number,
   posts: PostsByDay,
   today: string,
-  { month, query = "" }: BuildOptions = {},
+  { month, query = "", events = {} }: BuildOptions = {},
 ): readonly CalendarDay[] {
   const needle = query.trim().toLowerCase();
   const days: CalendarDay[] = [];
@@ -90,6 +121,7 @@ export function buildDays(
     const key = addDays(start, cell);
     const date = new Date(parse(key));
     const chips = posts[key] ?? [];
+    const dayEvents = events[key] ?? [];
 
     days.push({
       date: key,
@@ -100,6 +132,10 @@ export function buildDays(
         : { isOutside: date.getUTCMonth() !== month }),
       posts:
         needle === "" ? chips : chips.filter((chip) => matches(chip, needle)),
+      events:
+        needle === ""
+          ? dayEvents
+          : dayEvents.filter((event) => matchesEvent(event, needle)),
     });
   }
 
@@ -122,11 +158,12 @@ export function buildCalendarRange(
   posts: PostsByDay,
   today: string,
   query = "",
+  events: EventsByDay = {},
 ): CalendarRange {
   if (view === "day") {
     return {
       rangeLabel: formatDayShort(anchor),
-      days: buildDays(anchor, 1, posts, today, { query }),
+      days: buildDays(anchor, 1, posts, today, { query, events }),
     };
   }
 
@@ -134,7 +171,7 @@ export function buildCalendarRange(
     const start = weekStart(anchor);
     return {
       rangeLabel: weekLabel(start, addDays(start, 6)),
-      days: buildDays(start, 7, posts, today, { query }),
+      days: buildDays(start, 7, posts, today, { query, events }),
     };
   }
 
@@ -154,7 +191,7 @@ export function buildCalendarRange(
       Math.ceil((mondayOffset + daysInMonth) / 7) * 7,
       posts,
       today,
-      { month, query },
+      { month, query, events },
     ),
   };
 }
@@ -175,6 +212,8 @@ export function shiftAnchor(
 /** How many chips the range holds, for the search count. */
 export function countPosts(days: readonly CalendarDay[]): number {
   let total = 0;
-  for (const day of days) total += day.posts.length;
+  for (const day of days) {
+    total += day.posts.length + (day.events?.length ?? 0);
+  }
   return total;
 }

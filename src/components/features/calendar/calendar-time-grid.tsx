@@ -5,6 +5,10 @@ import { motion, useReducedMotion } from "motion/react";
 
 import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
 import {
+  EventChip,
+  type EventChipData,
+} from "@/components/features/calendar/event-chip";
+import {
   PostChip,
   type PostChipData,
 } from "@/components/features/calendar/post-chip";
@@ -16,6 +20,7 @@ interface CalendarTimeGridProps {
   days: readonly CalendarDay[];
   selectedPostId?: string;
   onOpenPost?: (post: PostChipData) => void;
+  onOpenEvent?: (event: EventChipData) => void;
   className?: string;
 }
 
@@ -41,6 +46,13 @@ function hoursFor(days: readonly CalendarDay[]): readonly number[] {
       if (hour < first) first = hour;
       if (hour > last) last = hour;
     }
+    for (const event of day.events ?? []) {
+      if (event.allDay) continue;
+      const hour = toHour(event.time);
+      if (hour === null) continue;
+      if (hour < first) first = hour;
+      if (hour > last) last = hour;
+    }
   }
 
   const hours: number[] = [];
@@ -57,11 +69,15 @@ export function CalendarTimeGrid({
   days,
   selectedPostId,
   onOpenPost,
+  onOpenEvent,
   className,
 }: CalendarTimeGridProps) {
   const reduceMotion = useReducedMotion();
   const hours = hoursFor(days);
   const single = days.length === 1;
+  const hasAllDay = days.some((day) =>
+    (day.events ?? []).some((event) => event.allDay),
+  );
 
   return (
     <motion.div
@@ -106,6 +122,41 @@ export function CalendarTimeGrid({
         </span>
       ))}
 
+      {hasAllDay ? (
+        <div className="col-span-full grid grid-cols-subgrid">
+          <span className="bg-imagine-surface-raised pt-xs pr-xs text-right type-micro text-imagine-foreground-muted">
+            All day
+          </span>
+          {days.map((day, dayIndex) => (
+            <div
+              key={day.date}
+              role="gridcell"
+              className="@container/chip flex min-h-10 flex-col gap-xs bg-imagine-surface p-xs"
+            >
+              {(day.events ?? [])
+                .filter((event) => event.allDay)
+                .map((event) => (
+                  <motion.div
+                    key={event.id}
+                    initial={reduceMotion ? false : { opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      ...fade.slow,
+                      delay: dayIndex * stagger.calendar,
+                    }}
+                  >
+                    <EventChip
+                      event={event}
+                      dense={!single}
+                      onOpen={onOpenEvent}
+                    />
+                  </motion.div>
+                ))}
+            </div>
+          ))}
+        </div>
+      ) : null}
+
       {hours.map((hour) => (
         <div key={hour} className="col-span-full grid grid-cols-subgrid">
           <span className="bg-imagine-surface-raised pt-xs pr-xs text-right type-micro text-imagine-foreground-muted tabular-nums">
@@ -117,6 +168,25 @@ export function CalendarTimeGrid({
               role="gridcell"
               className="@container/chip flex min-h-12 flex-col gap-xs bg-imagine-surface p-xs"
             >
+              {(day.events ?? [])
+                .filter((event) => !event.allDay && toHour(event.time) === hour)
+                .map((event) => (
+                  <motion.div
+                    key={event.id}
+                    initial={reduceMotion ? false : { opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      ...fade.slow,
+                      delay: dayIndex * stagger.calendar,
+                    }}
+                  >
+                    <EventChip
+                      event={event}
+                      dense={!single}
+                      onOpen={onOpenEvent}
+                    />
+                  </motion.div>
+                ))}
               {day.posts
                 .filter((post) => toHour(post.time) === hour)
                 .map((post) => (

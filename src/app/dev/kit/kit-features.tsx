@@ -50,6 +50,10 @@ import { CalendarPage } from "@/components/features/calendar/calendar-page";
 import { CalendarTimeGrid } from "@/components/features/calendar/calendar-time-grid";
 import { CalendarToolbar } from "@/components/features/calendar/calendar-toolbar";
 import {
+  EventChip,
+  type EventChipData,
+} from "@/components/features/calendar/event-chip";
+import {
   PostChip,
   type PostChipData,
 } from "@/components/features/calendar/post-chip";
@@ -424,6 +428,12 @@ const POST_HIRING: PostChipData = {
     author: AUTHOR_RAVI,
     body: "We are hiring a senior product designer.\n\nSmall team, real ownership, and a product people use every day. Remote across Europe.\n\nDM me or apply below.",
     media: ASSETS.slice(2, 3),
+    stats: {
+      reactions: 412,
+      comments: 47,
+      reposts: 22,
+      impressions: 8920,
+    },
   },
 };
 const POST_NORTHWIND: PostChipData = {
@@ -440,6 +450,19 @@ const POST_NORTHWIND: PostChipData = {
     media: ASSETS.slice(3, 4),
   },
 };
+const EVENT_REVIEW: EventChipData = {
+  id: "e1",
+  title: "Customer call · Northwind",
+  time: "11:00",
+  endTime: "12:00",
+  allDay: false,
+  location: "Zoom",
+  notes: "Quarterly review. She asked for the quiet-accounts view last time.",
+  calendarName: "Acme",
+  source: "google",
+  whenLabel: "Tue, 8 Sep · 11:00–12:00",
+};
+
 const POST_Q3: PostChipData = {
   id: "p5",
   title: "Three lessons from Q3",
@@ -466,6 +489,7 @@ function buildDays(weeks: number): CalendarDay[] {
       dayNumber,
       isToday: dayNumber === 3,
       posts,
+      events: dayNumber === 8 ? [EVENT_REVIEW] : [],
     });
   }
   return days;
@@ -1892,6 +1916,14 @@ export function PostChipDemo() {
       <Demo label="dense (preview)" className="w-44">
         <PostChip post={POST_LAUNCH} dense />
       </Demo>
+      <Demo label="event" className="w-44">
+        <EventChip
+          event={EVENT_REVIEW}
+          onOpen={() => {
+            toast(EVENT_REVIEW.title);
+          }}
+        />
+      </Demo>
     </div>
   );
 }
@@ -2130,6 +2162,14 @@ export function PostDraftDemo() {
               </Button>
             </div>
           }
+        />
+      </Demo>
+      <Demo label="Published, with analytics">
+        <LinkedInPostDraft
+          author={AUTHOR_RAVI}
+          body={POST_HIRING.preview?.body ?? ""}
+          media={ASSETS.slice(2, 3)}
+          stats={POST_HIRING.preview?.stats}
         />
       </Demo>
       <Demo label={editing ? "Editing" : "Text only"}>

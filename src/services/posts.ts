@@ -152,10 +152,21 @@ export function toPostContent(
   assets: ReadonlyMap<string, Asset>,
 ): LinkedInPostContent {
   const media = toPostMedia(post, assets);
+  const stats =
+    post.analytics === null
+      ? undefined
+      : {
+          reactions: post.analytics.reactions,
+          comments: post.analytics.comments,
+          reposts: post.analytics.reposts,
+          impressions: post.analytics.impressions,
+        };
+
   return {
     author: toAuthor(client),
     body: post.content,
     ...(media.length > 0 ? { media } : {}),
+    ...(stats === undefined ? {} : { stats }),
   };
 }
 

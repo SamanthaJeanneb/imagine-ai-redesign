@@ -14,6 +14,7 @@ import { PreviewSurface } from "@/components/features/agent/preview-surface";
 import { ResourceContext } from "@/components/features/agent/resource-context";
 import { ChartCard } from "@/components/features/analytics/chart-card";
 import { CalendarGrid } from "@/components/features/calendar/calendar-grid";
+import type { EventChipData } from "@/components/features/calendar/event-chip";
 
 /**
  * Shared between each preview and the block on its page, so expanding morphs
@@ -163,6 +164,13 @@ export function ChatDock({
                 : {})}
               onOpenPost={(post) => {
                 chat.toggleAttached({ kind: "post", post });
+              }}
+              onOpenEvent={(event: EventChipData) => {
+                const where =
+                  event.location === undefined ? "" : ` at ${event.location}`;
+                chat.setDraft(
+                  `Write a LinkedIn post about ${event.title}${where} (${event.whenLabel}).`,
+                );
               }}
               {...(attachedPosts.length === 0
                 ? {}

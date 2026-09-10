@@ -19,6 +19,7 @@ import {
   type CalendarDay,
   CalendarGrid,
 } from "@/components/features/calendar/calendar-grid";
+import type { EventChipData } from "@/components/features/calendar/event-chip";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
 import {
   UpNextList,
@@ -75,12 +76,14 @@ export function LandingBelow({
   days,
   onAction,
   onOpenPost,
+  onOpenEvent,
   selectedPostId,
 }: {
   entries: readonly TimelineEntry[];
   days: readonly CalendarDay[];
   onAction: (entry: TimelineEntry, action: TimelineAction) => void;
   onOpenPost: (post: PostChipData) => void;
+  onOpenEvent?: (event: EventChipData) => void;
   selectedPostId?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -132,6 +135,7 @@ export function LandingBelow({
           days={days}
           density="strip"
           onOpenPost={onOpenPost}
+          onOpenEvent={onOpenEvent}
           className="flex-1"
           {...(selectedPostId === undefined ? {} : { selectedPostId })}
         />

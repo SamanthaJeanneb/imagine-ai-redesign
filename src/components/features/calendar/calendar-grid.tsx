@@ -4,6 +4,10 @@ import { cn } from "cn";
 import { motion, useReducedMotion } from "motion/react";
 
 import {
+  EventChip,
+  type EventChipData,
+} from "@/components/features/calendar/event-chip";
+import {
   PostChip,
   type PostChipData,
   type PostChipLines,
@@ -18,6 +22,7 @@ export interface CalendarDay {
   /** Belongs to the previous or next month in a month view. */
   isOutside?: boolean;
   posts: readonly PostChipData[];
+  events?: readonly EventChipData[];
 }
 
 export type CalendarDensity = "strip" | "preview" | "page";
@@ -32,6 +37,7 @@ interface CalendarGridProps {
   fill?: boolean;
   selectedPostId?: string;
   onOpenPost?: (post: PostChipData) => void;
+  onOpenEvent?: (event: EventChipData) => void;
   onSelectDay?: (day: CalendarDay) => void;
   /** Shared layout id with the composer preview. */
   layoutId?: string;
@@ -74,6 +80,7 @@ export function CalendarGrid({
   fill = density === "strip",
   selectedPostId,
   onOpenPost,
+  onOpenEvent,
   onSelectDay,
   layoutId,
   className,
@@ -117,6 +124,7 @@ export function CalendarGrid({
         )}
       >
         {days.map((day, index) => {
+          const events = day.events ?? [];
           const overflow = day.posts.length - chipLimit;
           // Stagger diagonally by row + column rather than by index, so a
           // six-week month sweeps in over about half a second instead of
@@ -158,6 +166,14 @@ export function CalendarGrid({
               >
                 {day.dayNumber}
               </span>
+              {events.map((event) => (
+                <EventChip
+                  key={event.id}
+                  event={event}
+                  dense={dense}
+                  onOpen={onOpenEvent}
+                />
+              ))}
               {day.posts.slice(0, chipLimit).map((post) => (
                 <PostChip
                   key={post.id}

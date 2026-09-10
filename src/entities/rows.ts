@@ -81,6 +81,22 @@ export interface PostAnalyticsRow {
   reposts: number;
 }
 
+/**
+ * Mock-only, until Google Calendar lands in the database. A slot from a
+ * connected calendar. The agent drafts posts about these; they are not posts.
+ */
+export interface CalendarEventRow {
+  id: string;
+  title: string;
+  starts_at: string;
+  ends_at: string;
+  all_day: boolean;
+  location: string | null;
+  notes: string | null;
+  calendar_name: string;
+  source: string;
+}
+
 /** `app.client_posts`. `scheduled_at` and `status` drive the calendar. */
 export interface ClientPostRow {
   id: string;
@@ -358,6 +374,7 @@ export interface Database {
     clients: ClientRow[];
     client_linkedin_auth: ClientLinkedInAuthRow[];
     client_posts: ClientPostRow[];
+    calendar_events: CalendarEventRow[];
     assets: AssetRow[];
     api_keys: ApiKeyRow[];
     crm_connections: CrmConnectionRow[];

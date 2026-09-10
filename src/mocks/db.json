@@ -953,6 +953,74 @@
         "updated_at": "2026-09-05T17:00:00.000Z"
       }
     ],
+    "calendar_events": [
+      {
+        "id": "evt_01",
+        "title": "Customer call · Northwind",
+        "starts_at": "2026-09-08T11:00:00.000Z",
+        "ends_at": "2026-09-08T12:00:00.000Z",
+        "all_day": false,
+        "location": "Zoom",
+        "notes": "Quarterly review. She asked for the quiet-accounts view last time.",
+        "calendar_name": "Acme",
+        "source": "google"
+      },
+      {
+        "id": "evt_02",
+        "title": "Product review",
+        "starts_at": "2026-09-09T15:00:00.000Z",
+        "ends_at": "2026-09-09T16:00:00.000Z",
+        "all_day": false,
+        "location": "HQ · Room 3",
+        "notes": "No deck. Open the app.",
+        "calendar_name": "Acme",
+        "source": "google"
+      },
+      {
+        "id": "evt_03",
+        "title": "Imagine team offsite",
+        "starts_at": "2026-09-11T00:00:00.000Z",
+        "ends_at": "2026-09-11T23:59:00.000Z",
+        "all_day": true,
+        "location": "Point Reyes",
+        "notes": "Half the team. Good day for a culture post from the company page.",
+        "calendar_name": "Acme",
+        "source": "google"
+      },
+      {
+        "id": "evt_04",
+        "title": "Podcast: Building in public",
+        "starts_at": "2026-09-16T10:00:00.000Z",
+        "ends_at": "2026-09-16T11:00:00.000Z",
+        "all_day": false,
+        "location": "Riverside",
+        "notes": "Sarah on the guest chair. Record a clip for the Thursday post.",
+        "calendar_name": "Sarah Chen",
+        "source": "google"
+      },
+      {
+        "id": "evt_05",
+        "title": "Webinar: attribution that fits",
+        "starts_at": "2026-09-24T16:00:00.000Z",
+        "ends_at": "2026-09-24T17:00:00.000Z",
+        "all_day": false,
+        "location": "Livestream",
+        "notes": "Marcus is hosting. The follow-up post is already on the calendar.",
+        "calendar_name": "Acme",
+        "source": "google"
+      },
+      {
+        "id": "evt_06",
+        "title": "SaaStr Annual",
+        "starts_at": "2026-10-02T00:00:00.000Z",
+        "ends_at": "2026-10-02T23:59:00.000Z",
+        "all_day": true,
+        "location": "San Mateo",
+        "notes": null,
+        "calendar_name": "Acme",
+        "source": "google"
+      }
+    ],
     "assets": [
       {
         "id": "ast_01",

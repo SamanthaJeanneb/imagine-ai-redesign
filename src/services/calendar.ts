@@ -1,14 +1,24 @@
 import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
+import type { EventChipData } from "@/components/features/calendar/event-chip";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
 import type { UpNextItem } from "@/components/features/calendar/up-next-list";
+import { transformCalendarEventRow } from "@/entities/calendar-event";
 import {
   buildCalendarRange,
   buildDays,
+  type EventsByDay,
   type PostsByDay,
   weekStart,
 } from "@/lib/calendar";
-import { formatDayTime, toDateKey, toTitle } from "@/lib/format";
-import { getNow } from "@/mocks/db";
+import {
+  formatDayShort,
+  formatDayTime,
+  formatTime,
+  formatTimeRange,
+  toDateKey,
+  toTitle,
+} from "@/lib/format";
+import { getDb, getNow } from "@/mocks/db";
 import {
   indexAssetsByPath,
   indexClients,
@@ -28,6 +38,8 @@ export interface CalendarMonth {
 export interface CalendarPosts {
   /** Every post with a slot, keyed by the day it lands on. */
   postsByDay: PostsByDay;
+  /** Connected-calendar events, keyed the same way. */
+  eventsByDay: EventsByDay;
   /** The mock's fixed clock, as a date key. */
   today: string;
 }
@@ -48,20 +60,63 @@ function chipsByDay(): PostsByDay {
   return byDay;
 }
 
+function toEventChip(
+  event: ReturnType<typeof transformCalendarEventRow>,
+): EventChipData {
+  return {
+    id: event.id,
+    title: event.title,
+    time: event.allDay ? "All day" : formatTime(event.startsAt),
+    ...(event.allDay ? {} : { endTime: formatTime(event.endsAt) }),
+    allDay: event.allDay,
+    ...(event.location === null ? {} : { location: event.location }),
+    ...(event.notes === null ? {} : { notes: event.notes }),
+    calendarName: event.calendarName,
+    source: event.source,
+    whenLabel: event.allDay
+      ? `${formatDayShort(event.startsAt)} · All day`
+      : `${formatDayShort(event.startsAt)} · ${formatTimeRange(event.startsAt, event.endsAt)}`,
+  };
+}
+
+/** Events keyed by the day they start on. */
+function eventsByDay(): EventsByDay {
+  const byDay: Record<string, readonly EventChipData[]> = {};
+
+  for (const row of getDb().app.calendar_events) {
+    const event = transformCalendarEventRow(row);
+    const key = event.startsAt.slice(0, 10);
+    byDay[key] = [...(byDay[key] ?? []), toEventChip(event)];
+  }
+
+  return byDay;
+}
+
 /**
  * The calendar page. It hands over the chips rather than a grid, because the
  * view, the month, and the search all change in the browser: `lib/calendar`
  * builds the cells from these.
  */
 export function getCalendarPosts(): CalendarPosts {
-  return { postsByDay: chipsByDay(), today: toDateKey(getNow()) };
+  return {
+    postsByDay: chipsByDay(),
+    eventsByDay: eventsByDay(),
+    today: toDateKey(getNow()),
+  };
 }
 
 /** One month of cells. The landing shows this; the page builds its own. */
 export function getCalendarMonth(month?: string): CalendarMonth {
   const today = toDateKey(getNow());
   const anchor = month === undefined ? today : `${month}-01`;
-  const range = buildCalendarRange("month", anchor, chipsByDay(), today);
+  const range = buildCalendarRange(
+    "month",
+    anchor,
+    chipsByDay(),
+    today,
+    "",
+    eventsByDay(),
+  );
 
   return {
     month: anchor.slice(0, 7),
@@ -76,7 +131,9 @@ export function getCalendarMonth(month?: string): CalendarMonth {
  */
 export function getUpcomingWeeks(weeks = 2): readonly CalendarDay[] {
   const today = toDateKey(getNow());
-  return buildDays(weekStart(today), weeks * 7, chipsByDay(), today);
+  return buildDays(weekStart(today), weeks * 7, chipsByDay(), today, {
+    events: eventsByDay(),
+  });
 }
 
 /** The right rail: what goes out next, soonest first. */

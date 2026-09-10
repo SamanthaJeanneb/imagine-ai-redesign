@@ -86,6 +86,16 @@ export function deltaDirection(
   return "flat";
 }
 
+/** "9:00–10:30", or "All day". */
+export function formatTimeRange(
+  start: string,
+  end: string,
+  allDay = false,
+): string {
+  if (allDay) return "All day";
+  return `${formatTime(start)}–${formatTime(end)}`;
+}
+
 /** "9:00". */
 export function formatTime(iso: string): string {
   const date = new Date(iso);

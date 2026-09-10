@@ -237,11 +237,14 @@ export function PostChip({
   return (
     <HoverCard>
       <HoverCardTrigger asChild>{chip}</HoverCardTrigger>
-      <HoverCardContent aria-label={`Preview of ${post.title}`}>
+      <HoverCardContent
+        aria-label={`Preview of ${post.title}`}
+        className="w-96"
+      >
         <LinkedInPost
           {...post.preview}
           timestamp={post.time}
-          className="p-m shadow-none"
+          className="shadow-none"
         />
       </HoverCardContent>
     </HoverCard>

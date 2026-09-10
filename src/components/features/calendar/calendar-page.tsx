@@ -8,6 +8,7 @@ import { useChat } from "@/components/features/agent/chat-provider";
 import { CalendarGrid } from "@/components/features/calendar/calendar-grid";
 import { CalendarTimeGrid } from "@/components/features/calendar/calendar-time-grid";
 import { CalendarToolbar } from "@/components/features/calendar/calendar-toolbar";
+import type { EventChipData } from "@/components/features/calendar/event-chip";
 import {
   type PostChipData,
   type PostChipStatus,
@@ -20,7 +21,9 @@ import {
   buildCalendarRange,
   type CalendarView,
   countPosts,
+  type EventsByDay,
   type PostsByDay,
+  searchEvents,
   searchPosts,
   shiftAnchor,
 } from "@/lib/calendar";
@@ -29,6 +32,7 @@ import { fade } from "@/styles/motion";
 
 interface CalendarPageProps {
   postsByDay: PostsByDay;
+  eventsByDay?: EventsByDay;
   /** The mock's fixed clock, as a date key. Where "Today" goes back to. */
   today: string;
 }
@@ -104,6 +108,10 @@ function Legend({ postsByDay }: { postsByDay: PostsByDay }) {
         </span>
       ))}
       <span aria-hidden="true" className="h-4 w-px bg-imagine-border" />
+      <span className="flex items-center gap-xs type-small text-imagine-foreground-muted">
+        <Icon name="calendar" size="s" />
+        Event
+      </span>
       {STATUS_KEY.map((item) => (
         <span
           key={item.status}
@@ -144,7 +152,11 @@ function noteFor(query: string, shown: number, total: number): string | null {
  * expanding the preview morphs it into place, and selecting a post attaches it
  * to the chat in the column beside it.
  */
-export function CalendarPage({ postsByDay, today }: CalendarPageProps) {
+export function CalendarPage({
+  postsByDay,
+  eventsByDay = {},
+  today,
+}: CalendarPageProps) {
   const chat = useChat();
   const [view, setView] = useState<CalendarView>("month");
   const [anchor, setAnchor] = useState(today);
@@ -158,23 +170,54 @@ export function CalendarPage({ postsByDay, today }: CalendarPageProps) {
     chat.toggleAttached({ kind: "post", post });
   }
 
-  const range = buildCalendarRange(view, anchor, postsByDay, today, search);
+  /** An event fills the composer so the next message can be a post about it. */
+  function draftFromEvent(event: EventChipData) {
+    const where = event.location === undefined ? "" : ` at ${event.location}`;
+    chat.setDraft(
+      `Write a LinkedIn post about ${event.title}${where} (${event.whenLabel}).`,
+    );
+  }
+
+  const range = buildCalendarRange(
+    view,
+    anchor,
+    postsByDay,
+    today,
+    search,
+    eventsByDay,
+  );
   const query = search.trim();
-  // The dropdown searches every post, not just the range on screen.
+  // The dropdown searches every post and event, not just the range on screen.
   const hits = searchPosts(postsByDay, query);
-  const searchResults: SearchBoxResult[] = hits.map(({ date, post }) => ({
-    id: post.id,
-    icon: POST_SEARCH_ICON[post.status],
-    title: post.title,
-    detail: `${formatDayShort(date)} · ${post.time} · ${post.profile}`,
-  }));
-  /** Go to the post's day and attach it, as if its chip had been clicked. */
-  function openHit(postId: string) {
-    const hit = hits.find((entry) => entry.post.id === postId);
-    if (hit === undefined) return;
+  const eventHits = searchEvents(eventsByDay, query);
+  const searchResults: SearchBoxResult[] = [
+    ...hits.map(({ date, post }) => ({
+      id: post.id,
+      icon: POST_SEARCH_ICON[post.status],
+      title: post.title,
+      detail: `${formatDayShort(date)} · ${post.time} · ${post.profile}`,
+    })),
+    ...eventHits.map(({ date, event }) => ({
+      id: event.id,
+      icon: "calendar" as const,
+      title: event.title,
+      detail: `${formatDayShort(date)} · ${event.time} · ${event.calendarName}`,
+    })),
+  ];
+  /** Go to the hit's day and open it, as if its chip had been clicked. */
+  function openHit(id: string) {
+    const postHit = hits.find((entry) => entry.post.id === id);
+    if (postHit !== undefined) {
+      setSearch("");
+      setAnchor(postHit.date);
+      if (selected !== postHit.post.id) attach(postHit.post);
+      return;
+    }
+    const eventHit = eventHits.find((entry) => entry.event.id === id);
+    if (eventHit === undefined) return;
     setSearch("");
-    setAnchor(hit.date);
-    if (selected !== hit.post.id) attach(hit.post);
+    setAnchor(eventHit.date);
+    draftFromEvent(eventHit.event);
   }
   const shown = countPosts(range.days);
   const note = noteFor(
@@ -184,7 +227,10 @@ export function CalendarPage({ postsByDay, today }: CalendarPageProps) {
     // measure against.
     query === ""
       ? shown
-      : countPosts(buildCalendarRange(view, anchor, postsByDay, today).days),
+      : countPosts(
+          buildCalendarRange(view, anchor, postsByDay, today, "", eventsByDay)
+            .days,
+        ),
   );
 
   return (
@@ -216,6 +262,7 @@ export function CalendarPage({ postsByDay, today }: CalendarPageProps) {
           // opens on the month.
           layoutId={PREVIEW_LAYOUT_ID.calendar}
           onOpenPost={attach}
+          onOpenEvent={draftFromEvent}
           {...(selected === undefined ? {} : { selectedPostId: selected })}
           className="flex-1"
         />
@@ -223,6 +270,7 @@ export function CalendarPage({ postsByDay, today }: CalendarPageProps) {
         <CalendarTimeGrid
           days={range.days}
           onOpenPost={attach}
+          onOpenEvent={draftFromEvent}
           {...(selected === undefined ? {} : { selectedPostId: selected })}
         />
       )}

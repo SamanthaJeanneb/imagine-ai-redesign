@@ -11,6 +11,7 @@ import {
   type CalendarDay,
   CalendarGrid,
 } from "@/components/features/calendar/calendar-grid";
+import type { EventChipData } from "@/components/features/calendar/event-chip";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";
@@ -145,6 +146,7 @@ export function MonthCalendar({
   label,
   days,
   onOpenPost,
+  onOpenEvent,
   onOpenCalendar,
   selectedPostId,
   className,
@@ -152,6 +154,7 @@ export function MonthCalendar({
   label: string;
   days: readonly CalendarDay[];
   onOpenPost: (post: PostChipData) => void;
+  onOpenEvent?: (event: EventChipData) => void;
   onOpenCalendar: () => void;
   selectedPostId?: string;
   className?: string;
@@ -174,6 +177,7 @@ export function MonthCalendar({
         days={days}
         density="page"
         onOpenPost={onOpenPost}
+        onOpenEvent={onOpenEvent}
         {...(selectedPostId === undefined ? {} : { selectedPostId })}
       />
     </section>

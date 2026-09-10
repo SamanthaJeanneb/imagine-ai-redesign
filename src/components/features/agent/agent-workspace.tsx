@@ -25,6 +25,7 @@ import type {
   ChartSeries,
 } from "@/components/features/analytics/chart-block";
 import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
+import type { EventChipData } from "@/components/features/calendar/event-chip";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
 import type { UpNextItem } from "@/components/features/calendar/up-next-list";
 import { PageAside } from "@/components/layout/page-aside";
@@ -121,6 +122,13 @@ export function AgentWorkspace({
     chat.toggleAttached({ kind: "post", post });
   }
 
+  function draftFromEvent(event: EventChipData) {
+    const where = event.location === undefined ? "" : ` at ${event.location}`;
+    chat.setDraft(
+      `Write a LinkedIn post about ${event.title}${where} (${event.whenLabel}).`,
+    );
+  }
+
   /**
    * One element in both modes, so the send is a single spring from the hero
    * position down to the dock. The dock floats over the thread rather than
@@ -202,6 +210,7 @@ export function AgentWorkspace({
                     label={landing.month?.label ?? "Next two weeks"}
                     days={landing.month?.days ?? landing.days}
                     onOpenPost={attachPost}
+                    onOpenEvent={draftFromEvent}
                     onOpenCalendar={() => {
                       router.push("/calendar");
                     }}
@@ -219,6 +228,7 @@ export function AgentWorkspace({
                     chat.send(action.prompt ?? entry.title, action.intent);
                   }}
                   onOpenPost={attachPost}
+                  onOpenEvent={draftFromEvent}
                   {...(selectedPostId === undefined ? {} : { selectedPostId })}
                 />
               )}
