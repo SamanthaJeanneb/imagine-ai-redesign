@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { useState } from "react";
 
 import {
@@ -26,7 +26,12 @@ import {
 import { Stagger } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import { spring } from "@/styles/motion";
+import { ResizeHandle } from "@/components/ui/resize-handle";
+import { useResizable } from "@/lib/use-resizable";
+import { fade, spring } from "@/styles/motion";
+
+/** The rail's content column at rest was `w-72` inside a `pl-xxl` gutter. */
+const RAIL_WIDTH = { default: 336, min: 288, max: 480 } as const;
 
 /**
  * The landing, in three pieces so the composer can sit between them and slide
@@ -124,6 +129,12 @@ export function LandingBelow({
   );
 }
 
+/**
+ * The landing's right sidebar: this month's numbers, the impressions curve,
+ * and what posts next. A full-height column beside the page like the chat
+ * and context panels, with its own scroll and a drag handle on its inner
+ * edge. It leaves by width, so the page widens in the same beat.
+ */
 export function LandingRail({
   stats,
   chart,
@@ -135,29 +146,61 @@ export function LandingRail({
   upNext: readonly UpNextItem[];
   onOpenCalendar: () => void;
 }) {
+  const reduceMotion = useReducedMotion();
+  const resize = useResizable({
+    defaultWidth: RAIL_WIDTH.default,
+    min: RAIL_WIDTH.min,
+    max: RAIL_WIDTH.max,
+    edge: "start",
+  });
+
   return (
-    <div className="flex w-72 min-w-0 flex-col gap-xxl pb-section">
-      {/* Numbers only. The deltas live on the analytics page, where there is
-          room for them and a range control to make them mean something. */}
-      <Stagger kind="grid" className="grid grid-cols-2 gap-l">
-        {stats.map((stat) => (
-          <StatTile
-            key={stat.label}
-            value={stat.value}
-            label={stat.label}
-            size="compact"
-          />
-        ))}
-      </Stagger>
-      <ChartBlock
-        kind="area"
-        data={chart.data}
-        series={chart.series}
-        title="Impressions over time"
-        description="Last 30 days"
-        tone="accent"
+    <motion.aside
+      data-slot="landing-rail"
+      initial={false}
+      animate={{ width: resize.width, opacity: 1 }}
+      exit={
+        reduceMotion
+          ? { opacity: 0, transition: fade.fast }
+          : { width: 0, opacity: 0, transition: fade.base }
+      }
+      transition={resize.transition}
+      className="relative flex min-h-0 shrink-0 justify-end overflow-hidden"
+    >
+      <ResizeHandle
+        edge="start"
+        binding={resize.handle}
+        dragging={resize.dragging}
+        label="Resize overview"
       />
-      <UpNextList items={upNext} onViewAll={onOpenCalendar} />
-    </div>
+      {/* Fixed at the final width, so nothing rewraps while the column
+          animates. Padding matches the page's own inset. */}
+      <div
+        style={{ width: resize.width }}
+        className="flex min-h-0 shrink-0 flex-col gap-xxl overflow-y-auto border-l border-imagine-foreground/12 px-xl pt-xxl pb-xxl"
+      >
+        {/* Numbers only. The deltas live on the analytics page, where there is
+            room for them and a range control to make them mean something. */}
+        <Stagger kind="grid" className="grid grid-cols-2 gap-l">
+          {stats.map((stat) => (
+            <StatTile
+              key={stat.label}
+              value={stat.value}
+              label={stat.label}
+              size="compact"
+            />
+          ))}
+        </Stagger>
+        <ChartBlock
+          kind="area"
+          data={chart.data}
+          series={chart.series}
+          title="Impressions over time"
+          description="Last 30 days"
+          tone="accent"
+        />
+        <UpNextList items={upNext} onViewAll={onOpenCalendar} />
+      </div>
+    </motion.aside>
   );
 }

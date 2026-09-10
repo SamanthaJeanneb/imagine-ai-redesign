@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "cn";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useState } from "react";
@@ -27,6 +26,7 @@ import type {
 import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
 import type { UpNextItem } from "@/components/features/calendar/up-next-list";
+import { PageAside } from "@/components/layout/page-aside";
 import type { AgentMessage } from "@/services/agent";
 import { blurOut, fade } from "@/styles/motion";
 
@@ -135,22 +135,16 @@ export function AgentWorkspace({
       className={
         onLanding
           ? centered
-            ? "mx-auto w-full min-w-0 max-w-2xl"
+            ? "mx-auto w-full max-w-2xl min-w-0"
             : "w-full min-w-0"
-          : "sticky bottom-l z-10 mx-auto mt-xl w-full min-w-0 max-w-3xl"
+          : "sticky bottom-l z-10 mx-auto mt-xl w-full max-w-3xl min-w-0"
       }
     />
   );
 
   return (
     <div className="flex min-h-full min-w-0 flex-1">
-      <div
-        className={cn(
-          "flex min-h-full min-w-0 flex-1 flex-col",
-          // The gap to the rail. Centered has no rail.
-          !centered && "pr-xxl",
-        )}
-      >
+      <div className="flex min-h-full min-w-0 flex-1 flex-col">
         {/* `popLayout` takes the leaving landing out of flow at once, so the
             composer has a single, settled position to spring to. Its children
             have to be motion elements for that, which is why the wrappers are
@@ -232,15 +226,14 @@ export function AgentWorkspace({
         </AnimatePresence>
       </div>
 
-      <AnimatePresence initial={false} mode="popLayout">
-        {onLanding && !centered ? (
-          <motion.aside
-            key="rail"
-            exit={{ opacity: 0, x: 24 }}
-            transition={fade.base}
-            className="shrink-0 self-stretch border-l border-imagine-foreground/12 pl-xxl"
-          >
+      {/* The rail is a sidebar in the shell's row, beside the page rather
+          than inside its scroll, so it runs the full height under the header
+          and resizes like the other panels. */}
+      <PageAside>
+        <AnimatePresence initial={false}>
+          {onLanding && !centered ? (
             <LandingRail
+              key="rail"
               stats={landing.stats}
               chart={landing.chart}
               upNext={landing.upNext}
@@ -248,9 +241,9 @@ export function AgentWorkspace({
                 router.push("/calendar");
               }}
             />
-          </motion.aside>
-        ) : null}
-      </AnimatePresence>
+          ) : null}
+        </AnimatePresence>
+      </PageAside>
     </div>
   );
 }

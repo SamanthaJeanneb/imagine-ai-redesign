@@ -29,6 +29,7 @@ import {
 } from "@/components/layout/chat-context-panel";
 import { ChatControls, ChatTitle } from "@/components/layout/chat-controls";
 import { FilesPanel } from "@/components/layout/files-panel";
+import { PageAsideHostProvider } from "@/components/layout/page-aside";
 import { ResizeHandle } from "@/components/ui/resize-handle";
 import { useResizable } from "@/lib/use-resizable";
 import {
@@ -291,6 +292,9 @@ function WorkspaceFrame({
   const router = useRouter();
   const chat = useChat();
   const [collapsed, setCollapsed] = useState(false);
+  // Where a page's own sidebar goes, beside the page. A ref callback into
+  // state, so the page can portal into it once it exists.
+  const [asideHost, setAsideHost] = useState<HTMLElement | null>(null);
   const filesResize = useResizable({
     defaultWidth: 320,
     min: 264,
@@ -520,9 +524,11 @@ function WorkspaceFrame({
       flush={activeKey === "files"}
       {...(editorLayer === null ? {} : { overlay: editorLayer })}
     >
-      {children}
+      <PageAsideHostProvider host={asideHost}>{children}</PageAsideHostProvider>
     </WorkspacePage>
   );
+  // `contents`, so what the page portals here is a flex item of the row.
+  const pageAside = <div ref={setAsideHost} className="contents" />;
   const column =
     chatColumn === undefined ? null : (
       <ChatColumn
@@ -635,6 +641,7 @@ function WorkspaceFrame({
                 {header}
                 {page}
               </div>
+              {pageAside}
               <AnimatePresence initial={false}>{column}</AnimatePresence>
               <AnimatePresence initial={false}>{contextPanel}</AnimatePresence>
             </div>
@@ -643,6 +650,7 @@ function WorkspaceFrame({
               {header}
               <div className="flex min-h-0 flex-1">
                 {page}
+                {pageAside}
                 <AnimatePresence initial={false}>{column}</AnimatePresence>
                 <AnimatePresence initial={false}>
                   {contextPanel}
