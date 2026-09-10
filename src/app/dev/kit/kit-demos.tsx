@@ -65,6 +65,7 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { SearchBox } from "@/components/ui/search-box";
 import {
   Select,
   SelectContent,
@@ -141,6 +142,114 @@ export function FormDemo() {
             </InputGroupButton>
           </InputGroupAddon>
         </InputGroup>
+      </div>
+    </div>
+  );
+}
+
+const FILE_HITS = [
+  {
+    id: "folder-q3",
+    icon: "folder" as const,
+    title: "Q3 campaign",
+    detail: "Acme",
+  },
+  {
+    id: "file-voice",
+    icon: "file-lines" as const,
+    title: "Brand voice.md",
+    detail: "Acme",
+  },
+  {
+    id: "image-hero",
+    icon: "image" as const,
+    title: "Hero still",
+    detail: "Sarah Chen",
+  },
+  {
+    id: "skill-gap",
+    icon: "puzzle-piece" as const,
+    title: "Calendar gap",
+    detail: "calendar-gap.md",
+  },
+];
+
+const POST_HITS = [
+  {
+    id: "post-weekly",
+    icon: "clock" as const,
+    title: "Why we stopped weekly planning",
+    detail: "Tue, 8 Sep · 9:00 · Sarah",
+  },
+  {
+    id: "post-webinar",
+    icon: "pen" as const,
+    title: "Webinar follow-up",
+    detail: "Thu, 10 Sep · 14:00 · Marcus",
+  },
+  {
+    id: "post-launch",
+    icon: "circle-check" as const,
+    title: "Onboarding launch",
+    detail: "Mon, 7 Sep · 9:00 · Acme",
+  },
+];
+
+function matchingHits(
+  items: typeof FILE_HITS | typeof POST_HITS,
+  query: string,
+) {
+  const needle = query.trim().toLowerCase();
+  if (needle === "") return [];
+  return items.filter(
+    (item) =>
+      item.title.toLowerCase().includes(needle) ||
+      item.detail.toLowerCase().includes(needle),
+  );
+}
+
+/** Same control Files and Calendar use. Type "brand" or "week" to see results. */
+export function SearchBoxDemo() {
+  const [filesQuery, setFilesQuery] = useState("");
+  const [postsQuery, setPostsQuery] = useState("");
+
+  return (
+    <div className="grid min-h-56 gap-xl sm:grid-cols-2">
+      <div className="flex flex-col gap-s">
+        <p className="type-small text-imagine-foreground-muted">
+          Files. Click opens the folder, document, or skill.
+        </p>
+        <SearchBox
+          value={filesQuery}
+          onValueChange={setFilesQuery}
+          results={matchingHits(FILE_HITS, filesQuery)}
+          onSelect={(id) => {
+            setFilesQuery("");
+            toast(`Opened ${id}`);
+          }}
+          placeholder="Search files"
+          emptyLabel={`Nothing matches “${filesQuery.trim()}”`}
+          listLabel="Files"
+          className="w-64"
+        />
+      </div>
+      <div className="flex flex-col gap-s">
+        <p className="type-small text-imagine-foreground-muted">
+          Calendar. Click jumps to that post.
+        </p>
+        <SearchBox
+          value={postsQuery}
+          onValueChange={setPostsQuery}
+          results={matchingHits(POST_HITS, postsQuery)}
+          onSelect={(id) => {
+            setPostsQuery("");
+            toast(`Opened ${id}`);
+          }}
+          placeholder="Search posts"
+          emptyLabel={`No posts match “${postsQuery.trim()}”`}
+          listLabel="Posts"
+          className="w-64"
+        />
       </div>
     </div>
   );

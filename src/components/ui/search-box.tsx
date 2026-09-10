@@ -1,8 +1,8 @@
 "use client";
 
 // Imagine: a search field whose results drop down under it as you type.
-// Arrow keys move, Enter opens, Escape clears. Used by the Files browser and
-// the calendar toolbar.
+// Arrow keys move, Enter opens, Escape clears. Files and calendar (and the
+// files panel) all use this; they pass their own icons and click actions.
 
 import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";

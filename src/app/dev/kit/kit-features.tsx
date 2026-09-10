@@ -1978,13 +1978,13 @@ export function CalendarToolbarDemo() {
               : [
                   {
                     id: "demo-1",
-                    icon: "calendar",
+                    icon: "clock",
                     title: "Why we stopped weekly planning",
                     detail: "Tue, 8 Sep · 9:00 · Sarah",
                   },
                   {
                     id: "demo-2",
-                    icon: "calendar",
+                    icon: "pen",
                     title: "Webinar follow-up",
                     detail: "Thu, 10 Sep · 14:00 · Marcus",
                   },

@@ -4,11 +4,16 @@ import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
+import { AssetGrid } from "@/components/features/files/asset-grid";
 import {
   AssetTile,
   type AssetTileData,
 } from "@/components/features/files/asset-tile";
-import { AssetGrid } from "@/components/features/files/asset-grid";
+import {
+  searchFiles,
+  searchSkills,
+  toSearchResults,
+} from "@/components/features/files/file-search";
 import type {
   FileNode,
   FileSection,
@@ -18,11 +23,6 @@ import {
   type Skill,
   SkillsList,
 } from "@/components/features/files/skills-list";
-import {
-  searchFiles,
-  searchSkills,
-  toSearchResults,
-} from "@/components/features/files/file-search";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import { SearchBox } from "@/components/ui/search-box";
@@ -71,27 +71,6 @@ function flattenContent(nodes: readonly FileNode[]): readonly FileNode[] {
   return nodes.flatMap((node) =>
     node.type === "folder" ? flattenContent(node.children) : [node],
   );
-}
-
-function searchContent(
-  nodes: readonly FileNode[],
-  query: string,
-): readonly FileNode[] {
-  const normalized = query.trim().toLowerCase();
-  if (normalized === "") return nodes;
-
-  return nodes.flatMap((node) => {
-    if (node.type === "folder") {
-      return searchContent(node.children, query);
-    }
-    if (node.type === "file") {
-      return node.name.toLowerCase().includes(normalized) ? [node] : [];
-    }
-    const assets = node.assets.filter((asset) =>
-      (asset.caption ?? asset.kind).toLowerCase().includes(normalized),
-    );
-    return assets.length === 0 ? [] : [{ ...node, assets }];
-  });
 }
 
 function findFolder(
@@ -161,24 +140,22 @@ export function FilesWorkspacePage({
   const currentFolder =
     folderId === undefined ? undefined : findFolder(scopeNodes, folderId);
   const locationNodes = currentFolder?.children ?? scopeNodes;
-  const visibleNodes = searchContent(locationNodes, query);
-  const folders =
-    query.trim() === ""
-      ? visibleNodes.flatMap((node) => (node.type === "folder" ? [node] : []))
-      : [];
-  const files = visibleNodes.flatMap((node) =>
+  const folders = locationNodes.flatMap((node) =>
+    node.type === "folder" ? [node] : [],
+  );
+  const files = locationNodes.flatMap((node) =>
     node.type === "file" ? [node] : [],
   );
-  const assets = visibleNodes.flatMap((node) =>
+  const assets = locationNodes.flatMap((node) =>
     node.type === "assets" ? node.assets : [],
   );
-  const visibleSkills =
-    query.trim() === ""
-      ? skills
-      : skills.filter((skill) =>
-          `${skill.name} ${skill.description} ${skill.fileName}`
-            .toLowerCase()
-            .includes(query.trim().toLowerCase()),
+  const hits =
+    view === "skills"
+      ? searchSkills(skills, query)
+      : searchFiles(
+          currentSection === undefined ? sections : [currentSection],
+          query,
+          { includeFolders: true },
         );
   const locationTitle =
     currentFolder?.name ?? currentSection?.title ?? "All files";
@@ -187,6 +164,30 @@ export function FilesWorkspacePage({
     if (documents.some((document) => document.id === id)) {
       setSelection({ kind: "document", id });
     }
+  };
+
+  const openHit = (id: string) => {
+    const hit = hits.find((entry) => entry.id === id);
+    setQuery("");
+    if (hit === undefined) return;
+    if (hit.kind === "skill") {
+      setView("skills");
+      openDocument(id);
+      return;
+    }
+    setView("files");
+    if (hit.kind === "folder" && hit.sectionId !== undefined) {
+      setSectionId(hit.sectionId);
+      setFolderId(id);
+      return;
+    }
+    if (hit.asset !== undefined) {
+      if (hit.sectionId !== undefined) setSectionId(hit.sectionId);
+      setSelection({ kind: "asset", asset: hit.asset });
+      return;
+    }
+    if (hit.sectionId !== undefined) setSectionId(hit.sectionId);
+    openDocument(id);
   };
 
   return (
@@ -321,13 +322,17 @@ export function FilesWorkspacePage({
               <TabsTrigger value="skills">Skills</TabsTrigger>
             </TabsList>
           </Tabs>
-          <SearchField
+          <SearchBox
             value={query}
             onValueChange={setQuery}
+            results={toSearchResults(hits)}
+            onSelect={openHit}
             placeholder={
               view === "files" ? "Search this library" : "Search skills"
             }
-            className="ml-auto w-72 bg-imagine-surface-raised"
+            emptyLabel={`Nothing matches “${query.trim()}”`}
+            listLabel="Files"
+            className="ml-auto w-64"
           />
         </div>
 
@@ -486,10 +491,8 @@ export function FilesWorkspacePage({
                   files.length === 0 &&
                   assets.length === 0 ? (
                     <div className="flex min-h-48 flex-col items-center justify-center gap-s text-center text-imagine-foreground-muted">
-                      <Icon name="magnifying-glass" size="l" />
-                      <p className="type-small">
-                        No files match &quot;{query}&quot;.
-                      </p>
+                      <Icon name="folder" size="l" />
+                      <p className="type-small">Nothing in this folder yet.</p>
                     </div>
                   ) : null}
                 </motion.div>
@@ -509,7 +512,7 @@ export function FilesWorkspacePage({
                     </p>
                   </header>
                   <SkillsList
-                    skills={visibleSkills}
+                    skills={skills}
                     {...(selection?.kind === "document"
                       ? { openSkillId: selection.id }
                       : {})}

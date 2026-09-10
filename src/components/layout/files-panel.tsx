@@ -3,17 +3,17 @@
 import { cn } from "cn";
 import { useState } from "react";
 
-import {
-  FileTree,
-  type FileSection,
-} from "@/components/features/files/file-tree";
-import type { FileResource } from "@/components/features/files/resource-drag";
 import { type AssetTileData } from "@/components/features/files/asset-tile";
 import {
   searchFiles,
   searchSkills,
   toSearchResults,
 } from "@/components/features/files/file-search";
+import {
+  FileTree,
+  type FileSection,
+} from "@/components/features/files/file-tree";
+import type { FileResource } from "@/components/features/files/resource-drag";
 import {
   type Skill,
   SkillsList,

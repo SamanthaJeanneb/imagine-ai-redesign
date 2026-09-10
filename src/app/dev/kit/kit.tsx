@@ -36,6 +36,7 @@ import {
   FileChromeDemo,
   FormDemo,
   OverlayDemo,
+  SearchBoxDemo,
   SelectionDemo,
 } from "./kit-demos";
 import {
@@ -338,6 +339,10 @@ export function Kit({ radiusScale = "default" }: KitProps) {
 
         <Section title="Forms">
           <FormDemo />
+        </Section>
+
+        <Section title="Search: one field, results drop down. Files and calendar pass their own icons and click actions.">
+          <SearchBoxDemo />
         </Section>
 
         <Section title="Selection: one indicator that slides">
