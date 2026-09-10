@@ -51,7 +51,7 @@ export function UpNextList({
                   {item.when}
                 </span>
                 <span className="flex min-w-0 flex-col">
-                  <span className="truncate type-body">{item.title}</span>
+                  <span className="line-clamp-2 type-body">{item.title}</span>
                   <span className="truncate type-small text-imagine-foreground-muted">
                     {item.profileName}
                   </span>

@@ -95,7 +95,8 @@ export function getUpNext(limit = 3): readonly UpNextItem[] {
     .map((post) => ({
       id: post.id,
       when: formatDayTime(post.scheduledAt ?? ""),
-      title: toTitle(post.content, 56),
+      // Two lines in the rail, so the row can say what the post is about.
+      title: toTitle(post.content, 120),
       profileName: clients.get(post.clientId)?.name ?? "Unknown profile",
     }));
 }

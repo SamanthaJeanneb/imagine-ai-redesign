@@ -41,7 +41,21 @@ export type ColorToken =
   | "secondary-foreground"
   | "destructive"
   | "warning"
-  | "success";
+  | "success"
+  | "tag-1"
+  | "tag-2"
+  | "tag-3"
+  | "tag-4"
+  | "tag-5";
+
+/**
+ * Categorical accents for post labels on the calendar. Numbered, not named for
+ * a hue, because a label picks one by position in the organization's list.
+ * Mid tones: light enough to tint a chip, deep enough to carry white text.
+ */
+export const TAG_TONES = [1, 2, 3, 4, 5] as const;
+
+export type TagTone = (typeof TAG_TONES)[number];
 
 export const colors = {
   light: {
@@ -61,6 +75,11 @@ export const colors = {
     destructive: "#dc2626",
     warning: "#d97706",
     success: "#059669",
+    "tag-1": "#7b5cd6",
+    "tag-2": "#2f9e63",
+    "tag-3": "#3b82c4",
+    "tag-4": "#c07a2c",
+    "tag-5": "#1f9aa8",
   },
   dark: {
     // Sidebar is the warmer, lighter charcoal; the page sits darker so the
@@ -81,6 +100,11 @@ export const colors = {
     destructive: "#f87171",
     warning: "#fbbf24",
     success: "#34d399",
+    "tag-1": "#9b84e8",
+    "tag-2": "#4cc082",
+    "tag-3": "#5ca1e0",
+    "tag-4": "#d99a4e",
+    "tag-5": "#3fb8c6",
   },
 } as const satisfies Record<Theme, Record<ColorToken, string>>;
 
@@ -165,7 +189,7 @@ export const radiusSharp = {
 } as const satisfies Record<RadiusToken, number>;
 
 export type TypeToken =
-  "display" | "title" | "heading" | "body" | "small" | "micro";
+  "display" | "title" | "heading" | "body" | "small" | "caption" | "micro";
 
 interface TypeStyle {
   /** Pixels. */
@@ -184,6 +208,8 @@ export const typeScale = {
   heading: { size: 18, lineHeight: 26 },
   body: { size: 16, lineHeight: 24 },
   small: { size: 14, lineHeight: 20 },
+  /** Dense running text, as on a calendar chip. Same size as micro, but sentence case. */
+  caption: { size: 12, lineHeight: 16 },
   micro: { size: 12, lineHeight: 16, letterSpacing: 0.04 },
 } as const satisfies Record<TypeToken, TypeStyle>;
 

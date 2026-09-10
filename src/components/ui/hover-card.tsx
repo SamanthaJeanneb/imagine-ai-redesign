@@ -87,7 +87,10 @@ function HoverCardContent({
               exit={{ ...hidden, transition: fade.fast }}
               transition={spring.snappy}
               className={cn(
-                "z-50 w-80 origin-(--radix-hover-card-content-transform-origin) rounded-panel bg-imagine-surface shadow-floating outline-none",
+                // Capped at a card's worth, or less where the trigger leaves
+                // less room, and scrolls past that: a long post previews
+                // without taking over the screen.
+                "z-50 max-h-[min(var(--radix-hover-card-content-available-height),28rem)] w-80 origin-(--radix-hover-card-content-transform-origin) overflow-y-auto rounded-panel bg-imagine-surface shadow-floating outline-none",
                 className,
               )}
             >

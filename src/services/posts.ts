@@ -2,13 +2,17 @@ import type {
   LinkedInPostContent,
   PostAuthor,
 } from "@/components/features/agent/linkedin-post-draft";
-import type { PostChipData } from "@/components/features/calendar/post-chip";
+import type {
+  PostChipData,
+  PostChipTone,
+} from "@/components/features/calendar/post-chip";
 import type { AssetTileData } from "@/components/features/files/asset-tile";
 import { type Asset, getAssetType, transformAssetRow } from "@/entities/asset";
 import { type Client, transformClientRow } from "@/entities/client";
 import { type Post, toChipStatus, transformPostRow } from "@/entities/post";
 import { formatTime, toTitle } from "@/lib/format";
-import { getDb } from "@/mocks/db";
+import { getDb, getOrganization } from "@/mocks/db";
+import { TAG_TONES } from "@/styles/tokens";
 
 /**
  * Shared mapping from posts, clients, and assets onto the shapes the post
@@ -105,6 +109,33 @@ function toProfileLabel(client: Client): string {
   return client.name.split(" ", 1)[0] ?? client.name;
 }
 
+/**
+ * Each label the organization uses gets one of the tag accents, by its
+ * position in the organization's list, so a label keeps its color everywhere
+ * it appears. Past the fifth label the accents wrap around.
+ */
+export function indexLabelTones(): ReadonlyMap<string, PostChipTone> {
+  const options = getOrganization().post_label_options ?? [];
+  return new Map(
+    options.map((label, index) => [
+      label,
+      TAG_TONES[index % TAG_TONES.length] ?? TAG_TONES[0],
+    ]),
+  );
+}
+
+const LABEL_TONES = indexLabelTones();
+
+/** The chip's label and tone, when the post has a label. */
+function toPostLabel(post: Post): Pick<PostChipData, "label" | "tone"> {
+  if (post.postLabel === null) return {};
+  const tone = LABEL_TONES.get(post.postLabel);
+  return {
+    label: post.postLabel,
+    ...(tone === undefined ? {} : { tone }),
+  };
+}
+
 export function toPostMedia(
   post: Post,
   assets: ReadonlyMap<string, Asset>,
@@ -135,10 +166,11 @@ export function toPostChip(
 ): PostChipData {
   return {
     id: post.id,
-    title: toTitle(post.content, 48),
+    title: toTitle(post.content, 72),
     time: post.scheduledAt === null ? "" : formatTime(post.scheduledAt),
     profile: toProfileLabel(client),
     status: toChipStatus(post.status),
+    ...toPostLabel(post),
     preview: toPostContent(post, client, assets),
   };
 }

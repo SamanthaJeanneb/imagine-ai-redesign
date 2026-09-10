@@ -6,6 +6,7 @@ import { motion, useReducedMotion } from "motion/react";
 import {
   PostChip,
   type PostChipData,
+  type PostChipLines,
 } from "@/components/features/calendar/post-chip";
 import { fade, stagger } from "@/styles/motion";
 
@@ -42,14 +43,22 @@ const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 // The strip sits under the timeline and fills what is left, so its floor is
 // only what the day number and one full chip need.
 const CELL_HEIGHT: Record<CalendarDensity, string> = {
-  strip: "min-h-24",
-  preview: "min-h-14",
-  page: "min-h-32",
+  strip: "min-h-32",
+  preview: "min-h-20",
+  page: "min-h-40",
 };
 
 const DEFAULT_MAX_CHIPS: Record<CalendarDensity, number> = {
   strip: 1,
   preview: 1,
+  page: 3,
+};
+
+// How much of each post a cell shows. The page and the strip have the room
+// for a real excerpt; the preview shows enough to know which post it is.
+const CHIP_LINES: Record<CalendarDensity, PostChipLines> = {
+  strip: 3,
+  preview: 2,
   page: 3,
 };
 
@@ -83,6 +92,7 @@ export function CalendarGrid({
       role="grid"
       className={cn(
         "flex w-full flex-col overflow-hidden rounded-panel bg-imagine-surface-raised shadow-raised",
+        fill && "min-h-0",
         className,
       )}
     >
@@ -101,7 +111,9 @@ export function CalendarGrid({
         role="rowgroup"
         className={cn(
           "grid grid-cols-7 gap-px bg-imagine-border",
-          fill && "flex-1 auto-rows-fr",
+          // A month of full chips can run past the page: the rows scroll
+          // inside the frame rather than the frame growing off the screen.
+          fill && "min-h-0 flex-1 auto-rows-fr overflow-y-auto",
         )}
       >
         {days.map((day, index) => {
@@ -126,7 +138,8 @@ export function CalendarGrid({
                   : undefined
               }
               className={cn(
-                "flex flex-col gap-xs bg-imagine-surface p-xs",
+                // The `chip` container: chips slim down in a narrow cell.
+                "@container/chip flex flex-col gap-xs bg-imagine-surface p-xs",
                 CELL_HEIGHT[density],
                 day.isOutside && "bg-imagine-surface/60",
                 onSelectDay &&
@@ -150,12 +163,13 @@ export function CalendarGrid({
                   key={post.id}
                   post={post}
                   dense={dense}
+                  lines={CHIP_LINES[density]}
                   selected={post.id === selectedPostId}
                   onOpen={onOpenPost}
                 />
               ))}
               {overflow > 0 ? (
-                <span className="px-xs type-small text-imagine-foreground-muted">
+                <span className="px-xs type-caption text-imagine-foreground-muted">
                   +{overflow} more
                 </span>
               ) : null}

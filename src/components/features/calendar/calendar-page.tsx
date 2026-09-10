@@ -11,9 +11,10 @@ import { CalendarToolbar } from "@/components/features/calendar/calendar-toolbar
 import {
   type PostChipData,
   type PostChipStatus,
+  type PostChipTone,
   postChipStyle,
 } from "@/components/features/calendar/post-chip";
-import type { IconName } from "@/components/ui/icon";
+import { Icon, type IconName } from "@/components/ui/icon";
 import type { SearchBoxResult } from "@/components/ui/search-box";
 import {
   buildCalendarRange,
@@ -32,13 +33,6 @@ interface CalendarPageProps {
   today: string;
 }
 
-const LEGEND: readonly { status: PostChipStatus; label: string }[] = [
-  { status: "draft", label: "Draft" },
-  { status: "scheduled", label: "Scheduled" },
-  { status: "published", label: "Published" },
-  { status: "failed", label: "Failed" },
-];
-
 const POST_SEARCH_ICON = {
   draft: "pen",
   scheduled: "clock",
@@ -46,19 +40,81 @@ const POST_SEARCH_ICON = {
   failed: "triangle-exclamation",
 } as const satisfies Record<PostChipStatus, IconName>;
 
-/** Color is the only status signal on a chip, so the page says what it means. */
-function StatusLegend() {
+/** Status reads as a glyph on the chip, so the key shows the glyph. */
+const STATUS_KEY: readonly {
+  status: PostChipStatus;
+  icon: IconName;
+  label: string;
+}[] = [
+  { status: "published", icon: "check", label: "Published" },
+  { status: "failed", icon: "triangle-exclamation", label: "Failed" },
+];
+
+interface LegendEntry {
+  label: string;
+  tone?: PostChipTone;
+  status: PostChipStatus;
+}
+
+/**
+ * One swatch per label the posts on hand use, in the order the organization
+ * lists them (which is the order their tones were dealt), plus one for posts
+ * with no label, which fall back to their status color.
+ */
+function legendFor(postsByDay: PostsByDay): LegendEntry[] {
+  const byLabel = new Map<string, LegendEntry>();
+  let unlabelled = false;
+  for (const posts of Object.values(postsByDay)) {
+    for (const post of posts) {
+      if (post.label === undefined || post.tone === undefined) {
+        unlabelled = true;
+        continue;
+      }
+      if (!byLabel.has(post.label)) {
+        byLabel.set(post.label, {
+          label: post.label,
+          tone: post.tone,
+          status: post.status,
+        });
+      }
+    }
+  }
+  const entries = [...byLabel.values()].toSorted(
+    (a, b) => (a.tone ?? 0) - (b.tone ?? 0),
+  );
+  if (unlabelled) entries.push({ label: "No label", status: "scheduled" });
+  return entries;
+}
+
+/** Color is the label on a chip, so the page says which color is which. */
+function Legend({ postsByDay }: { postsByDay: PostsByDay }) {
   return (
-    <div className="flex flex-wrap items-center gap-l">
-      {LEGEND.map((item) => (
+    <div className="flex flex-wrap items-center gap-x-l gap-y-xs">
+      {legendFor(postsByDay).map((item) => (
         <span
-          key={item.status}
-          style={postChipStyle(item.status)}
+          key={item.label}
+          style={postChipStyle(item.status, item.tone)}
           className="flex items-center gap-xs type-small text-imagine-foreground-muted"
         >
           <span
             aria-hidden="true"
             className="size-2 rounded-full bg-[var(--chip-color)]"
+          />
+          {item.label}
+        </span>
+      ))}
+      <span aria-hidden="true" className="h-4 w-px bg-imagine-border" />
+      {STATUS_KEY.map((item) => (
+        <span
+          key={item.status}
+          className="flex items-center gap-xs type-small text-imagine-foreground-muted"
+        >
+          <Icon
+            name={item.icon}
+            size="s"
+            className={
+              item.status === "failed" ? "text-destructive" : undefined
+            }
           />
           {item.label}
         </span>
@@ -172,7 +228,7 @@ export function CalendarPage({ postsByDay, today }: CalendarPageProps) {
       )}
 
       <div className="flex shrink-0 items-center justify-between gap-l">
-        <StatusLegend />
+        <Legend postsByDay={postsByDay} />
         <AnimatePresence initial={false} mode="popLayout">
           {note === null ? null : (
             <motion.p

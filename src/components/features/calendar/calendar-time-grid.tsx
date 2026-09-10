@@ -115,7 +115,7 @@ export function CalendarTimeGrid({
             <div
               key={day.date}
               role="gridcell"
-              className="flex min-h-12 flex-col gap-xs bg-imagine-surface p-xs"
+              className="@container/chip flex min-h-12 flex-col gap-xs bg-imagine-surface p-xs"
             >
               {day.posts
                 .filter((post) => toHour(post.time) === hour)
@@ -132,6 +132,9 @@ export function CalendarTimeGrid({
                     <PostChip
                       post={post}
                       dense={!single}
+                      // A day has the width for a paragraph; a week's column
+                      // has room for a couple of lines.
+                      lines={single ? 4 : 2}
                       selected={post.id === selectedPostId}
                       onOpen={onOpenPost}
                     />

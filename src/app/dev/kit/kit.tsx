@@ -91,6 +91,11 @@ const SWATCH_CLASSES = {
   destructive: "bg-destructive",
   warning: "bg-warning",
   success: "bg-success",
+  "tag-1": "bg-imagine-tag-1",
+  "tag-2": "bg-imagine-tag-2",
+  "tag-3": "bg-imagine-tag-3",
+  "tag-4": "bg-imagine-tag-4",
+  "tag-5": "bg-imagine-tag-5",
 } as const satisfies Record<ColorToken, string>;
 
 const RADIUS_SWATCH = {
@@ -137,6 +142,11 @@ const TYPE_SPECIMENS: readonly {
     token: "small",
     className: "type-small text-imagine-foreground-muted",
     sample: "Scheduled for Tue, 3 Sep at 9:00",
+  },
+  {
+    token: "caption",
+    className: "type-caption",
+    sample: "Six months of running product reviews without a deck.",
   },
   {
     token: "micro",

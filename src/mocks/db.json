@@ -785,6 +785,20 @@
         "updated_at": "2026-09-06T09:00:00.000Z"
       },
       {
+        "id": "pst_35",
+        "client_id": "cli_priya",
+        "content": "The outage that taught us what our retries were actually doing.\n\nAt 02:14 on a Tuesday, our queue depth went from four hundred to ninety thousand in six minutes. Nothing had deployed. Traffic was flat. The only thing that changed was that one downstream service started answering in 900ms instead of 90ms.\n\nHere is what we found, in the order we found it.\n\n1. Every caller had its own retry policy. Three retries, then five, then \"until it works\" in one worker nobody had touched since 2024. A single slow response fanned out into eleven requests on average. We measured it afterwards: 11.3.\n\n2. None of the retries had jitter. Every client that timed out at the same moment retried at the same moment. The downstream service saw a wall of traffic every 500ms, exactly on the beat, and each wall pushed its latency up a little more.\n\n3. Our circuit breaker was configured on error rate, not latency. The downstream service never returned an error. It just got slower. The breaker stayed closed for the entire ninety minutes.\n\n4. The dashboard we were all staring at showed request count, which looked like a traffic spike. It took forty minutes for someone to split the graph by first attempt versus retry. First attempts were flat the whole time. We had been attacking ourselves.\n\nWhat we changed.\n\nOne retry budget per service, enforced in the client library, not per call site. Ten percent of requests may be retries; past that, retries are dropped and counted. Exponential backoff with full jitter everywhere, no exceptions, including the worker from 2024. Breakers trip on p99 latency as well as error rate. And the request count graph now shows first attempts and retries as two lines by default, because the difference between them is the whole story.\n\nWe ran the same fault injection two weeks later. Queue depth peaked at 2,100 and recovered in four minutes without anyone being paged.\n\nThe lesson I keep coming back to: a retry is a request you chose to make. It should have a budget like everything else you choose to spend.",
+        "status": "scheduled",
+        "scheduled_at": "2026-09-10T14:00:00.000Z",
+        "linkedin_post_id": null,
+        "media": null,
+        "analytics": null,
+        "notes": "Long form. Check the queue depth numbers against the incident doc before it goes out.",
+        "post_label": "Case study",
+        "created_at": "2026-09-06T12:00:00.000Z",
+        "updated_at": "2026-09-06T17:40:00.000Z"
+      },
+      {
         "id": "pst_25",
         "client_id": "cli_priya",
         "content": "How we cut cold start from 1.8s to 240ms by moving the model client out of the request path.",
@@ -839,6 +853,20 @@
         "post_label": "Product",
         "created_at": "2026-09-06T09:00:00.000Z",
         "updated_at": "2026-09-06T09:00:00.000Z"
+      },
+      {
+        "id": "pst_36",
+        "client_id": "cli_acme",
+        "content": "Everything we shipped in September, and what each thing cost.\n\nWe publish this list every month. Not the highlights, the list. Here is September.\n\nCalendar. Posts now show who they go out from, what kind of post they are, and the first few lines, instead of a title cut off at forty characters. Three weeks, two people. The hard part was not the layout but deciding that the calendar should read like a plan and not like a to-do list.\n\nAttach to chat. Select a post on the calendar and it sits above the composer as context. The agent has the draft, the time, and the profile. One week, one person, most of it spent on what happens when you attach two things.\n\nAnalytics per profile. Impressions for the company page and each person side by side, so you can tell who is carrying the month. Two weeks. The chart took two days; agreeing on what \"carrying\" means took the rest.\n\nOnboarding. Down from nine steps to three. We removed the step that asked for your posting goals because nobody knew them yet, and the step that asked for your brand voice because the agent learns it from your first five posts anyway. Four weeks, on and off, because we kept testing it with new customers and changing it.\n\nWhat we did not ship. Comment drafting. We built it, tried it for two weeks internally, and turned it off. The drafts were fine. Fine is not good enough for something that goes out under your name in a thread you did not start.\n\nOctober is the reporting view that one customer asked for and eleven others turned out to want. More on that when it is real.",
+        "status": "scheduled",
+        "scheduled_at": "2026-09-30T09:00:00.000Z",
+        "linkedin_post_id": null,
+        "media": null,
+        "analytics": null,
+        "notes": null,
+        "post_label": "Product",
+        "created_at": "2026-09-06T16:30:00.000Z",
+        "updated_at": "2026-09-06T16:30:00.000Z"
       },
       {
         "id": "pst_29",

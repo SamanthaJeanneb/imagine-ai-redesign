@@ -37,7 +37,7 @@ function PostContextChip({ post, onRemove }: PostContextChipProps) {
     <div
       data-slot="post-context-chip"
       data-status={post.status}
-      style={postChipStyle(post.status)}
+      style={postChipStyle(post.status, post.tone)}
       className="flex h-8 items-center gap-s rounded-control bg-imagine-surface-raised py-xxs pr-xxs pl-xs shadow-control"
     >
       <span

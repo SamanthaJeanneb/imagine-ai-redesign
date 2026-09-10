@@ -48,6 +48,13 @@
   --color-warning: var(--imagine-warning);
   --color-success: var(--imagine-success);
 
+  /* Post label accents: bg-imagine-tag-1 … tag-5. Categorical, not semantic. */
+  --color-imagine-tag-1: var(--imagine-tag-1);
+  --color-imagine-tag-2: var(--imagine-tag-2);
+  --color-imagine-tag-3: var(--imagine-tag-3);
+  --color-imagine-tag-4: var(--imagine-tag-4);
+  --color-imagine-tag-5: var(--imagine-tag-5);
+
   /*
    * shadcn semantic names resolve to Imagine tokens so every primitive is
    * token-driven. Note: shadcn's `secondary` is the soft neutral button, not
@@ -146,8 +153,8 @@
  * accent-gradient: small accent tiles (logo, the scheduled day).
  * chip-wash: calendar posts. Pairs with a solid `--chip-color` rail; the fill
  * is a real tint of that color, deepest beside the rail and easing toward the
- * surface, so the chip reads as a filled card and not an outline. Dark status
- * colors (published) put contrast text on it; see `PostChip`.
+ * surface, so the chip reads as a filled card and not an outline. The color
+ * is the post's label tone, or its status when it has no label; see `PostChip`.
  */
 @utility selection-gradient {
   background-image: linear-gradient(
@@ -220,6 +227,11 @@
   font-size: var(--imagine-text-small-size);
   line-height: var(--imagine-text-small-line-height);
   letter-spacing: var(--imagine-text-small-letter-spacing);
+}
+@utility type-caption {
+  font-size: var(--imagine-text-caption-size);
+  line-height: var(--imagine-text-caption-line-height);
+  letter-spacing: var(--imagine-text-caption-letter-spacing);
 }
 @utility type-micro {
   font-size: var(--imagine-text-micro-size);
@@ -333,32 +345,37 @@
      `data-disabled="false"` on enabled ones, so only the true forms match.
      `:where()` keeps specificity at zero so `cursor-*` utilities still win. */
   :where(
-      a[href],
-      button,
-      summary,
-      select,
-      label[for],
-      input:is(
-          [type="button"],
-          [type="submit"],
-          [type="reset"],
-          [type="checkbox"],
-          [type="radio"],
-          [type="file"],
-          [type="range"],
-          [type="color"]
-        ),
-      [role="button"],
-      [role="link"],
-      [role="tab"],
-      [role="menuitem"],
-      [role="menuitemcheckbox"],
-      [role="menuitemradio"],
-      [role="option"],
-      [role="checkbox"],
-      [role="radio"],
-      [role="switch"]
-    ):not(:disabled, [aria-disabled="true"], [data-disabled=""], [data-disabled="true"]) {
+    a[href],
+    button,
+    summary,
+    select,
+    label[for],
+    input:is(
+      [type="button"],
+      [type="submit"],
+      [type="reset"],
+      [type="checkbox"],
+      [type="radio"],
+      [type="file"],
+      [type="range"],
+      [type="color"]
+    ),
+    [role="button"],
+    [role="link"],
+    [role="tab"],
+    [role="menuitem"],
+    [role="menuitemcheckbox"],
+    [role="menuitemradio"],
+    [role="option"],
+    [role="checkbox"],
+    [role="radio"],
+    [role="switch"]
+  ):not(
+    :disabled,
+    [aria-disabled="true"],
+    [data-disabled=""],
+    [data-disabled="true"]
+  ) {
     cursor: pointer;
   }
 
