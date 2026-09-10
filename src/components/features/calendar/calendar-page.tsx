@@ -115,11 +115,7 @@ function MonthAgenda({
             </div>
             <div className="flex flex-col gap-xs pl-8">
               {events.map((event) => (
-                <EventChip
-                  key={event.id}
-                  event={event}
-                  onOpen={onOpenEvent}
-                />
+                <EventChip key={event.id} event={event} onOpen={onOpenEvent} />
               ))}
               {day.posts.map((post) => (
                 <PostChip

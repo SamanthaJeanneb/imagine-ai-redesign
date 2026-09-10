@@ -162,7 +162,7 @@ export function PostChip({
         // In a narrow cell (the chat column's composer preview) the chip
         // keeps only the avatar and the excerpt, and pulls its padding in.
         // The cell is the `chip` container; see the calendar grids.
-        "@max-[6rem]/chip:pr-xs @max-[6rem]/chip:pl-s",
+        "@max-[6rem]/chip:pl-s",
         selected ? "chip-solid shadow-raised" : "chip-wash shadow-control",
         inverted ? "text-[var(--chip-contrast)]" : "text-imagine-foreground",
         post.status === "draft" &&
@@ -219,7 +219,7 @@ export function PostChip({
           {post.label}
         </span>
       )}
-      <span className={cn("type-caption wrap-anywhere", LINE_CLAMP[lines])}>
+      <span className={cn("type-caption break-words", LINE_CLAMP[lines])}>
         {toExcerpt(post)}
       </span>
       {dense ? null : (

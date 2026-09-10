@@ -93,7 +93,12 @@ export function LandingBelow({
     // The same beat above the first section as between the sections, so the
     // composer does not crowd the timeline. No bottom padding of its own: the
     // page's inset already matches the top.
-    <div className={cn(LANDING_COLUMN, "flex flex-col gap-xxl pt-xxl xl:min-h-0 xl:flex-1")}>
+    <div
+      className={cn(
+        LANDING_COLUMN,
+        "flex flex-col gap-xxl pt-xxl xl:min-h-0 xl:flex-1",
+      )}
+    >
       {entries.length === 0 ? null : (
         <section className="flex flex-col gap-l">
           <h2 className="type-heading">While you were away</h2>
@@ -137,7 +142,7 @@ export function LandingBelow({
             density="strip"
             onOpenPost={onOpenPost}
             onOpenEvent={onOpenEvent}
-            className="min-w-[36rem] flex-1"
+            className="min-w-[56rem] flex-1"
             {...(selectedPostId === undefined ? {} : { selectedPostId })}
           />
         </div>

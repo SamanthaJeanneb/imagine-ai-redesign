@@ -200,7 +200,7 @@ export function AgentWorkspace({
               className="flex min-w-0 shrink-0 flex-col xl:min-h-0 xl:flex-1"
             >
               {centered ? (
-                <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-xxxl pt-xxxl pb-l">
+                <div className="mx-auto flex w-full max-w-4xl min-w-0 flex-1 flex-col gap-xxxl pt-xxxl pb-l">
                   <ActivityCards
                     entries={pending}
                     onAction={(entry, action) => {

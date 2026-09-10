@@ -48,14 +48,14 @@ export function CenteredIntro({
   dateLabel: string;
 }) {
   return (
-    <div className="flex min-w-0 flex-col items-center gap-xl pt-section pb-xxl text-center">
+    <div className="flex w-full min-w-0 flex-col items-center gap-xl pt-section pb-xxl text-center">
       {/* The agent, as a person would be: a circle. Black mark on a white disc
           in both themes, with a plain drop shadow: no ring, no sheen. */}
       <span className="flex size-16 items-center justify-center rounded-full bg-white text-black shadow-[0_2px_6px_rgb(0_0_0/0.08),0_12px_28px_-8px_rgb(0_0_0/0.22)]">
         <Icon name="imagine" className="text-[34px]" />
       </span>
       <div className="flex flex-col gap-xs">
-        <h1 className="type-title">{greeting}</h1>
+        <h1 className="max-w-full type-title text-balance">{greeting}</h1>
         <p className="type-small text-imagine-foreground-muted">{dateLabel}</p>
       </div>
     </div>
@@ -85,14 +85,17 @@ export function ActivityCards({
     <Stagger
       kind="grid"
       data-slot="activity-cards"
-      className={cn("grid grid-cols-1 gap-l sm:grid-cols-3", className)}
+      className={cn(
+        "grid min-w-0 grid-cols-1 gap-l sm:grid-cols-2 xl:grid-cols-3",
+        className,
+      )}
     >
       {shown.map((entry) => {
         const primary =
           entry.actions.find((action) => action.primary) ?? entry.actions[0];
         const icon = KIND_ICON[entry.kind] ?? "imagine";
         return (
-          <StaggerItem key={entry.id} className="flex">
+          <StaggerItem key={entry.id} className="flex min-w-0">
             <motion.button
               type="button"
               whileTap={pressRow.whileTap}
@@ -101,7 +104,7 @@ export function ActivityCards({
               onClick={() => {
                 if (primary) onAction(entry, primary);
               }}
-              className="group/card flex w-full items-start gap-s rounded-panel bg-imagine-surface p-m text-left shadow-raised transition-shadow outline-none hover:shadow-floating focus-visible:ring-2 focus-visible:ring-ring/40"
+              className="group/card flex w-full min-w-0 items-start gap-s rounded-panel bg-imagine-surface p-m text-left shadow-raised transition-shadow outline-none hover:shadow-floating focus-visible:ring-2 focus-visible:ring-ring/40"
             >
               <span
                 className={cn(
@@ -160,7 +163,7 @@ export function MonthCalendar({
   className?: string;
 }) {
   return (
-    <section className={cn("flex flex-col gap-l", className)}>
+    <section className={cn("flex min-w-0 flex-col gap-l", className)}>
       <div className="flex items-baseline justify-between gap-l">
         <h2 className="type-heading">{label}</h2>
         <Button
@@ -180,7 +183,7 @@ export function MonthCalendar({
           onOpenPost={onOpenPost}
           onOpenEvent={onOpenEvent}
           {...(selectedPostId === undefined ? {} : { selectedPostId })}
-          className="min-w-[36rem]"
+          className="min-w-[56rem]"
         />
       </div>
     </section>
