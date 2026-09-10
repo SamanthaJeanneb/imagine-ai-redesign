@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "cn";
-import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
@@ -23,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { spring } from "@/styles/motion";
 
 export type MemberRole = "admin" | "member";
 
@@ -199,13 +197,11 @@ interface InviteTeamFormProps {
   className?: string;
 }
 
-interface InviteDraft {
-  key: number;
-  email: string;
-  role: MemberRole;
-}
-
-/** Onboarding step: invite by email (growing list), share a link, see the team. */
+/**
+ * Onboarding step: invite by email, share a link, see the team. Invites go
+ * one at a time; each sent one lands in the team list below as "Invited", so
+ * the row clears for the next person instead of growing into a list.
+ */
 export function InviteTeamForm({
   inviteUrl,
   members,
@@ -216,10 +212,16 @@ export function InviteTeamForm({
   onSkip,
   className,
 }: InviteTeamFormProps) {
-  const [drafts, setDrafts] = useState<InviteDraft[]>([
-    { key: 0, email: "", role: "member" },
-  ]);
-  const filled = drafts.filter((draft) => draft.email.trim() !== "");
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<MemberRole>("member");
+  const ready = email.trim() !== "";
+
+  const sendInvite = () => {
+    if (!ready) return;
+    onInvite([{ email: email.trim(), role }]);
+    setEmail("");
+    setRole("member");
+  };
 
   return (
     <form
@@ -231,101 +233,32 @@ export function InviteTeamForm({
       }}
     >
       <Field>
-        <FieldLabel>Invite by email</FieldLabel>
-        <div className="flex flex-col gap-s">
-          <AnimatePresence initial={false}>
-            {drafts.map((draft, index) => (
-              <motion.div
-                key={draft.key}
-                layout
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={spring.soft}
-                className="flex items-center gap-s overflow-hidden"
-              >
-                <Input
-                  type="email"
-                  placeholder="name@company.com"
-                  aria-label={`Invite email ${String(index + 1)}`}
-                  value={draft.email}
-                  onChange={(event) => {
-                    const value = event.target.value;
-                    setDrafts((current) =>
-                      current.map((item) =>
-                        item.key === draft.key
-                          ? { ...item, email: value }
-                          : item,
-                      ),
-                    );
-                  }}
-                />
-                <RoleSelect
-                  value={draft.role}
-                  label={`Role for invite ${String(index + 1)}`}
-                  onChange={(role) => {
-                    setDrafts((current) =>
-                      current.map((item) =>
-                        item.key === draft.key ? { ...item, role } : item,
-                      ),
-                    );
-                  }}
-                />
-                {drafts.length > 1 ? (
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    aria-label="Remove"
-                    onClick={() => {
-                      setDrafts((current) =>
-                        current.filter((item) => item.key !== draft.key),
-                      );
-                    }}
-                  >
-                    <Icon name="xmark" size="s" />
-                  </Button>
-                ) : null}
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-        {/* Field stretches its children, so the two actions share a row. */}
-        <div className="flex items-center gap-m">
+        <FieldLabel htmlFor="invite-email">Invite by email</FieldLabel>
+        <div className="flex items-center gap-s">
+          <Input
+            id="invite-email"
+            type="email"
+            placeholder="name@company.com"
+            value={email}
+            onChange={(event) => {
+              setEmail(event.target.value);
+            }}
+            onKeyDown={(event) => {
+              // Enter here sends the invite; submitting the form is Continue.
+              if (event.key === "Enter" && ready) {
+                event.preventDefault();
+                sendInvite();
+              }
+            }}
+          />
+          <RoleSelect value={role} label="Role for invite" onChange={setRole} />
           <Button
             type="button"
-            variant="link"
-            size="sm"
-            // Flush with the inputs above; the icon variant would indent it.
-            className="px-0 has-data-[icon=inline-start]:pl-0"
-            onClick={() => {
-              setDrafts((current) => [
-                ...current,
-                { key: Date.now(), email: "", role: "member" },
-              ]);
-            }}
+            variant="outline"
+            disabled={!ready}
+            onClick={sendInvite}
           >
-            <Icon name="plus" size="s" data-icon="inline-start" />
-            Add another
-          </Button>
-          <Button
-            type="button"
-            variant="soft"
-            size="sm"
-            disabled={filled.length === 0}
-            onClick={() => {
-              onInvite(
-                filled.map(({ email, role }) => ({
-                  email: email.trim(),
-                  role,
-                })),
-              );
-              setDrafts([{ key: Date.now(), email: "", role: "member" }]);
-            }}
-          >
-            {filled.length > 1
-              ? `Send ${String(filled.length)} invites`
-              : "Send invite"}
+            Send invite
           </Button>
         </div>
       </Field>
