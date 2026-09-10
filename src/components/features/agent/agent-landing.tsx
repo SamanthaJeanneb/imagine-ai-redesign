@@ -93,7 +93,7 @@ export function LandingBelow({
     // The same beat above the first section as between the sections, so the
     // composer does not crowd the timeline. No bottom padding of its own: the
     // page's inset already matches the top.
-    <div className={cn(LANDING_COLUMN, "flex flex-1 flex-col gap-xxl pt-xxl")}>
+    <div className={cn(LANDING_COLUMN, "flex flex-col gap-xxl pt-xxl xl:min-h-0 xl:flex-1")}>
       {entries.length === 0 ? null : (
         <section className="flex flex-col gap-l">
           <h2 className="type-heading">While you were away</h2>
@@ -129,7 +129,7 @@ export function LandingBelow({
           ) : null}
         </section>
       )}
-      <section className="flex flex-1 flex-col gap-l">
+      <section className="flex flex-col gap-l xl:min-h-0 xl:flex-1">
         <h2 className="type-heading">Next two weeks</h2>
         <div className="min-w-0 overflow-x-auto">
           <CalendarGrid

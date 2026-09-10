@@ -154,7 +154,7 @@ export function ApiKeySection({
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={fade.base}
-          className="flex items-center gap-xs"
+          className="flex min-w-0 flex-wrap items-center gap-xs"
         >
           <code className="min-w-0 flex-1 truncate rounded-control bg-imagine-surface-raised px-m py-xs font-mono text-xs text-imagine-foreground-muted select-all">
             {revealed ? secret : `${secret.slice(0, PREFIX_LENGTH)}${MASK}`}

@@ -197,7 +197,7 @@ export function AgentWorkspace({
               key="below"
               exit={blurOut}
               transition={fade.base}
-              className="flex min-h-0 min-w-0 flex-1 flex-col"
+              className="flex min-w-0 shrink-0 flex-col xl:min-h-0 xl:flex-1"
             >
               {centered ? (
                 <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-xxxl pt-xxxl pb-l">
@@ -237,16 +237,18 @@ export function AgentWorkspace({
             </motion.div>
           ) : null}
         </AnimatePresence>
-        {onLanding && !centered && isCompact && landing !== undefined ? (
-          <LandingRail
-            stacked
-            stats={landing.stats}
-            chart={landing.chart}
-            upNext={landing.upNext}
-            onOpenCalendar={() => {
-              router.push("/calendar");
-            }}
-          />
+        {onLanding && !centered && landing !== undefined ? (
+          <div className="w-full min-w-0 shrink-0 xl:hidden">
+            <LandingRail
+              stacked
+              stats={landing.stats}
+              chart={landing.chart}
+              upNext={landing.upNext}
+              onOpenCalendar={() => {
+                router.push("/calendar");
+              }}
+            />
+          </div>
         ) : null}
       </div>
 

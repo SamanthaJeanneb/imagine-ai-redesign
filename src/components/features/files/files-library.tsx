@@ -991,7 +991,7 @@ export function FilesLibrary({
         aria-label="Browser"
         className="flex min-h-0 min-w-0 flex-1 flex-col gap-m px-l pt-l pb-l md:px-xxl md:pt-xl md:pb-xxl"
       >
-        <header className="flex min-h-9 shrink-0 flex-wrap items-center gap-s md:h-9 md:gap-l">
+        <header className="flex min-h-9 shrink-0 flex-wrap items-center gap-s">
           <Button
             size="icon-sm"
             variant="ghost"
@@ -1086,7 +1086,7 @@ export function FilesLibrary({
             placeholder={`Search in ${tab === "skills" ? "skills" : (currentSection?.title ?? "all files")}`}
             emptyLabel={`Nothing matches “${query.trim()}”`}
             listLabel="Files"
-            className="w-64 shrink-0"
+            className="w-full min-w-0 sm:w-64 sm:shrink-0"
           />
           {tab === "files" ? (
             <ToggleGroup
@@ -1109,7 +1109,7 @@ export function FilesLibrary({
         </header>
 
         {tab === "files" ? (
-          <div className="flex shrink-0 items-center justify-between gap-l">
+          <div className="flex min-w-0 shrink-0 flex-wrap items-center justify-between gap-s">
             <ChipGroup
               value={filter}
               onValueChange={(next) => {

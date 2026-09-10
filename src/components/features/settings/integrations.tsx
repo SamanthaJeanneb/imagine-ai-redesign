@@ -58,7 +58,7 @@ export function IntegrationRows({
     >
       {items.map((item) => (
         <StaggerItem key={item.id}>
-          <div className="flex items-center gap-m rounded-control px-m py-m transition-colors hover:bg-imagine-surface-raised/50">
+          <div className="flex min-w-0 items-center gap-m rounded-control px-m py-m transition-colors hover:bg-imagine-surface-raised/50">
             <IntegrationMark icon={item.icon} />
             <button
               type="button"

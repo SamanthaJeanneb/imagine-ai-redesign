@@ -224,7 +224,7 @@ export function ProfileDetail({
               </div>
             ) : (
               <form
-                className="flex items-center gap-s"
+                className="flex min-w-0 flex-col gap-s sm:flex-row sm:items-center"
                 onSubmit={(event) => {
                   event.preventDefault();
                   if (companyUrl.trim()) onLinkCompany?.(companyUrl.trim());
@@ -234,7 +234,7 @@ export function ProfileDetail({
                   value={companyUrl}
                   placeholder="linkedin.com/company/"
                   aria-label="Company page address"
-                  className="bg-imagine-surface"
+                  className="min-w-0 bg-imagine-surface"
                   onChange={(event) => {
                     setCompanyUrl(event.target.value);
                   }}
@@ -275,7 +275,7 @@ export function ProfileDetail({
           )}
         </Group>
 
-        <div className="mt-auto flex items-center justify-between border-t border-imagine-border pt-l">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-s border-t border-imagine-border pt-l">
           <Button
             variant="ghost"
             size="sm"

@@ -258,7 +258,7 @@ export function ProfileSelector({
           // No `gap`: the label carries its own, so it can take it along
           // when it folds away.
           className={cn(
-            "gap-0 pl-1.5 text-sm text-imagine-foreground [--face-ring:var(--color-imagine-surface)] hover:[--face-ring:var(--color-imagine-surface-raised)] aria-expanded:[--face-ring:var(--color-imagine-surface-raised)]",
+            "min-w-0 gap-0 pl-1.5 text-sm text-imagine-foreground [--face-ring:var(--color-imagine-surface)] hover:[--face-ring:var(--color-imagine-surface-raised)] aria-expanded:[--face-ring:var(--color-imagine-surface-raised)]",
             className,
           )}
         >

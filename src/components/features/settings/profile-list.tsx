@@ -61,15 +61,15 @@ export function ProfileList({
       data-slot="profile-list"
       className={cn("flex flex-col gap-l", className)}
     >
-      <div className="flex items-center gap-s">
+      <div className="flex min-w-0 flex-wrap items-center gap-s">
         <SearchField
           value={query}
           onValueChange={setQuery}
           placeholder="Search profiles"
-          className="max-w-80"
+          className="min-w-0 flex-1"
         />
         {onAdd ? (
-          <Button variant="soft" size="sm" className="ml-auto" onClick={onAdd}>
+          <Button variant="soft" size="sm" className="ml-auto shrink-0" onClick={onAdd}>
             <Icon name="plus" size="s" data-icon="inline-start" />
             Add profile
           </Button>

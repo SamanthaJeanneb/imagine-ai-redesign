@@ -287,29 +287,27 @@ export function CalendarPage({
         onSearchSelect={openHit}
       />
 
-      {view === "month" ? (
-        isMobile ? (
-          <MonthAgenda
+      {isMobile && (view === "month" || view === "week") ? (
+        <MonthAgenda
+          days={range.days}
+          onOpenPost={attach}
+          onOpenEvent={draftFromEvent}
+          {...(selected === undefined ? {} : { selectedPostId: selected })}
+        />
+      ) : view === "month" ? (
+        <div className="min-h-0 min-w-0 flex-1 overflow-x-auto">
+          <CalendarGrid
             days={range.days}
+            fill
+            // The page arrives by morphing out of the composer preview, which
+            // opens on the month.
+            layoutId={PREVIEW_LAYOUT_ID.calendar}
             onOpenPost={attach}
             onOpenEvent={draftFromEvent}
             {...(selected === undefined ? {} : { selectedPostId: selected })}
+            className="min-h-full min-w-[36rem]"
           />
-        ) : (
-          <div className="min-h-0 min-w-0 flex-1 overflow-x-auto">
-            <CalendarGrid
-              days={range.days}
-              fill
-              // The page arrives by morphing out of the composer preview, which
-              // opens on the month.
-              layoutId={PREVIEW_LAYOUT_ID.calendar}
-              onOpenPost={attach}
-              onOpenEvent={draftFromEvent}
-              {...(selected === undefined ? {} : { selectedPostId: selected })}
-              className="min-h-full min-w-[36rem]"
-            />
-          </div>
-        )
+        </div>
       ) : (
         <div className="min-h-0 min-w-0 flex-1 overflow-x-auto">
           <CalendarTimeGrid

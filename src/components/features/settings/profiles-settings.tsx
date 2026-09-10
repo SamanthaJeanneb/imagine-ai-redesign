@@ -174,7 +174,7 @@ export function ProfilesSettings({
   }
 
   return (
-    <div className="grid min-h-0 flex-1 gap-xl lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+    <div className="grid min-h-0 min-w-0 flex-1 gap-xl lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
       <ProfileList
         profiles={profiles}
         {...(selectedId === undefined ? {} : { selectedId })}

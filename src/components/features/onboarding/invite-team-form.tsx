@@ -234,11 +234,12 @@ export function InviteTeamForm({
     >
       <Field>
         <FieldLabel htmlFor="invite-email">Invite by email</FieldLabel>
-        <div className="flex items-center gap-s">
+        <div className="flex flex-col gap-s sm:flex-row sm:items-center">
           <Input
             id="invite-email"
             type="email"
             placeholder="name@company.com"
+            className="min-w-0 w-full flex-1"
             value={email}
             onChange={(event) => {
               setEmail(event.target.value);
@@ -251,15 +252,21 @@ export function InviteTeamForm({
               }
             }}
           />
-          <RoleSelect value={role} label="Role for invite" onChange={setRole} />
-          <Button
-            type="button"
-            variant="outline"
-            disabled={!ready}
-            onClick={sendInvite}
-          >
-            Send invite
-          </Button>
+          <div className="flex shrink-0 items-center gap-s">
+            <RoleSelect
+              value={role}
+              label="Role for invite"
+              onChange={setRole}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!ready}
+              onClick={sendInvite}
+            >
+              Send invite
+            </Button>
+          </div>
         </div>
       </Field>
 
@@ -283,7 +290,7 @@ export function InviteTeamForm({
         </Stagger>
       </Field>
 
-      <div className="flex items-center gap-l">
+      <div className="flex flex-wrap items-center gap-l">
         <Button type="submit" size="lg">
           Continue
         </Button>

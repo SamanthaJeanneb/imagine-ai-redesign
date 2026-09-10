@@ -361,13 +361,13 @@ export function ChartBlock({
     >
       {/* One line: what this is on the left, the number(s) on the right. Where
           the block is narrow the description drops to a second line whole. */}
-      <div className="flex items-baseline justify-between gap-l">
+      <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-l gap-y-xs">
         <span className="min-w-0 type-small font-medium text-imagine-foreground-muted">
-          <span className="whitespace-nowrap">{title ?? primary?.label}</span>
+          <span>{title ?? primary?.label}</span>
           {description ? (
             <>
               {" "}
-              <span className="whitespace-nowrap text-imagine-foreground-faint">
+              <span className="text-imagine-foreground-faint">
                 · {description}
               </span>
             </>

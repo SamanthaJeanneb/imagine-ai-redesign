@@ -217,7 +217,7 @@ function WorkspaceHeader({
           {...(prefix ? {} : { prefix: false })}
           // First in the row, the faces sit on the page's text column;
           // after the expand chevron they take the row's gap instead.
-          className={cn(!collapsed && "-ml-1.5")}
+          className={cn("min-w-0", !collapsed && "-ml-1.5")}
         />
       ) : null}
       <AnimatePresence initial={false}>

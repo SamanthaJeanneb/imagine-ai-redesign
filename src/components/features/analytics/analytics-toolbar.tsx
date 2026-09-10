@@ -52,7 +52,7 @@ export function AnalyticsToolbar({
   return (
     <div
       data-slot="analytics-toolbar"
-      className={cn("flex flex-wrap items-center gap-s", className)}
+      className={cn("flex min-w-0 flex-wrap items-center gap-s", className)}
     >
       <ToggleGroup
         value={range}

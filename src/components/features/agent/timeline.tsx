@@ -86,7 +86,7 @@ export function Timeline({ entries, onAction, className }: TimelineProps) {
               />
             </span>
             <div className="flex min-w-0 flex-1 flex-col gap-s py-xs">
-              <div className="flex items-center justify-between gap-l">
+              <div className="flex flex-col gap-s sm:flex-row sm:items-center sm:justify-between sm:gap-l">
                 <div className="flex min-w-0 flex-col gap-xxs">
                   <span className="type-small text-imagine-foreground-muted">
                     {entry.kind}
@@ -95,7 +95,7 @@ export function Timeline({ entries, onAction, className }: TimelineProps) {
                   </span>
                   <span className="type-body font-medium">{entry.title}</span>
                 </div>
-                <div className="flex shrink-0 items-center gap-xs">
+                <div className="flex flex-wrap items-center gap-xs sm:shrink-0">
                   {entry.actions.map((action) => (
                     <Button
                       key={action.intent}

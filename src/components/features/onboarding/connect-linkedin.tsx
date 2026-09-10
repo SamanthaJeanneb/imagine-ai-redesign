@@ -71,7 +71,7 @@ export function ConnectLinkedIn({
         ))}
       </Stagger>
 
-      <div className="flex items-center gap-l">
+      <div className="flex flex-wrap items-center gap-l">
         <Button size="lg" disabled={pending} onClick={onConnect}>
           {pending ? (
             <Spinner size="s" data-icon="inline-start" />

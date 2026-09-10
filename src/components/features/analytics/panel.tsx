@@ -50,7 +50,7 @@ export function Panel({
     >
       <header className="flex min-h-8 flex-wrap items-center justify-between gap-m">
         <div className="flex min-w-0 items-baseline gap-s">
-          <h2 className="type-heading whitespace-nowrap">{title}</h2>
+          <h2 className="min-w-0 type-heading">{title}</h2>
           {description ? (
             <span className="truncate type-small text-imagine-foreground-faint">
               {description}
