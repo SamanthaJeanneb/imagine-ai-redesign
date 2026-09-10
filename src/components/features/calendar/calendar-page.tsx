@@ -292,16 +292,19 @@ export function CalendarPage({
         />
       ) : view === "month" ? (
         <div className="min-h-0 min-w-0 flex-1 overflow-x-auto">
+          {/* The month takes the height between the toolbar and the legend
+              and fits itself to it: every week visible, chips sized to the
+              rows. Only a cell narrower than a word's worth scrolls sideways. */}
           <CalendarGrid
             days={range.days}
-            fill
+            fit
             // The page arrives by morphing out of the composer preview, which
             // opens on the month.
             layoutId={PREVIEW_LAYOUT_ID.calendar}
             onOpenPost={attach}
             onOpenEvent={draftFromEvent}
             {...(selected === undefined ? {} : { selectedPostId: selected })}
-            className="min-h-full min-w-[36rem]"
+            className="h-full min-w-[36rem]"
           />
         </div>
       ) : (

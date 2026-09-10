@@ -44,6 +44,11 @@ interface PostChipProps {
    * the label and time lines so the name and the post itself get the room.
    */
   dense?: boolean;
+  /**
+   * One line: the rail, the avatar, and the start of the post, truncated. For
+   * a cell with no height to spare; the hover card still shows the whole post.
+   */
+  line?: boolean;
   /** How many lines of the post to show before it clips. */
   lines?: PostChipLines;
   selected?: boolean;
@@ -136,6 +141,7 @@ function toExcerpt(post: PostChipData): string {
 export function PostChip({
   post,
   dense = false,
+  line = false,
   lines = dense ? 2 : 3,
   selected = false,
   onOpen,
@@ -144,6 +150,38 @@ export function PostChip({
   const inverted = selected || STATUS_COLOR[post.status].darkWash;
   const author = post.preview?.author;
   const muted = inverted ? "opacity-80" : "text-imagine-foreground-muted";
+  const avatar =
+    author?.avatarUrl === undefined ? null : (
+      <Avatar
+        shape={author.kind === "company" ? "square" : "circle"}
+        className="size-4"
+      >
+        <AvatarImage src={author.avatarUrl} alt="" />
+      </Avatar>
+    );
+  const statusIcon =
+    post.status === "in_review" ? (
+      <Icon
+        name="eye"
+        size="s"
+        className={cn("shrink-0 @max-[6rem]/chip:hidden", muted)}
+      />
+    ) : post.status === "published" ? (
+      <Icon
+        name="check"
+        size="s"
+        className={cn("shrink-0 @max-[6rem]/chip:hidden", muted)}
+      />
+    ) : post.status === "failed" ? (
+      <Icon
+        name="triangle-exclamation"
+        size="s"
+        className={cn(
+          "shrink-0 @max-[6rem]/chip:hidden",
+          inverted ? "opacity-80" : "text-destructive",
+        )}
+      />
+    ) : null;
   const chip = (
     <motion.button
       type="button"
@@ -158,7 +196,8 @@ export function PostChip({
       aria-label={`${post.title}, ${post.time}, ${post.profile}, ${post.status}`}
       style={postChipStyle(post.status)}
       className={cn(
-        "relative flex w-full min-w-0 flex-col gap-xxs overflow-hidden rounded-control px-s py-xs pl-m text-left transition-[box-shadow,color] outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-imagine-surface",
+        "relative flex w-full min-w-0 overflow-hidden rounded-control px-s pl-m text-left transition-[box-shadow,color] outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-imagine-surface",
+        line ? "items-center gap-xs py-xxs" : "flex-col gap-xxs py-xs",
         // In a narrow cell (the chat column's composer preview) the chip
         // keeps only the avatar and the excerpt, and pulls its padding in.
         // The cell is the `chip` container; see the calendar grids.
@@ -177,55 +216,37 @@ export function PostChip({
           className="absolute inset-y-0 left-0 w-1.5 bg-[var(--chip-color)]"
         />
       )}
-      <span className="flex min-w-0 items-center gap-xs">
-        {author?.avatarUrl === undefined ? null : (
-          <Avatar
-            shape={author.kind === "company" ? "square" : "circle"}
-            className="size-4"
-          >
-            <AvatarImage src={author.avatarUrl} alt="" />
-          </Avatar>
-        )}
-        <span className="min-w-0 flex-1 truncate type-caption font-semibold @max-[6rem]/chip:hidden">
-          {post.profile}
-        </span>
-        {post.status === "in_review" ? (
-          <Icon
-            name="eye"
-            size="s"
-            className={cn("shrink-0 @max-[6rem]/chip:hidden", muted)}
-          />
-        ) : null}
-        {post.status === "published" ? (
-          <Icon
-            name="check"
-            size="s"
-            className={cn("shrink-0 @max-[6rem]/chip:hidden", muted)}
-          />
-        ) : null}
-        {post.status === "failed" ? (
-          <Icon
-            name="triangle-exclamation"
-            size="s"
-            className={cn(
-              "shrink-0 @max-[6rem]/chip:hidden",
-              inverted ? "opacity-80" : "text-destructive",
-            )}
-          />
-        ) : null}
-      </span>
-      {dense || post.label === undefined ? null : (
-        <span className={cn("truncate type-caption italic", muted)}>
-          {post.label}
-        </span>
-      )}
-      <span className={cn("type-caption break-words", LINE_CLAMP[lines])}>
-        {toExcerpt(post)}
-      </span>
-      {dense ? null : (
-        <span className={cn("type-caption tabular-nums", muted)}>
-          {post.time}
-        </span>
+      {line ? (
+        <>
+          {avatar}
+          <span className="min-w-0 flex-1 truncate type-caption">
+            {toExcerpt(post)}
+          </span>
+          {statusIcon}
+        </>
+      ) : (
+        <>
+          <span className="flex min-w-0 items-center gap-xs">
+            {avatar}
+            <span className="min-w-0 flex-1 truncate type-caption font-semibold @max-[6rem]/chip:hidden">
+              {post.profile}
+            </span>
+            {statusIcon}
+          </span>
+          {dense || post.label === undefined ? null : (
+            <span className={cn("truncate type-caption italic", muted)}>
+              {post.label}
+            </span>
+          )}
+          <span className={cn("type-caption break-words", LINE_CLAMP[lines])}>
+            {toExcerpt(post)}
+          </span>
+          {dense ? null : (
+            <span className={cn("type-caption tabular-nums", muted)}>
+              {post.time}
+            </span>
+          )}
+        </>
       )}
     </motion.button>
   );

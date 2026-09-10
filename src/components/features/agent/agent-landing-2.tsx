@@ -176,6 +176,8 @@ export function MonthCalendar({
           Open calendar
         </Button>
       </div>
+      {/* The month shrinks with the column, its chips slimming to a line
+          before its cells get narrower than a word. */}
       <div className="min-w-0 overflow-x-auto">
         <CalendarGrid
           days={days}
@@ -183,7 +185,7 @@ export function MonthCalendar({
           onOpenPost={onOpenPost}
           onOpenEvent={onOpenEvent}
           {...(selectedPostId === undefined ? {} : { selectedPostId })}
-          className="min-w-[56rem]"
+          className="min-w-[36rem]"
         />
       </div>
     </section>

@@ -31,7 +31,10 @@ export interface EventChipData {
 
 interface EventChipProps {
   event: EventChipData;
+  /** Drops the time line so the title gets the room. */
   dense?: boolean;
+  /** One tight line: the mark and the title. For a cell with no height to spare. */
+  line?: boolean;
   onOpen?: (event: EventChipData) => void;
   className?: string;
 }
@@ -52,6 +55,7 @@ const EVENT_STYLE: CSSProperties & {
 export function EventChip({
   event,
   dense = false,
+  line = false,
   onOpen,
   className,
 }: EventChipProps) {
@@ -71,7 +75,8 @@ export function EventChip({
       aria-label={`${event.title}, ${event.whenLabel}, ${event.calendarName}`}
       style={EVENT_STYLE}
       className={cn(
-        "relative flex w-full min-w-0 flex-col gap-xxs overflow-hidden rounded-control px-s py-xs pl-m text-left text-imagine-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-imagine-surface",
+        "relative flex w-full min-w-0 flex-col gap-xxs overflow-hidden rounded-control px-s pl-m text-left text-imagine-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-imagine-surface",
+        line ? "py-xxs" : "py-xs",
         "chip-wash shadow-control @max-[6rem]/chip:pr-xs @max-[6rem]/chip:pl-s",
         className,
       )}
@@ -90,7 +95,7 @@ export function EventChip({
           {event.title}
         </span>
       </span>
-      {dense ? null : (
+      {dense || line ? null : (
         <span className="type-caption text-imagine-foreground-muted tabular-nums">
           {range}
         </span>
