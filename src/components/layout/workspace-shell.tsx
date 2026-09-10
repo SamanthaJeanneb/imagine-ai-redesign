@@ -7,6 +7,7 @@ import { type ReactNode, useState } from "react";
 
 import {
   ChatProvider,
+  NEW_THREAD_ID,
   type PreviewData,
   useChat,
 } from "@/components/features/agent/chat-provider";
@@ -298,7 +299,20 @@ function WorkspaceFrame({
       .map((profile) => profile.id),
   );
   const activeKey = navKeyFor(pathname);
-  const activeThreadId = threadIdFor(pathname);
+  // A conversation started here is not stored, so the rail would not know it.
+  // It gets a row of its own, named "New chat" until the first message.
+  const newThreadTitle =
+    chat.threadId === NEW_THREAD_ID
+      ? (titleFrom(chat.messages) ?? "New chat")
+      : undefined;
+  const visibleThreads: readonly SidebarThread[] =
+    newThreadTitle === undefined
+      ? threads
+      : [{ id: NEW_THREAD_ID, title: newThreadTitle }, ...threads];
+  const activeThreadId =
+    activeKey === "agent" && newThreadTitle !== undefined
+      ? NEW_THREAD_ID
+      : threadIdFor(pathname);
   const chatColumn = chatColumnFor(pathname);
   const docked = chatColumn !== undefined;
   const [panel, setPanel] = useState<ChatPanelMode | null>(null);
@@ -329,6 +343,21 @@ function WorkspaceFrame({
       setCollapsed(railBeforeFiles);
     }
     setPanel(next);
+  }
+
+  /**
+   * Show a thread from the rail or the history panel. The new one has no
+   * page of its own: empty, it is the landing; with messages, the thread on
+   * `/agent`, whose URL then settles on its own.
+   */
+  function openThread(id: string) {
+    chat.setPreview(null);
+    if (id !== NEW_THREAD_ID) {
+      router.push(`/agent/${id}`);
+      return;
+    }
+    if (activeKey === "agent") return;
+    router.push(chat.messages.length === 0 ? "/landing-2" : "/agent");
   }
 
   function openEditor(id: string) {
@@ -544,13 +573,11 @@ function WorkspaceFrame({
       <ChatContextPanel
         key="context-panel"
         mode="history"
-        threads={threads}
+        threads={visibleThreads}
         fileSections={fileSections}
         currentThreadId={chat.threadId}
         currentTitle={chatTitle}
-        onSelectThread={(id) => {
-          router.push(`/agent/${id}`);
-        }}
+        onSelectThread={openThread}
         onClose={() => {
           changePanel(null);
         }}
@@ -565,7 +592,7 @@ function WorkspaceFrame({
           {...(orgLogoUrl === undefined ? {} : { orgLogoUrl })}
           {...(activeKey === undefined ? {} : { active: activeKey })}
           {...(activeThreadId === undefined ? {} : { activeThreadId })}
-          threads={threads}
+          threads={visibleThreads}
           collapsed={collapsed}
           onCollapsedChange={setCollapsed}
           onNavigate={(key) => {
@@ -575,14 +602,13 @@ function WorkspaceFrame({
             router.push(`/${key}`);
           }}
           onNewPost={() => {
-            chat.reset();
+            // Opens as a conversation at once, so the rail lists it as
+            // "New chat" and the header carries the name.
+            chat.startNew();
             changePanel(null);
-            router.push("/agent");
+            router.push("/landing-2");
           }}
-          onOpenThread={(id) => {
-            chat.setPreview(null);
-            router.push(`/agent/${id}`);
-          }}
+          onOpenThread={openThread}
         />
         <div className="flex min-w-0 flex-1 flex-col rounded-l-surface bg-imagine-surface shadow-raised">
           {docked ? (

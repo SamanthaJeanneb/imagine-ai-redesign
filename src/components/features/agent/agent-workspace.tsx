@@ -89,16 +89,23 @@ export function AgentWorkspace({
   const synced = thread === undefined || chat.threadId === thread.id;
   const messages = synced ? chat.messages : thread.messages;
 
-  const onLanding = landing !== undefined && chat.threadId === null;
+  // "New chat" opens a conversation before anything is said; until the first
+  // message it is still the landing.
+  const onLanding =
+    landing !== undefined &&
+    (chat.threadId === null || chat.messages.length === 0);
 
   // No navigation on the first send: the composer has to survive the morph.
   // The URL catches up instead, so the rail reads as a thread and a reload of
   // the live one lands back on the page. Coming back to `/agent` with a
   // conversation open shows it, and the same effect settles the URL then.
+  // An empty new chat keeps the landing's own URL.
+  const settledThreadId =
+    chat.threadId !== null && chat.messages.length > 0 ? chat.threadId : null;
   useEffect(() => {
-    if (landing === undefined || chat.threadId === null) return;
-    window.history.replaceState(null, "", `/agent/${chat.threadId}`);
-  }, [landing, chat.threadId]);
+    if (landing === undefined || settledThreadId === null) return;
+    window.history.replaceState(null, "", `/agent/${settledThreadId}`);
+  }, [landing, settledThreadId]);
 
   const centered = landingLayout === "centered";
   const selectedPostId = chat.attached

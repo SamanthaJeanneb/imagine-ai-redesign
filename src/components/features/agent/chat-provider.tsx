@@ -102,6 +102,12 @@ export interface ChatActions {
   open: (threadId: string, messages: readonly AgentMessage[]) => void;
   /** Back to no conversation: the landing with an empty composer. */
   reset: () => void;
+  /**
+   * A fresh, empty conversation that already counts as open: it takes a row
+   * in the sidebar as "New chat" and the landing keeps showing until the
+   * first message names it.
+   */
+  startNew: () => void;
   /** Close the preview and mark the page it opens as arriving by morph. */
   expand: (preview: ComposerPreview) => void;
   landed: () => void;
@@ -290,6 +296,15 @@ export function ChatProvider({
     setPreviewState(null);
   }, []);
 
+  const startNew = useCallback(() => {
+    setThreadId(NEW_THREAD_ID);
+    setMessages([]);
+    setStreaming(null);
+    setDraft("");
+    setAttached([]);
+    setPreviewState(null);
+  }, []);
+
   const expand = useCallback((next: ComposerPreview) => {
     setPreviewState(null);
     setHandoff(next);
@@ -321,6 +336,7 @@ export function ChatProvider({
       setPreview,
       open,
       reset,
+      startNew,
       expand,
       landed,
     }),
@@ -342,6 +358,7 @@ export function ChatProvider({
       setPreview,
       open,
       reset,
+      startNew,
       expand,
       landed,
     ],
