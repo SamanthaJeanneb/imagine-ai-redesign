@@ -265,15 +265,23 @@ export function Sidebar({
           {orgLogoUrl ? (
             // Org logos are user uploads from arbitrary hosts; next/image needs a domain list.
             // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <motion.img
+              layout="position"
+              layoutDependency={collapsed}
               src={orgLogoUrl}
               alt=""
+              transition={spring.soft}
               className="size-6 shrink-0 rounded-control object-cover shadow-control"
             />
           ) : (
-            <span className="flex size-6 shrink-0 items-center justify-center rounded-control accent-gradient text-imagine-secondary-foreground">
+            <motion.span
+              layout="position"
+              layoutDependency={collapsed}
+              transition={spring.soft}
+              className="flex size-6 shrink-0 items-center justify-center rounded-control accent-gradient text-imagine-secondary-foreground"
+            >
               <Icon name="imagine" size="s" active />
-            </span>
+            </motion.span>
           )}
           <AnimatePresence initial={false}>
             {collapsed ? null : (
