@@ -70,7 +70,7 @@ export function AnalyticsToolbar({
         ))}
       </ToggleGroup>
       <Select value={profileId} onValueChange={onProfileChange}>
-        <SelectTrigger size="sm" className="w-40" aria-label="Profile">
+        <SelectTrigger size="sm" className="w-full min-w-0 sm:w-40" aria-label="Profile">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

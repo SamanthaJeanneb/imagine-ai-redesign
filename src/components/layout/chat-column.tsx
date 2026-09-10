@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "cn";
 import { motion, useReducedMotion } from "motion/react";
 
 import { AgentThread } from "@/components/features/agent/agent-thread";
@@ -8,6 +9,8 @@ import { useChat } from "@/components/features/agent/chat-provider";
 import type { ComposerPreview } from "@/components/features/agent/composer";
 import type { ChatPanelMode } from "@/components/layout/chat-context-panel";
 import { ChatControls, ChatTitle } from "@/components/layout/chat-controls";
+import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { ResizeHandle } from "@/components/ui/resize-handle";
 import { useResizable } from "@/lib/use-resizable";
 import { fade } from "@/styles/motion";
@@ -27,6 +30,12 @@ interface ChatColumnProps {
   title: string;
   panel: ChatPanelMode | null;
   onPanelChange: (panel: ChatPanelMode | null) => void;
+  /** Sits over the page instead of taking a column, on a narrow frame. */
+  overlay?: boolean;
+  /** Phone overlay: fill the surface. */
+  fullWidth?: boolean;
+  onClose?: () => void;
+  className?: string;
 }
 
 /**
@@ -41,6 +50,10 @@ export function ChatColumn({
   title,
   panel,
   onPanelChange,
+  overlay = false,
+  fullWidth = false,
+  onClose,
+  className,
 }: ChatColumnProps) {
   const reduceMotion = useReducedMotion();
   const chat = useChat();
@@ -52,6 +65,7 @@ export function ChatColumn({
   });
   const previews: readonly ComposerPreview[] =
     page === "calendar" ? ["analytics"] : ["calendar"];
+  const width = fullWidth ? "100%" : resize.width;
 
   return (
     // Enters in flow by width, so the page beside it compresses in the same
@@ -60,33 +74,50 @@ export function ChatColumn({
     <motion.aside
       data-slot="chat-column"
       initial={reduceMotion ? { opacity: 0 } : { width: 0, opacity: 0 }}
-      animate={{ width: resize.width, opacity: 1 }}
+      animate={{ width, opacity: 1 }}
       exit={
         reduceMotion
           ? { opacity: 0, transition: fade.fast }
           : { width: 0, opacity: 0, transition: fade.base }
       }
       transition={resize.transition}
-      className="relative flex min-h-0 shrink-0 justify-end overflow-hidden"
+      className={cn(
+        "relative flex min-h-0 shrink-0 justify-end overflow-hidden bg-imagine-surface",
+        className,
+      )}
     >
-      <ResizeHandle
-        edge="start"
-        binding={resize.handle}
-        dragging={resize.dragging}
-        label="Resize chat"
-      />
+      {overlay || fullWidth ? null : (
+        <ResizeHandle
+          edge="start"
+          binding={resize.handle}
+          dragging={resize.dragging}
+          label="Resize chat"
+        />
+      )}
       <div
-        style={{ width: resize.width }}
-        className="flex min-h-0 shrink-0 flex-col border-l border-imagine-foreground/12 px-l"
+        style={{ width }}
+        className="flex min-h-0 w-full shrink-0 flex-col border-l border-imagine-foreground/12 px-l"
       >
         <div className="mt-m flex h-8 shrink-0 items-center gap-s">
           <ChatTitle title={title} />
-          <ChatControls
-            panel={panel}
-            onPanelChange={onPanelChange}
-            showFiles={false}
-            className="-mr-s ml-auto"
-          />
+          <div className="-mr-s ml-auto flex items-center">
+            <ChatControls
+              panel={panel}
+              onPanelChange={onPanelChange}
+              showFiles={false}
+            />
+            {onClose === undefined ? null : (
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                aria-label="Close chat"
+                onClick={onClose}
+                className="text-imagine-foreground-muted hover:text-imagine-foreground"
+              >
+                <Icon name="xmark" />
+              </Button>
+            )}
+          </div>
         </div>
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
           {chat.messages.length === 0 ? (

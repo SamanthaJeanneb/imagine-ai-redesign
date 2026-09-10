@@ -85,7 +85,7 @@ export function ActivityCards({
     <Stagger
       kind="grid"
       data-slot="activity-cards"
-      className={cn("grid grid-cols-3 gap-l", className)}
+      className={cn("grid grid-cols-1 gap-l sm:grid-cols-3", className)}
     >
       {shown.map((entry) => {
         const primary =
@@ -173,13 +173,16 @@ export function MonthCalendar({
           Open calendar
         </Button>
       </div>
-      <CalendarGrid
-        days={days}
-        density="page"
-        onOpenPost={onOpenPost}
-        onOpenEvent={onOpenEvent}
-        {...(selectedPostId === undefined ? {} : { selectedPostId })}
-      />
+      <div className="min-w-0 overflow-x-auto">
+        <CalendarGrid
+          days={days}
+          density="page"
+          onOpenPost={onOpenPost}
+          onOpenEvent={onOpenEvent}
+          {...(selectedPostId === undefined ? {} : { selectedPostId })}
+          className="min-w-[36rem]"
+        />
+      </div>
     </section>
   );
 }

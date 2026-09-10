@@ -66,6 +66,7 @@ import { ResizeHandle } from "@/components/ui/resize-handle";
 import { SearchBox } from "@/components/ui/search-box";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { MOBILE_QUERY, useMediaQuery } from "@/lib/use-media-query";
 import { useResizable } from "@/lib/use-resizable";
 import type { OpenDocument } from "@/services/files";
 import { fade } from "@/styles/motion";
@@ -387,6 +388,8 @@ export function FilesLibrary({
   const [sort, setSort] = useState<Sort>("name-asc");
   const [view, setView] = useState<LibraryCardView>("list");
   const [dialog, setDialog] = useState<DialogState>(null);
+  const isMobile = useMediaQuery(MOBILE_QUERY);
+  const [navOpen, setNavOpen] = useState(false);
   const [values, setValues] = useState<Record<string, string>>({});
   const [savedValues, setSavedValues] = useState<Record<string, string>>({});
   const resize = useResizable({
@@ -554,6 +557,7 @@ export function FilesLibrary({
   const goToLocation = ({ sectionId, folderId }: TreeLocation) => {
     setTab("files");
     goTo({ kind: "library", sectionId, ...(folderId ? { folderId } : {}) });
+    setNavOpen(false);
   };
 
   /** Documents open beside the browser, so the location stays put. */
@@ -561,6 +565,7 @@ export function FilesLibrary({
     if (!documentById.has(id)) return;
     setDocumentId(id);
     setHighlight("document");
+    setNavOpen(false);
   };
 
   const closeEditor = () => {
@@ -837,25 +842,40 @@ export function FilesLibrary({
 
   const gridClass =
     view === "grid"
-      ? "grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-m"
+      ? "grid grid-cols-[repeat(auto-fill,minmax(min(100%,12rem),1fr))] gap-m"
       : "flex flex-col gap-px";
 
   return (
     <div
       data-slot="files-library"
-      className={cn("@container flex min-h-0 flex-1", className)}
+      className={cn("@container relative flex min-h-0 min-w-0 flex-1", className)}
     >
+      {navOpen ? (
+        <button
+          type="button"
+          aria-label="Close files navigation"
+          className="absolute inset-0 z-20 bg-imagine-foreground/10 md:hidden"
+          onClick={() => {
+            setNavOpen(false);
+          }}
+        />
+      ) : null}
       {/* Sidebar: full height, page-white, a rule against the browser. */}
       <aside
         aria-label="Files navigation"
-        style={{ width: resize.width }}
-        className="relative flex h-full shrink-0 flex-col gap-m border-r border-imagine-border bg-imagine-surface px-s pt-l pb-s"
+        style={isMobile ? undefined : { width: resize.width }}
+        className={cn(
+          "relative flex h-full shrink-0 flex-col gap-m border-r border-imagine-border bg-imagine-surface px-s pt-l pb-s",
+          "max-md:absolute max-md:inset-y-0 max-md:left-0 max-md:z-30 max-md:w-72 max-md:shadow-floating",
+          !navOpen && "max-md:hidden",
+        )}
       >
         <ResizeHandle
           edge="end"
           binding={resize.handle}
           dragging={resize.dragging}
           label="Resize files sidebar"
+          className="max-md:hidden"
         />
         <Tabs
           variant="line"
@@ -969,9 +989,21 @@ export function FilesLibrary({
       {/* Browser */}
       <section
         aria-label="Browser"
-        className="flex min-h-0 min-w-0 flex-1 flex-col gap-m px-xxl pt-xl pb-xxl"
+        className="flex min-h-0 min-w-0 flex-1 flex-col gap-m px-l pt-l pb-l md:px-xxl md:pt-xl md:pb-xxl"
       >
-        <header className="flex h-9 shrink-0 items-center gap-l">
+        <header className="flex min-h-9 shrink-0 flex-wrap items-center gap-s md:h-9 md:gap-l">
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            aria-label="Browse files"
+            aria-expanded={navOpen}
+            onClick={() => {
+              setNavOpen(true);
+            }}
+            className="md:hidden"
+          >
+            <Icon name="sidebar" />
+          </Button>
           <Breadcrumb className="min-w-0 flex-1">
             {tab === "skills" ? (
               <BreadcrumbItem>
@@ -1230,20 +1262,27 @@ export function FilesLibrary({
             aria-label="Editor"
             data-slot="files-editor"
             initial={{ width: 0, opacity: 0 }}
-            animate={{ width: editorResize.width, opacity: 1 }}
+            animate={{
+              width: isMobile ? "100%" : editorResize.width,
+              opacity: 1,
+            }}
             exit={{ width: 0, opacity: 0 }}
             transition={editorResize.transition}
-            className="relative flex min-h-0 shrink-0 justify-end overflow-hidden border-l border-imagine-border"
+            className={cn(
+              "relative flex min-h-0 shrink-0 justify-end overflow-hidden border-l border-imagine-border",
+              "max-md:absolute max-md:inset-0 max-md:z-20",
+            )}
           >
             <ResizeHandle
               edge="start"
               binding={editorResize.handle}
               dragging={editorResize.dragging}
               label="Resize editor"
+              className="max-md:hidden"
             />
             <div
-              style={{ width: editorResize.width }}
-              className="flex min-h-0 shrink-0 flex-col bg-imagine-surface"
+              style={isMobile ? undefined : { width: editorResize.width }}
+              className="flex min-h-0 w-full shrink-0 flex-col bg-imagine-surface"
             >
               <header className="flex h-12 shrink-0 items-center gap-s border-b border-imagine-border pr-s pl-l">
                 <Icon

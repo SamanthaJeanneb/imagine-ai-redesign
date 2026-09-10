@@ -26,6 +26,14 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import { SearchBox } from "@/components/ui/search-box";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { OpenDocument } from "@/services/files";
 import { fade, pressRow } from "@/styles/motion";
@@ -192,7 +200,7 @@ export function FilesWorkspacePage({
 
   return (
     <div className="@container flex min-h-0 flex-1 overflow-hidden bg-imagine-surface">
-      <aside className="flex w-56 shrink-0 flex-col border-r border-imagine-border bg-imagine-surface-raised p-m">
+      <aside className="hidden w-56 shrink-0 flex-col border-r border-imagine-border bg-imagine-surface-raised p-m @3xl:flex">
         <div className="flex items-center gap-s px-s pb-l">
           {logoUrl ? (
             // Workspace logos come from arbitrary hosts in the real app.
@@ -308,7 +316,39 @@ export function FilesWorkspacePage({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex h-14 shrink-0 items-center gap-l border-b border-imagine-border px-l">
+        <div className="flex min-h-14 shrink-0 flex-wrap items-center gap-s border-b border-imagine-border px-l py-s">
+          <Select
+            value={sectionId}
+            onValueChange={(next) => {
+              setSectionId(next);
+              setFolderId(undefined);
+              const scope =
+                next === "all"
+                  ? allNodes
+                  : (sections.find((section) => section.id === next)?.nodes ??
+                    []);
+              const first = firstDocument(scope);
+              if (first?.type === "file") openDocument(first.id);
+            }}
+          >
+            <SelectTrigger
+              size="sm"
+              aria-label="Library"
+              className="w-full min-w-0 @3xl:hidden"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="all">All files</SelectItem>
+                {sections.map((section) => (
+                  <SelectItem key={section.id} value={section.id}>
+                    {section.title}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
           <Tabs
             value={view}
             variant="line"
@@ -332,11 +372,11 @@ export function FilesWorkspacePage({
             }
             emptyLabel={`Nothing matches “${query.trim()}”`}
             listLabel="Files"
-            className="ml-auto w-64"
+            className="w-full min-w-0 @3xl:ml-auto @3xl:w-64"
           />
         </div>
 
-        <div className="grid min-h-0 flex-1 grid-cols-[minmax(19rem,0.9fr)_minmax(22rem,1.1fr)]">
+        <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 @4xl:grid-cols-[minmax(16rem,0.9fr)_minmax(18rem,1.1fr)]">
           <section className="min-h-0 overflow-y-auto border-r border-imagine-border">
             <AnimatePresence initial={false} mode="wait">
               {view === "files" ? (

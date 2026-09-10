@@ -30,6 +30,7 @@ import type { PostChipData } from "@/components/features/calendar/post-chip";
 import type { UpNextItem } from "@/components/features/calendar/up-next-list";
 import { PageAside } from "@/components/layout/page-aside";
 import type { AgentMessage } from "@/services/agent";
+import { COMPACT_QUERY, useMediaQuery } from "@/lib/use-media-query";
 import { blurOut, fade } from "@/styles/motion";
 
 export interface LandingData {
@@ -75,6 +76,7 @@ export function AgentWorkspace({
   const router = useRouter();
   const reduceMotion = useReducedMotion();
   const chat = useChat();
+  const isCompact = useMediaQuery(COMPACT_QUERY);
   const [handled, setHandled] = useState<readonly string[]>([]);
 
   // A stored thread becomes the open conversation. Until the provider has it,
@@ -195,7 +197,7 @@ export function AgentWorkspace({
               key="below"
               exit={blurOut}
               transition={fade.base}
-              className="flex min-h-0 flex-1 flex-col"
+              className="flex min-h-0 min-w-0 flex-1 flex-col"
             >
               {centered ? (
                 <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-xxxl pt-xxxl pb-l">
@@ -235,6 +237,17 @@ export function AgentWorkspace({
             </motion.div>
           ) : null}
         </AnimatePresence>
+        {onLanding && !centered && isCompact && landing !== undefined ? (
+          <LandingRail
+            stacked
+            stats={landing.stats}
+            chart={landing.chart}
+            upNext={landing.upNext}
+            onOpenCalendar={() => {
+              router.push("/calendar");
+            }}
+          />
+        ) : null}
       </div>
 
       {/* The rail is a sidebar in the shell's row, beside the page rather
@@ -242,7 +255,7 @@ export function AgentWorkspace({
           and resizes like the other panels. */}
       <PageAside>
         <AnimatePresence initial={false}>
-          {onLanding && !centered ? (
+          {onLanding && !centered && !isCompact && landing !== undefined ? (
             <LandingRail
               key="rail"
               stats={landing.stats}

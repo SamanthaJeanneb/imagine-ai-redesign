@@ -54,7 +54,7 @@ export function SettingsTabs({
       aria-label="Settings sections"
       data-slot="settings-tabs"
       className={cn(
-        "flex items-center gap-xs border-b border-imagine-border",
+        "flex items-center gap-xs overflow-x-auto border-b border-imagine-border",
         className,
       )}
     >

@@ -51,7 +51,7 @@ export function CalendarToolbar({
     <div
       data-slot="calendar-toolbar"
       className={cn(
-        "grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-l",
+        "flex w-full min-w-0 flex-col gap-m @min-[42rem]/page:grid @min-[42rem]/page:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] @min-[42rem]/page:items-center @min-[42rem]/page:gap-l",
         className,
       )}
     >
@@ -84,7 +84,7 @@ export function CalendarToolbar({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={fade.base}
-            className="min-w-32 type-heading"
+            className="min-w-0 truncate type-heading"
           >
             {rangeLabel}
           </motion.span>
@@ -98,6 +98,7 @@ export function CalendarToolbar({
           if (found) onViewChange(found.key);
         }}
         aria-label="Calendar view"
+        className="self-start"
       >
         {VIEWS.map((item) => (
           <ToggleGroupItem key={item.key} value={item.key}>
@@ -114,7 +115,7 @@ export function CalendarToolbar({
         placeholder="Search posts"
         emptyLabel={`No posts match “${search.trim()}”`}
         listLabel="Posts"
-        className="w-64 justify-self-end"
+        className="w-full min-w-0 @min-[42rem]/page:w-64 @min-[42rem]/page:justify-self-end"
       />
     </div>
   );

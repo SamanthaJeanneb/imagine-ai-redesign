@@ -22,6 +22,8 @@ interface AccountControlsProps {
   onOpenAccount?: () => void;
   /** The gear. */
   onOpenSettings?: () => void;
+  /** Face and gear only, when the header has no room for the name. */
+  compact?: boolean;
   className?: string;
 }
 
@@ -42,6 +44,7 @@ export function AccountControls({
   user,
   onOpenAccount,
   onOpenSettings,
+  compact = false,
   className,
 }: AccountControlsProps) {
   return (
@@ -49,13 +52,21 @@ export function AccountControls({
       <button
         type="button"
         onClick={onOpenAccount}
-        className="-my-xs flex h-8 items-center gap-s rounded-control py-xs pr-s pl-xs text-left transition-colors outline-none hover:bg-imagine-foreground/5 focus-visible:ring-2 focus-visible:ring-ring/40"
+        aria-label={user.name}
+        className="-my-xs flex h-8 min-w-0 items-center gap-s rounded-control py-xs pr-s pl-xs text-left transition-colors outline-none hover:bg-imagine-foreground/5 focus-visible:ring-2 focus-visible:ring-ring/40"
       >
         <Avatar size="sm">
           {user.avatarUrl ? <AvatarImage src={user.avatarUrl} alt="" /> : null}
           <AvatarFallback>{initials(user.name)}</AvatarFallback>
         </Avatar>
-        <span className="truncate type-small font-medium">{user.name}</span>
+        <span
+          className={cn(
+            "max-w-36 truncate type-small font-medium",
+            compact ? "hidden" : "max-md:hidden",
+          )}
+        >
+          {user.name}
+        </span>
       </button>
       <Tooltip>
         <TooltipTrigger asChild>

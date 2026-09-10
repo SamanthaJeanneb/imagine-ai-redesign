@@ -131,14 +131,16 @@ export function LandingBelow({
       )}
       <section className="flex flex-1 flex-col gap-l">
         <h2 className="type-heading">Next two weeks</h2>
-        <CalendarGrid
-          days={days}
-          density="strip"
-          onOpenPost={onOpenPost}
-          onOpenEvent={onOpenEvent}
-          className="flex-1"
-          {...(selectedPostId === undefined ? {} : { selectedPostId })}
-        />
+        <div className="min-w-0 overflow-x-auto">
+          <CalendarGrid
+            days={days}
+            density="strip"
+            onOpenPost={onOpenPost}
+            onOpenEvent={onOpenEvent}
+            className="min-w-[36rem] flex-1"
+            {...(selectedPostId === undefined ? {} : { selectedPostId })}
+          />
+        </div>
       </section>
     </div>
   );
@@ -155,11 +157,14 @@ export function LandingRail({
   chart,
   upNext,
   onOpenCalendar,
+  stacked = false,
 }: {
   stats: readonly LandingStat[];
   chart: { data: readonly ChartDatum[]; series: readonly ChartSeries[] };
   upNext: readonly UpNextItem[];
   onOpenCalendar: () => void;
+  /** Below the page instead of beside it, when the frame is too narrow. */
+  stacked?: boolean;
 }) {
   const reduceMotion = useReducedMotion();
   const resize = useResizable({
@@ -168,31 +173,42 @@ export function LandingRail({
     max: RAIL_WIDTH.max,
     edge: "start",
   });
+  const width = stacked ? "100%" : resize.width;
 
   return (
     <motion.aside
       data-slot="landing-rail"
       initial={false}
-      animate={{ width: resize.width, opacity: 1 }}
+      animate={{ width, opacity: 1 }}
       exit={
         reduceMotion
           ? { opacity: 0, transition: fade.fast }
           : { width: 0, opacity: 0, transition: fade.base }
       }
       transition={resize.transition}
-      className="relative flex min-h-0 shrink-0 justify-end overflow-hidden"
+      className={cn(
+        "relative flex min-h-0 shrink-0 overflow-hidden",
+        stacked ? "w-full" : "justify-end",
+      )}
     >
-      <ResizeHandle
-        edge="start"
-        binding={resize.handle}
-        dragging={resize.dragging}
-        label="Resize overview"
-      />
+      {stacked ? null : (
+        <ResizeHandle
+          edge="start"
+          binding={resize.handle}
+          dragging={resize.dragging}
+          label="Resize overview"
+        />
+      )}
       {/* Fixed at the final width, so nothing rewraps while the column
           animates. Padding matches the page's own inset. */}
       <div
-        style={{ width: resize.width }}
-        className="flex min-h-0 shrink-0 flex-col gap-xxl overflow-y-auto border-l border-imagine-foreground/12 px-xl pt-xxl pb-xxl"
+        style={stacked ? undefined : { width: resize.width }}
+        className={cn(
+          "flex min-h-0 flex-col gap-xxl overflow-y-auto",
+          stacked
+            ? "w-full border-t border-imagine-foreground/12 pt-xxl"
+            : "shrink-0 border-l border-imagine-foreground/12 px-xl pt-xxl pb-xxl",
+        )}
       >
         {/* Numbers only. The deltas live on the analytics page, where there is
             room for them and a range control to make them mean something. */}

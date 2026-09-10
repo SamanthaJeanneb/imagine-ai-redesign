@@ -3,7 +3,7 @@
 import { cn } from "cn";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 
 import {
   ChatProvider,
@@ -23,6 +23,8 @@ import type { Skill } from "@/components/features/files/skills-list";
 import type { ProfileSummary } from "@/components/features/settings/profile-list";
 import { AccountControls, type AccountUser } from "@/components/layout/account";
 import { ChatColumn } from "@/components/layout/chat-column";
+import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import {
   ChatContextPanel,
   type ChatPanelMode,
@@ -39,6 +41,11 @@ import {
   type SidebarThread,
 } from "@/components/layout/sidebar";
 import { toTitle } from "@/lib/format";
+import {
+  COMPACT_QUERY,
+  MOBILE_QUERY,
+  useMediaQuery,
+} from "@/lib/use-media-query";
 import type {
   AgentMessage,
   ReplyIntent,
@@ -129,6 +136,9 @@ const WORKSPACE_TAB_ID = "workspace";
 interface WorkspaceHeaderProps {
   collapsed: boolean;
   onExpand: () => void;
+  /** Phone overlay is open; keeps the menu control in sync. */
+  mobileNavOpen?: boolean;
+  onOpenMobileNav?: () => void;
   profiles: readonly ProfileSummary[];
   selectedProfileIds: readonly string[];
   onSelectedIdsChange: (ids: readonly string[]) => void;
@@ -136,6 +146,10 @@ interface WorkspaceHeaderProps {
   prefix: boolean;
   chatTitle?: string;
   chatOpen: boolean;
+  /** Docked chat is an overlay; the header holds the way into it. */
+  chatOverlay?: boolean;
+  chatOverlayOpen?: boolean;
+  onChatOverlayChange?: (open: boolean) => void;
   panel: ChatPanelMode | null;
   onPanelChange: (panel: ChatPanelMode | null) => void;
   user: AccountUser;
@@ -154,6 +168,8 @@ interface WorkspaceHeaderProps {
 function WorkspaceHeader({
   collapsed,
   onExpand,
+  mobileNavOpen = false,
+  onOpenMobileNav,
   profiles,
   selectedProfileIds,
   onSelectedIdsChange,
@@ -161,6 +177,9 @@ function WorkspaceHeader({
   prefix,
   chatTitle,
   chatOpen,
+  chatOverlay = false,
+  chatOverlayOpen = false,
+  onChatOverlayChange,
   panel,
   onPanelChange,
   user,
@@ -168,14 +187,24 @@ function WorkspaceHeader({
   onOpenSettings,
 }: WorkspaceHeaderProps) {
   return (
-    <div className="relative mt-m mb-m flex h-8 shrink-0 items-center gap-s px-xxl after:absolute after:inset-x-0 after:-bottom-m after:border-b after:border-imagine-border">
+    <div className="relative mt-m mb-m flex h-8 min-w-0 shrink-0 items-center gap-s px-l after:absolute after:inset-x-0 after:-bottom-m after:border-b after:border-imagine-border md:px-xxl">
+      <Button
+        size="icon-sm"
+        variant="ghost"
+        aria-label="Open menu"
+        aria-expanded={mobileNavOpen}
+        onClick={onOpenMobileNav}
+        className="-ml-2.5 text-imagine-foreground-faint hover:text-imagine-foreground md:hidden"
+      >
+        <Icon name="sidebar" />
+      </Button>
       <AnimatePresence initial={false}>
         {collapsed ? (
           <SidebarExpandButton
             key="expand"
             onExpand={onExpand}
             // Optically aligns the chevron with the page's text column.
-            className="-ml-2.5"
+            className="-ml-2.5 hidden md:flex"
           />
         ) : null}
       </AnimatePresence>
@@ -203,7 +232,7 @@ function WorkspaceHeader({
           <motion.div
             key="chat"
             {...HEADER_SWAP}
-            className="-mr-s ml-auto flex"
+            className="-mr-s ml-auto flex shrink-0"
           >
             <ChatControls panel={panel} onPanelChange={onPanelChange} />
           </motion.div>
@@ -211,12 +240,32 @@ function WorkspaceHeader({
           <motion.div
             key="account"
             {...HEADER_SWAP}
-            className="-mr-s ml-auto flex"
+            className="-mr-s ml-auto flex shrink-0 items-center gap-xxs"
           >
+            {chatOverlay ? (
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                aria-label={chatOverlayOpen ? "Hide chat" : "Open chat"}
+                aria-pressed={chatOverlayOpen}
+                onClick={() => {
+                  onChatOverlayChange?.(!chatOverlayOpen);
+                }}
+                className={cn(
+                  "xl:hidden",
+                  chatOverlayOpen
+                    ? "bg-imagine-surface-raised text-imagine-foreground"
+                    : "text-imagine-foreground-muted hover:text-imagine-foreground",
+                )}
+              >
+                <Icon name="message" />
+              </Button>
+            ) : null}
             <AccountControls
               user={user}
               onOpenAccount={onOpenAccount}
               onOpenSettings={onOpenSettings}
+              compact={compact}
             />
           </motion.div>
         )}
@@ -248,7 +297,7 @@ function WorkspacePage({
       <div
         className={cn(
           "flex min-h-0 min-w-0 flex-1 flex-col overflow-x-clip overflow-y-auto",
-          !flush && "px-xxl pt-xxl pb-xxl",
+          !flush && "px-l pt-l pb-l md:px-xxl md:pt-xxl md:pb-xxl",
         )}
       >
         {children}
@@ -291,7 +340,11 @@ function WorkspaceFrame({
   const pathname = usePathname();
   const router = useRouter();
   const chat = useChat();
+  const isMobile = useMediaQuery(MOBILE_QUERY);
+  const isCompact = useMediaQuery(COMPACT_QUERY);
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [chatOverlayOpen, setChatOverlayOpen] = useState(false);
   // Where a page's own sidebar goes, beside the page. A ref callback into
   // state, so the page can portal into it once it exists.
   const [asideHost, setAsideHost] = useState<HTMLElement | null>(null);
@@ -349,6 +402,23 @@ function WorkspaceFrame({
       documents.map((document) => [document.id, document.value]),
     ),
   );
+
+  useEffect(() => {
+    if (isCompact) setCollapsed(true);
+  }, [isCompact]);
+
+  useEffect(() => {
+    if (!isMobile) setMobileNavOpen(false);
+  }, [isMobile]);
+
+  useEffect(() => {
+    if (!isCompact) setChatOverlayOpen(false);
+  }, [isCompact]);
+
+  useEffect(() => {
+    setMobileNavOpen(false);
+    setChatOverlayOpen(false);
+  }, [pathname]);
 
   function changePanel(next: ChatPanelMode | null) {
     if (next === "files" && panel !== "files") {
@@ -434,13 +504,24 @@ function WorkspaceFrame({
       onExpand={() => {
         setCollapsed(false);
       }}
+      mobileNavOpen={mobileNavOpen}
+      onOpenMobileNav={() => {
+        setMobileNavOpen(true);
+        setChatOverlayOpen(false);
+      }}
       profiles={profiles}
       selectedProfileIds={selectedProfileIds}
       onSelectedIdsChange={setSelectedProfileIds}
-      compact={chatOpen}
-      prefix={!docked}
+      compact={chatOpen || isMobile}
+      prefix={!docked && !isMobile}
       {...(chatTitle === undefined ? {} : { chatTitle })}
       chatOpen={chatOpen}
+      chatOverlay={docked}
+      chatOverlayOpen={chatOverlayOpen}
+      onChatOverlayChange={(open) => {
+        setChatOverlayOpen(open);
+        if (open) setMobileNavOpen(false);
+      }}
       panel={panel}
       onPanelChange={changePanel}
       user={user}
@@ -527,8 +608,13 @@ function WorkspaceFrame({
       <PageAsideHostProvider host={asideHost}>{children}</PageAsideHostProvider>
     </WorkspacePage>
   );
-  // `contents`, so what the page portals here is a flex item of the row.
-  const pageAside = <div ref={setAsideHost} className="contents" />;
+  // `contents` on wide frames so the page rail is a flex item of the row.
+  // Hidden below `xl` before JS hydrates, so a third column cannot crush
+  // the page while the window is still being measured.
+  const pageAside = (
+    <div ref={setAsideHost} className="hidden xl:contents" />
+  );
+  const overlayChat = docked && isCompact;
   const column =
     chatColumn === undefined ? null : (
       <ChatColumn
@@ -537,6 +623,16 @@ function WorkspaceFrame({
         title={chatTitle ?? "New chat"}
         panel={panel}
         onPanelChange={changePanel}
+        overlay={overlayChat}
+        fullWidth={isMobile}
+        className={overlayChat ? undefined : "max-xl:hidden"}
+        onClose={
+          overlayChat
+            ? () => {
+                setChatOverlayOpen(false);
+              }
+            : undefined
+        }
       />
     );
   const contextPanel =
@@ -608,56 +704,158 @@ function WorkspaceFrame({
       />
     );
 
+  const showChatInFlow = column !== null && !overlayChat;
+  const showChatOverlay = overlayChat && chatOverlayOpen;
+  const overlayPanels = isCompact && !overlayChat;
+  const inFlowPanels = !isCompact;
+  const sidebar = (
+    <Sidebar
+      orgName={orgName}
+      {...(orgLogoUrl === undefined ? {} : { orgLogoUrl })}
+      {...(navActive === undefined ? {} : { active: navActive })}
+      {...(activeThreadId === undefined ? {} : { activeThreadId })}
+      threads={visibleThreads}
+      collapsed={isMobile ? false : collapsed}
+      onCollapsedChange={
+        isMobile
+          ? undefined
+          : setCollapsed
+      }
+      onNavigate={(key) => {
+        // A preview left open would follow the chat into its column.
+        chat.setPreview(null);
+        changePanel(null);
+        setMobileNavOpen(false);
+        router.push(`/${key}`);
+      }}
+      onNewPost={() => {
+        // Opens as a conversation at once, so the rail lists it as
+        // "New chat" and the header carries the name.
+        chat.startNew();
+        changePanel(null);
+        setMobileNavOpen(false);
+        router.push("/landing-2");
+      }}
+      onOpenThread={(id) => {
+        setMobileNavOpen(false);
+        openThread(id);
+      }}
+    />
+  );
+
   return (
     <LayoutGroup>
       <div className="flex h-dvh overflow-hidden bg-imagine-background">
-        <Sidebar
-          orgName={orgName}
-          {...(orgLogoUrl === undefined ? {} : { orgLogoUrl })}
-          {...(navActive === undefined ? {} : { active: navActive })}
-          {...(activeThreadId === undefined ? {} : { activeThreadId })}
-          threads={visibleThreads}
-          collapsed={collapsed}
-          onCollapsedChange={setCollapsed}
-          onNavigate={(key) => {
-            // A preview left open would follow the chat into its column.
-            chat.setPreview(null);
-            changePanel(null);
-            router.push(`/${key}`);
-          }}
-          onNewPost={() => {
-            // Opens as a conversation at once, so the rail lists it as
-            // "New chat" and the header carries the name.
-            chat.startNew();
-            changePanel(null);
-            router.push("/landing-2");
-          }}
-          onOpenThread={openThread}
-        />
-        <div className="flex min-w-0 flex-1 flex-col rounded-l-surface bg-imagine-surface shadow-raised">
+        <div
+          className={cn(
+            isMobile && mobileNavOpen
+              ? "fixed inset-0 z-50 flex bg-imagine-foreground/10"
+              : "hidden h-full md:flex",
+          )}
+          onClick={
+            isMobile && mobileNavOpen
+              ? () => {
+                  setMobileNavOpen(false);
+                }
+              : undefined
+          }
+        >
+          <div
+            className="h-full"
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            {sidebar}
+          </div>
+        </div>
+        <div className="relative flex min-w-0 flex-1 flex-col rounded-none bg-imagine-surface shadow-raised md:rounded-l-surface">
           {docked ? (
-            <div className="flex min-h-0 flex-1">
+            <div className="flex min-h-0 min-w-0 flex-1">
               <div className="flex min-h-0 min-w-0 flex-1 flex-col">
                 {header}
                 {page}
               </div>
               {pageAside}
-              <AnimatePresence initial={false}>{column}</AnimatePresence>
-              <AnimatePresence initial={false}>{contextPanel}</AnimatePresence>
+              {showChatInFlow ? (
+                <AnimatePresence initial={false}>{column}</AnimatePresence>
+              ) : null}
+              {inFlowPanels ? (
+                <AnimatePresence initial={false}>{contextPanel}</AnimatePresence>
+              ) : null}
             </div>
           ) : (
             <>
               {header}
-              <div className="flex min-h-0 flex-1">
+              <div className="relative flex min-h-0 min-w-0 flex-1">
                 {page}
                 {pageAside}
-                <AnimatePresence initial={false}>{column}</AnimatePresence>
-                <AnimatePresence initial={false}>
-                  {contextPanel}
-                </AnimatePresence>
+                {showChatInFlow ? (
+                  <AnimatePresence initial={false}>{column}</AnimatePresence>
+                ) : null}
+                {inFlowPanels ? (
+                  <AnimatePresence initial={false}>
+                    {contextPanel}
+                  </AnimatePresence>
+                ) : null}
               </div>
             </>
           )}
+          <AnimatePresence initial={false}>
+            {showChatOverlay ? (
+              <motion.div
+                key="chat-overlay"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={fade.fast}
+                className="absolute inset-0 z-40 flex justify-end bg-imagine-foreground/10"
+                onClick={() => {
+                  setChatOverlayOpen(false);
+                }}
+              >
+                <div
+                  className="flex h-full max-w-full"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                  }}
+                >
+                  {isMobile && contextPanel !== null ? (
+                    contextPanel
+                  ) : (
+                    <>
+                      {column}
+                      {contextPanel}
+                    </>
+                  )}
+                </div>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+          <AnimatePresence initial={false}>
+            {overlayPanels && contextPanel !== null ? (
+              <motion.div
+                key="panel-overlay"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={fade.fast}
+                className="absolute inset-0 z-40 flex justify-end bg-imagine-foreground/10"
+                onClick={() => {
+                  changePanel(null);
+                }}
+              >
+                <div
+                  className="flex h-full max-w-full"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                  }}
+                >
+                  {contextPanel}
+                </div>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
         </div>
       </div>
     </LayoutGroup>

@@ -87,11 +87,11 @@ export function CalendarTimeGrid({
       animate={{ opacity: 1 }}
       transition={fade.slow}
       className={cn(
-        "grid overflow-hidden rounded-panel bg-imagine-border shadow-raised",
+        "grid min-w-0 overflow-hidden rounded-panel bg-imagine-border shadow-raised",
         // The hour gutter, then a column per day.
         single
           ? "grid-cols-[var(--spacing-xxxl)_minmax(0,1fr)]"
-          : "grid-cols-[var(--spacing-xxxl)_repeat(7,minmax(0,1fr))]",
+          : "min-w-[44rem] grid-cols-[var(--spacing-xxxl)_repeat(7,minmax(0,1fr))]",
         "gap-px",
         className,
       )}
@@ -102,7 +102,7 @@ export function CalendarTimeGrid({
         <span
           key={day.date}
           role="columnheader"
-          className="flex items-center justify-center gap-xs bg-imagine-surface-raised px-s py-xs"
+          className="flex min-w-0 items-center justify-center gap-xs overflow-hidden bg-imagine-surface-raised px-xs py-xs"
         >
           <span className="type-micro text-imagine-foreground-muted">
             {single

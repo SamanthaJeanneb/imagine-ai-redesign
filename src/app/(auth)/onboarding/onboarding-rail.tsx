@@ -29,7 +29,7 @@ export function OnboardingRail() {
     // line as the step's heading now that no mark stands above it. The width
     // follows the viewport: never narrower than the labels need on one line,
     // and never a sliver beside a wide screen's surface.
-    <div className="flex w-[clamp(16rem,18vw,20rem)] shrink-0 flex-col px-xl pt-section pb-xxl">
+    <div className="hidden w-[clamp(16rem,18vw,20rem)] shrink-0 flex-col px-xl pt-section pb-xxl md:flex">
       <Stepper
         steps={STEPS}
         current={current === -1 ? 1 : current}

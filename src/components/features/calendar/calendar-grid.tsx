@@ -98,7 +98,7 @@ export function CalendarGrid({
       data-density={density}
       role="grid"
       className={cn(
-        "flex w-full flex-col overflow-hidden rounded-panel bg-imagine-surface-raised shadow-raised",
+        "@container/cal flex w-full min-w-0 flex-col overflow-hidden rounded-panel bg-imagine-surface-raised shadow-raised",
         fill && "min-h-0",
         className,
       )}
@@ -108,16 +108,22 @@ export function CalendarGrid({
           <span
             key={weekday}
             role="columnheader"
-            className="px-s py-xs text-center type-micro text-imagine-foreground-muted"
+            aria-label={weekday}
+            className="min-w-0 truncate px-xxs py-xs text-center type-micro text-imagine-foreground-muted"
           >
-            {weekday}
+            <span aria-hidden="true" className="@min-[22rem]/cal:hidden">
+              {weekday.slice(0, 1)}
+            </span>
+            <span aria-hidden="true" className="hidden @min-[22rem]/cal:inline">
+              {weekday}
+            </span>
           </span>
         ))}
       </div>
       <div
         role="rowgroup"
         className={cn(
-          "grid grid-cols-7 gap-px bg-imagine-border",
+          "grid min-w-0 grid-cols-7 gap-px bg-imagine-border",
           // A month of full chips can run past the page: the rows scroll
           // inside the frame rather than the frame growing off the screen.
           fill && "min-h-0 flex-1 auto-rows-fr overflow-y-auto",

@@ -5,11 +5,18 @@ import { useState } from "react";
 
 import { PREVIEW_LAYOUT_ID } from "@/components/features/agent/chat-dock";
 import { useChat } from "@/components/features/agent/chat-provider";
-import { CalendarGrid } from "@/components/features/calendar/calendar-grid";
+import {
+  type CalendarDay,
+  CalendarGrid,
+} from "@/components/features/calendar/calendar-grid";
 import { CalendarTimeGrid } from "@/components/features/calendar/calendar-time-grid";
 import { CalendarToolbar } from "@/components/features/calendar/calendar-toolbar";
-import type { EventChipData } from "@/components/features/calendar/event-chip";
 import {
+  EventChip,
+  type EventChipData,
+} from "@/components/features/calendar/event-chip";
+import {
+  PostChip,
   type PostChipData,
   type PostChipStatus,
   postChipStyle,
@@ -26,8 +33,10 @@ import {
   searchPosts,
   shiftAnchor,
 } from "@/lib/calendar";
-import { formatDayShort } from "@/lib/format";
+import { formatDayShort, formatWeekdayLong } from "@/lib/format";
+import { MOBILE_QUERY, useMediaQuery } from "@/lib/use-media-query";
 import { fade } from "@/styles/motion";
+import { cn } from "cn";
 
 interface CalendarPageProps {
   postsByDay: PostsByDay;
@@ -51,6 +60,82 @@ const STATUS_KEY: readonly { status: PostChipStatus; label: string }[] = [
   { status: "draft", label: "Draft" },
   { status: "failed", label: "Failed" },
 ];
+
+/**
+ * A month as a list: only days that have something, plus today. Used when
+ * seven columns would be thinner than a chip.
+ */
+function MonthAgenda({
+  days,
+  selectedPostId,
+  onOpenPost,
+  onOpenEvent,
+}: {
+  days: readonly CalendarDay[];
+  selectedPostId?: string;
+  onOpenPost: (post: PostChipData) => void;
+  onOpenEvent: (event: EventChipData) => void;
+}) {
+  const shown = days.filter(
+    (day) =>
+      !day.isOutside &&
+      (day.isToday === true ||
+        day.posts.length > 0 ||
+        (day.events?.length ?? 0) > 0),
+  );
+
+  if (shown.length === 0) {
+    return (
+      <p className="type-small text-imagine-foreground-muted">
+        Nothing scheduled. Ask the agent to draft something.
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col gap-l overflow-y-auto">
+      {shown.map((day) => {
+        const events = day.events ?? [];
+        return (
+          <section key={day.date} className="flex flex-col gap-xs">
+            <div className="flex items-center gap-s">
+              <span
+                className={cn(
+                  "flex size-6 items-center justify-center rounded-full type-small tabular-nums",
+                  day.isToday
+                    ? "bg-imagine-primary font-semibold text-imagine-primary-foreground"
+                    : "text-imagine-foreground-muted",
+                )}
+              >
+                {day.dayNumber}
+              </span>
+              <span className="type-small font-medium">
+                {formatWeekdayLong(day.date)}
+              </span>
+            </div>
+            <div className="flex flex-col gap-xs pl-8">
+              {events.map((event) => (
+                <EventChip
+                  key={event.id}
+                  event={event}
+                  onOpen={onOpenEvent}
+                />
+              ))}
+              {day.posts.map((post) => (
+                <PostChip
+                  key={post.id}
+                  post={post}
+                  selected={post.id === selectedPostId}
+                  onOpen={onOpenPost}
+                />
+              ))}
+            </div>
+          </section>
+        );
+      })}
+    </div>
+  );
+}
 
 /** Color is status, so the page says which color is which. */
 function Legend() {
@@ -105,6 +190,7 @@ export function CalendarPage({
   today,
 }: CalendarPageProps) {
   const chat = useChat();
+  const isMobile = useMediaQuery(MOBILE_QUERY);
   const [view, setView] = useState<CalendarView>("month");
   const [anchor, setAnchor] = useState(today);
   const [search, setSearch] = useState("");
@@ -181,7 +267,7 @@ export function CalendarPage({
   );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-xl">
+    <div className="@container/page flex min-h-0 flex-1 flex-col gap-xl">
       <CalendarToolbar
         rangeLabel={range.rangeLabel}
         view={view}
@@ -202,27 +288,40 @@ export function CalendarPage({
       />
 
       {view === "month" ? (
-        <CalendarGrid
-          days={range.days}
-          fill
-          // The page arrives by morphing out of the composer preview, which
-          // opens on the month.
-          layoutId={PREVIEW_LAYOUT_ID.calendar}
-          onOpenPost={attach}
-          onOpenEvent={draftFromEvent}
-          {...(selected === undefined ? {} : { selectedPostId: selected })}
-          className="flex-1"
-        />
+        isMobile ? (
+          <MonthAgenda
+            days={range.days}
+            onOpenPost={attach}
+            onOpenEvent={draftFromEvent}
+            {...(selected === undefined ? {} : { selectedPostId: selected })}
+          />
+        ) : (
+          <div className="min-h-0 min-w-0 flex-1 overflow-x-auto">
+            <CalendarGrid
+              days={range.days}
+              fill
+              // The page arrives by morphing out of the composer preview, which
+              // opens on the month.
+              layoutId={PREVIEW_LAYOUT_ID.calendar}
+              onOpenPost={attach}
+              onOpenEvent={draftFromEvent}
+              {...(selected === undefined ? {} : { selectedPostId: selected })}
+              className="min-h-full min-w-[36rem]"
+            />
+          </div>
+        )
       ) : (
-        <CalendarTimeGrid
-          days={range.days}
-          onOpenPost={attach}
-          onOpenEvent={draftFromEvent}
-          {...(selected === undefined ? {} : { selectedPostId: selected })}
-        />
+        <div className="min-h-0 min-w-0 flex-1 overflow-x-auto">
+          <CalendarTimeGrid
+            days={range.days}
+            onOpenPost={attach}
+            onOpenEvent={draftFromEvent}
+            {...(selected === undefined ? {} : { selectedPostId: selected })}
+          />
+        </div>
       )}
 
-      <div className="flex shrink-0 items-center justify-between gap-l">
+      <div className="flex shrink-0 flex-col gap-s sm:flex-row sm:items-center sm:justify-between sm:gap-l">
         <Legend />
         <AnimatePresence initial={false} mode="popLayout">
           {note === null ? null : (

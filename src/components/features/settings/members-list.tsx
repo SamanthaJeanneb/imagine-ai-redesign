@@ -106,7 +106,7 @@ export function MembersList({
               transition={fade.base}
               className="overflow-hidden"
             >
-              <div className="flex items-center gap-m rounded-control px-m py-s transition-colors hover:bg-imagine-surface-raised/50">
+              <div className="flex min-w-0 items-center gap-m rounded-control px-m py-s transition-colors hover:bg-imagine-surface-raised/50">
                 <Avatar>
                   {member.avatarUrl ? (
                     <AvatarImage src={member.avatarUrl} alt="" />
