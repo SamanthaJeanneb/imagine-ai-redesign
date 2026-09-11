@@ -112,7 +112,7 @@ export function LinkedInPostEditor({
         onChange={(event) => {
           onBodyChange(event.target.value);
         }}
-        className="mt-l field-sizing-content min-h-36 w-full resize-none bg-transparent type-body leading-relaxed outline-none placeholder:text-imagine-foreground-faint"
+        className="mt-l field-sizing-content min-h-36 w-full resize-none rounded-control bg-imagine-surface-raised/60 px-s py-xs type-body leading-relaxed transition-colors outline-none placeholder:text-imagine-foreground-faint hover:bg-imagine-surface-raised focus-visible:ring-2 focus-visible:ring-ring/30"
       />
 
       {preview.media && preview.media.length > 0 ? (
