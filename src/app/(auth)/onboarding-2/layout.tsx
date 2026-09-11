@@ -2,6 +2,11 @@ import type { ReactNode } from "react";
 
 import { OnboardingProvider } from "@/app/(auth)/onboarding/onboarding-provider";
 import { PreviewPane } from "@/app/(auth)/onboarding-2/preview-pane";
+import { getThreads } from "@/services/agent";
+import { getOwner } from "@/services/onboarding";
+
+/** Enough recent chats to fill the rail's list without scrolling. */
+const RECENT_CHATS = 6;
 
 /**
  * Setup as a split: the step on a surface at left, a live preview of the
@@ -14,6 +19,15 @@ export default function Onboarding2Layout({
 }: {
   children: ReactNode;
 }) {
+  const owner = getOwner();
+  const threads = getThreads()
+    .slice(0, RECENT_CHATS)
+    .map(({ id, title, unread }) => ({
+      id,
+      title,
+      ...(unread === undefined ? {} : { unread }),
+    }));
+
   return (
     <OnboardingProvider>
       <div className="grid min-h-svh flex-1 bg-imagine-surface lg:grid-cols-[minmax(26rem,42%)_minmax(0,1fr)] 2xl:grid-cols-[40rem_minmax(0,1fr)]">
@@ -27,7 +41,15 @@ export default function Onboarding2Layout({
             {children}
           </div>
         </div>
-        <PreviewPane />
+        <PreviewPane
+          threads={threads}
+          owner={{
+            name: owner.name ?? owner.email,
+            ...(owner.avatarUrl === undefined
+              ? {}
+              : { avatarUrl: owner.avatarUrl }),
+          }}
+        />
       </div>
     </OnboardingProvider>
   );

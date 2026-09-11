@@ -1,4 +1,5 @@
 import type { TeamMember } from "@/components/features/onboarding/invite-team-form";
+import type { ProfileSummary } from "@/components/features/settings/profile-list";
 import { getDb, getOrganization } from "@/mocks/db";
 
 /**
@@ -30,6 +31,36 @@ export function getOwner(): TeamMember {
     role: "admin",
     status: "you",
   };
+}
+
+/**
+ * Who the owner's LinkedIn account can post as once it connects. A member
+ * profile is a login; these are the identities behind it (`app.clients`):
+ * the owner's own profile, then every company page they administer.
+ */
+export function getPostingIdentities(): readonly ProfileSummary[] {
+  const owner = getOwner();
+  const self: ProfileSummary = {
+    id: `member-${owner.id}`,
+    name: owner.name ?? owner.email,
+    headline: "Your profile",
+    ...(owner.avatarUrl === undefined ? {} : { avatarUrl: owner.avatarUrl }),
+    kind: "person",
+    status: "connected",
+  };
+  const pages = getDb()
+    .app.clients.filter((client) => client.is_company)
+    .map<ProfileSummary>((client) => ({
+      id: client.id,
+      name: client.name,
+      headline: "Company page you admin",
+      ...(client.profile_picture_path === null
+        ? {}
+        : { avatarUrl: client.profile_picture_path }),
+      kind: "company",
+      status: "connected",
+    }));
+  return [self, ...pages];
 }
 
 /** The link that lands on the join screen. */

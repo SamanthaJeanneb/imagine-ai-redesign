@@ -7,7 +7,7 @@ import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Spinner } from "@/components/ui/spinner";
-import { fade } from "@/styles/motion";
+import { fade, spring } from "@/styles/motion";
 
 interface ConnectLinkedInProps {
   /** Who will be connected, e.g. the signed-in user's name. */
@@ -18,6 +18,8 @@ interface ConnectLinkedInProps {
   onConnect: () => void;
   onSkip?: () => void;
   pending?: boolean;
+  /** The account is linked: the mark gets a check and the actions go away. */
+  connected?: boolean;
   /** `false` when the page pins Connect and Skip elsewhere. */
   showActions?: boolean;
   className?: string;
@@ -34,6 +36,7 @@ export function ConnectLinkedIn({
   onConnect,
   onSkip,
   pending = false,
+  connected = false,
   showActions = true,
   className,
 }: ConnectLinkedInProps) {
@@ -51,33 +54,45 @@ export function ConnectLinkedIn({
         transition={fade.base}
         className="flex items-center gap-m rounded-panel bg-imagine-surface p-l shadow-raised"
       >
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-control bg-imagine-secondary-soft text-imagine-secondary">
+        <span className="relative flex size-10 shrink-0 items-center justify-center rounded-control bg-imagine-secondary-soft text-imagine-secondary">
           <Icon name="linkedin-in" size="l" />
+          {connected ? (
+            <motion.span
+              initial={{ scale: 0.6, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={spring.snappy}
+              className="absolute -right-1 -bottom-1 flex size-4 items-center justify-center rounded-full bg-imagine-primary text-imagine-primary-foreground ring-2 ring-imagine-surface"
+            >
+              <Icon name="check" size="s" active className="text-[9px]" />
+            </motion.span>
+          ) : null}
         </span>
         <div className="flex min-w-0 flex-col">
           <span className="type-body font-medium">{accountName}</span>
           <span className="type-small text-imagine-foreground-muted">
-            {accountNote}
+            {connected ? "Connected just now" : accountNote}
           </span>
         </div>
       </motion.div>
 
-      <Stagger kind="list" className="flex flex-col gap-s pl-xs">
-        {permissions.map((permission) => (
-          <StaggerItem
-            key={permission}
-            className="flex items-center gap-m type-small"
-          >
-            <span
-              aria-hidden="true"
-              className="size-1.5 shrink-0 rounded-full bg-imagine-foreground-faint"
-            />
-            {permission}
-          </StaggerItem>
-        ))}
-      </Stagger>
+      {permissions.length > 0 ? (
+        <Stagger kind="list" className="flex flex-col gap-s pl-xs">
+          {permissions.map((permission) => (
+            <StaggerItem
+              key={permission}
+              className="flex items-center gap-m type-small"
+            >
+              <span
+                aria-hidden="true"
+                className="size-1.5 shrink-0 rounded-full bg-imagine-foreground-faint"
+              />
+              {permission}
+            </StaggerItem>
+          ))}
+        </Stagger>
+      ) : null}
 
-      {showActions ? (
+      {showActions && !connected ? (
         <div className="mt-l flex flex-wrap items-center gap-l">
           <Button size="lg" disabled={pending} onClick={onConnect}>
             {pending ? (
