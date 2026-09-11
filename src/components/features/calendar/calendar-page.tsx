@@ -408,7 +408,12 @@ export function CalendarPage({
           }}
           onSave={savePost}
           onOpenAgent={(value) => {
-            savePost(value);
+            setEdits((current) => ({
+              ...current,
+              [value.post.id]: value,
+            }));
+            chat.startNew();
+            chat.attach({ kind: "post", post: value.post });
             router.push("/agent");
           }}
           onDelete={(postId) => {

@@ -94,9 +94,11 @@ export function AgentWorkspace({
   const messages = synced ? chat.messages : thread.messages;
 
   // "New chat" opens a conversation before anything is said; until the first
-  // message it is still the landing.
+  // message it is still the landing. Context opened from another page is the
+  // exception: show the full chat immediately so the user can talk about it.
   const onLanding =
     landing !== undefined &&
+    chat.attached.length === 0 &&
     (chat.threadId === null || chat.messages.length === 0);
 
   // No navigation on the first send: the composer has to survive the morph.
@@ -237,7 +239,7 @@ export function AgentWorkspace({
             </motion.div>
           ) : null}
         </AnimatePresence>
-        {onLanding && !centered && landing !== undefined ? (
+        {onLanding && !centered ? (
           <div className="w-full min-w-0 shrink-0 xl:hidden">
             <LandingRail
               stacked
@@ -257,7 +259,7 @@ export function AgentWorkspace({
           and resizes like the other panels. */}
       <PageAside>
         <AnimatePresence initial={false}>
-          {onLanding && !centered && !isCompact && landing !== undefined ? (
+          {onLanding && !centered && !isCompact ? (
             <LandingRail
               key="rail"
               stats={landing.stats}
