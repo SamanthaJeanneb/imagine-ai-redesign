@@ -76,6 +76,7 @@ export const ICON_NAMES = [
   "plug",
   "plus",
   "puzzle-piece",
+  "right-from-bracket",
   "salesforce",
   "share-nodes",
   "sidebar",

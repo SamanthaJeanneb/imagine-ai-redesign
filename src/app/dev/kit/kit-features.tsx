@@ -1064,6 +1064,7 @@ function PageStub({
 
 const SIDEBAR_USER = {
   name: "Sarah Chen",
+  email: "sarah@acme.com",
   avatarUrl: AVATAR(47),
 };
 
@@ -1138,11 +1139,11 @@ export function SidebarDemo() {
             <AccountControls
               user={SIDEBAR_USER}
               className="ml-auto"
-              onOpenAccount={() => {
-                toast("Account");
-              }}
               onOpenSettings={() => {
                 toast("Settings");
+              }}
+              onSignOut={() => {
+                toast("Signed out");
               }}
             />
           </PageStub>

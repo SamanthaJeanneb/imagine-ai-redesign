@@ -153,8 +153,8 @@ interface WorkspaceHeaderProps {
   panel: ChatPanelMode | null;
   onPanelChange: (panel: ChatPanelMode | null) => void;
   user: AccountUser;
-  onOpenAccount: () => void;
   onOpenSettings: () => void;
+  onSignOut: () => void;
 }
 
 /**
@@ -186,8 +186,8 @@ function WorkspaceHeader({
   panel,
   onPanelChange,
   user,
-  onOpenAccount,
   onOpenSettings,
+  onSignOut,
 }: WorkspaceHeaderProps) {
   return (
     <div className="relative mt-m mb-m flex h-8 min-w-0 shrink-0 items-center gap-s px-l after:absolute after:inset-x-0 after:-bottom-m after:border-b after:border-imagine-border md:px-xxl">
@@ -283,8 +283,8 @@ function WorkspaceHeader({
             ) : null}
             <AccountControls
               user={user}
-              onOpenAccount={onOpenAccount}
               onOpenSettings={onOpenSettings}
+              onSignOut={onSignOut}
               compact={compact}
             />
           </motion.div>
@@ -555,11 +555,12 @@ function WorkspaceFrame({
       panel={panel}
       onPanelChange={changePanel}
       user={user}
-      onOpenAccount={() => {
-        router.push("/settings");
-      }}
       onOpenSettings={() => {
         router.push("/settings");
+      }}
+      onSignOut={() => {
+        // The mock has no session to end; leaving lands on sign-in.
+        router.push("/sign-in");
       }}
     />
   );

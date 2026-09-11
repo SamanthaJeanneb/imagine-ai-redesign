@@ -55,6 +55,9 @@ export function getCurrentUser(): AccountUser {
 
   return {
     name: user?.name ?? "Unknown user",
+    ...(user?.email === null || user?.email === undefined
+      ? {}
+      : { email: user.email }),
     ...(user?.avatar_url === null || user?.avatar_url === undefined
       ? {}
       : { avatarUrl: user.avatar_url }),
