@@ -83,6 +83,8 @@ export interface SidebarThread {
   title: string;
   /** Unread activity since the user last opened it. */
   unread?: boolean;
+  /** Message text, so search can match more than the title. */
+  preview?: string;
 }
 
 export const SIDEBAR_NAV: readonly SidebarNavItem[] = [

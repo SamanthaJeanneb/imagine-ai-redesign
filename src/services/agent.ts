@@ -11,7 +11,7 @@ import {
   transformEngagementProfileRow,
 } from "@/entities/engagement";
 import type { Post } from "@/entities/post";
-import type { MessagePartRow } from "@/entities/rows";
+import type { MessagePartRow, MessageRow } from "@/entities/rows";
 import {
   formatMonthShort,
   formatRelative,
@@ -96,17 +96,41 @@ function actionsFor(status: string, title: string): readonly TimelineAction[] {
   return [{ intent: "open", label: "Open", prompt: `Show me: ${title}` }];
 }
 
+/** First stretch of each thread's stored text, so search can look past the title. */
+function previewsByThread(
+  messages: readonly MessageRow[],
+): Map<string, string> {
+  const texts = new Map<string, string[]>();
+  for (const message of messages) {
+    for (const part of message.content.parts) {
+      if (!part.text) continue;
+      const current = texts.get(message.thread_id);
+      if (current) current.push(part.text);
+      else texts.set(message.thread_id, [part.text]);
+    }
+  }
+  const previews = new Map<string, string>();
+  for (const [id, parts] of texts) {
+    previews.set(id, parts.join(" ").slice(0, 800));
+  }
+  return previews;
+}
+
 /** Sidebar, Chats. Threads the org has with the agent, most recent first. */
 export function getThreads(): readonly SidebarThread[] {
-  return getDb()
-    .mastra.mastra_threads.toSorted((a, b) =>
-      b.updatedAt.localeCompare(a.updatedAt),
-    )
-    .map((thread) => ({
-      id: thread.id,
-      title: thread.title ?? "Untitled",
-      ...(thread.metadata.unread ? { unread: true } : {}),
-    }));
+  const db = getDb();
+  const previews = previewsByThread(db.mastra.mastra_messages);
+  return db.mastra.mastra_threads
+    .toSorted((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+    .map((thread) => {
+      const preview = previews.get(thread.id);
+      return {
+        id: thread.id,
+        title: thread.title ?? "Untitled",
+        ...(thread.metadata.unread ? { unread: true } : {}),
+        ...(preview === undefined ? {} : { preview }),
+      };
+    });
 }
 
 /** The landing timeline: what the agent did while the user was away. */
