@@ -532,6 +532,7 @@ export function CalendarPage({
         setActiveEditorId(nextId);
         setEditingPostId(nextId === "calendar" ? null : nextId);
       }}
+      inset={false}
       className="min-h-0 flex-1"
     >
       {activeId === "calendar" ? calendarContent : editor}

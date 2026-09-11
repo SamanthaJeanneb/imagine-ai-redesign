@@ -23,6 +23,12 @@ interface EditorTabStripProps {
   onClose?: (id: string) => void;
   /** The page that sits behind the tabs. Shares the raised sheet. */
   children?: ReactNode;
+  /**
+   * Whether the strip puts a page inset above its content. Documents rely on
+   * it for their title; a page that frames itself, like the calendar, turns
+   * it off so the two insets do not stack.
+   */
+  inset?: boolean;
   className?: string;
 }
 
@@ -39,6 +45,7 @@ export function EditorTabStrip({
   onActivate,
   onClose,
   children,
+  inset = true,
   className,
 }: EditorTabStripProps) {
   const indicatorId = useId();
@@ -166,7 +173,7 @@ export function EditorTabStrip({
             transition={fade.fast}
             className={cn(
               "flex min-h-0 flex-1 flex-col",
-              tabs.length > 0 && "pt-xl",
+              inset && tabs.length > 0 && "pt-xl",
             )}
           >
             {children}
