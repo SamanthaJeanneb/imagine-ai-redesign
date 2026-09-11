@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { InviteLinkField } from "@/components/features/onboarding/invite-team-form";
 import {
   type Member,
   type MemberRole,
@@ -150,6 +151,7 @@ function InviteDialog({ open, onOpenChange, onInvite }: InviteDialogProps) {
 export function MembersSettings({
   members: initialMembers,
   currentUserId,
+  inviteUrl,
 }: MembersSettingsData) {
   const [members, setMembers] = useState(initialMembers);
   const [inviting, setInviting] = useState(false);
@@ -172,6 +174,10 @@ export function MembersSettings({
           </Button>
         }
       >
+        <Field>
+          <FieldLabel>Invite link</FieldLabel>
+          <InviteLinkField url={inviteUrl} />
+        </Field>
         <MembersList
           members={members}
           currentUserId={currentUserId}

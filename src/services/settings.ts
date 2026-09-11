@@ -44,6 +44,8 @@ export interface MembersSettings {
   members: readonly Member[];
   /** Whoever is signed in, so the list can mark them. */
   currentUserId: string;
+  /** Shareable join URL for this organization. */
+  inviteUrl: string;
 }
 
 /** Settings, Members. Everyone with access to the organization. */
@@ -69,6 +71,7 @@ export function getMembersSettings(): MembersSettings {
   return {
     members,
     currentUserId: org.created_by,
+    inviteUrl: `https://imagine.ai/join/${org.id}`,
   };
 }
 

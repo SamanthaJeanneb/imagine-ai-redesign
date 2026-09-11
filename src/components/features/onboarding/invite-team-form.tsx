@@ -105,12 +105,17 @@ export function InviteLinkField({ url, className }: InviteLinkFieldProps) {
           variant="soft"
           className="bg-imagine-surface"
           onClick={() => {
-            void navigator.clipboard.writeText(url).then(() => {
-              setCopied(true);
-              window.setTimeout(() => {
-                setCopied(false);
-              }, 1500);
-            });
+            void navigator.clipboard.writeText(url).then(
+              () => {
+                setCopied(true);
+                window.setTimeout(() => {
+                  setCopied(false);
+                }, 1500);
+              },
+              () => {
+                // Clipboard can be denied; the field stays selectable.
+              },
+            );
           }}
         >
           <Icon
