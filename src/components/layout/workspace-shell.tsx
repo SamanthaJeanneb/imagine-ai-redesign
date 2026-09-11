@@ -381,9 +381,9 @@ function WorkspaceFrame({
   // state, so the page can portal into it once it exists.
   const [asideHost, setAsideHost] = useState<HTMLElement | null>(null);
   const filesResize = useResizable({
-    defaultWidth: 320,
+    defaultWidth: 400,
     min: 264,
-    max: 520,
+    max: 560,
     edge: "start",
   });
   // Everyone still connected, to start. Disconnected profiles need connecting

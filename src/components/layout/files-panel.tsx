@@ -50,7 +50,7 @@ interface FilesPanelProps {
   className?: string;
 }
 
-const DEFAULT_WIDTH = 320;
+const DEFAULT_WIDTH = 400;
 
 /**
  * The right column that pushes the workspace when open: search, Files and
