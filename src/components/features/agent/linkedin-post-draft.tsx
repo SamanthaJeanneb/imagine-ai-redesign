@@ -11,6 +11,10 @@ import {
 } from "@/components/features/files/asset-tile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  LinkedInReactionCluster,
+  type LinkedInReactionType,
+} from "@/components/features/agent/linkedin-reaction";
 import { Icon, type IconName } from "@/components/ui/icon";
 import { fade } from "@/styles/motion";
 
@@ -66,10 +70,12 @@ interface LinkedInPostDraftProps extends Omit<
   footer?: React.ReactNode;
 }
 
-/** LinkedIn's own reaction colors, for the reactions the post drew. */
-const REACTION_LIKE = "#378fe9";
-const REACTION_CELEBRATE = "#6dae4f";
-const REACTION_INSIGHTFUL = "#e7a33e";
+/** The feed's overlapping trio when a post has reactions but no type breakdown. */
+const FEED_REACTIONS: readonly LinkedInReactionType[] = [
+  "like",
+  "celebrate",
+  "love",
+];
 
 /**
  * Where LinkedIn folds a post: about two lines of the feed before "…more",
@@ -296,38 +302,7 @@ export function LinkedInPost({
             aria-hidden="true"
             className="flex shrink-0 items-center gap-xs type-caption text-imagine-foreground-muted tabular-nums"
           >
-            <span className="flex items-center -space-x-1">
-              <span
-                style={{ backgroundColor: REACTION_LIKE }}
-                className="z-30 flex size-4 items-center justify-center rounded-full text-white ring-1 ring-imagine-surface"
-              >
-                <Icon
-                  name="thumbs-up"
-                  active
-                  style={{ width: 8, height: 8, fontSize: 8 }}
-                />
-              </span>
-              <span
-                style={{ backgroundColor: REACTION_CELEBRATE }}
-                className="z-20 flex size-4 items-center justify-center rounded-full text-white ring-1 ring-imagine-surface"
-              >
-                <Icon
-                  name="sun"
-                  active
-                  style={{ width: 8, height: 8, fontSize: 8 }}
-                />
-              </span>
-              <span
-                style={{ backgroundColor: REACTION_INSIGHTFUL }}
-                className="z-10 flex size-4 items-center justify-center rounded-full text-white ring-1 ring-imagine-surface"
-              >
-                <Icon
-                  name="lightbulb"
-                  active
-                  style={{ width: 8, height: 8, fontSize: 8 }}
-                />
-              </span>
-            </span>
+            <LinkedInReactionCluster types={FEED_REACTIONS} />
             {COUNT.format(stats.reactions)}
           </span>
         ) : null}
@@ -393,7 +368,7 @@ export function LinkedInPostDraft({
               }}
               className="ml-auto text-imagine-foreground-muted"
             >
-              {expanded ? "Preview with …more" : "Show full post"}
+              {expanded ? "Collapse" : "Show full post"}
             </Button>
           ) : null}
         </div>

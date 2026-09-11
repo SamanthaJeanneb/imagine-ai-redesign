@@ -54,6 +54,7 @@ import {
   EventChip,
   type EventChipData,
 } from "@/components/features/calendar/event-chip";
+import { LinkedInPostEditor } from "@/components/features/calendar/linkedin-post-detail";
 import {
   PostChip,
   type PostChipData,
@@ -427,11 +428,63 @@ const POST_HIRING: PostChipData = {
     body: "We are hiring a senior product designer.\n\nSmall team, real ownership, and a product people use every day. Remote across Europe.\n\nDM me or apply below.",
     media: ASSETS.slice(2, 3),
     stats: {
-      reactions: 412,
-      comments: 47,
-      reposts: 22,
+      reactions: 16,
+      comments: 2,
+      reposts: 3,
       impressions: 8920,
     },
+  },
+  engagement: {
+    reactors: [
+      {
+        id: "r1",
+        name: "Alex Kim",
+        headline: "Product at Northwind",
+        avatarUrl: AVATAR(5),
+        reaction: "like",
+      },
+      {
+        id: "r2",
+        name: "Maya Ortiz",
+        headline: "Designer",
+        avatarUrl: AVATAR(32),
+        reaction: "celebrate",
+      },
+      {
+        id: "r3",
+        name: "Chris Walsh",
+        headline: "Engineer at Acme",
+        avatarUrl: AVATAR(11),
+        reaction: "love",
+      },
+      {
+        id: "r4",
+        name: "Priya Raman",
+        headline: "Staff Engineer at Acme",
+        avatarUrl: AVATAR(20),
+        reaction: "insightful",
+      },
+      {
+        id: "r5",
+        name: "Jordan Lee",
+        headline: "PM at Acme",
+        avatarUrl: AVATAR(8),
+        reaction: "funny",
+      },
+    ],
+    comments: [
+      {
+        id: "c1",
+        author: {
+          id: "r4",
+          name: "Priya Raman",
+          headline: "Staff Engineer at Acme",
+          avatarUrl: AVATAR(20),
+        },
+        body: "Would love to see the portfolio bar for this one.",
+        when: "2d",
+      },
+    ],
   },
 };
 const POST_NORTHWIND: PostChipData = {
@@ -2136,6 +2189,7 @@ const DRAFT_BODY = POST_LAUNCH.preview?.body ?? "";
 export function PostDraftDemo() {
   const [body, setBody] = useState(DRAFT_BODY);
   const [editing, setEditing] = useState(false);
+  const [editorBody, setEditorBody] = useState(POST_HIRING.preview?.body ?? "");
 
   return (
     <div className="grid gap-xl lg:grid-cols-2">
@@ -2190,6 +2244,13 @@ export function PostDraftDemo() {
               {editing ? "Done" : "Edit"}
             </Button>
           }
+        />
+      </Demo>
+      <Demo label="Post editor, with reactions" className="lg:col-span-2">
+        <LinkedInPostEditor
+          post={POST_HIRING}
+          body={editorBody}
+          onBodyChange={setEditorBody}
         />
       </Demo>
     </div>

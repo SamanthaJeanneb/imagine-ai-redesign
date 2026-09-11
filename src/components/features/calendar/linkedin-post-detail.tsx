@@ -11,6 +11,10 @@ import type {
   PostChipData,
   PostEngagementPerson,
 } from "@/components/features/calendar/post-chip";
+import {
+  LinkedInReactionCluster,
+  linkedInReactionTypes,
+} from "@/components/features/agent/linkedin-reaction";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DashedAction } from "@/components/ui/dashed-action";
 import { Icon, type IconName } from "@/components/ui/icon";
@@ -259,40 +263,28 @@ export function LinkedInPostEditor({
           <div className="mb-l flex items-center justify-between gap-m">
             <div className="flex min-w-0 items-center">
               {reactors.slice(0, 6).map((reactor, index) => (
-                <div
+                <span
                   key={`${reactor.id}:${reactor.reaction}`}
                   title={`${reactor.name} reacted ${reactor.reaction}`}
-                  className={cn("relative", index > 0 && "-ml-xs")}
+                  className={cn(index > 0 && "-ml-xs")}
                 >
                   <PersonAvatar
                     person={reactor}
                     className="size-8 ring-2 ring-imagine-surface"
                   />
-                  <span
-                    className={cn(
-                      "absolute -right-0.5 -bottom-0.5 flex size-4 items-center justify-center rounded-full text-white ring-1 ring-imagine-surface",
-                      reactor.reaction === "insightful"
-                        ? "bg-amber-500"
-                        : "bg-[#378fe9]",
-                    )}
-                  >
-                    <Icon
-                      name={
-                        reactor.reaction === "insightful"
-                          ? "lightbulb"
-                          : "thumbs-up"
-                      }
-                      active
-                      className="text-[8px]"
-                    />
-                  </span>
-                </div>
+                </span>
               ))}
               <span className="ml-s truncate type-small text-imagine-foreground-muted">
                 {remainingReactions > 0
                   ? `and ${COUNT.format(remainingReactions)} others`
                   : `${COUNT.format(reactors.length)} reactions`}
               </span>
+              <LinkedInReactionCluster
+                types={linkedInReactionTypes(
+                  reactors.map((reactor) => reactor.reaction),
+                )}
+                className="ml-s shrink-0"
+              />
             </div>
             <span className="shrink-0 type-small text-imagine-foreground-muted">
               {COUNT.format(stats?.comments ?? comments.length)} comments

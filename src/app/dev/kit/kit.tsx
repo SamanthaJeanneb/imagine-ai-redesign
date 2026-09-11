@@ -2,6 +2,10 @@ import Link from "next/link";
 
 import { Shimmer } from "@/components/motion/shimmer";
 import { ThinkingIndicator } from "@/components/motion/thinking-indicator";
+import {
+  LINKEDIN_REACTIONS,
+  LinkedInReaction,
+} from "@/components/features/agent/linkedin-reaction";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon, ICON_NAMES } from "@/components/ui/icon";
@@ -305,6 +309,11 @@ export function Kit({ radiusScale = "default" }: KitProps) {
               size="xl"
               className="text-imagine-secondary"
             />
+          </div>
+          <div className="flex items-center gap-xs">
+            {LINKEDIN_REACTIONS.map((type) => (
+              <LinkedInReaction key={type} type={type} />
+            ))}
           </div>
         </Section>
 

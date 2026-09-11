@@ -8,10 +8,11 @@ import { BrandMark, isLocalBrand } from "@/components/ui/brand-mark";
  * `fa-` classes are written.
  *
  * The kit is subset. Sharp names must exist in the kit. Marks that the kit
- * does not ship (Imagine's own, Google, X, HubSpot, Slack, Salesforce) render
- * from local SVGs in brand-mark.tsx so they never show the missing glyph.
- * Local marks use a <span>, not <i>: the kit rewrites <i> tags and would
- * replace a custom SVG with the missing-glyph placeholder.
+ * does not ship (Imagine's own, Google, X, HubSpot, Slack, Salesforce, and
+ * LinkedIn reaction glyphs) render from local SVGs in brand-mark.tsx so they
+ * never show the missing glyph. Local marks use a <span>, not <i>: the kit
+ * rewrites <i> tags and would replace a custom SVG with the missing-glyph
+ * placeholder.
  */
 export const ICON_NAMES = [
   "arrow-down",
@@ -42,6 +43,7 @@ export const ICON_NAMES = [
   "envelope",
   "expand",
   "eye",
+  "face-smile",
   "file-lines",
   "file-pen",
   "file-plus",
@@ -51,6 +53,9 @@ export const ICON_NAMES = [
   "gear",
   "google",
   "grip",
+  "handshake",
+  "hands-clapping",
+  "heart",
   "hubspot",
   "image",
   "imagine",
