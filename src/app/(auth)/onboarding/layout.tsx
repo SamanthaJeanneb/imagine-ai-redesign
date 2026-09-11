@@ -18,7 +18,10 @@ export default function OnboardingLayout({
       <div className="flex min-h-svh flex-1 bg-imagine-background">
         <OnboardingRail />
         <main className="flex min-w-0 flex-1 justify-center rounded-none bg-imagine-surface px-l pt-section pb-xxl md:rounded-l-surface md:px-xl">
-          <div className="flex w-full max-w-lg flex-col gap-xl">{children}</div>
+          {/* The step starts a little under the rail's mark, as the reference. */}
+          <div className="flex w-full max-w-(--container-xl) flex-col md:pt-xxl">
+            {children}
+          </div>
         </main>
       </div>
     </OnboardingProvider>

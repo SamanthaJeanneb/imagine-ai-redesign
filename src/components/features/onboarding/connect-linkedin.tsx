@@ -18,6 +18,8 @@ interface ConnectLinkedInProps {
   onConnect: () => void;
   onSkip?: () => void;
   pending?: boolean;
+  /** `false` when the page pins Connect and Skip elsewhere. */
+  showActions?: boolean;
   className?: string;
 }
 
@@ -32,12 +34,16 @@ export function ConnectLinkedIn({
   onConnect,
   onSkip,
   pending = false,
+  showActions = true,
   className,
 }: ConnectLinkedInProps) {
   return (
     <div
       data-slot="connect-linkedin"
-      className={cn("flex w-full max-w-lg flex-col gap-xxl", className)}
+      className={cn(
+        "flex w-full max-w-(--container-xl) flex-col gap-xxl",
+        className,
+      )}
     >
       <motion.div
         initial={{ opacity: 0, y: 6 }}
@@ -71,25 +77,27 @@ export function ConnectLinkedIn({
         ))}
       </Stagger>
 
-      <div className="mt-xl flex flex-wrap items-center gap-l">
-        <Button size="lg" disabled={pending} onClick={onConnect}>
-          {pending ? (
-            <Spinner size="s" data-icon="inline-start" />
-          ) : (
-            <Icon name="linkedin-in" data-icon="inline-start" />
-          )}
-          Connect LinkedIn
-        </Button>
-        {onSkip ? (
-          <Button
-            variant="link"
-            className="text-imagine-foreground-muted"
-            onClick={onSkip}
-          >
-            Skip and do this later
+      {showActions ? (
+        <div className="mt-l flex flex-wrap items-center gap-l">
+          <Button size="lg" disabled={pending} onClick={onConnect}>
+            {pending ? (
+              <Spinner size="s" data-icon="inline-start" />
+            ) : (
+              <Icon name="linkedin-in" data-icon="inline-start" />
+            )}
+            Connect LinkedIn
           </Button>
-        ) : null}
-      </div>
+          {onSkip ? (
+            <Button
+              variant="link"
+              className="text-imagine-foreground-muted"
+              onClick={onSkip}
+            >
+              Skip and do this later
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

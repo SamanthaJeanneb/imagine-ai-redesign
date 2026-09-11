@@ -31,13 +31,13 @@ export function OnboardingRail() {
     // Logo and steps at the top, signed-in line at the bottom. Width follows
     // the viewport: never narrower than the labels need on one line, and never
     // a sliver beside a wide screen's surface.
-    <div className="hidden w-[clamp(16rem,18vw,20rem)] shrink-0 flex-col justify-between self-stretch px-xl pt-section pb-xxl md:flex">
-      <div className="flex flex-col gap-xxxl">
+    <div className="hidden w-[clamp(16rem,22vw,20rem)] shrink-0 flex-col justify-between self-stretch px-xl pt-section pb-xxl md:flex">
+      <div className="flex flex-col gap-section">
         <div className="flex items-center gap-s">
           <span className="flex size-8 shrink-0 items-center justify-center rounded-control bg-imagine-foreground">
             <BrandMark name="imagine" className="size-4 text-imagine-surface" />
           </span>
-          <span className="type-title">Imagine AI</span>
+          <span className="type-body font-semibold">Imagine AI</span>
         </div>
         <Stepper
           steps={STEPS}
@@ -50,8 +50,8 @@ export function OnboardingRail() {
         />
       </div>
       {email ? (
-        <p className="type-micro text-imagine-foreground-faint">
-          Signed in as {email}
+        <p className="truncate type-caption text-imagine-foreground-muted">
+          Signed in as <span className="text-imagine-foreground">{email}</span>
         </p>
       ) : null}
     </div>

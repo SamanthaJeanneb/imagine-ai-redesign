@@ -7,6 +7,7 @@ import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
+import { STEP_LABEL } from "@/components/features/onboarding/organization-form";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import {
@@ -199,6 +200,8 @@ interface InviteTeamFormProps {
   onRoleChange?: (id: string, role: MemberRole) => void;
   onResend?: (id: string) => void;
   onSkip?: () => void;
+  /** `false` when the page pins Continue and Skip elsewhere. */
+  showActions?: boolean;
   className?: string;
 }
 
@@ -215,6 +218,7 @@ export function InviteTeamForm({
   onRoleChange,
   onResend,
   onSkip,
+  showActions = true,
   className,
 }: InviteTeamFormProps) {
   const [email, setEmail] = useState("");
@@ -231,20 +235,25 @@ export function InviteTeamForm({
   return (
     <form
       data-slot="invite-team-form"
-      className={cn("flex w-full max-w-lg flex-col gap-xxl", className)}
+      className={cn(
+        "flex w-full max-w-(--container-xl) flex-col gap-xxl",
+        className,
+      )}
       onSubmit={(event) => {
         event.preventDefault();
         onContinue();
       }}
     >
       <Field>
-        <FieldLabel htmlFor="invite-email">Invite by email</FieldLabel>
+        <FieldLabel htmlFor="invite-email" className={STEP_LABEL}>
+          Invite by email
+        </FieldLabel>
         <div className="flex flex-col gap-s sm:flex-row sm:items-center">
           <Input
             id="invite-email"
             type="email"
             placeholder="name@company.com"
-            className="min-w-0 w-full flex-1"
+            className="w-full min-w-0 flex-1"
             value={email}
             onChange={(event) => {
               setEmail(event.target.value);
@@ -276,12 +285,12 @@ export function InviteTeamForm({
       </Field>
 
       <Field>
-        <FieldLabel>Or share a link</FieldLabel>
+        <FieldLabel className={STEP_LABEL}>Or share a link</FieldLabel>
         <InviteLinkField url={inviteUrl} />
       </Field>
 
       <Field>
-        <FieldLabel>Team</FieldLabel>
+        <FieldLabel className={STEP_LABEL}>Team</FieldLabel>
         <Stagger kind="list" className="flex flex-col">
           {members.map((member) => (
             <StaggerItem key={member.id}>
@@ -295,21 +304,23 @@ export function InviteTeamForm({
         </Stagger>
       </Field>
 
-      <div className="mt-xl flex flex-wrap items-center gap-l">
-        <Button type="submit" size="lg">
-          Continue
-        </Button>
-        {onSkip ? (
-          <Button
-            type="button"
-            variant="link"
-            className="text-imagine-foreground-muted"
-            onClick={onSkip}
-          >
-            Skip, invite people later
+      {showActions ? (
+        <div className="mt-l flex flex-wrap items-center gap-l">
+          <Button type="submit" size="lg">
+            Continue
           </Button>
-        ) : null}
-      </div>
+          {onSkip ? (
+            <Button
+              type="button"
+              variant="link"
+              className="text-imagine-foreground-muted"
+              onClick={onSkip}
+            >
+              Skip, invite people later
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
     </form>
   );
 }

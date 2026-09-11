@@ -17,16 +17,49 @@ interface LogoUploadProps {
   className?: string;
 }
 
-/** A logo tile beside an Upload action; the tile previews the choice. */
+/** Field labels in the setup flow read smaller than the body under them. */
+export const STEP_LABEL = "type-caption font-semibold";
+
+function firstImage(files: FileList | null): File | null {
+  if (!files) return null;
+  for (const file of files) {
+    if (file.type.startsWith("image/")) return file;
+  }
+  return null;
+}
+
+/**
+ * A logo dropzone: the tile previews the choice, the copy says what to drop,
+ * and Upload opens the picker. Files can also be dragged onto the card.
+ */
 export function LogoUpload({ value, onChange, className }: LogoUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
 
   return (
     <div
       data-slot="logo-upload"
-      className={cn("flex items-center gap-m", className)}
+      data-dragging={dragging || undefined}
+      onDragOver={(event) => {
+        event.preventDefault();
+        setDragging(true);
+      }}
+      onDragLeave={() => {
+        setDragging(false);
+      }}
+      onDrop={(event) => {
+        event.preventDefault();
+        setDragging(false);
+        const file = firstImage(event.dataTransfer.files);
+        if (file) onChange(file);
+      }}
+      className={cn(
+        "flex items-center gap-m rounded-control border border-imagine-border bg-imagine-surface-raised/40 p-m transition-colors",
+        dragging && "border-imagine-secondary bg-imagine-secondary-soft/40",
+        className,
+      )}
     >
-      <span className="flex size-12 items-center justify-center overflow-hidden rounded-control bg-imagine-surface-raised text-imagine-foreground-faint">
+      <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-control bg-imagine-surface-raised text-imagine-foreground-faint">
         <AnimatePresence mode="wait" initial={false}>
           {value ? (
             <motion.img
@@ -47,10 +80,18 @@ export function LogoUpload({ value, onChange, className }: LogoUploadProps) {
               exit={{ opacity: 0 }}
               transition={fade.fast}
             >
-              <Icon name="image" />
+              <Icon name="image" size="s" />
             </motion.span>
           )}
         </AnimatePresence>
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col gap-xxs">
+        <span className="type-small">
+          {value ? "Logo added" : "Drag a file here, or"}
+        </span>
+        <span className="type-caption text-imagine-foreground-muted">
+          PNG or SVG, at least 256×256
+        </span>
       </span>
       <input
         ref={inputRef}
@@ -61,22 +102,12 @@ export function LogoUpload({ value, onChange, className }: LogoUploadProps) {
           onChange(event.target.files?.[0] ?? null);
         }}
       />
-      <Button
-        type="button"
-        variant="soft"
-        size="sm"
-        onClick={() => {
-          inputRef.current?.click();
-        }}
-      >
-        <Icon name="upload" size="s" data-icon="inline-start" />
-        {value ? "Replace" : "Upload"}
-      </Button>
       {value ? (
         <Button
           type="button"
           variant="ghost"
           size="sm"
+          className="text-imagine-foreground-muted"
           onClick={() => {
             onChange(null);
           }}
@@ -84,6 +115,18 @@ export function LogoUpload({ value, onChange, className }: LogoUploadProps) {
           Remove
         </Button>
       ) : null}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="bg-imagine-surface"
+        onClick={() => {
+          inputRef.current?.click();
+        }}
+      >
+        <Icon name="upload" size="s" data-icon="inline-start" />
+        {value ? "Replace" : "Upload"}
+      </Button>
     </div>
   );
 }
@@ -109,18 +152,24 @@ export function OrganizationForm({
   const [name, setName] = useState(defaultName);
   const [logo, setLogo] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | undefined>(defaultLogoUrl);
+  const named = name.trim() !== "";
 
   return (
     <form
       data-slot="organization-form"
-      className={cn("flex w-full max-w-lg flex-col gap-xxl", className)}
+      className={cn(
+        "flex w-full max-w-(--container-xl) flex-col gap-xxl",
+        className,
+      )}
       onSubmit={(event) => {
         event.preventDefault();
-        if (name.trim()) onContinue({ name: name.trim(), logo });
+        if (named) onContinue({ name: name.trim(), logo });
       }}
     >
       <Field>
-        <FieldLabel htmlFor="org-name">Organization name</FieldLabel>
+        <FieldLabel htmlFor="org-name" className={STEP_LABEL}>
+          Organization name
+        </FieldLabel>
         <Input
           id="org-name"
           value={name}
@@ -135,7 +184,12 @@ export function OrganizationForm({
         />
       </Field>
       <Field>
-        <FieldLabel>Logo</FieldLabel>
+        <FieldLabel className={STEP_LABEL}>
+          Logo
+          <span className="font-normal text-imagine-foreground-muted">
+            Optional
+          </span>
+        </FieldLabel>
         <LogoUpload
           value={preview}
           onChange={(file) => {
@@ -150,14 +204,16 @@ export function OrganizationForm({
           }}
         />
       </Field>
-      <Button
-        type="submit"
-        size="lg"
-        className="mt-xl self-start"
-        disabled={!name.trim()}
-      >
-        Continue
-      </Button>
+      <div className="mt-l flex flex-wrap items-center gap-l">
+        <Button type="submit" size="lg" disabled={!named}>
+          Continue
+        </Button>
+        {named ? null : (
+          <span className="type-caption text-imagine-foreground-muted">
+            Enter a name to continue
+          </span>
+        )}
+      </div>
     </form>
   );
 }

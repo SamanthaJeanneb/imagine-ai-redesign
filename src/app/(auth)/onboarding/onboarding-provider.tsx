@@ -9,7 +9,10 @@ import { createContext, type ReactNode, useContext, useState } from "react";
 interface OnboardingState {
   orgName: string;
   orgLogoUrl: string | undefined;
-  setOrganization: (values: { name: string; logoUrl: string | undefined }) => void;
+  setOrganization: (values: {
+    name: string;
+    logoUrl: string | undefined;
+  }) => void;
 }
 
 const OnboardingContext = createContext<OnboardingState | null>(null);

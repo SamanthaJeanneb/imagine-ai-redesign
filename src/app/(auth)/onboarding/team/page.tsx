@@ -8,8 +8,8 @@ export default function TeamStepPage() {
       <StepHeading
         title="Who's on your team?"
         description="Add the people who write, review, or approve posts. You can always invite more from settings."
-        step={2}
-        total={3}
+        step={3}
+        total={4}
       />
       <TeamStep inviteUrl={getInviteUrl()} owner={getOwner()} />
     </>

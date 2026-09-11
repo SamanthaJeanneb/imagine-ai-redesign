@@ -68,6 +68,7 @@ export function GeneralSettings({ orgName, logoUrl }: GeneralSettings) {
             <Field>
               <FieldLabel>Logo</FieldLabel>
               <LogoUpload
+                className="max-w-sm"
                 {...(logo === undefined ? {} : { value: logo })}
                 onChange={(file) => {
                   setLogo((current) => {

@@ -51,10 +51,7 @@ export function Stepper({ steps, current, onSelect, className }: StepperProps) {
               <span
                 aria-hidden="true"
                 className={cn(
-                  "absolute top-6 bottom-0 left-[11px] w-px",
-                  state === "done"
-                    ? "bg-imagine-foreground-faint"
-                    : "bg-imagine-border",
+                  "absolute top-6 bottom-0 left-[11px] w-px bg-imagine-border",
                 )}
               />
             )}
@@ -76,11 +73,11 @@ export function Stepper({ steps, current, onSelect, className }: StepperProps) {
             >
               <span
                 className={cn(
-                  "relative flex size-6 shrink-0 items-center justify-center rounded-full type-small font-semibold tabular-nums transition-colors",
+                  "relative flex size-6 shrink-0 items-center justify-center rounded-full type-caption font-semibold tabular-nums transition-colors",
                   // The rail sits on the background, which matches
                   // surface-raised in light mode, so these read off foreground.
                   state === "done" &&
-                    "bg-imagine-foreground-faint text-imagine-surface",
+                    "bg-imagine-foreground text-imagine-surface",
                   state === "current" && "text-imagine-secondary-foreground",
                   state === "upcoming" &&
                     "bg-imagine-border text-imagine-foreground-faint",
@@ -107,7 +104,7 @@ export function Stepper({ steps, current, onSelect, className }: StepperProps) {
               </span>
               <span
                 className={cn(
-                  "type-body transition-colors",
+                  "type-small transition-colors",
                   state === "current" && "font-semibold",
                   state === "done" && "text-imagine-foreground-muted",
                   state === "upcoming" && "text-imagine-foreground-faint",

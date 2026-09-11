@@ -2805,7 +2805,12 @@ export function OnboardingPartsDemo() {
           <Stepper steps={STEPS} current={step} onSelect={setStep} />
         </Demo>
         <Demo label="Step heading">
-          <StepHeading title="Invite your team" step={step} total={3} />
+          <StepHeading
+            title="Invite your team"
+            description="Add the people who write, review, or approve posts."
+            step={step + 1}
+            total={STEPS.length}
+          />
         </Demo>
       </div>
       <div className="grid gap-xl lg:grid-cols-2">

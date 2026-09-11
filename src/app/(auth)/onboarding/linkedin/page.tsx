@@ -10,8 +10,8 @@ export default function LinkedInStepPage() {
       <StepHeading
         title="Connect your LinkedIn"
         description="The agent drafts as you and publishes only what you approve. Connect now to post from day one, or skip and do it later."
-        step={3}
-        total={3}
+        step={4}
+        total={4}
       />
       <LinkedInStep
         accountName={owner.name ?? owner.email}
