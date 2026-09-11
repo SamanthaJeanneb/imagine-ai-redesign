@@ -95,11 +95,11 @@ export function AgentWorkspace({
   const messages = synced ? chat.messages : thread.messages;
 
   // "New chat" opens a conversation before anything is said; until the first
-  // message it is still the landing. Context opened from another page is the
-  // exception: show the full chat immediately so the user can talk about it.
+  // message it is still the landing, even if a file or other context is
+  // already attached. Opening a post from the editor is the exception: that
+  // starts a thread with the post in it, so the landing gives way.
   const onLanding =
     landing !== undefined &&
-    chat.attached.length === 0 &&
     (chat.threadId === null || chat.messages.length === 0);
 
   // No navigation on the first send: the composer has to survive the morph.
