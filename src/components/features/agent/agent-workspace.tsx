@@ -18,6 +18,7 @@ import {
 } from "@/components/features/agent/agent-landing-2";
 import { AgentThread } from "@/components/features/agent/agent-thread";
 import { ChatDock } from "@/components/features/agent/chat-dock";
+import { ChatEmptyMark } from "@/components/features/agent/chat-empty-mark";
 import { useChat } from "@/components/features/agent/chat-provider";
 import type { TimelineEntry } from "@/components/features/agent/timeline";
 import type {
@@ -180,7 +181,9 @@ export function AgentWorkspace({
           ) : null}
         </AnimatePresence>
 
-        {onLanding ? null : (
+        {onLanding ? null : messages.length === 0 ? (
+          <ChatEmptyMark />
+        ) : (
           <AgentThread
             messages={messages}
             thinking={chat.thinking}

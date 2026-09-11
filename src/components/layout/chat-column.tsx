@@ -5,6 +5,7 @@ import { motion, useReducedMotion } from "motion/react";
 
 import { AgentThread } from "@/components/features/agent/agent-thread";
 import { ChatDock } from "@/components/features/agent/chat-dock";
+import { ChatEmptyMark } from "@/components/features/agent/chat-empty-mark";
 import { useChat } from "@/components/features/agent/chat-provider";
 import type { ComposerPreview } from "@/components/features/agent/composer";
 import type { ChatPanelMode } from "@/components/layout/chat-context-panel";
@@ -124,14 +125,17 @@ export function ChatColumn({
             disappear if the inset is outside. */}
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-l pb-l">
           {chat.messages.length === 0 ? (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ ...fade.base, delay: 0.15 }}
-              className="mt-auto pb-l type-small text-imagine-foreground-muted"
-            >
-              {EMPTY_COPY[page]}
-            </motion.p>
+            <>
+              <ChatEmptyMark />
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ ...fade.base, delay: 0.15 }}
+                className="shrink-0 pb-l type-small text-imagine-foreground-muted"
+              >
+                {EMPTY_COPY[page]}
+              </motion.p>
+            </>
           ) : (
             <AgentThread
               messages={chat.messages}
