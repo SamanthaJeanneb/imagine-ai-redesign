@@ -5,6 +5,7 @@ import { ThinkingIndicator } from "@/components/motion/thinking-indicator";
 import {
   LINKEDIN_REACTIONS,
   LinkedInReaction,
+  LinkedInReactionCluster,
 } from "@/components/features/agent/linkedin-reaction";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -314,6 +315,10 @@ export function Kit({ radiusScale = "default" }: KitProps) {
             {LINKEDIN_REACTIONS.map((type) => (
               <LinkedInReaction key={type} type={type} />
             ))}
+            <LinkedInReactionCluster
+              types={["like", "celebrate", "love"]}
+              className="ml-s"
+            />
           </div>
         </Section>
 

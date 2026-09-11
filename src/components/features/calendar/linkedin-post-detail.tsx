@@ -12,7 +12,9 @@ import type {
   PostEngagementPerson,
 } from "@/components/features/calendar/post-chip";
 import {
+  LinkedInReaction,
   LinkedInReactionCluster,
+  linkedInReactionType,
   linkedInReactionTypes,
 } from "@/components/features/agent/linkedin-reaction";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -266,11 +268,15 @@ export function LinkedInPostEditor({
                 <span
                   key={`${reactor.id}:${reactor.reaction}`}
                   title={`${reactor.name} reacted ${reactor.reaction}`}
-                  className={cn(index > 0 && "-ml-xs")}
+                  className={cn("relative block", index > 0 && "-ml-xs")}
                 >
                   <PersonAvatar
                     person={reactor}
                     className="size-8 ring-2 ring-imagine-surface"
+                  />
+                  <LinkedInReaction
+                    type={linkedInReactionType(reactor.reaction)}
+                    className="absolute -right-0.5 -bottom-0.5 ring-2"
                   />
                 </span>
               ))}

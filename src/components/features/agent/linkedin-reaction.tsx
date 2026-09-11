@@ -29,7 +29,9 @@ const REACTION: Record<
   funny: { icon: "face-smile", color: "#1dc0c0", label: "Funny" },
 };
 
-export function isLinkedInReaction(value: string): value is LinkedInReactionType {
+export function isLinkedInReaction(
+  value: string,
+): value is LinkedInReactionType {
   return Object.hasOwn(REACTION, value);
 }
 
@@ -69,7 +71,11 @@ export function LinkedInReaction({
         className,
       )}
     >
-      <Icon name={reaction.icon} size="s" active />
+      <Icon
+        name={reaction.icon}
+        active
+        style={{ width: 8, height: 8, fontSize: 8 }}
+      />
     </span>
   );
 }
