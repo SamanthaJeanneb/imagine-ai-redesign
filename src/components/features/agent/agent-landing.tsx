@@ -138,13 +138,13 @@ export function LandingBelow({
         <h2 className="type-heading">Next two weeks</h2>
         {/* The strip shrinks with the column, its chips slimming to a line
             before its cells get narrower than a word. */}
-        <div className="min-w-0 overflow-x-auto">
+        <div className="min-w-0 xl:min-h-0 xl:flex-1">
           <CalendarGrid
             days={days}
             density="strip"
             onOpenPost={onOpenPost}
             onOpenEvent={onOpenEvent}
-            className="min-w-[36rem] flex-1"
+            className="h-full min-h-0 flex-1"
             {...(selectedPostId === undefined ? {} : { selectedPostId })}
           />
         </div>

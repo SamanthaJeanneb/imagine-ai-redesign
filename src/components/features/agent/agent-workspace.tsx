@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "cn";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useState } from "react";
@@ -202,10 +203,13 @@ export function AgentWorkspace({
               key="below"
               exit={blurOut}
               transition={fade.base}
-              className="flex min-w-0 shrink-0 flex-col xl:min-h-0 xl:flex-1"
+              className={cn(
+                "flex min-w-0 flex-col",
+                centered ? "shrink-0" : "shrink-0 xl:min-h-0 xl:flex-1",
+              )}
             >
               {centered ? (
-                <div className="mx-auto flex w-full max-w-4xl min-w-0 flex-1 flex-col gap-xxxl pt-xxxl pb-l">
+                <div className="mx-auto flex w-full max-w-4xl min-w-0 flex-col gap-xxxl pt-xxxl pb-l">
                   <ActivityCards
                     entries={pending}
                     onAction={(entry, action) => {

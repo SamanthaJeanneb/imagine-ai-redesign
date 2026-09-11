@@ -401,7 +401,7 @@ export function CalendarPage({
           {...(selected === undefined ? {} : { selectedPostId: selected })}
         />
       ) : view === "month" ? (
-        <div className="min-h-0 min-w-0 flex-1 overflow-x-auto">
+        <div className="min-h-0 min-w-0 flex-1">
           {/* The month takes the height between the toolbar and the legend
               and fits itself to it: every week visible, chips sized to the
               rows. Only a cell narrower than a word's worth scrolls sideways. */}
@@ -417,11 +417,11 @@ export function CalendarPage({
               ? {}
               : { onCreatePost: createPost })}
             {...(selected === undefined ? {} : { selectedPostId: selected })}
-            className="h-full min-w-[36rem]"
+            className="h-full"
           />
         </div>
       ) : (
-        <div className="min-h-0 min-w-0 flex-1 overflow-x-auto">
+        <div className="min-h-0 min-w-0 flex-1">
           <CalendarTimeGrid
             days={range.days}
             onOpenPost={openPost}
@@ -430,6 +430,7 @@ export function CalendarPage({
               ? {}
               : { onCreatePost: createPost })}
             {...(selected === undefined ? {} : { selectedPostId: selected })}
+            className="h-full"
           />
         </div>
       )}

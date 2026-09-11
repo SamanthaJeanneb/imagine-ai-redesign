@@ -56,7 +56,7 @@ export function PreviewSurface({
         >
           <div
             data-slot="preview-surface"
-            className={cn("relative mx-xs mt-xs mb-xxs", className)}
+            className={cn("relative m-m", className)}
           >
             <motion.div
               initial={{ opacity: 0 }}

@@ -163,7 +163,7 @@ export function MonthCalendar({
   className?: string;
 }) {
   return (
-    <section className={cn("flex min-w-0 flex-col gap-l", className)}>
+    <section className={cn("flex min-w-0 shrink-0 flex-col gap-l", className)}>
       <div className="flex items-baseline justify-between gap-l">
         <h2 className="type-heading">{label}</h2>
         <Button
@@ -178,16 +178,13 @@ export function MonthCalendar({
       </div>
       {/* The month shrinks with the column, its chips slimming to a line
           before its cells get narrower than a word. */}
-      <div className="min-w-0 overflow-x-auto">
-        <CalendarGrid
-          days={days}
-          density="page"
-          onOpenPost={onOpenPost}
-          onOpenEvent={onOpenEvent}
-          {...(selectedPostId === undefined ? {} : { selectedPostId })}
-          className="min-w-[36rem]"
-        />
-      </div>
+      <CalendarGrid
+        days={days}
+        density="page"
+        onOpenPost={onOpenPost}
+        onOpenEvent={onOpenEvent}
+        {...(selectedPostId === undefined ? {} : { selectedPostId })}
+      />
     </section>
   );
 }

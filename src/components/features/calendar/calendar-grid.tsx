@@ -276,129 +276,146 @@ export function CalendarGrid({
   const lines = linesFor(variants.post, density);
   const chipLimit = maxChips ?? DEFAULT_MAX_CHIPS[density];
 
+  // Padding around the raised card so its drop shadow is not clipped. Any
+  // overflow on this frame (or a parent) clips both axes, which is why the
+  // gutter lives here rather than on the page.
+  const preview = density === "preview";
+
   return (
-    <motion.div
-      layoutId={layoutId}
-      data-slot="calendar-grid"
-      data-density={density}
-      data-chips={variants.post}
-      role="grid"
+    <div
       className={cn(
-        "@container/cal flex w-full min-w-0 flex-col overflow-hidden rounded-panel bg-imagine-surface-raised shadow-raised",
-        fill && "min-h-0",
+        "min-w-0",
+        !preview && "overflow-x-auto p-m",
+        fill && "flex min-h-0 flex-1 flex-col",
         className,
       )}
     >
-      <div role="row" className="grid grid-cols-7">
-        {WEEKDAYS.map((weekday) => (
-          <span
-            key={weekday}
-            role="columnheader"
-            aria-label={weekday}
-            className="min-w-0 truncate px-xxs py-xs text-center type-micro text-imagine-foreground-muted"
-          >
-            <span aria-hidden="true" className="@min-[22rem]/cal:hidden">
-              {weekday.slice(0, 1)}
-            </span>
-            <span aria-hidden="true" className="hidden @min-[22rem]/cal:inline">
-              {weekday}
-            </span>
-          </span>
-        ))}
-      </div>
-      <div
-        ref={rowgroupRef}
-        role="rowgroup"
+      <motion.div
+        layoutId={layoutId}
+        data-slot="calendar-grid"
+        data-density={density}
+        data-chips={variants.post}
+        role="grid"
         className={cn(
-          "grid min-w-0 grid-cols-7 gap-px bg-imagine-border",
-          // A month of full chips can run past the page: the rows scroll
-          // inside the frame rather than the frame growing off the screen.
-          fill && "min-h-0 flex-1 auto-rows-fr overflow-y-auto",
+          "@container/cal flex w-full min-w-0 flex-col overflow-hidden rounded-panel bg-imagine-surface-raised shadow-raised",
+          fill && "min-h-0 flex-1",
+          !preview && "min-w-[36rem]",
         )}
       >
-        {days.map((day, index) => {
-          const plan = planCell(day, variants, lines, chipLimit, rowHeight);
-          // Stagger diagonally by row + column rather than by index, so a
-          // six-week month sweeps in over about half a second instead of
-          // nearly a second.
-          const wave = Math.floor(index / 7) + (index % 7);
-          return (
-            <motion.div
-              key={day.date}
-              role="gridcell"
-              aria-selected={day.isToday ? true : undefined}
-              initial={reduceMotion ? false : { opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...fade.slow, delay: wave * stagger.calendar }}
-              onClick={
-                onSelectDay
-                  ? () => {
-                      onSelectDay(day);
-                    }
-                  : undefined
-              }
-              className={cn(
-                // The `chip` container: chips slim down in a narrow cell.
-                "group/cell @container/chip relative flex flex-col gap-xs bg-imagine-surface p-xs",
-                // A fitted cell clips rather than pushes its row taller; the
-                // plan above keeps its chips inside, this is the backstop.
-                fit
-                  ? cn(FIT_CELL_HEIGHT, "overflow-hidden")
-                  : CELL_HEIGHT[density],
-                day.isOutside && "bg-imagine-surface/60",
-                onSelectDay &&
-                  "cursor-pointer transition-colors hover:bg-imagine-surface-raised/50",
-              )}
+        <div role="row" className="grid grid-cols-7">
+          {WEEKDAYS.map((weekday) => (
+            <span
+              key={weekday}
+              role="columnheader"
+              aria-label={weekday}
+              className="min-w-0 truncate px-xxs py-xs text-center type-micro text-imagine-foreground-muted"
             >
-              {onCreatePost === undefined ? null : (
-                <AddPostButton
-                  when={formatDayShort(day.date)}
-                  onClick={() => {
-                    onCreatePost(day.date);
-                  }}
-                />
-              )}
+              <span aria-hidden="true" className="@min-[22rem]/cal:hidden">
+                {weekday.slice(0, 1)}
+              </span>
               <span
+                aria-hidden="true"
+                className="hidden @min-[22rem]/cal:inline"
+              >
+                {weekday}
+              </span>
+            </span>
+          ))}
+        </div>
+        <div
+          ref={rowgroupRef}
+          role="rowgroup"
+          className={cn(
+            "grid min-w-0 grid-cols-7 gap-px bg-imagine-border",
+            // A month of full chips can run past the page: the rows scroll
+            // inside the frame rather than the frame growing off the screen.
+            fill && "min-h-0 flex-1 auto-rows-fr overflow-y-auto",
+          )}
+        >
+          {days.map((day, index) => {
+            const plan = planCell(day, variants, lines, chipLimit, rowHeight);
+            // Stagger diagonally by row + column rather than by index, so a
+            // six-week month sweeps in over about half a second instead of
+            // nearly a second.
+            const wave = Math.floor(index / 7) + (index % 7);
+            return (
+              <motion.div
+                key={day.date}
+                role="gridcell"
+                aria-selected={day.isToday ? true : undefined}
+                initial={reduceMotion ? false : { opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ ...fade.slow, delay: wave * stagger.calendar }}
+                onClick={
+                  onSelectDay
+                    ? () => {
+                        onSelectDay(day);
+                      }
+                    : undefined
+                }
                 className={cn(
-                  "flex size-5 items-center justify-center rounded-full type-small tabular-nums",
-                  day.isToday
-                    ? "bg-imagine-primary font-semibold text-imagine-primary-foreground"
-                    : day.isOutside
-                      ? "text-imagine-foreground-faint"
-                      : "text-imagine-foreground-muted",
+                  // The `chip` container: chips slim down in a narrow cell.
+                  "group/cell @container/chip relative flex flex-col gap-xs bg-imagine-surface p-xs",
+                  // A fitted cell clips rather than pushes its row taller; the
+                  // plan above keeps its chips inside, this is the backstop.
+                  fit
+                    ? cn(FIT_CELL_HEIGHT, "overflow-hidden")
+                    : CELL_HEIGHT[density],
+                  day.isOutside && "bg-imagine-surface/60",
+                  onSelectDay &&
+                    "cursor-pointer transition-colors hover:bg-imagine-surface-raised/50",
                 )}
               >
-                {day.dayNumber}
-              </span>
-              {plan.events.map((event) => (
-                <EventChip
-                  key={event.id}
-                  event={event}
-                  dense={variants.event === "dense"}
-                  line={variants.event === "line"}
-                  onOpen={onOpenEvent}
-                />
-              ))}
-              {plan.posts.map((post) => (
-                <PostChip
-                  key={post.id}
-                  post={post}
-                  dense={variants.post === "dense"}
-                  line={variants.post === "line"}
-                  lines={lines}
-                  selected={post.id === selectedPostId}
-                  onOpen={onOpenPost}
-                />
-              ))}
-              {plan.hidden > 0 ? (
-                <span className="px-xs type-caption text-imagine-foreground-muted">
-                  +{plan.hidden} more
+                {onCreatePost === undefined ? null : (
+                  <AddPostButton
+                    when={formatDayShort(day.date)}
+                    onClick={() => {
+                      onCreatePost(day.date);
+                    }}
+                  />
+                )}
+                <span
+                  className={cn(
+                    "flex size-5 items-center justify-center rounded-full type-small tabular-nums",
+                    day.isToday
+                      ? "bg-imagine-primary font-semibold text-imagine-primary-foreground"
+                      : day.isOutside
+                        ? "text-imagine-foreground-faint"
+                        : "text-imagine-foreground-muted",
+                  )}
+                >
+                  {day.dayNumber}
                 </span>
-              ) : null}
-            </motion.div>
-          );
-        })}
-      </div>
-    </motion.div>
+                {plan.events.map((event) => (
+                  <EventChip
+                    key={event.id}
+                    event={event}
+                    dense={variants.event === "dense"}
+                    line={variants.event === "line"}
+                    onOpen={onOpenEvent}
+                  />
+                ))}
+                {plan.posts.map((post) => (
+                  <PostChip
+                    key={post.id}
+                    post={post}
+                    dense={variants.post === "dense"}
+                    line={variants.post === "line"}
+                    lines={lines}
+                    selected={post.id === selectedPostId}
+                    onOpen={onOpenPost}
+                  />
+                ))}
+                {plan.hidden > 0 ? (
+                  <span className="px-xs type-caption text-imagine-foreground-muted">
+                    +{plan.hidden} more
+                  </span>
+                ) : null}
+              </motion.div>
+            );
+          })}
+        </div>
+      </motion.div>
+    </div>
   );
 }
