@@ -21,6 +21,13 @@ import {
 } from "@/components/ui/dialog";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 export interface PostEditorValue {
@@ -39,7 +46,12 @@ interface PostEditorDialogProps {
   presentation?: "dialog" | "inline";
   /** Assets the inline editor can attach to the post. */
   mediaLibrary?: readonly AssetTileData[];
+  /** The labels this workspace files posts under. */
+  labelOptions?: readonly string[];
 }
+
+/** Radix selects cannot hold an empty value, so "none" needs a name. */
+const NO_LABEL = "__none__";
 
 const STATUS_LABEL: Record<PostChipStatus, string> = {
   draft: "Draft",
@@ -84,12 +96,19 @@ export function PostEditorDialog({
   onDelete,
   presentation = "dialog",
   mediaLibrary,
+  labelOptions = [],
 }: PostEditorDialogProps) {
   const [draft, setDraft] = useState(value);
   const preview = draft.post.preview;
   const author = preview?.author;
   const body = preview?.body ?? draft.post.title;
   const currentStatus = STATUS_LABEL[draft.post.status];
+  // A post can carry a label the workspace has since renamed; keep it listed.
+  const label = draft.post.label;
+  const labels =
+    label === undefined || labelOptions.includes(label)
+      ? labelOptions
+      : [...labelOptions, label];
 
   function updatePost(patch: Partial<PostChipData>) {
     setDraft((current) => ({
@@ -320,15 +339,26 @@ export function PostEditorDialog({
                 </Button>
               ))}
             </div>
-            <Input
-              aria-label="Post label"
-              placeholder="Add label"
-              value={draft.post.label ?? ""}
-              onChange={(event) => {
-                const label = event.target.value;
-                updatePost(label === "" ? { label: undefined } : { label });
+            <Select
+              value={draft.post.label ?? NO_LABEL}
+              onValueChange={(next) => {
+                updatePost(
+                  next === NO_LABEL ? { label: undefined } : { label: next },
+                );
               }}
-            />
+            >
+              <SelectTrigger aria-label="Post label" className="w-full">
+                <SelectValue placeholder="Add label" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NO_LABEL}>No label</SelectItem>
+                {labels.map((label) => (
+                  <SelectItem key={label} value={label}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </fieldset>
 
           <label className="flex flex-col gap-xs">

@@ -17,7 +17,7 @@ import {
 } from "@/entities/engagement";
 import { type Post, toChipStatus, transformPostRow } from "@/entities/post";
 import { formatRelative, formatTime, toTitle } from "@/lib/format";
-import { getDb, getNow } from "@/mocks/db";
+import { getDb, getNow, getOrganization } from "@/mocks/db";
 
 /**
  * Shared mapping from posts, clients, and assets onto the shapes the post
@@ -46,6 +46,11 @@ export function indexAssetsByPath(): ReadonlyMap<string, Asset> {
       return [`${asset.bucket}/${asset.path}`, asset];
     }),
   );
+}
+
+/** The labels this workspace files posts under. */
+export function getPostLabelOptions(): readonly string[] {
+  return getOrganization().post_label_options ?? [];
 }
 
 /** Everything an editor can pick from when adding media to a post. */

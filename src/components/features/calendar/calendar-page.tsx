@@ -58,6 +58,8 @@ interface CalendarPageProps {
   editorPresentation?: "dialog" | "tabs";
   /** Assets the editor can attach to a post. */
   mediaLibrary?: readonly AssetTileData[];
+  /** The labels a post can be filed under. */
+  labelOptions?: readonly string[];
 }
 
 const POST_SEARCH_ICON = {
@@ -201,6 +203,7 @@ export function CalendarPage({
   today,
   editorPresentation = "dialog",
   mediaLibrary,
+  labelOptions,
 }: CalendarPageProps) {
   const router = useRouter();
   const chat = useChat();
@@ -432,6 +435,7 @@ export function CalendarPage({
         open
         presentation={editorPresentation === "tabs" ? "inline" : "dialog"}
         {...(mediaLibrary === undefined ? {} : { mediaLibrary })}
+        {...(labelOptions === undefined ? {} : { labelOptions })}
         onOpenChange={(open) => {
           if (!open) {
             setEditingPostId(null);

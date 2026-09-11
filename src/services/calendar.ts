@@ -22,6 +22,7 @@ import {
 import { getDb, getNow } from "@/mocks/db";
 import {
   getAssetLibrary,
+  getPostLabelOptions,
   indexAssetsByPath,
   indexClients,
   scheduledPosts,
@@ -46,6 +47,8 @@ export interface CalendarPosts {
   today: string;
   /** Assets the editor can attach to a post. */
   mediaLibrary: readonly AssetTileData[];
+  /** The labels a post can be filed under. */
+  labelOptions: readonly string[];
 }
 
 /** Chips keyed by date. Drafts have no day, so they never land in here. */
@@ -107,6 +110,7 @@ export function getCalendarPosts(): CalendarPosts {
     eventsByDay: eventsByDay(),
     today: toDateKey(getNow()),
     mediaLibrary: getAssetLibrary(),
+    labelOptions: getPostLabelOptions(),
   };
 }
 
