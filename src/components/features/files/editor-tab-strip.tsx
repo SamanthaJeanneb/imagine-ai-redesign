@@ -61,7 +61,7 @@ export function EditorTabStrip({
                 a flat edge. The active tab drops under the page to hide the seam. */}
             <div
               role="tablist"
-              className="flex h-9 items-end gap-xxs border-b border-imagine-border pt-xs pr-xs pl-l"
+              className="flex h-9 min-w-0 items-end gap-xxs overflow-x-auto overflow-y-hidden border-b border-imagine-border pt-xs pr-xs pl-l"
             >
               <AnimatePresence initial={false}>
                 {tabs.map((tab) => {
@@ -74,7 +74,7 @@ export function EditorTabStrip({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 2 }}
                       transition={fade.fast}
-                      className="group/tab relative -mb-px"
+                      className="group/tab relative -mb-px max-w-56 shrink-0"
                     >
                       {active ? (
                         <motion.span
@@ -104,7 +104,7 @@ export function EditorTabStrip({
                           onClick={() => {
                             onActivate(tab.id);
                           }}
-                          className="flex items-center gap-xs type-small font-medium whitespace-nowrap outline-none focus-visible:underline"
+                          className="flex min-w-0 items-center gap-xs type-small font-medium whitespace-nowrap outline-none focus-visible:underline"
                         >
                           {tab.icon === undefined ? null : (
                             <Icon name={tab.icon} size="s" aria-hidden="true" />
@@ -115,7 +115,7 @@ export function EditorTabStrip({
                               className="size-1.5 rounded-full bg-imagine-secondary"
                             />
                           ) : null}
-                          {tab.label}
+                          <span className="truncate">{tab.label}</span>
                         </button>
                         {tab.closable && onClose ? (
                           <button

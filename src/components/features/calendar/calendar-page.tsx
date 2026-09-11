@@ -19,6 +19,7 @@ import {
 import {
   PostChip,
   type PostChipData,
+  type PostOpenOptions,
   type PostChipStatus,
   postChipStyle,
 } from "@/components/features/calendar/post-chip";
@@ -84,7 +85,7 @@ function MonthAgenda({
 }: {
   days: readonly CalendarDay[];
   selectedPostId?: string;
-  onOpenPost: (post: PostChipData) => void;
+  onOpenPost: (post: PostChipData, options?: PostOpenOptions) => void;
   onOpenEvent: (event: EventChipData) => void;
 }) {
   const shown = days.filter(
@@ -205,6 +206,7 @@ export function CalendarPage({
   const [search, setSearch] = useState("");
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [activeEditorId, setActiveEditorId] = useState("calendar");
+  const [openPostIds, setOpenPostIds] = useState<readonly string[]>([]);
   const [edits, setEdits] = useState<Record<string, PostEditorValue>>({});
   const [deletedPostIds, setDeletedPostIds] = useState<readonly string[]>([]);
 
@@ -235,8 +237,14 @@ export function CalendarPage({
   }
 
   /** A calendar post opens for editing and becomes context for the chat. */
-  function openPost(post: PostChipData) {
+  function openPost(post: PostChipData, options?: PostOpenOptions) {
     chat.attach({ kind: "post", post });
+    if (editorPresentation === "tabs") {
+      setOpenPostIds((current) =>
+        current.includes(post.id) ? current : [...current, post.id],
+      );
+      if (options?.background === true) return;
+    }
     setEditingPostId(post.id);
     setActiveEditorId(post.id);
   }
@@ -316,22 +324,25 @@ export function CalendarPage({
           ).days,
         ),
   );
-  const editingPost =
-    editingPostId === null
-      ? undefined
-      : Object.values(visiblePostsByDay)
-          .flat()
-          .find((post) => post.id === editingPostId);
-  const editingDate =
-    editingPostId === null ? undefined : dateFor(editingPostId);
-  const editorValue =
-    editingPost === undefined || editingDate === undefined
-      ? undefined
-      : (edits[editingPost.id] ?? {
-          post: editingPost,
-          date: editingDate,
-          internalNotes: "",
-        });
+  const visiblePosts = Object.values(visiblePostsByDay).flat();
+  function editorValueFor(postId: string | null): PostEditorValue | undefined {
+    if (postId === null) return undefined;
+    const post = visiblePosts.find((candidate) => candidate.id === postId);
+    const date = dateFor(postId);
+    if (post === undefined || date === undefined) return undefined;
+    return (
+      edits[post.id] ?? {
+        post,
+        date,
+        internalNotes: "",
+      }
+    );
+  }
+  const editorValue = editorValueFor(editingPostId);
+  const openEditorValues = openPostIds.flatMap((id) => {
+    const value = editorValueFor(id);
+    return value === undefined ? [] : [value];
+  });
 
   const calendarContent = (
     <div className="@container/page flex min-h-0 flex-1 flex-col gap-xl">
@@ -433,7 +444,11 @@ export function CalendarPage({
         }}
         onDelete={(postId) => {
           setDeletedPostIds((current) => [...current, postId]);
+          setOpenPostIds((current) =>
+            current.filter((openId) => openId !== postId),
+          );
           chat.clearAttached(postId);
+          setEditingPostId(null);
           setActiveEditorId("calendar");
         }}
       />
@@ -444,22 +459,25 @@ export function CalendarPage({
     // entire calendar before the editor enters. The chrome reveals only when
     // there is a post tab.
     const tabs: readonly EditorTab[] =
-      editorValue === undefined
+      openEditorValues.length === 0
         ? []
         : [
             { id: "calendar", label: "Calendar", icon: "calendar" },
-            {
-              id: editorValue.post.id,
-              label: editorValue.post.title,
+            ...openEditorValues.map(({ post }) => ({
+              id: post.id,
+              label: post.title,
               icon:
-                editorValue.post.status === "published" ? "linkedin-in" : "pen",
+                post.status === "published"
+                  ? ("linkedin-in" as const)
+                  : ("pen" as const),
               closable: true,
-            },
+            })),
           ];
     const activeId =
-      editorValue === undefined || editingPostId === null
-        ? "calendar"
-        : activeEditorId;
+      activeEditorId !== "calendar" &&
+      openEditorValues.some(({ post }) => post.id === activeEditorId)
+        ? activeEditorId
+        : "calendar";
 
     return (
       <EditorTabStrip
@@ -467,10 +485,17 @@ export function CalendarPage({
         activeId={activeId}
         onActivate={(id) => {
           setActiveEditorId(id);
+          setEditingPostId(id === "calendar" ? null : id);
         }}
-        onClose={() => {
-          setEditingPostId(null);
-          setActiveEditorId("calendar");
+        onClose={(id) => {
+          const index = openPostIds.indexOf(id);
+          const remaining = openPostIds.filter((postId) => postId !== id);
+          setOpenPostIds(remaining);
+          if (activeEditorId !== id) return;
+          const nextId =
+            remaining[Math.max(0, index - 1)] ?? remaining[0] ?? "calendar";
+          setActiveEditorId(nextId);
+          setEditingPostId(nextId === "calendar" ? null : nextId);
         }}
         className="min-h-0 flex-1"
       >

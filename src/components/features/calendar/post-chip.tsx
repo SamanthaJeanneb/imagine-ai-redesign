@@ -58,6 +58,11 @@ export interface PostChipData {
 
 export type PostChipLines = 1 | 2 | 3 | 4;
 
+export interface PostOpenOptions {
+  /** Open without activating, like a browser tab opened with Command-click. */
+  background?: boolean;
+}
+
 interface PostChipProps {
   post: PostChipData;
   /**
@@ -73,7 +78,7 @@ interface PostChipProps {
   /** How many lines of the post to show before it clips. */
   lines?: PostChipLines;
   selected?: boolean;
-  onOpen?: (post: PostChipData) => void;
+  onOpen?: (post: PostChipData, options?: PostOpenOptions) => void;
   className?: string;
 }
 
@@ -204,7 +209,11 @@ export function PostChip({
       whileTap={press.whileTap}
       whileHover={hoverLift.whileHover}
       transition={press.transition}
-      onClick={() => onOpen?.(post)}
+      onClick={(event) => {
+        onOpen?.(post, {
+          background: event.metaKey || event.ctrlKey,
+        });
+      }}
       data-slot="post-chip"
       data-status={post.status}
       data-selected={selected || undefined}

@@ -11,6 +11,7 @@ import {
   PostChip,
   type PostChipData,
   type PostChipLines,
+  type PostOpenOptions,
 } from "@/components/features/calendar/post-chip";
 import { useElementSize } from "@/lib/use-element-size";
 import { fade, stagger } from "@/styles/motion";
@@ -46,7 +47,7 @@ interface CalendarGridProps {
    */
   fit?: boolean;
   selectedPostId?: string;
-  onOpenPost?: (post: PostChipData) => void;
+  onOpenPost?: (post: PostChipData, options?: PostOpenOptions) => void;
   onOpenEvent?: (event: EventChipData) => void;
   onSelectDay?: (day: CalendarDay) => void;
   /** Shared layout id with the composer preview. */

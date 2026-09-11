@@ -11,6 +11,7 @@ import {
 import {
   PostChip,
   type PostChipData,
+  type PostOpenOptions,
 } from "@/components/features/calendar/post-chip";
 import { formatWeekdayLong, formatWeekdayShort } from "@/lib/format";
 import { fade, stagger } from "@/styles/motion";
@@ -19,7 +20,7 @@ interface CalendarTimeGridProps {
   /** One day, or a Monday week of them. */
   days: readonly CalendarDay[];
   selectedPostId?: string;
-  onOpenPost?: (post: PostChipData) => void;
+  onOpenPost?: (post: PostChipData, options?: PostOpenOptions) => void;
   onOpenEvent?: (event: EventChipData) => void;
   className?: string;
 }
