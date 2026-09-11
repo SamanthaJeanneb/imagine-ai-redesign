@@ -3,7 +3,7 @@
 import { cn } from "cn";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 
 import {
   ChatProvider,
@@ -190,7 +190,7 @@ function WorkspaceHeader({
   onSignOut,
 }: WorkspaceHeaderProps) {
   return (
-    <div className="relative mt-m mb-m flex h-8 min-w-0 shrink-0 items-center gap-s px-l after:absolute after:inset-x-0 after:-bottom-m after:border-b after:border-imagine-border md:px-xxl">
+    <div className="relative mt-m mb-m flex h-8 min-w-0 shrink-0 items-center gap-s overflow-x-clip px-l after:absolute after:inset-x-0 after:-bottom-m after:border-b after:border-imagine-border md:px-xxl">
       <Button
         size="icon-sm"
         variant="ghost"
@@ -417,6 +417,10 @@ function WorkspaceFrame({
   const docked = chatColumn !== undefined;
   const [panel, setPanel] = useState<ChatPanelMode | null>(null);
   const [railBeforeFiles, setRailBeforeFiles] = useState(false);
+  const [railBeforeCalendar, setRailBeforeCalendar] = useState(false);
+  const onCalendarRef = useRef(false);
+  const collapsedRef = useRef(collapsed);
+  collapsedRef.current = collapsed;
   const [skills, setSkills] = useState(initialSkills);
   const [activeFileId, setActiveFileId] = useState<string>();
   const [openDocumentIds, setOpenDocumentIds] = useState<readonly string[]>([]);
@@ -451,6 +455,19 @@ function WorkspaceFrame({
     setMobileNavOpen(false);
     setChatOverlayOpen(false);
   }, [pathname]);
+
+  // Calendar needs the full width: tuck the rail away on entry and put it
+  // back how the user had it when they leave, unless the files panel owns it.
+  useEffect(() => {
+    const onCalendar = pathname.startsWith("/calendar");
+    if (onCalendar && !onCalendarRef.current) {
+      setRailBeforeCalendar(collapsedRef.current);
+      setCollapsed(true);
+    } else if (!onCalendar && onCalendarRef.current && panel !== "files") {
+      setCollapsed(railBeforeCalendar);
+    }
+    onCalendarRef.current = onCalendar;
+  }, [pathname, panel, railBeforeCalendar]);
 
   function changePanel(next: ChatPanelMode | null) {
     if (next === "files" && panel !== "files") {
@@ -639,7 +656,7 @@ function WorkspaceFrame({
     );
   const page = (
     <WorkspacePage
-      flush={activeKey === "files"}
+      flush={activeKey === "files" || activeKey === "calendar"}
       {...(editorLayer === null ? {} : { overlay: editorLayer })}
     >
       <PageAsideHostProvider host={asideHost}>{children}</PageAsideHostProvider>

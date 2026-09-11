@@ -25,7 +25,7 @@ export function StepHeading({
   return (
     <div
       data-slot="step-heading"
-      className={cn("flex flex-col gap-xxxl", className)}
+      className={cn("flex flex-col gap-xl md:gap-xxxl", className)}
     >
       <ol
         aria-label={`Step ${String(step)} of ${String(total)}`}

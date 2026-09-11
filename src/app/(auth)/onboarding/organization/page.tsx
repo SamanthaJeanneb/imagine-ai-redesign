@@ -46,14 +46,20 @@ export default function OrganizationStepPage() {
         <>
           <Button
             variant="link"
-            className="text-imagine-foreground-muted"
+            className="text-imagine-foreground-muted max-md:self-start"
             onClick={() => {
               router.push("/sign-in");
             }}
           >
             Back
           </Button>
-          <Button type="submit" form={FORM_ID} size="lg" disabled={!named}>
+          <Button
+            type="submit"
+            form={FORM_ID}
+            size="lg"
+            disabled={!named}
+            className="max-md:w-full"
+          >
             Continue
           </Button>
         </>
@@ -86,7 +92,7 @@ export default function OrganizationStepPage() {
         </Field>
         <Field>
           <FieldLabel>Logo</FieldLabel>
-          <div className="flex items-center gap-m">
+          <div className="flex flex-wrap items-center gap-m">
             <Avatar size="lg" shape="square">
               {orgLogoUrl ? (
                 <AvatarImage src={orgLogoUrl} alt="Organization logo" />

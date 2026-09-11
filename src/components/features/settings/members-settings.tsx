@@ -157,7 +157,7 @@ export function MembersSettings({
   const [inviting, setInviting] = useState(false);
 
   return (
-    <div className="flex w-full max-w-2xl flex-col gap-section">
+    <div className="flex w-full max-w-2xl flex-col gap-xxl md:gap-section">
       <SettingsSection
         title="Members"
         description="Invite teammates and manage their access to this organization."

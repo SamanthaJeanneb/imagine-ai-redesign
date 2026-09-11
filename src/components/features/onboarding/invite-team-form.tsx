@@ -144,7 +144,7 @@ export function TeamMemberRow({
 }: TeamMemberRowProps) {
   const label = member.name ?? member.email;
   return (
-    <div className="flex items-center gap-m py-xs">
+    <div className="flex min-w-0 items-center gap-m py-xs max-sm:flex-wrap">
       <Avatar size="sm">
         {member.avatarUrl ? (
           <AvatarImage src={member.avatarUrl} alt={label} />
@@ -266,7 +266,7 @@ export function InviteTeamForm({
               }
             }}
           />
-          <div className="flex shrink-0 items-center gap-s">
+          <div className="flex min-w-0 shrink-0 items-center gap-s sm:contents">
             <RoleSelect
               value={role}
               label="Role for invite"
@@ -277,6 +277,7 @@ export function InviteTeamForm({
               variant="outline"
               disabled={!ready}
               onClick={sendInvite}
+              className="max-sm:flex-1"
             >
               Send invite
             </Button>
@@ -305,8 +306,8 @@ export function InviteTeamForm({
       </Field>
 
       {showActions ? (
-        <div className="mt-l flex flex-wrap items-center gap-l">
-          <Button type="submit" size="lg">
+        <div className="mt-l flex flex-wrap items-center gap-l max-md:flex-col-reverse max-md:items-stretch">
+          <Button type="submit" size="lg" className="max-md:w-full">
             Continue
           </Button>
           {onSkip ? (

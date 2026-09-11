@@ -30,9 +30,9 @@ export default function Onboarding2Layout({
 
   return (
     <OnboardingProvider>
-      <div className="grid min-h-svh flex-1 bg-imagine-surface lg:grid-cols-[minmax(26rem,42%)_minmax(0,1fr)] 2xl:grid-cols-[40rem_minmax(0,1fr)]">
+      <div className="grid min-h-svh w-full min-w-0 flex-1 overflow-x-clip bg-imagine-surface lg:grid-cols-[minmax(26rem,42%)_minmax(0,1fr)] 2xl:grid-cols-[40rem_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col">
-          <div className="mx-auto flex w-full max-w-lg flex-1 flex-col px-xl pt-xxl pb-xxl lg:pt-xxxl xl:px-xxxl">
+          <div className="mx-auto flex w-full max-w-lg flex-1 flex-col px-l pt-xl pb-0 md:px-xl md:pt-xxl md:pb-xxl lg:pt-xxxl xl:px-xxxl">
             <span
               role="img"
               aria-label="Imagine AI"

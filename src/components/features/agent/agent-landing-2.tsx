@@ -48,7 +48,7 @@ export function CenteredIntro({
   dateLabel: string;
 }) {
   return (
-    <div className="flex w-full min-w-0 flex-col items-center gap-xl pt-section pb-xxl text-center">
+    <div className="flex w-full min-w-0 flex-col items-center gap-xl pt-xl pb-xxl text-center md:pt-section">
       {/* The agent, as a person would be: a circle. Black mark on a white disc
           in both themes, with a plain drop shadow: no ring, no sheen. */}
       <span className="flex size-16 items-center justify-center rounded-full bg-white text-black shadow-[0_2px_6px_rgb(0_0_0/0.08),0_12px_28px_-8px_rgb(0_0_0/0.22)]">

@@ -43,7 +43,7 @@ export function GeneralSettings({ orgName, logoUrl }: GeneralSettings) {
   }
 
   return (
-    <div className="flex w-full max-w-2xl flex-col gap-section">
+    <div className="flex w-full max-w-2xl flex-col gap-xxl md:gap-section">
       <SettingsSection title="Organization">
         <form
           className="flex flex-col gap-l"

@@ -101,12 +101,12 @@ export function MembersList({
           return (
             <StaggerItem
               key={member.id}
-              layout
+              layout="position"
               exit={{ opacity: 0, height: 0, y: -4 }}
               transition={fade.base}
               className="overflow-hidden"
             >
-              <div className="flex min-w-0 items-center gap-m rounded-control px-m py-s transition-colors hover:bg-imagine-surface-raised/50">
+              <div className="flex min-w-0 items-center gap-m rounded-control px-m py-s transition-colors hover:bg-imagine-surface-raised/50 max-sm:flex-wrap">
                 <Avatar>
                   {member.avatarUrl ? (
                     <AvatarImage src={member.avatarUrl} alt="" />

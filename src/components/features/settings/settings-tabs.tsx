@@ -55,47 +55,50 @@ export function SettingsTabs({
       aria-label="Settings sections"
       data-slot="settings-tabs"
       className={cn(
-        "flex items-center gap-xs overflow-x-auto border-b border-imagine-border",
+        "min-w-0 overflow-x-auto border-b border-imagine-border",
         className,
       )}
     >
-      {tabs.map((tab, index) => {
-        const active = isActive(tab, current, index === 0);
-        return (
-          <motion.span
-            key={tab.href}
-            whileTap={press.whileTap}
-            transition={press.transition}
-            className="relative flex"
-          >
-            <Link
-              href={tab.href}
-              aria-current={active ? "page" : undefined}
-              onClick={(event) => {
-                if (onNavigate === undefined) return;
-                event.preventDefault();
-                onNavigate(tab.href);
-              }}
-              className={cn(
-                "relative inline-flex h-control-base items-center rounded-control px-1.5 text-sm font-medium whitespace-nowrap transition-colors outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/40",
-                active
-                  ? "text-imagine-foreground"
-                  : "text-imagine-foreground-muted hover:text-imagine-foreground",
-              )}
+      <div className="flex w-max min-w-full items-center gap-0 md:gap-xs">
+        {tabs.map((tab, index) => {
+          const active = isActive(tab, current, index === 0);
+          return (
+            <motion.span
+              key={tab.href}
+              whileTap={press.whileTap}
+              transition={press.transition}
+              className="relative flex shrink-0"
             >
-              {tab.label}
-            </Link>
-            {active ? (
-              <motion.span
-                layoutId={indicatorId}
-                aria-hidden="true"
-                transition={spring.snappy}
-                className="absolute inset-x-1.5 -bottom-px h-0.5 rounded-full bg-imagine-foreground"
-              />
-            ) : null}
-          </motion.span>
-        );
-      })}
+              <Link
+                href={tab.href}
+                aria-current={active ? "page" : undefined}
+                onClick={(event) => {
+                  if (onNavigate === undefined) return;
+                  event.preventDefault();
+                  onNavigate(tab.href);
+                }}
+                className={cn(
+                  "relative inline-flex h-control-base items-center rounded-control px-1 text-sm font-medium whitespace-nowrap transition-colors outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/40 md:px-1.5",
+                  active
+                    ? "text-imagine-foreground"
+                    : "text-imagine-foreground-muted hover:text-imagine-foreground",
+                )}
+              >
+                {tab.label}
+              </Link>
+              {active ? (
+                <motion.span
+                  layoutId={indicatorId}
+                  layoutDependency={tab.href}
+                  aria-hidden="true"
+                  transition={spring.snappy}
+                  className="absolute inset-x-1 -bottom-px h-0.5 rounded-full bg-imagine-foreground md:inset-x-1.5"
+                />
+              ) : null}
+            </motion.span>
+          );
+        })}
+      </div>
     </nav>
   );
 }

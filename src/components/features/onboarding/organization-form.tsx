@@ -54,7 +54,7 @@ export function LogoUpload({ value, onChange, className }: LogoUploadProps) {
         if (file) onChange(file);
       }}
       className={cn(
-        "flex items-center gap-m rounded-control border border-imagine-border bg-imagine-surface-raised/40 p-m transition-colors",
+        "flex flex-wrap items-center gap-m rounded-control border border-imagine-border bg-imagine-surface-raised/40 p-m transition-colors",
         dragging && "border-imagine-secondary bg-imagine-secondary-soft/40",
         className,
       )}
@@ -87,7 +87,14 @@ export function LogoUpload({ value, onChange, className }: LogoUploadProps) {
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-xxs">
         <span className="type-small">
-          {value ? "Logo added" : "Drag a file here, or"}
+          {value ? (
+            "Logo added"
+          ) : (
+            <>
+              <span className="md:hidden">Add a logo</span>
+              <span className="hidden md:inline">Drag a file here, or</span>
+            </>
+          )}
         </span>
         <span className="type-caption text-imagine-foreground-muted">
           PNG or SVG, at least 256×256
@@ -205,7 +212,7 @@ export function OrganizationForm({
         />
       </Field>
       <div className="mt-l flex flex-wrap items-center gap-l">
-        <Button type="submit" size="lg" disabled={!named}>
+        <Button type="submit" size="lg" disabled={!named} className="max-md:w-full">
           Continue
         </Button>
         {named ? null : (

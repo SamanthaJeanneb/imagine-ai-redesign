@@ -57,7 +57,7 @@ export function IntegrationsSettings({
   }
 
   return (
-    <div className="flex flex-col gap-section">
+    <div className="flex flex-col gap-xxl md:gap-section">
       <SettingsSection
         title="Connected"
         description="What the agent reads from and writes to."

@@ -21,7 +21,7 @@ export function SettingsPanel({ children }: { children: ReactNode }) {
       initial={{ opacity: 0, y: reduceMotion ? 0 : 4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={fade.base}
-      className="flex min-h-0 flex-1 flex-col"
+      className="flex min-h-0 min-w-0 flex-1 flex-col"
     >
       {children}
     </motion.div>

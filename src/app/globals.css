@@ -232,6 +232,10 @@
   line-height: var(--imagine-text-display-line-height);
   letter-spacing: var(--imagine-text-display-letter-spacing);
   font-weight: 600;
+  @variant max-md {
+    font-size: 1.75rem;
+    line-height: 2.125rem;
+  }
 }
 @utility type-title {
   font-size: var(--imagine-text-title-size);

@@ -96,7 +96,7 @@ export function LandingBelow({
     <div
       className={cn(
         LANDING_COLUMN,
-        "flex flex-col gap-xxl pt-xxl xl:min-h-0 xl:flex-1",
+        "flex flex-col gap-xl pt-xl md:gap-xxl md:pt-xxl xl:min-h-0 xl:flex-1",
       )}
     >
       {entries.length === 0 ? null : (

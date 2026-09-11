@@ -93,8 +93,8 @@ export function ConnectLinkedIn({
       ) : null}
 
       {showActions && !connected ? (
-        <div className="mt-l flex flex-wrap items-center gap-l">
-          <Button size="lg" disabled={pending} onClick={onConnect}>
+        <div className="mt-l flex flex-wrap items-center gap-l max-md:flex-col-reverse max-md:items-stretch">
+          <Button size="lg" disabled={pending} onClick={onConnect} className="max-md:w-full">
             {pending ? (
               <Spinner size="s" data-icon="inline-start" />
             ) : (

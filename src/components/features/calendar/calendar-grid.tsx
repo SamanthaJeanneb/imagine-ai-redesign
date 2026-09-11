@@ -291,7 +291,9 @@ export function CalendarGrid({
       )}
     >
       <motion.div
-        layoutId={layoutId}
+        {...(layoutId === undefined
+          ? {}
+          : { layoutId, layoutDependency: density })}
         data-slot="calendar-grid"
         data-density={density}
         data-chips={variants.post}
@@ -299,7 +301,7 @@ export function CalendarGrid({
         className={cn(
           "@container/cal flex w-full min-w-0 flex-col overflow-hidden rounded-panel bg-imagine-surface-raised shadow-raised",
           fill && "min-h-0 flex-1",
-          !preview && "min-w-[36rem]",
+          !preview && "md:min-w-[36rem]",
         )}
       >
         <div role="row" className="grid grid-cols-7">

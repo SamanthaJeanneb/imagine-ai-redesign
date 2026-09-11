@@ -107,7 +107,7 @@ export function AnalyticsPage({ data }: AnalyticsPageProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={fade.base}
-      className="flex min-w-0 flex-1 flex-col gap-xl"
+      className="flex min-w-0 flex-1 flex-col gap-l md:gap-xl"
     >
       <div className="flex flex-wrap items-center justify-between gap-m">
         <h1 className="type-title">Analytics</h1>

@@ -21,8 +21,9 @@ interface StepFrameProps {
 
 /**
  * One setup step: the progress hairline, the question as the title, a line
- * of context, the step's own content, and the actions pinned to the bottom
- * of the column so they sit in the same place on every step.
+ * of context, the step's own content, and the actions. On a phone they stick
+ * to the bottom so Continue stays in reach; on a wider frame they pin to the
+ * foot of the column so they sit in the same place on every step.
  */
 export function StepFrame({
   step,
@@ -37,12 +38,12 @@ export function StepFrame({
     <div
       data-slot="step-frame"
       className={cn(
-        "flex min-h-0 flex-1 flex-col justify-between gap-section pt-section",
+        "flex min-h-0 flex-1 flex-col gap-xxl pt-xl md:justify-between md:gap-section md:pt-section",
         className,
       )}
     >
       <div className="flex flex-col gap-xxl">
-        <div className="flex flex-col gap-xl">
+        <div className="flex flex-col gap-l md:gap-xl">
           <Progress
             value={total > 0 ? step / total : 0}
             aria-label={`Step ${String(step)} of ${String(total)}`}
@@ -57,7 +58,14 @@ export function StepFrame({
         </div>
         {children}
       </div>
-      <div className="flex items-center justify-between gap-l">{actions}</div>
+      <div
+        className={cn(
+          "flex items-center justify-between gap-l",
+          "max-md:sticky max-md:bottom-0 max-md:z-10 max-md:-mx-l max-md:mt-auto max-md:flex-col-reverse max-md:items-stretch max-md:gap-s max-md:border-t max-md:border-imagine-border max-md:bg-imagine-surface max-md:px-l max-md:pt-m max-md:pb-[max(var(--spacing-m),env(safe-area-inset-bottom))]",
+        )}
+      >
+        {actions}
+      </div>
     </div>
   );
 }

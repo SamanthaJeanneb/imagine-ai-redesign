@@ -27,7 +27,7 @@ export function SettingsSection({
       data-slot="settings-section"
       className={cn("flex flex-col gap-l", className)}
     >
-      <div className="flex items-start justify-between gap-l">
+      <div className="flex flex-wrap items-start justify-between gap-m">
         <div className="flex flex-col gap-xxs">
           <h2 className="type-heading">{title}</h2>
           {description === undefined ? null : (

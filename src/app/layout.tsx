@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { DM_Sans } from "next/font/google";
 import Script from "next/script";
 import { ThemeProvider } from "next-themes";
@@ -21,6 +21,12 @@ const tokenCss = tokensToCss();
 export const metadata: Metadata = {
   title: "Imagine AI",
   description: "LinkedIn content agent for high-growth B2B teams.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -47,7 +53,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           data-auto-replace-svg="nest"
         />
       </head>
-      <body className="flex min-h-full flex-col">
+      <body className="flex min-h-full min-w-0 flex-col overflow-x-clip">
         <ThemeProvider
           attribute="data-theme"
           storageKey="imagine-theme:v1"

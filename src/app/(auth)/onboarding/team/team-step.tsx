@@ -35,14 +35,14 @@ export function TeamStep({ inviteUrl, owner }: TeamStepProps) {
         <>
           <Button
             variant="link"
-            className="text-imagine-foreground-muted"
+            className="text-imagine-foreground-muted max-md:self-start"
             onClick={() => {
               router.push("/onboarding/organization");
             }}
           >
             Back
           </Button>
-          <div className="flex items-center gap-l">
+          <div className="flex items-center gap-l max-md:w-full max-md:flex-col-reverse max-md:gap-s">
             <Button
               variant="link"
               className="text-imagine-foreground-muted"
@@ -50,7 +50,7 @@ export function TeamStep({ inviteUrl, owner }: TeamStepProps) {
             >
               Skip for now
             </Button>
-            <Button size="lg" onClick={next}>
+            <Button size="lg" onClick={next} className="max-md:w-full">
               Continue
             </Button>
           </div>

@@ -71,7 +71,7 @@ export function LinkedInStep({
         <>
           <Button
             variant="link"
-            className="text-imagine-foreground-muted"
+            className="text-imagine-foreground-muted max-md:self-start"
             disabled={pending}
             onClick={() => {
               router.push("/onboarding/team");
@@ -79,7 +79,7 @@ export function LinkedInStep({
           >
             Back
           </Button>
-          <div className="flex items-center gap-l">
+          <div className="flex items-center gap-l max-md:w-full max-md:flex-col-reverse max-md:gap-s">
             {linkedInConnected ? null : (
               <Button
                 variant="link"
@@ -95,12 +95,18 @@ export function LinkedInStep({
                 size="lg"
                 disabled={pending || postAs.length === 0}
                 onClick={finish}
+                className="max-md:w-full"
               >
                 {pending ? <Spinner size="s" data-icon="inline-start" /> : null}
                 Open workspace
               </Button>
             ) : (
-              <Button size="lg" disabled={pending} onClick={connect}>
+              <Button
+                size="lg"
+                disabled={pending}
+                onClick={connect}
+                className="max-md:w-full"
+              >
                 {pending ? (
                   <Spinner size="s" data-icon="inline-start" />
                 ) : (
