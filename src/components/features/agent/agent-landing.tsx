@@ -32,8 +32,8 @@ import { ResizeHandle } from "@/components/ui/resize-handle";
 import { useResizable } from "@/lib/use-resizable";
 import { fade, spring } from "@/styles/motion";
 
-/** The rail's content column at rest was `w-72` inside a `pl-xxl` gutter. */
-const RAIL_WIDTH = { default: 336, min: 288, max: 480 } as const;
+/** Wide enough at rest for the impressions curve and the up-next titles. */
+const RAIL_WIDTH = { default: 420, min: 320, max: 560 } as const;
 
 /**
  * The split landing's column. Capped and centred so that on a wide screen the
