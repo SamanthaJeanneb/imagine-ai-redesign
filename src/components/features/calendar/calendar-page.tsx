@@ -26,6 +26,10 @@ import {
   PostEditorDialog,
   type PostEditorValue,
 } from "@/components/features/calendar/post-editor-dialog";
+import {
+  EditorTabStrip,
+  type EditorTab,
+} from "@/components/features/files/editor-tab-strip";
 import { Icon, type IconName } from "@/components/ui/icon";
 import type { SearchBoxResult } from "@/components/ui/search-box";
 import {
@@ -48,6 +52,8 @@ interface CalendarPageProps {
   eventsByDay?: EventsByDay;
   /** The mock's fixed clock, as a date key. Where "Today" goes back to. */
   today: string;
+  /** `/calendar-2` opens posts as tabs; the primary calendar uses a modal. */
+  editorPresentation?: "dialog" | "tabs";
 }
 
 const POST_SEARCH_ICON = {
@@ -189,6 +195,7 @@ export function CalendarPage({
   postsByDay,
   eventsByDay = {},
   today,
+  editorPresentation = "dialog",
 }: CalendarPageProps) {
   const router = useRouter();
   const chat = useChat();
@@ -197,6 +204,7 @@ export function CalendarPage({
   const [anchor, setAnchor] = useState(today);
   const [search, setSearch] = useState("");
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [activeEditorId, setActiveEditorId] = useState("calendar");
   const [edits, setEdits] = useState<Record<string, PostEditorValue>>({});
   const [deletedPostIds, setDeletedPostIds] = useState<readonly string[]>([]);
 
@@ -230,6 +238,7 @@ export function CalendarPage({
   function openPost(post: PostChipData) {
     chat.attach({ kind: "post", post });
     setEditingPostId(post.id);
+    setActiveEditorId(post.id);
   }
 
   function savePost(value: PostEditorValue) {
@@ -324,7 +333,7 @@ export function CalendarPage({
           internalNotes: "",
         });
 
-  return (
+  const calendarContent = (
     <div className="@container/page flex min-h-0 flex-1 flex-col gap-xl">
       <CalendarToolbar
         rangeLabel={range.rangeLabel}
@@ -397,30 +406,76 @@ export function CalendarPage({
           )}
         </AnimatePresence>
       </div>
-
-      {editorValue === undefined ? null : (
-        <PostEditorDialog
-          key={editorValue.post.id}
-          value={editorValue}
-          open
-          onOpenChange={(open) => {
-            if (!open) setEditingPostId(null);
-          }}
-          onSave={savePost}
-          onOpenAgent={(value) => {
-            setEdits((current) => ({
-              ...current,
-              [value.post.id]: value,
-            }));
-            chat.startPostChat(value.post);
-            router.push("/agent");
-          }}
-          onDelete={(postId) => {
-            setDeletedPostIds((current) => [...current, postId]);
-            chat.clearAttached(postId);
-          }}
-        />
-      )}
     </div>
+  );
+
+  const editor =
+    editorValue === undefined ? null : (
+      <PostEditorDialog
+        key={editorValue.post.id}
+        value={editorValue}
+        open
+        presentation={editorPresentation === "tabs" ? "inline" : "dialog"}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingPostId(null);
+            setActiveEditorId("calendar");
+          }
+        }}
+        onSave={savePost}
+        onOpenAgent={(value) => {
+          setEdits((current) => ({
+            ...current,
+            [value.post.id]: value,
+          }));
+          chat.startPostChat(value.post);
+          router.push("/agent");
+        }}
+        onDelete={(postId) => {
+          setDeletedPostIds((current) => [...current, postId]);
+          chat.clearAttached(postId);
+          setActiveEditorId("calendar");
+        }}
+      />
+    );
+
+  if (editorPresentation === "tabs") {
+    const tabs: readonly EditorTab[] = [
+      { id: "calendar", label: "Calendar" },
+      ...(editorValue === undefined
+        ? []
+        : [
+            {
+              id: editorValue.post.id,
+              label: editorValue.post.title,
+              closable: true,
+            },
+          ]),
+    ];
+    const activeId = editingPostId === null ? "calendar" : activeEditorId;
+
+    return (
+      <EditorTabStrip
+        tabs={tabs}
+        activeId={activeId}
+        onActivate={(id) => {
+          setActiveEditorId(id);
+        }}
+        onClose={() => {
+          setEditingPostId(null);
+          setActiveEditorId("calendar");
+        }}
+        className="min-h-0 flex-1"
+      >
+        {activeId === "calendar" ? calendarContent : editor}
+      </EditorTabStrip>
+    );
+  }
+
+  return (
+    <>
+      {calendarContent}
+      {editor}
+    </>
   );
 }
