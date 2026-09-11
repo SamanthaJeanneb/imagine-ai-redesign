@@ -49,11 +49,11 @@ export type ColorToken =
   | "tag-5";
 
 /**
- * Categorical accents. The calendar uses green and blue for published and
- * in-review chips; scheduled uses the brand rose. Numbered, not named for a
- * hue. Clear, saturated mid tones, the kind a calendar app uses: at 20% over
- * the surface they make a pastel fill, solid they make the chip's rail, and
- * mixed toward the foreground they make its ink.
+ * Categorical accents, the five colors of a calendar app's events: rose,
+ * green, blue, yellow, plum. The calendar maps them to status (scheduled,
+ * published, in review, draft) and to connected-calendar events. Numbered,
+ * not named for a hue. Solid, each is a chip's rail and legend dot; at 16%
+ * over the surface, its pastel fill.
  */
 export const TAG_TONES = [1, 2, 3, 4, 5] as const;
 
@@ -78,10 +78,10 @@ export const colors = {
     warning: "#d97706",
     success: "#059669",
     "tag-1": "#d4707c",
-    "tag-2": "#78b543",
-    "tag-3": "#4a8fe0",
-    "tag-4": "#f0a33c",
-    "tag-5": "#9b70d6",
+    "tag-2": "#afd173",
+    "tag-3": "#20a3cd",
+    "tag-4": "#f4d38e",
+    "tag-5": "#825e8a",
   },
   dark: {
     // Sidebar is the warmer, lighter charcoal; the page sits darker so the
@@ -103,10 +103,10 @@ export const colors = {
     warning: "#fbbf24",
     success: "#34d399",
     "tag-1": "#e0838d",
-    "tag-2": "#8fc95c",
-    "tag-3": "#6aa6ea",
-    "tag-4": "#f4b65e",
-    "tag-5": "#b08ae2",
+    "tag-2": "#afd173",
+    "tag-3": "#3bb3d8",
+    "tag-4": "#f4d38e",
+    "tag-5": "#a582ac",
   },
 } as const satisfies Record<Theme, Record<ColorToken, string>>;
 

@@ -32,7 +32,7 @@ import {
   type EditorTab,
 } from "@/components/features/files/editor-tab-strip";
 import type { AssetTileData } from "@/components/features/files/asset-tile";
-import { Icon, type IconName } from "@/components/ui/icon";
+import type { IconName } from "@/components/ui/icon";
 import type { SearchBoxResult } from "@/components/ui/search-box";
 import {
   buildCalendarRange,
@@ -171,7 +171,10 @@ function Legend() {
       ))}
       <span aria-hidden="true" className="h-4 w-px bg-imagine-border" />
       <span className="flex items-center gap-xs type-small text-imagine-foreground-muted">
-        <Icon name="calendar" size="s" />
+        <span
+          aria-hidden="true"
+          className="size-2 rounded-full bg-imagine-tag-5"
+        />
         Event
       </span>
     </div>

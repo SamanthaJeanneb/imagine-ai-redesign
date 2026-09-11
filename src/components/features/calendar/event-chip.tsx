@@ -43,14 +43,14 @@ const EVENT_STYLE: CSSProperties & {
   "--chip-color": string;
   "--chip-contrast": string;
 } = {
-  "--chip-color": "var(--imagine-foreground-muted)",
+  "--chip-color": "var(--imagine-tag-5)",
   "--chip-contrast": "var(--imagine-surface)",
 };
 
 /**
- * A connected-calendar event inside a cell. Quieter than a post: a flat
- * charcoal wash, the title, and the time. Hovering it is how you draft a post
- * about what is coming up.
+ * A connected-calendar event inside a cell: the plum chip, the one color no
+ * post status uses, so events read apart from posts at a glance. The title
+ * and the time. Hovering it is how you draft a post about what is coming up.
  */
 export function EventChip({
   event,
@@ -75,9 +75,9 @@ export function EventChip({
       aria-label={`${event.title}, ${event.whenLabel}, ${event.calendarName}`}
       style={EVENT_STYLE}
       className={cn(
-        "relative flex w-full min-w-0 flex-col gap-xxs overflow-hidden rounded-control px-s pl-m text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-imagine-surface",
+        "relative flex w-full min-w-0 flex-col gap-xxs overflow-hidden rounded-control px-s pl-m text-left text-imagine-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-imagine-surface",
         line ? "py-xxs" : "py-xs",
-        "chip-wash chip-ink @max-[6rem]/chip:pr-xs @max-[6rem]/chip:pl-s",
+        "chip-wash @max-[6rem]/chip:pr-xs @max-[6rem]/chip:pl-s",
         className,
       )}
     >
@@ -89,7 +89,9 @@ export function EventChip({
         {event.title}
       </span>
       {dense || line ? null : (
-        <span className="type-caption tabular-nums opacity-75">{range}</span>
+        <span className="type-caption text-imagine-foreground-muted tabular-nums">
+          {range}
+        </span>
       )}
     </motion.button>
   );

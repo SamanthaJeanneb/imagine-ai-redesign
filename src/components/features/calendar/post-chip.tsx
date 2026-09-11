@@ -91,14 +91,14 @@ interface ChipColor {
 }
 
 /**
- * Color is status: rose for scheduled, dusty blue for in review, sage for
- * published. Draft and failed stay muted and destructive so they still read
- * as unfinished or broken.
+ * Color is status: rose for scheduled, blue for in review, green for
+ * published, yellow for a draft still being written. Failed stays
+ * destructive so it reads as broken. Events take the fifth color, plum.
  */
 const STATUS_COLOR = {
   draft: {
-    color: "var(--imagine-foreground-muted)",
-    contrast: "var(--imagine-surface)",
+    color: "var(--imagine-tag-4)",
+    contrast: "var(--imagine-foreground)",
     darkWash: false,
   },
   in_review: {
@@ -159,8 +159,8 @@ function toExcerpt(post: PostChipData): string {
 /**
  * A post inside a calendar cell, laid out like a card: who it goes out from,
  * the label, as much of the post as the cell allows, and the time. Every chip
- * is flat: a pastel fill of its color, a solid rail of it at the left, and
- * its text in the same hue, the way a calendar app draws an event. The color
+ * is flat: a pastel fill of its color and a solid rail of it at the left, the
+ * way a calendar app draws an event, with the text in the foreground. The color
  * is the post's status, so a month reads as scheduled, in review, or
  * published at a glance. A check once published, a warning when it failed,
  * a dashed edge on drafts. Selecting a chip fills it solid and lifts it.
@@ -176,8 +176,7 @@ export function PostChip({
 }: PostChipProps) {
   const inverted = selected || STATUS_COLOR[post.status].darkWash;
   const author = post.preview?.author;
-  // Secondary lines stay in the chip's hue, a step quieter.
-  const muted = inverted ? "opacity-80" : "opacity-75";
+  const muted = inverted ? "opacity-80" : "text-imagine-foreground-muted";
   const avatar =
     author?.avatarUrl === undefined ? null : (
       <Avatar
@@ -230,7 +229,7 @@ export function PostChip({
         // The cell is the `chip` container; see the calendar grids.
         "@max-[6rem]/chip:pl-s",
         selected ? "chip-solid shadow-raised" : "chip-wash",
-        inverted ? "text-[var(--chip-contrast)]" : "chip-ink",
+        inverted ? "text-[var(--chip-contrast)]" : "text-imagine-foreground",
         post.status === "draft" &&
           !selected &&
           "border border-dashed border-[var(--chip-color)]",

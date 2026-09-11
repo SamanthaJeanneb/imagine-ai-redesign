@@ -164,9 +164,10 @@
  * accent-gradient: small accent tiles (logo, the scheduled day).
  *
  * Calendar chips are flat, no gradient: a pastel fill of `--chip-color` over
- * the surface (chip-wash), a solid rail of it, and text in the same hue mixed
- * toward the foreground (chip-ink), the way a calendar app colors an event.
- * The color is the post's status; see `PostChip`.
+ * the surface (chip-wash) and a solid rail of it, the way a calendar app
+ * colors an event; the text stays the foreground. The color is the post's
+ * status; see `PostChip`. Mixed in sRGB so the pastels match the reference
+ * tints rather than oklab's darker, greyer midpoints.
  */
 @utility selection-gradient {
   background-image: linear-gradient(
@@ -193,13 +194,10 @@
 }
 @utility chip-wash {
   background-color: color-mix(
-    in oklab,
-    var(--chip-color) 22%,
+    in srgb,
+    var(--chip-color) 16%,
     var(--imagine-surface)
   );
-}
-@utility chip-ink {
-  color: color-mix(in oklab, var(--chip-color) 70%, var(--imagine-foreground));
 }
 /* Selected chip: a solid fill of the status color. */
 @utility chip-solid {
