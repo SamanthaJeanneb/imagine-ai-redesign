@@ -105,6 +105,7 @@ export function PostEditorDialog({
         className={cn(
           "flex shrink-0 flex-row items-center gap-s px-l py-m",
           presentation === "dialog" && "border-b border-imagine-border",
+          presentation === "inline" && "mx-auto w-full max-w-6xl",
         )}
       >
         <h2 className="type-body font-semibold">Edit post</h2>
@@ -143,8 +144,11 @@ export function PostEditorDialog({
 
       <div
         className={cn(
-          "grid min-h-0 flex-1 overflow-y-auto md:grid-cols-[minmax(0,1.65fr)_minmax(18rem,0.95fr)] md:overflow-hidden",
-          presentation === "inline" && "gap-l px-l pb-l",
+          "grid min-h-0 flex-1 overflow-y-auto md:overflow-hidden",
+          presentation === "dialog" &&
+            "md:grid-cols-[minmax(0,1.65fr)_minmax(18rem,0.95fr)]",
+          presentation === "inline" &&
+            "mx-auto w-full max-w-6xl gap-l px-l pb-l md:grid-cols-[minmax(0,1fr)_20rem]",
         )}
       >
         <div
@@ -222,27 +226,33 @@ export function PostEditorDialog({
               presentation === "dialog" && "border-t border-imagine-border",
             )}
           >
-            {author === undefined ? (
-              <Avatar className="size-7">
-                <AvatarFallback>{initials(draft.post.profile)}</AvatarFallback>
-              </Avatar>
-            ) : (
-              <Avatar
-                shape={author.kind === "company" ? "square" : "circle"}
-                className="size-7"
-              >
-                {author.avatarUrl === undefined ? null : (
-                  <AvatarImage src={author.avatarUrl} alt="" />
+            {draft.post.engagement === undefined ? (
+              <>
+                {author === undefined ? (
+                  <Avatar className="size-7">
+                    <AvatarFallback>
+                      {initials(draft.post.profile)}
+                    </AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <Avatar
+                    shape={author.kind === "company" ? "square" : "circle"}
+                    className="size-7"
+                  >
+                    {author.avatarUrl === undefined ? null : (
+                      <AvatarImage src={author.avatarUrl} alt="" />
+                    )}
+                    <AvatarFallback>{initials(author.name)}</AvatarFallback>
+                  </Avatar>
                 )}
-                <AvatarFallback>{initials(author.name)}</AvatarFallback>
-              </Avatar>
-            )}
-            <Input
-              aria-label="First comment"
-              placeholder="Add a first comment"
-              className="border-0 bg-transparent shadow-none"
-            />
-            <span className="shrink-0 type-caption text-imagine-foreground-muted tabular-nums">
+                <Input
+                  aria-label="First comment"
+                  placeholder="Add a first comment"
+                  className="border-0 bg-transparent shadow-none"
+                />
+              </>
+            ) : null}
+            <span className="ml-auto shrink-0 type-caption text-imagine-foreground-muted tabular-nums">
               {body.length.toLocaleString()} characters
             </span>
           </div>
@@ -333,6 +343,7 @@ export function PostEditorDialog({
         className={cn(
           "flex shrink-0 items-center gap-xs px-l py-m",
           presentation === "dialog" && "border-t border-imagine-border",
+          presentation === "inline" && "mx-auto w-full max-w-6xl",
         )}
       >
         {onDelete === undefined ? null : (
