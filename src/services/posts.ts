@@ -48,6 +48,11 @@ export function indexAssetsByPath(): ReadonlyMap<string, Asset> {
   );
 }
 
+/** Everything an editor can pick from when adding media to a post. */
+export function getAssetLibrary(): readonly AssetTileData[] {
+  return getDb().app.assets.map((row) => toAssetTile(transformAssetRow(row)));
+}
+
 export function getClientAssets(clientId: string): readonly Asset[] {
   return getDb()
     .app.assets.filter((row) => row.client_id === clientId)

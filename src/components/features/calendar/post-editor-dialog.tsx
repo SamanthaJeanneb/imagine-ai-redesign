@@ -10,6 +10,7 @@ import {
   postChipStyle,
 } from "@/components/features/calendar/post-chip";
 import { LinkedInPostEditor } from "@/components/features/calendar/linkedin-post-detail";
+import type { AssetTileData } from "@/components/features/files/asset-tile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +37,8 @@ interface PostEditorDialogProps {
   onOpenAgent: (value: PostEditorValue) => void;
   onDelete?: (postId: string) => void;
   presentation?: "dialog" | "inline";
+  /** Assets the inline editor can attach to the post. */
+  mediaLibrary?: readonly AssetTileData[];
 }
 
 const STATUS_LABEL: Record<PostChipStatus, string> = {
@@ -80,6 +83,7 @@ export function PostEditorDialog({
   onOpenAgent,
   onDelete,
   presentation = "dialog",
+  mediaLibrary,
 }: PostEditorDialogProps) {
   const [draft, setDraft] = useState(value);
   const preview = draft.post.preview;
@@ -191,6 +195,7 @@ export function PostEditorDialog({
             <LinkedInPostEditor
               post={draft.post}
               body={body}
+              mediaLibrary={mediaLibrary}
               onBodyChange={(nextBody) => {
                 updatePost({
                   title: titleFromBody(nextBody),
@@ -198,6 +203,12 @@ export function PostEditorDialog({
                     ...preview,
                     body: nextBody,
                   },
+                });
+              }}
+              onMediaChange={(media) => {
+                const { media: _dropped, ...rest } = preview;
+                updatePost({
+                  preview: media.length === 0 ? rest : { ...rest, media },
                 });
               }}
             />

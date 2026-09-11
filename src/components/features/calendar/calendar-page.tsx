@@ -31,6 +31,7 @@ import {
   EditorTabStrip,
   type EditorTab,
 } from "@/components/features/files/editor-tab-strip";
+import type { AssetTileData } from "@/components/features/files/asset-tile";
 import { Icon, type IconName } from "@/components/ui/icon";
 import type { SearchBoxResult } from "@/components/ui/search-box";
 import {
@@ -55,6 +56,8 @@ interface CalendarPageProps {
   today: string;
   /** `/calendar-2` opens posts as tabs; the primary calendar uses a modal. */
   editorPresentation?: "dialog" | "tabs";
+  /** Assets the editor can attach to a post. */
+  mediaLibrary?: readonly AssetTileData[];
 }
 
 const POST_SEARCH_ICON = {
@@ -197,6 +200,7 @@ export function CalendarPage({
   eventsByDay = {},
   today,
   editorPresentation = "dialog",
+  mediaLibrary,
 }: CalendarPageProps) {
   const router = useRouter();
   const chat = useChat();
@@ -427,6 +431,7 @@ export function CalendarPage({
         value={editorValue}
         open
         presentation={editorPresentation === "tabs" ? "inline" : "dialog"}
+        {...(mediaLibrary === undefined ? {} : { mediaLibrary })}
         onOpenChange={(open) => {
           if (!open) {
             setEditingPostId(null);

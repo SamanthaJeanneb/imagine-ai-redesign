@@ -1,19 +1,35 @@
 "use client";
 
 import { cn } from "cn";
+import { useState } from "react";
 
-import { AssetTile } from "@/components/features/files/asset-tile";
+import {
+  AssetTile,
+  type AssetTileData,
+} from "@/components/features/files/asset-tile";
 import type {
   PostChipData,
   PostEngagementPerson,
 } from "@/components/features/calendar/post-chip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DashedAction } from "@/components/ui/dashed-action";
 import { Icon, type IconName } from "@/components/ui/icon";
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface LinkedInPostEditorProps {
   post: PostChipData;
   body: string;
   onBodyChange: (body: string) => void;
+  /** Assets available to attach. Media editing is off without them. */
+  mediaLibrary?: readonly AssetTileData[];
+  onMediaChange?: (media: readonly AssetTileData[]) => void;
 }
 
 const COUNT = new Intl.NumberFormat("en-US");
@@ -58,10 +74,16 @@ export function LinkedInPostEditor({
   post,
   body,
   onBodyChange,
+  mediaLibrary = [],
+  onMediaChange,
 }: LinkedInPostEditorProps) {
+  const [pickerOpen, setPickerOpen] = useState(false);
   const preview = post.preview;
   if (preview === undefined) return null;
 
+  const media = preview.media ?? [];
+  const attachedIds = new Set(media.map((asset) => asset.id));
+  const available = mediaLibrary.filter((asset) => !attachedIds.has(asset.id));
   const stats = preview.stats;
   const reactors = post.engagement?.reactors ?? [];
   const comments = post.engagement?.comments ?? [];
@@ -115,22 +137,68 @@ export function LinkedInPostEditor({
         className="mt-l field-sizing-content min-h-36 w-full resize-none rounded-control bg-imagine-surface-raised/60 px-s py-xs type-body leading-relaxed transition-colors outline-none placeholder:text-imagine-foreground-faint hover:bg-imagine-surface-raised focus-visible:ring-2 focus-visible:ring-ring/30"
       />
 
-      {preview.media && preview.media.length > 0 ? (
+      {media.length > 0 ? (
         <div
           className={cn(
             "mt-m grid gap-xs overflow-hidden rounded-control",
-            preview.media.length > 1 ? "grid-cols-2" : "grid-cols-1",
+            media.length > 1 ? "grid-cols-2" : "grid-cols-1",
           )}
         >
-          {preview.media.slice(0, 2).map((asset) => (
-            <AssetTile
-              key={asset.id}
-              asset={asset}
-              className="aspect-[4/3] rounded-none"
-            />
+          {media.slice(0, 2).map((asset) => (
+            <div key={asset.id} className="group/media relative">
+              <AssetTile asset={asset} className="aspect-[4/3] rounded-none" />
+              {onMediaChange === undefined ? null : (
+                <button
+                  type="button"
+                  aria-label={`Remove ${asset.caption ?? "media"}`}
+                  onClick={() => {
+                    onMediaChange(media.filter((item) => item.id !== asset.id));
+                  }}
+                  className="absolute top-xs right-xs flex size-7 items-center justify-center rounded-full bg-imagine-surface/80 text-imagine-foreground opacity-0 backdrop-blur transition-opacity group-hover/media:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/40"
+                >
+                  <Icon name="xmark" size="s" />
+                </button>
+              )}
+            </div>
           ))}
         </div>
       ) : null}
+
+      {onMediaChange === undefined || media.length >= 2 ? null : (
+        <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
+          <PopoverTrigger asChild>
+            <DashedAction icon="image" className="mt-m">
+              {media.length === 0 ? "Add media" : "Add another image"}
+            </DashedAction>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-80">
+            <PopoverHeader>
+              <PopoverTitle>Add media</PopoverTitle>
+              <PopoverDescription>
+                Pick an image from your library.
+              </PopoverDescription>
+            </PopoverHeader>
+            {available.length === 0 ? (
+              <p className="py-s type-small text-imagine-foreground-muted">
+                Every asset in the library is already on this post.
+              </p>
+            ) : (
+              <div className="grid max-h-64 grid-cols-3 gap-xs overflow-y-auto p-xxs">
+                {available.map((asset) => (
+                  <AssetTile
+                    key={asset.id}
+                    asset={asset}
+                    onSelect={(picked) => {
+                      onMediaChange([...media, picked]);
+                      setPickerOpen(false);
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
+      )}
 
       <div className="mt-l grid grid-cols-4 gap-xs">
         {ACTIONS.map((action) => {
