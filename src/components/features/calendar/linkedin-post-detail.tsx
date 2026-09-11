@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "cn";
-import { useState } from "react";
+import { useRef } from "react";
 
 import {
   AssetTile,
@@ -14,22 +14,45 @@ import type {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DashedAction } from "@/components/ui/dashed-action";
 import { Icon, type IconName } from "@/components/ui/icon";
-import {
-  Popover,
-  PopoverContent,
-  PopoverDescription,
-  PopoverHeader,
-  PopoverTitle,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 
 interface LinkedInPostEditorProps {
   post: PostChipData;
   body: string;
   onBodyChange: (body: string) => void;
-  /** Assets available to attach. Media editing is off without them. */
   mediaLibrary?: readonly AssetTileData[];
   onMediaChange?: (media: readonly AssetTileData[]) => void;
+}
+
+/** LinkedIn's preview shows at most two images. */
+const MEDIA_LIMIT = 2;
+
+function mediaKind(file: File): AssetTileData["kind"] | null {
+  if (file.type.startsWith("image/")) return "image";
+  if (file.type.startsWith("video/")) return "video";
+  return null;
+}
+
+function assetsFromFiles(
+  files: readonly File[],
+  limit: number,
+): AssetTileData[] {
+  const assets: AssetTileData[] = [];
+  for (const file of files) {
+    if (assets.length >= limit) break;
+    const kind = mediaKind(file);
+    if (kind === null) continue;
+    assets.push({
+      id: `upload-${crypto.randomUUID()}`,
+      kind,
+      src: URL.createObjectURL(file),
+      caption: file.name,
+    });
+  }
+  return assets;
+}
+
+function revokeBlobSrc(src: string | undefined) {
+  if (src?.startsWith("blob:")) URL.revokeObjectURL(src);
 }
 
 const COUNT = new Intl.NumberFormat("en-US");
@@ -74,16 +97,13 @@ export function LinkedInPostEditor({
   post,
   body,
   onBodyChange,
-  mediaLibrary = [],
   onMediaChange,
 }: LinkedInPostEditorProps) {
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const preview = post.preview;
   if (preview === undefined) return null;
 
   const media = preview.media ?? [];
-  const attachedIds = new Set(media.map((asset) => asset.id));
-  const available = mediaLibrary.filter((asset) => !attachedIds.has(asset.id));
   const stats = preview.stats;
   const reactors = post.engagement?.reactors ?? [];
   const comments = post.engagement?.comments ?? [];
@@ -152,6 +172,7 @@ export function LinkedInPostEditor({
                   type="button"
                   aria-label={`Remove ${asset.caption ?? "media"}`}
                   onClick={() => {
+                    revokeBlobSrc(asset.src);
                     onMediaChange(media.filter((item) => item.id !== asset.id));
                   }}
                   className="absolute top-xs right-xs flex size-7 items-center justify-center rounded-full bg-imagine-surface/80 text-imagine-foreground opacity-0 backdrop-blur transition-opacity group-hover/media:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/40"
@@ -164,40 +185,36 @@ export function LinkedInPostEditor({
         </div>
       ) : null}
 
-      {onMediaChange === undefined || media.length >= 2 ? null : (
-        <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
-          <PopoverTrigger asChild>
-            <DashedAction icon="image" className="mt-m">
-              {media.length === 0 ? "Add media" : "Add another image"}
-            </DashedAction>
-          </PopoverTrigger>
-          <PopoverContent align="start" className="w-80">
-            <PopoverHeader>
-              <PopoverTitle>Add media</PopoverTitle>
-              <PopoverDescription>
-                Pick an image from your library.
-              </PopoverDescription>
-            </PopoverHeader>
-            {available.length === 0 ? (
-              <p className="py-s type-small text-imagine-foreground-muted">
-                Every asset in the library is already on this post.
-              </p>
-            ) : (
-              <div className="grid max-h-64 grid-cols-3 gap-xs overflow-y-auto p-xxs">
-                {available.map((asset) => (
-                  <AssetTile
-                    key={asset.id}
-                    asset={asset}
-                    onSelect={(picked) => {
-                      onMediaChange([...media, picked]);
-                      setPickerOpen(false);
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-          </PopoverContent>
-        </Popover>
+      {onMediaChange === undefined || media.length >= MEDIA_LIMIT ? null : (
+        <>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,video/*"
+            multiple
+            className="sr-only"
+            onChange={(event) => {
+              const files = Array.from(event.target.files ?? []);
+              event.target.value = "";
+              if (files.length === 0) return;
+              const uploaded = assetsFromFiles(
+                files,
+                MEDIA_LIMIT - media.length,
+              );
+              if (uploaded.length === 0) return;
+              onMediaChange([...media, ...uploaded]);
+            }}
+          />
+          <DashedAction
+            icon="upload"
+            className="mt-m"
+            onClick={() => {
+              fileInputRef.current?.click();
+            }}
+          >
+            {media.length === 0 ? "Add media" : "Add another image"}
+          </DashedAction>
+        </>
       )}
 
       <div className="mt-l grid grid-cols-4 gap-xs">
