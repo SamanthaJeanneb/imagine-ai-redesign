@@ -96,9 +96,9 @@ export function ChatColumn({
       )}
       <div
         style={{ width }}
-        className="flex min-h-0 w-full shrink-0 flex-col border-l border-imagine-foreground/12 px-l"
+        className="flex min-h-0 w-full shrink-0 flex-col border-l border-imagine-foreground/12"
       >
-        <div className="mt-m flex h-8 shrink-0 items-center gap-s">
+        <div className="mt-m flex h-8 shrink-0 items-center gap-s px-l">
           <ChatTitle title={title} />
           <div className="-mr-s ml-auto flex items-center">
             <ChatControls
@@ -119,7 +119,10 @@ export function ChatColumn({
             )}
           </div>
         </div>
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        {/* Padding lives on the scrollport. `overflow-y-auto` also clips x,
+            and the dock sits flush to that edge — its shadow and side radius
+            disappear if the inset is outside. */}
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-l pb-l">
           {chat.messages.length === 0 ? (
             <motion.p
               initial={{ opacity: 0 }}
