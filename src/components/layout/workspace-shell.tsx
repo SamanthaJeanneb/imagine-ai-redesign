@@ -321,6 +321,11 @@ function WorkspacePage({
 }) {
   return (
     <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      {/* File tabs sit in an overlay; this spacer keeps the thread from
+          sliding under them. */}
+      {overlay === undefined ? null : (
+        <div aria-hidden="true" className="h-9 shrink-0" />
+      )}
       <div
         className={cn(
           "@container/frame flex min-h-0 min-w-0 flex-1 flex-col overflow-x-clip overflow-y-auto",
@@ -591,15 +596,15 @@ function WorkspaceFrame({
             activeDocument !== undefined && "h-full",
           )}
         >
-          <AnimatePresence initial={false} mode="wait">
-            {activeDocument === undefined ? null : (
+          {activeDocument === undefined ? null : (
+            <AnimatePresence initial={false} mode="wait">
               <motion.div
                 key={activeDocument.id}
                 initial={{ opacity: 0, x: 8 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -8 }}
                 transition={fade.fast}
-                className="h-full w-full min-w-0 overflow-y-auto"
+                className="min-h-0 w-full min-w-0 flex-1 overflow-y-auto"
               >
                 <MarkdownEditor
                   meta={activeDocument.meta}
@@ -627,8 +632,8 @@ function WorkspaceFrame({
                   className="mx-auto p-xxl"
                 />
               </motion.div>
-            )}
-          </AnimatePresence>
+            </AnimatePresence>
+          )}
         </EditorTabStrip>
       </motion.div>
     );

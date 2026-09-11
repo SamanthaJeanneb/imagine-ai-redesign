@@ -147,29 +147,32 @@ export function EditorTabStrip({
         ) : null}
       </AnimatePresence>
       {/* The page. A flat top under the tabs so the open tab joins it with no
-          line. Padding keeps the calendar toolbar off the join. */}
-      <div
-        className={cn(
-          "relative z-10 min-h-0 flex-1 overflow-hidden bg-imagine-surface",
-          tabs.length > 0 ? "rounded-b-panel" : "rounded-panel",
-        )}
-      >
-        <motion.div
-          key={activeId}
-          initial={{
-            opacity: 0,
-            x: activeId === "calendar" ? -6 : 8,
-          }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={fade.fast}
+          line. Padding is in flow so the document title is not clipped.
+          Omitted when the thread is showing, so an empty pane cannot cover it. */}
+      {children == null ? null : (
+        <div
           className={cn(
-            "absolute inset-0 flex min-h-0 w-full min-w-0 flex-col",
-            tabs.length > 0 && "pt-xl",
+            "relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden bg-imagine-surface",
+            tabs.length > 0 ? "rounded-b-panel" : "rounded-panel",
           )}
         >
-          {children}
-        </motion.div>
-      </div>
+          <motion.div
+            key={activeId}
+            initial={{
+              opacity: 0,
+              x: activeId === "calendar" ? -6 : 8,
+            }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={fade.fast}
+            className={cn(
+              "flex min-h-0 flex-1 flex-col",
+              tabs.length > 0 && "pt-xl",
+            )}
+          >
+            {children}
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
