@@ -9,6 +9,7 @@ import {
 } from "motion/react";
 import { useId, useState } from "react";
 
+import { ChatSearchDialog } from "@/components/layout/chat-search-dialog";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";
 import { Icon, type IconName } from "@/components/ui/icon";
@@ -141,6 +142,7 @@ export function Sidebar({
   });
 
   const [helpOpen, setHelpOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const helpId = useId();
 
   const helpTrigger = (
@@ -456,12 +458,30 @@ export function Sidebar({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={fade.base}
-            className="mt-l flex min-h-0 flex-1 flex-col"
+            className="group/chats mt-l flex min-h-0 flex-1 flex-col"
           >
             <div className="flex h-7 shrink-0 items-center px-xs">
               <span className="type-micro font-medium text-imagine-foreground-muted">
                 Chats
               </span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="icon-xs"
+                    variant="ghost"
+                    aria-label="Search chats"
+                    aria-haspopup="dialog"
+                    aria-expanded={searchOpen}
+                    onClick={() => {
+                      setSearchOpen(true);
+                    }}
+                    className="ml-auto text-imagine-foreground-muted opacity-0 transition-opacity group-hover/chats:opacity-100 hover:text-imagine-foreground focus-visible:opacity-100"
+                  >
+                    <Icon name="magnifying-glass" size="s" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">Search chats</TooltipContent>
+              </Tooltip>
             </div>
             <Stagger
               kind="list"
@@ -538,6 +558,15 @@ export function Sidebar({
       ) : (
         helpTrigger
       )}
+      <ChatSearchDialog
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        threads={threads}
+        {...(activeThreadId === undefined ? {} : { activeThreadId })}
+        onSelect={(id) => {
+          onOpenThread?.(id);
+        }}
+      />
     </motion.aside>
   );
 }
