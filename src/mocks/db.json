@@ -151,31 +151,36 @@
         "id": "auth_acme",
         "client_id": "cli_acme",
         "unipile_account_id": "unp_acme",
-        "status": "connected"
+        "status": "connected",
+        "created_at": "2026-01-15T09:12:00.000Z"
       },
       {
         "id": "auth_sarah",
         "client_id": "cli_sarah",
         "unipile_account_id": "unp_sarah",
-        "status": "connected"
+        "status": "connected",
+        "created_at": "2026-01-20T14:22:00.000Z"
       },
       {
         "id": "auth_marcus",
         "client_id": "cli_marcus",
         "unipile_account_id": "unp_marcus",
-        "status": "connected"
+        "status": "connected",
+        "created_at": "2026-02-02T09:51:00.000Z"
       },
       {
         "id": "auth_priya",
         "client_id": "cli_priya",
         "unipile_account_id": "unp_priya",
-        "status": "connected"
+        "status": "connected",
+        "created_at": "2026-03-11T11:28:00.000Z"
       },
       {
         "id": "auth_ravi",
         "client_id": "cli_ravi",
         "unipile_account_id": "unp_ravi",
-        "status": "disconnected"
+        "status": "disconnected",
+        "created_at": "2026-04-08T15:18:00.000Z"
       }
     ],
     "client_posts": [

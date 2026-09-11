@@ -6,12 +6,19 @@ import { useId, useState } from "react";
 
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { SearchField } from "@/components/ui/search-field";
+import { formatDayMonthYear } from "@/lib/format";
 import { pressRow, spring } from "@/styles/motion";
 
 export type ConnectionStatus = "connected" | "disconnected";
+
+export const CONNECTION_LABEL: Record<ConnectionStatus, string> = {
+  connected: "Connected",
+  disconnected: "Not connected",
+};
 
 export interface ProfileSummary {
   id: string;
@@ -21,6 +28,8 @@ export interface ProfileSummary {
   avatarUrl?: string;
   kind: "person" | "company";
   status: ConnectionStatus;
+  /** ISO time LinkedIn was first linked. Absent until they connect. */
+  connectedAt?: string;
 }
 
 interface ProfileListProps {
@@ -125,15 +134,20 @@ export function ProfileList({
                     {profile.headline}
                   </span>
                 </span>
-                <span
-                  aria-label={profile.status}
-                  className={cn(
-                    "size-1.5 shrink-0 rounded-full",
-                    profile.status === "connected" && "bg-success",
-                    profile.status === "disconnected" &&
-                      "bg-imagine-foreground-faint",
+                <span className="flex shrink-0 flex-col items-end gap-xxs">
+                  <Badge
+                    variant={
+                      profile.status === "connected" ? "success" : "soft"
+                    }
+                  >
+                    {CONNECTION_LABEL[profile.status]}
+                  </Badge>
+                  {profile.connectedAt === undefined ? null : (
+                    <span className="type-small text-imagine-foreground-muted">
+                      Since {formatDayMonthYear(profile.connectedAt)}
+                    </span>
                   )}
-                />
+                </span>
               </motion.button>
             </StaggerItem>
           );

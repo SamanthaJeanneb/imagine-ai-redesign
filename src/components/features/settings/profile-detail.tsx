@@ -4,7 +4,10 @@ import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
-import { type ConnectionStatus } from "@/components/features/settings/profile-list";
+import {
+  CONNECTION_LABEL,
+  type ConnectionStatus,
+} from "@/components/features/settings/profile-list";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { formatDayMonthYear } from "@/lib/format";
 import { fade, swapUp } from "@/styles/motion";
 
 export interface ProfileDetailData {
@@ -31,6 +35,8 @@ export interface ProfileDetailData {
   avatarUrl?: string;
   kind: "person" | "company";
   status: ConnectionStatus;
+  /** ISO time LinkedIn was first linked. Absent until they connect. */
+  connectedAt?: string;
   /** Published posts the agent has read for voice and analytics. */
   postsIndexed?: number;
   company?: { name: string; logoUrl?: string; url: string };
@@ -50,11 +56,6 @@ interface ProfileDetailProps {
   onRemove?: () => void;
   className?: string;
 }
-
-const STATUS_LABEL: Record<ConnectionStatus, string> = {
-  connected: "Connected",
-  disconnected: "Not connected",
-};
 
 function initials(name: string): string {
   return name
@@ -159,7 +160,7 @@ export function ProfileDetail({
             <Badge
               variant={profile.status === "connected" ? "success" : "soft"}
             >
-              {STATUS_LABEL[profile.status]}
+              {CONNECTION_LABEL[profile.status]}
             </Badge>
             {profile.status !== "connected" && onReconnect ? (
               <Button
@@ -171,6 +172,11 @@ export function ProfileDetail({
                 Reconnect
               </Button>
             ) : null}
+          </Row>
+          <Row label="First connected">
+            {profile.connectedAt === undefined
+              ? "Not yet"
+              : formatDayMonthYear(profile.connectedAt)}
           </Row>
           {profile.postsIndexed === undefined ? null : (
             <Row label="Posts indexed">

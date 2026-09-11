@@ -97,15 +97,22 @@ const PROVIDERS: Record<
   },
 };
 
-/**
- * A client's connection state. `client_linkedin_auth` is the truth; `clients.status`
- * is the fallback for a profile that was never linked.
- */
-function connectionState(client: Client) {
-  const auth = getDb().app.client_linkedin_auth.find(
-    (row) => row.client_id === client.id,
+function linkedInAuth(clientId: string) {
+  return getDb().app.client_linkedin_auth.find(
+    (row) => row.client_id === clientId,
   );
-  return toConnectionState(auth?.status ?? client.status);
+}
+
+/**
+ * Connection state and first-linked time. `client_linkedin_auth` is the
+ * truth; `clients.status` is the fallback for a profile that was never linked.
+ */
+function connection(client: Client) {
+  const auth = linkedInAuth(client.id);
+  return {
+    status: toConnectionState(auth?.status ?? client.status),
+    ...(auth === undefined ? {} : { connectedAt: auth.created_at }),
+  };
 }
 
 function headline(client: Client): string {
@@ -124,7 +131,7 @@ export function getProfiles(): readonly ProfileSummary[] {
         ? {}
         : { avatarUrl: client.profilePicturePath }),
       kind: client.isCompany ? "company" : "person",
-      status: connectionState(client),
+      ...connection(client),
     }));
 }
 
@@ -147,7 +154,7 @@ function toProfileDetail(client: Client): ProfileDetailData {
       ? {}
       : { avatarUrl: client.profilePicturePath }),
     kind: client.isCompany ? "company" : "person",
-    status: connectionState(client),
+    ...connection(client),
     postsIndexed: publishedCount(client.id),
     ...(client.isCompany
       ? {}

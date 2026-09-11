@@ -510,6 +510,7 @@ const PROFILES: ProfileSummary[] = [
     headline: "Company page",
     kind: "company",
     status: "connected",
+    connectedAt: "2026-01-15T09:12:00.000Z",
     avatarUrl: ACME_LOGO,
   },
   {
@@ -518,6 +519,7 @@ const PROFILES: ProfileSummary[] = [
     headline: "CEO at Acme",
     kind: "person",
     status: "connected",
+    connectedAt: "2026-01-20T14:22:00.000Z",
     avatarUrl: AVATAR(47),
   },
   {
@@ -526,6 +528,7 @@ const PROFILES: ProfileSummary[] = [
     headline: "Head of Growth",
     kind: "person",
     status: "disconnected",
+    connectedAt: "2026-04-08T15:18:00.000Z",
     avatarUrl: AVATAR(12),
   },
   {
@@ -534,6 +537,7 @@ const PROFILES: ProfileSummary[] = [
     headline: "Design lead",
     kind: "person",
     status: "connected",
+    connectedAt: "2026-03-02T10:00:00.000Z",
     avatarUrl: AVATAR(32),
   },
   {
@@ -700,6 +704,7 @@ const SARAH_DETAIL: ProfileDetailData = {
   headline: "CEO at Acme",
   kind: "person",
   status: "connected",
+  connectedAt: "2026-01-20T14:22:00.000Z",
   avatarUrl: AVATAR(47),
   company: {
     name: "Acme",
@@ -716,6 +721,7 @@ const RAVI_DETAIL: ProfileDetailData = {
   headline: "Head of Growth",
   kind: "person",
   status: "disconnected",
+  connectedAt: "2026-04-08T15:18:00.000Z",
   avatarUrl: AVATAR(12),
   company: {
     name: "Acme",
@@ -733,6 +739,7 @@ const PROFILE_DETAILS: Record<string, ProfileDetailData> = {
     headline: "Company page",
     kind: "company",
     status: "connected",
+    connectedAt: "2026-01-15T09:12:00.000Z",
     avatarUrl: ACME_LOGO,
     postsIndexed: 5,
     persona: { fileName: "acme-voice.md" },
@@ -745,6 +752,7 @@ const PROFILE_DETAILS: Record<string, ProfileDetailData> = {
     headline: "Design lead",
     kind: "person",
     status: "connected",
+    connectedAt: "2026-03-02T10:00:00.000Z",
     avatarUrl: AVATAR(32),
   },
   c5: {

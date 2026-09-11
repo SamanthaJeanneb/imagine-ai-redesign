@@ -58,6 +58,8 @@ export interface ClientLinkedInAuthRow {
   client_id: string;
   unipile_account_id: string;
   status: string;
+  /** When LinkedIn was first linked. Survives later disconnects. */
+  created_at: string;
 }
 
 /** `client_posts.media`, a storage object with the same shape as `MediaFile`. */

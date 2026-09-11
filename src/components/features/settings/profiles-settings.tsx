@@ -170,6 +170,9 @@ export function ProfilesSettings({
               ...(change.headline === undefined
                 ? {}
                 : { headline: change.headline }),
+              ...(change.connectedAt === undefined
+                ? {}
+                : { connectedAt: change.connectedAt }),
             }
           : profile,
       ),
@@ -232,7 +235,10 @@ export function ProfilesSettings({
               profile={selected}
               indexing={indexing}
               onReconnect={() => {
-                patch(selected.id, { status: "connected" });
+                patch(selected.id, {
+                  status: "connected",
+                  connectedAt: selected.connectedAt ?? new Date().toISOString(),
+                });
                 toast.success(`${selected.name} reconnected`);
               }}
               {...(selected.kind === "person"

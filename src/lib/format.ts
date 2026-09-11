@@ -129,6 +129,11 @@ export function formatDayMonth(iso: string): string {
   return `${String(date.getUTCDate())} ${monthShort(date)}`;
 }
 
+/** "15 Jan 2026". */
+export function formatDayMonthYear(iso: string): string {
+  return `${formatDayMonth(iso)} ${String(new Date(iso).getUTCFullYear())}`;
+}
+
 /** "Sep". */
 export function formatMonthShort(iso: string): string {
   return monthShort(new Date(iso));
