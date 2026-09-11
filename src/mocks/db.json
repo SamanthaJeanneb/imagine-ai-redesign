@@ -141,7 +141,7 @@
         "linkedin_id": "ravipatel",
         "profile_picture_path": "https://i.pravatar.cc/96?img=68",
         "persona": "Ravi writes about the deals that did not close and what the buyer actually said.\n",
-        "status": "expired",
+        "status": "disconnected",
         "created_at": "2026-04-08T15:00:00.000Z",
         "updated_at": "2026-08-29T08:00:00.000Z"
       }
@@ -175,7 +175,7 @@
         "id": "auth_ravi",
         "client_id": "cli_ravi",
         "unipile_account_id": "unp_ravi",
-        "status": "expired"
+        "status": "disconnected"
       }
     ],
     "client_posts": [

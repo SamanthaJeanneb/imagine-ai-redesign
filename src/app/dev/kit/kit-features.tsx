@@ -525,7 +525,7 @@ const PROFILES: ProfileSummary[] = [
     name: "Ravi Patel",
     headline: "Head of Growth",
     kind: "person",
-    status: "expired",
+    status: "disconnected",
     avatarUrl: AVATAR(12),
   },
   {
@@ -715,7 +715,7 @@ const RAVI_DETAIL: ProfileDetailData = {
   name: "Ravi Patel",
   headline: "Head of Growth",
   kind: "person",
-  status: "expired",
+  status: "disconnected",
   avatarUrl: AVATAR(12),
   company: {
     name: "Acme",
@@ -2614,7 +2614,7 @@ export function ProfilesDemo() {
           }}
         />
       </Demo>
-      <Demo label="Profile detail, expired connection">
+      <Demo label="Profile detail, disconnected">
         <ProfileDetail
           profile={RAVI_DETAIL}
           onReconnect={() => {

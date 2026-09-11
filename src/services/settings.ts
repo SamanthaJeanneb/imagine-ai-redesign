@@ -180,25 +180,22 @@ export interface Integrations {
 
 /**
  * LinkedIn is connected per profile through `client_linkedin_auth`, so it shows
- * as one row summarizing them. It needs attention as soon as one has lapsed.
+ * as one row summarizing the connected identities. Profiles are connected or
+ * not; they do not expire.
  */
 function linkedInIntegration(): ConnectedIntegration | null {
-  const auths = getDb().app.client_linkedin_auth;
+  const auths = getDb().app.client_linkedin_auth.filter(
+    (auth) => auth.status === "connected",
+  );
   if (auths.length === 0) return null;
-  const lapsed = auths.filter((auth) => auth.status !== "connected").length;
 
   return {
     id: "linkedin",
     name: "LinkedIn",
     description: "Publishing and analytics for every profile you manage.",
     icon: "linkedin-in",
-    status: lapsed > 0 ? "expired" : "connected",
-    facts: [
-      `${String(auths.length)} profiles`,
-      lapsed > 0
-        ? `${String(lapsed)} ${lapsed === 1 ? "needs" : "need"} reconnecting`
-        : "All connected",
-    ],
+    status: "connected",
+    facts: [`${String(auths.length)} profiles`, "All connected"],
   };
 }
 

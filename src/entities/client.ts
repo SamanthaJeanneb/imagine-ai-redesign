@@ -20,11 +20,10 @@ export interface Client {
 }
 
 /** How the profile list draws a connection. */
-export type ConnectionState = "connected" | "expired" | "disconnected";
+export type ConnectionState = "connected" | "disconnected";
 
 const CONNECTION_STATES: readonly ConnectionState[] = [
   "connected",
-  "expired",
   "disconnected",
 ];
 

@@ -53,7 +53,6 @@ interface ProfileDetailProps {
 
 const STATUS_LABEL: Record<ConnectionStatus, string> = {
   connected: "Connected",
-  expired: "Expired",
   disconnected: "Not connected",
 };
 
@@ -158,13 +157,7 @@ export function ProfileDetail({
         <div className="flex flex-col">
           <Row label="Connection">
             <Badge
-              variant={
-                profile.status === "connected"
-                  ? "success"
-                  : profile.status === "expired"
-                    ? "warning"
-                    : "soft"
-              }
+              variant={profile.status === "connected" ? "success" : "soft"}
             >
               {STATUS_LABEL[profile.status]}
             </Badge>

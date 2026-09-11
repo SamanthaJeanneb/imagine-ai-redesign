@@ -316,7 +316,7 @@ them.
 | `public.users`                              | 4                  | page header account, members         |
 | `app.organizations`, `organization_members` | 1, 4               | workspace name, General, join screen |
 | `app.clients`                               | 5 (1 company page) | profiles, authors, personas          |
-| `app.client_linkedin_auth`                  | 5, one expired     | connection status                    |
+| `app.client_linkedin_auth`                  | 5, one disconnected | connection status                    |
 | `app.client_posts`                          | 33                 | calendar, analytics, drafts in chat  |
 | `app.assets`                                | 12                 | asset grid, post media               |
 | `app.api_keys`                              | 1                  | Settings, API                        |

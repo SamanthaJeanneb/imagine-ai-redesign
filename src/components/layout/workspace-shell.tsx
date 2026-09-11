@@ -361,7 +361,7 @@ function WorkspaceFrame({
     max: 520,
     edge: "start",
   });
-  // Everyone still connected, to start. Whoever has lapsed needs reconnecting
+  // Everyone still connected, to start. Disconnected profiles need connecting
   // before the agent can post as them, so they wait to be chosen on purpose.
   const [selectedProfileIds, setSelectedProfileIds] = useState<
     readonly string[]

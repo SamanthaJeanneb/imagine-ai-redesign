@@ -63,7 +63,6 @@ const PREFIX = {
 } as const;
 
 const STATUS_NOTE: Record<Exclude<ConnectionStatus, "connected">, string> = {
-  expired: "Expired",
   disconnected: "Not connected",
 };
 

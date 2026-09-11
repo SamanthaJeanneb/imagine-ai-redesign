@@ -11,7 +11,7 @@ import { Icon } from "@/components/ui/icon";
 import { SearchField } from "@/components/ui/search-field";
 import { pressRow, spring } from "@/styles/motion";
 
-export type ConnectionStatus = "connected" | "expired" | "disconnected";
+export type ConnectionStatus = "connected" | "disconnected";
 
 export interface ProfileSummary {
   id: string;
@@ -130,7 +130,6 @@ export function ProfileList({
                   className={cn(
                     "size-1.5 shrink-0 rounded-full",
                     profile.status === "connected" && "bg-success",
-                    profile.status === "expired" && "bg-warning",
                     profile.status === "disconnected" &&
                       "bg-imagine-foreground-faint",
                   )}
