@@ -301,19 +301,31 @@ export function LinkedInPost({
                 style={{ backgroundColor: REACTION_LIKE }}
                 className="z-30 flex size-4 items-center justify-center rounded-full text-white ring-1 ring-imagine-surface"
               >
-                <Icon name="thumbs-up" active className="text-[9px]" />
+                <Icon
+                  name="thumbs-up"
+                  active
+                  style={{ width: 8, height: 8, fontSize: 8 }}
+                />
               </span>
               <span
                 style={{ backgroundColor: REACTION_CELEBRATE }}
                 className="z-20 flex size-4 items-center justify-center rounded-full text-white ring-1 ring-imagine-surface"
               >
-                <Icon name="sun" active className="text-[9px]" />
+                <Icon
+                  name="sun"
+                  active
+                  style={{ width: 8, height: 8, fontSize: 8 }}
+                />
               </span>
               <span
                 style={{ backgroundColor: REACTION_INSIGHTFUL }}
                 className="z-10 flex size-4 items-center justify-center rounded-full text-white ring-1 ring-imagine-surface"
               >
-                <Icon name="lightbulb" active className="text-[9px]" />
+                <Icon
+                  name="lightbulb"
+                  active
+                  style={{ width: 8, height: 8, fontSize: 8 }}
+                />
               </span>
             </span>
             {COUNT.format(stats.reactions)}
