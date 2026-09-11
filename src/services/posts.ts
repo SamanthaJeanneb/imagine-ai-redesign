@@ -48,6 +48,22 @@ export function indexAssetsByPath(): ReadonlyMap<string, Asset> {
   );
 }
 
+export interface NewPostProfile {
+  /** The chip's one-line profile name. */
+  profile: string;
+  author: PostAuthor;
+}
+
+/** Who a post drafted on the calendar goes out as until someone changes it. */
+export function getNewPostProfile(): NewPostProfile {
+  const clients = getDb().app.clients.map(transformClientRow);
+  const client = clients.find((item) => item.isCompany) ?? clients[0];
+  if (client === undefined) {
+    throw new Error("Mock database has no client to post as.");
+  }
+  return { profile: toProfileLabel(client), author: toAuthor(client) };
+}
+
 /** The labels this workspace files posts under. */
 export function getPostLabelOptions(): readonly string[] {
   return getOrganization().post_label_options ?? [];

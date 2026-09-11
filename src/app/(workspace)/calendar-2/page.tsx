@@ -3,8 +3,14 @@ import { getCalendarPosts } from "@/services/calendar";
 
 /** Alternate calendar exploration: post editing stays inside page tabs. */
 export default function CalendarTabsPage() {
-  const { postsByDay, eventsByDay, today, mediaLibrary, labelOptions } =
-    getCalendarPosts();
+  const {
+    postsByDay,
+    eventsByDay,
+    today,
+    mediaLibrary,
+    labelOptions,
+    newPostProfile,
+  } = getCalendarPosts();
 
   return (
     <CalendarPage
@@ -13,6 +19,7 @@ export default function CalendarTabsPage() {
       today={today}
       mediaLibrary={mediaLibrary}
       labelOptions={labelOptions}
+      newPostProfile={newPostProfile}
       editorPresentation="tabs"
     />
   );

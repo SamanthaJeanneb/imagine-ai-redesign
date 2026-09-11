@@ -151,6 +151,7 @@ export function LinkedInPostEditor({
       <textarea
         value={body}
         aria-label="Post body"
+        placeholder="What do you want to share?"
         onChange={(event) => {
           onBodyChange(event.target.value);
         }}

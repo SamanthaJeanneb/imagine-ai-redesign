@@ -3,6 +3,7 @@
 import { cn } from "cn";
 import { motion, useReducedMotion } from "motion/react";
 
+import { AddPostButton } from "@/components/features/calendar/add-post-button";
 import {
   EventChip,
   type EventChipData,
@@ -13,6 +14,7 @@ import {
   type PostChipLines,
   type PostOpenOptions,
 } from "@/components/features/calendar/post-chip";
+import { formatDayShort } from "@/lib/format";
 import { useElementSize } from "@/lib/use-element-size";
 import { fade, stagger } from "@/styles/motion";
 import { spacing, typeScale } from "@/styles/tokens";
@@ -50,6 +52,8 @@ interface CalendarGridProps {
   onOpenPost?: (post: PostChipData, options?: PostOpenOptions) => void;
   onOpenEvent?: (event: EventChipData) => void;
   onSelectDay?: (day: CalendarDay) => void;
+  /** Shows the plus a cell reveals on hover. */
+  onCreatePost?: (date: string) => void;
   /** Shared layout id with the composer preview. */
   layoutId?: string;
   className?: string;
@@ -250,6 +254,7 @@ export function CalendarGrid({
   onOpenPost,
   onOpenEvent,
   onSelectDay,
+  onCreatePost,
   layoutId,
   className,
 }: CalendarGridProps) {
@@ -334,7 +339,7 @@ export function CalendarGrid({
               }
               className={cn(
                 // The `chip` container: chips slim down in a narrow cell.
-                "@container/chip flex flex-col gap-xs bg-imagine-surface p-xs",
+                "group/cell @container/chip relative flex flex-col gap-xs bg-imagine-surface p-xs",
                 // A fitted cell clips rather than pushes its row taller; the
                 // plan above keeps its chips inside, this is the backstop.
                 fit
@@ -345,6 +350,14 @@ export function CalendarGrid({
                   "cursor-pointer transition-colors hover:bg-imagine-surface-raised/50",
               )}
             >
+              {onCreatePost === undefined ? null : (
+                <AddPostButton
+                  when={formatDayShort(day.date)}
+                  onClick={() => {
+                    onCreatePost(day.date);
+                  }}
+                />
+              )}
               <span
                 className={cn(
                   "flex size-5 items-center justify-center rounded-full type-small tabular-nums",

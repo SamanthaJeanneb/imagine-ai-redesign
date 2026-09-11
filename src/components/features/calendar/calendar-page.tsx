@@ -46,6 +46,7 @@ import {
 } from "@/lib/calendar";
 import { formatDayShort, formatWeekdayLong } from "@/lib/format";
 import { MOBILE_QUERY, useMediaQuery } from "@/lib/use-media-query";
+import type { NewPostProfile } from "@/services/posts";
 import { fade } from "@/styles/motion";
 import { cn } from "cn";
 
@@ -60,6 +61,9 @@ interface CalendarPageProps {
   mediaLibrary?: readonly AssetTileData[];
   /** The labels a post can be filed under. */
   labelOptions?: readonly string[];
+  /** Who a post drafted from an empty slot goes out as. Without it, the
+   * calendar has nothing to create posts as, and the plus stays hidden. */
+  newPostProfile?: NewPostProfile;
 }
 
 const POST_SEARCH_ICON = {
@@ -204,6 +208,7 @@ export function CalendarPage({
   editorPresentation = "dialog",
   mediaLibrary,
   labelOptions,
+  newPostProfile,
 }: CalendarPageProps) {
   const router = useRouter();
   const chat = useChat();
@@ -216,21 +221,25 @@ export function CalendarPage({
   const [openPostIds, setOpenPostIds] = useState<readonly string[]>([]);
   const [edits, setEdits] = useState<Record<string, PostEditorValue>>({});
   const [deletedPostIds, setDeletedPostIds] = useState<readonly string[]>([]);
+  const [drafted, setDrafted] = useState<
+    readonly { post: PostChipData; date: string }[]
+  >([]);
 
   // This mock editor keeps changes for the life of the calendar page,
   // including moving a post to another day.
   const visiblePostsByDay: Record<string, readonly PostChipData[]> = {};
-  for (const [date, posts] of Object.entries(postsByDay)) {
-    for (const original of posts) {
-      if (deletedPostIds.includes(original.id)) continue;
-      const edit = edits[original.id];
-      const post = edit?.post ?? original;
-      const postDate = edit?.date ?? date;
-      visiblePostsByDay[postDate] = [
-        ...(visiblePostsByDay[postDate] ?? []),
-        post,
-      ];
-    }
+  const dated: readonly { post: PostChipData; date: string }[] = [
+    ...Object.entries(postsByDay).flatMap(([date, posts]) =>
+      posts.map((post) => ({ post, date })),
+    ),
+    ...drafted,
+  ];
+  for (const original of dated) {
+    if (deletedPostIds.includes(original.post.id)) continue;
+    const edit = edits[original.post.id];
+    const post = edit?.post ?? original.post;
+    const date = edit?.date ?? original.date;
+    visiblePostsByDay[date] = [...(visiblePostsByDay[date] ?? []), post];
   }
 
   const selected = chat.attached
@@ -254,6 +263,22 @@ export function CalendarPage({
     }
     setEditingPostId(post.id);
     setActiveEditorId(post.id);
+  }
+
+  /** The plus on an empty slot: a blank draft, opened ready to write. */
+  function createPost(date: string, time = "09:00") {
+    if (newPostProfile === undefined) return;
+    const post: PostChipData = {
+      id: `new_${String(Date.now())}`,
+      title: "Untitled post",
+      time,
+      profile: newPostProfile.profile,
+      status: "draft",
+      preview: { author: newPostProfile.author, body: "" },
+    };
+    setDrafted((current) => [...current, { post, date }]);
+    setAnchor(date);
+    openPost(post);
   }
 
   function savePost(value: PostEditorValue) {
@@ -392,6 +417,9 @@ export function CalendarPage({
             layoutId={PREVIEW_LAYOUT_ID.calendar}
             onOpenPost={openPost}
             onOpenEvent={draftFromEvent}
+            {...(newPostProfile === undefined
+              ? {}
+              : { onCreatePost: createPost })}
             {...(selected === undefined ? {} : { selectedPostId: selected })}
             className="h-full min-w-[36rem]"
           />
@@ -402,6 +430,9 @@ export function CalendarPage({
             days={range.days}
             onOpenPost={openPost}
             onOpenEvent={draftFromEvent}
+            {...(newPostProfile === undefined
+              ? {}
+              : { onCreatePost: createPost })}
             {...(selected === undefined ? {} : { selectedPostId: selected })}
           />
         </div>

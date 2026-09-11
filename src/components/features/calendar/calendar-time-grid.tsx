@@ -3,6 +3,7 @@
 import { cn } from "cn";
 import { motion, useReducedMotion } from "motion/react";
 
+import { AddPostButton } from "@/components/features/calendar/add-post-button";
 import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
 import {
   EventChip,
@@ -13,7 +14,11 @@ import {
   type PostChipData,
   type PostOpenOptions,
 } from "@/components/features/calendar/post-chip";
-import { formatWeekdayLong, formatWeekdayShort } from "@/lib/format";
+import {
+  formatDayShort,
+  formatWeekdayLong,
+  formatWeekdayShort,
+} from "@/lib/format";
 import { fade, stagger } from "@/styles/motion";
 
 interface CalendarTimeGridProps {
@@ -22,6 +27,8 @@ interface CalendarTimeGridProps {
   selectedPostId?: string;
   onOpenPost?: (post: PostChipData, options?: PostOpenOptions) => void;
   onOpenEvent?: (event: EventChipData) => void;
+  /** Shows the plus an hour cell reveals on hover. */
+  onCreatePost?: (date: string, time: string) => void;
   className?: string;
 }
 
@@ -71,6 +78,7 @@ export function CalendarTimeGrid({
   selectedPostId,
   onOpenPost,
   onOpenEvent,
+  onCreatePost,
   className,
 }: CalendarTimeGridProps) {
   const reduceMotion = useReducedMotion();
@@ -167,8 +175,19 @@ export function CalendarTimeGrid({
             <div
               key={day.date}
               role="gridcell"
-              className="@container/chip flex min-h-12 flex-col gap-xs bg-imagine-surface p-xs"
+              className="group/cell @container/chip relative flex min-h-12 flex-col gap-xs bg-imagine-surface p-xs"
             >
+              {onCreatePost === undefined ? null : (
+                <AddPostButton
+                  when={`${formatDayShort(day.date)} at ${String(hour)}:00`}
+                  onClick={() => {
+                    onCreatePost(
+                      day.date,
+                      `${String(hour).padStart(2, "0")}:00`,
+                    );
+                  }}
+                />
+              )}
               {(day.events ?? [])
                 .filter((event) => !event.allDay && toHour(event.time) === hour)
                 .map((event) => (

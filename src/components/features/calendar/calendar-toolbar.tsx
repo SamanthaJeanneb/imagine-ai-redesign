@@ -55,7 +55,7 @@ export function CalendarToolbar({
         className,
       )}
     >
-      <div className="flex min-w-0 items-center gap-xs">
+      <div className="flex min-w-0 items-center gap-m">
         <div className="flex items-center rounded-control bg-imagine-surface-raised p-xxs">
           <Button
             size="icon-xs"

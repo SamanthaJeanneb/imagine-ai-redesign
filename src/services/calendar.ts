@@ -22,8 +22,10 @@ import {
 import { getDb, getNow } from "@/mocks/db";
 import {
   getAssetLibrary,
+  getNewPostProfile,
   getPostLabelOptions,
   indexAssetsByPath,
+  type NewPostProfile,
   indexClients,
   scheduledPosts,
   toPostChip,
@@ -49,6 +51,8 @@ export interface CalendarPosts {
   mediaLibrary: readonly AssetTileData[];
   /** The labels a post can be filed under. */
   labelOptions: readonly string[];
+  /** Who a post drafted from an empty slot goes out as. */
+  newPostProfile: NewPostProfile;
 }
 
 /** Chips keyed by date. Drafts have no day, so they never land in here. */
@@ -111,6 +115,7 @@ export function getCalendarPosts(): CalendarPosts {
     today: toDateKey(getNow()),
     mediaLibrary: getAssetLibrary(),
     labelOptions: getPostLabelOptions(),
+    newPostProfile: getNewPostProfile(),
   };
 }
 
