@@ -38,31 +38,33 @@ export function LinkedInStep({ accountName, accountNote }: LinkedInStepProps) {
       description="The agent drafts as you and publishes only what you approve. Connect now to post from day one, or skip and do it later."
       actions={
         <>
-          <Button size="lg" disabled={pending} onClick={finish}>
-            {pending ? (
-              <Spinner size="s" data-icon="inline-start" />
-            ) : (
-              <Icon name="linkedin-in" data-icon="inline-start" />
-            )}
-            Connect LinkedIn
-          </Button>
-          <Button
-            variant="link"
-            className="text-imagine-foreground-muted"
-            disabled={pending}
-            onClick={finish}
-          >
-            Skip and do this later
-          </Button>
+          <div className="flex items-center gap-l">
+            <Button size="lg" disabled={pending} onClick={finish}>
+              {pending ? (
+                <Spinner size="s" data-icon="inline-start" />
+              ) : (
+                <Icon name="linkedin-in" data-icon="inline-start" />
+              )}
+              Connect LinkedIn
+            </Button>
+            <Button
+              variant="link"
+              className="text-imagine-foreground-muted"
+              disabled={pending}
+              onClick={() => {
+                router.push("/onboarding-2/team");
+              }}
+            >
+              Back
+            </Button>
+          </div>
           <Button
             variant="link"
             className="ml-auto text-imagine-foreground-muted"
             disabled={pending}
-            onClick={() => {
-              router.push("/onboarding-2/team");
-            }}
+            onClick={finish}
           >
-            Back
+            Skip for now
           </Button>
         </>
       }

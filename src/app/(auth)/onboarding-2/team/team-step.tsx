@@ -33,24 +33,26 @@ export function TeamStep({ inviteUrl, owner }: TeamStepProps) {
       description="Add the people who write, review, or approve posts. You can always invite more from settings."
       actions={
         <>
-          <Button size="lg" onClick={next}>
-            Continue
-          </Button>
-          <Button
-            variant="link"
-            className="text-imagine-foreground-muted"
-            onClick={next}
-          >
-            Skip, invite people later
-          </Button>
+          <div className="flex items-center gap-l">
+            <Button size="lg" onClick={next}>
+              Continue
+            </Button>
+            <Button
+              variant="link"
+              className="text-imagine-foreground-muted"
+              onClick={() => {
+                router.push("/onboarding-2/organization");
+              }}
+            >
+              Back
+            </Button>
+          </div>
           <Button
             variant="link"
             className="ml-auto text-imagine-foreground-muted"
-            onClick={() => {
-              router.push("/onboarding-2/organization");
-            }}
+            onClick={next}
           >
-            Back
+            Skip for now
           </Button>
         </>
       }

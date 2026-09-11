@@ -11,7 +11,10 @@ interface StepFrameProps {
   description: string;
   /** The form or panel for this step. */
   children: ReactNode;
-  /** Continue, Back, Skip. Pinned to the foot of the column. */
+  /**
+   * Pinned to the foot of the column. The primary action and Back go
+   * together at the left; a skip link takes `ml-auto` for the right edge.
+   */
   actions: ReactNode;
   className?: string;
 }
