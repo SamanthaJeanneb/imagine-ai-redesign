@@ -141,7 +141,8 @@ export function EditorTabStrip({
         ) : null}
       </AnimatePresence>
       {/* The page. Sits above the tabs so it covers the active tab's bottom
-          shadow, leaving the shadow on its sides and top. */}
+          shadow, leaving the shadow on its sides and top. Padding keeps the
+          calendar toolbar (and anything else) off the seam. */}
       <div className="relative z-10 min-h-0 flex-1 overflow-hidden rounded-panel bg-imagine-surface">
         <motion.div
           key={activeId}
@@ -151,7 +152,10 @@ export function EditorTabStrip({
           }}
           animate={{ opacity: 1, x: 0 }}
           transition={fade.fast}
-          className="absolute inset-0 flex min-h-0"
+          className={cn(
+            "absolute inset-0 flex min-h-0",
+            tabs.length > 0 && "pt-xl",
+          )}
         >
           {children}
         </motion.div>
