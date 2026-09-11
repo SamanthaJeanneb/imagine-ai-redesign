@@ -25,11 +25,15 @@ export function OnboardingRail() {
   const current = STEPS.findIndex((step) => step.href === pathname);
 
   return (
-    // Same top inset as the step surface, so the first step sits on the same
-    // line as the step's heading now that no mark stands above it. The width
+    // Logo anchors the top; the stepper sits below with room to breathe. Width
     // follows the viewport: never narrower than the labels need on one line,
     // and never a sliver beside a wide screen's surface.
-    <div className="hidden w-[clamp(16rem,18vw,20rem)] shrink-0 flex-col px-xl pt-section pb-xxl md:flex">
+    <div className="hidden w-[clamp(16rem,18vw,20rem)] shrink-0 flex-col gap-xxxl px-xl pt-section pb-xxl md:flex">
+      <span
+        role="img"
+        aria-label="Imagine AI"
+        className="block w-28 aspect-[138/43] bg-imagine-foreground mask-[url(/brand/imagine-logo.png)] mask-contain mask-no-repeat mask-center"
+      />
       <Stepper
         steps={STEPS}
         current={current === -1 ? 1 : current}
