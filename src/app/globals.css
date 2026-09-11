@@ -325,6 +325,19 @@
 }
 
 /*
+ * imagine-wordmark: the thinker and "Imagine" together, as a mask so it takes
+ * `currentColor` (pair with `bg-current`). Set the width; height follows.
+ */
+@utility imagine-wordmark {
+  display: block;
+  aspect-ratio: 138 / 43;
+  mask-image: url("/brand/imagine-logo.png");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: left center;
+}
+
+/*
  * logo-shimmer: the wordmark as a mask with a light band sweeping through it.
  * Used by `LogoLoader` for page loads. Set the width; the aspect is the logo's.
  */

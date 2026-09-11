@@ -34,6 +34,26 @@ export function isLocalBrand(name: string): name is LocalBrandName {
   return name === "imagine" || Object.hasOwn(BRAND_PATHS, name);
 }
 
+/**
+ * The full Imagine wordmark in `currentColor`. Give it a width utility; the
+ * height follows the logo's aspect. Labelled, so it can stand as the name.
+ */
+export function Wordmark({
+  className,
+  label = "Imagine AI",
+}: {
+  className?: string;
+  label?: string;
+}) {
+  return (
+    <span
+      role="img"
+      aria-label={label}
+      className={cn("imagine-wordmark bg-current", className)}
+    />
+  );
+}
+
 export function BrandMark({
   name,
   className,

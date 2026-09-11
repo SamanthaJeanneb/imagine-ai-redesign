@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 
 import { Stepper } from "@/components/features/onboarding/stepper";
-import { BrandMark } from "@/components/ui/brand-mark";
+import { Wordmark } from "@/components/ui/brand-mark";
 import { getOwner } from "@/services/onboarding";
 
 /**
@@ -33,12 +33,7 @@ export function OnboardingRail() {
     // a sliver beside a wide screen's surface.
     <div className="hidden w-[clamp(16rem,22vw,20rem)] shrink-0 flex-col justify-between self-stretch px-xl pt-section pb-xxl md:flex">
       <div className="flex flex-col gap-section">
-        <div className="flex items-center gap-s">
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-control bg-imagine-foreground">
-            <BrandMark name="imagine" className="size-4 text-imagine-surface" />
-          </span>
-          <span className="type-body font-semibold">Imagine AI</span>
-        </div>
+        <Wordmark className="w-28 text-imagine-foreground" />
         <Stepper
           steps={STEPS}
           current={current === -1 ? 1 : current}

@@ -8,6 +8,7 @@ import {
   LinkedInReactionCluster,
 } from "@/components/features/agent/linkedin-reaction";
 import { Badge } from "@/components/ui/badge";
+import { BrandMark, Wordmark } from "@/components/ui/brand-mark";
 import { Button } from "@/components/ui/button";
 import { Icon, ICON_NAMES } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -284,6 +285,20 @@ export function Kit({ radiusScale = "default" }: KitProps) {
                 </span>
               </div>
             ))}
+          </div>
+        </Section>
+
+        <Section title="Brand: wordmark and mark, in currentColor">
+          <div className="flex flex-wrap items-center gap-xxl">
+            <Wordmark className="w-28" />
+            <Wordmark className="w-18 text-imagine-foreground-muted" />
+            <BrandMark name="imagine" className="size-8" />
+            <span className="flex size-8 items-center justify-center rounded-control bg-imagine-foreground">
+              <BrandMark
+                name="imagine"
+                className="size-4 text-imagine-surface"
+              />
+            </span>
           </div>
         </Section>
 
