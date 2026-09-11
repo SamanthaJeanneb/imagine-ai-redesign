@@ -440,20 +440,26 @@ export function CalendarPage({
     );
 
   if (editorPresentation === "tabs") {
-    // Until a post opens, this route is the same full-size calendar. The tab
-    // strip is editing chrome, not permanent calendar navigation.
-    if (editorValue === undefined) return calendarContent;
-
-    const tabs: readonly EditorTab[] = [
-      { id: "calendar", label: "Calendar", icon: "calendar" },
-      {
-        id: editorValue.post.id,
-        label: editorValue.post.title,
-        icon: editorValue.post.status === "published" ? "linkedin-in" : "pen",
-        closable: true,
-      },
-    ];
-    const activeId = editingPostId === null ? "calendar" : activeEditorId;
+    // Keep one stable content frame so opening a post does not remount the
+    // entire calendar before the editor enters. The chrome reveals only when
+    // there is a post tab.
+    const tabs: readonly EditorTab[] =
+      editorValue === undefined
+        ? []
+        : [
+            { id: "calendar", label: "Calendar", icon: "calendar" },
+            {
+              id: editorValue.post.id,
+              label: editorValue.post.title,
+              icon:
+                editorValue.post.status === "published" ? "linkedin-in" : "pen",
+              closable: true,
+            },
+          ];
+    const activeId =
+      editorValue === undefined || editingPostId === null
+        ? "calendar"
+        : activeEditorId;
 
     return (
       <EditorTabStrip
