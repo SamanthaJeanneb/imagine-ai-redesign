@@ -186,12 +186,9 @@ export function PreviewPane() {
   return (
     <aside
       aria-label="Workspace preview"
-      className="hidden min-w-0 flex-col overflow-hidden pt-xxxl pl-xxl lg:sticky lg:top-0 lg:flex lg:h-svh xl:pl-xxxl 2xl:items-center 2xl:justify-center 2xl:px-section 2xl:py-section"
+      className="hidden min-w-0 flex-col overflow-hidden bg-imagine-secondary-soft pt-section pl-xxl lg:sticky lg:top-0 lg:flex lg:h-svh xl:pl-xxxl 2xl:items-center 2xl:justify-center 2xl:px-section 2xl:py-section"
     >
-      <div className="flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-l 2xl:max-h-[60rem] 2xl:max-w-[80rem]">
-        <p className="type-small text-imagine-foreground-muted">
-          This is how it will look
-        </p>
+      <div className="flex min-h-0 w-full max-w-5xl flex-1 flex-col 2xl:max-h-[60rem] 2xl:max-w-[80rem]">
         <WorkspaceMock
           orgName={orgName}
           orgLogoUrl={orgLogoUrl}

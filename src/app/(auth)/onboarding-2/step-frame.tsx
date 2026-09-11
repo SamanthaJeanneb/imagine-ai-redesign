@@ -1,6 +1,8 @@
 import { cn } from "cn";
 import type { ReactNode } from "react";
 
+import { Progress } from "@/components/ui/progress";
+
 interface StepFrameProps {
   /** 1-based, counting sign-in as the first step. */
   step: number;
@@ -15,9 +17,9 @@ interface StepFrameProps {
 }
 
 /**
- * One setup step: an accent eyebrow with the count, the question as the
- * title, a line of context, the step's own content, and the actions pinned
- * to the bottom of the column so they sit in the same place on every step.
+ * One setup step: the progress hairline, the question as the title, a line
+ * of context, the step's own content, and the actions pinned to the bottom
+ * of the column so they sit in the same place on every step.
  */
 export function StepFrame({
   step,
@@ -37,10 +39,12 @@ export function StepFrame({
       )}
     >
       <div className="flex flex-col gap-xxl">
-        <div className="flex flex-col gap-m">
-          <p className="type-micro font-semibold tracking-wider text-imagine-secondary">
-            Step {step} of {total}
-          </p>
+        <div className="flex flex-col gap-xl">
+          <Progress
+            value={total > 0 ? step / total : 0}
+            aria-label={`Step ${String(step)} of ${String(total)}`}
+            className="w-40"
+          />
           <div className="flex flex-col gap-s">
             <h1 className="type-display text-balance">{title}</h1>
             <p className="type-body text-imagine-foreground-muted">
