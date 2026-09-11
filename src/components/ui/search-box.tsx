@@ -32,6 +32,8 @@ interface SearchBoxProps {
   listLabel?: string;
   /** Results beyond this many are counted, not listed. */
   limit?: number;
+  /** Focus the field when it mounts, for a search that opens in a popover. */
+  autoFocus?: boolean;
   className?: string;
 }
 
@@ -44,6 +46,7 @@ export function SearchBox({
   emptyLabel = "Nothing matches",
   listLabel = "Search results",
   limit = 8,
+  autoFocus = false,
   className,
 }: SearchBoxProps) {
   const listId = useId();
@@ -75,6 +78,7 @@ export function SearchBox({
           setDismissed(false);
         }}
         {...(placeholder === undefined ? {} : { placeholder })}
+        {...(autoFocus ? { autoFocus: true } : {})}
         role="combobox"
         aria-expanded={open}
         aria-controls={listId}
