@@ -291,7 +291,7 @@ export function LinkedInPost({
                 }
                 className="inline-flex items-center gap-xs type-small font-medium text-imagine-foreground-muted tabular-nums"
               >
-                <Icon name={action.icon} size="l" />
+                <Icon name={action.icon} size="m" />
                 {count === undefined ? null : COUNT.format(count)}
               </span>
             );
@@ -315,7 +315,7 @@ export function LinkedInPost({
           className="flex items-center justify-between gap-m border-t border-imagine-border px-l py-s"
         >
           <span className="inline-flex items-center gap-xs type-small font-semibold tabular-nums">
-            <Icon name="chart-simple" size="l" />
+            <Icon name="chart-simple" size="m" />
             {COUNT.format(stats.impressions)} impressions
           </span>
           <Link
