@@ -96,7 +96,10 @@ export function MarkdownEditor({
   return (
     <div
       data-slot="markdown-editor"
-      className={cn("flex w-full max-w-2xl flex-col gap-xl", className)}
+      className={cn(
+        "mx-auto flex w-full max-w-2xl flex-col gap-xl",
+        className,
+      )}
     >
       <header className="flex items-start justify-between gap-l">
         <h1 className="min-w-0 truncate type-title">{meta.title}</h1>

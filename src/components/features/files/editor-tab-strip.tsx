@@ -163,7 +163,7 @@ export function EditorTabStrip({
           animate={{ opacity: 1, x: 0 }}
           transition={fade.fast}
           className={cn(
-            "absolute inset-0 flex min-h-0",
+            "absolute inset-0 flex min-h-0 w-full min-w-0 flex-col",
             tabs.length > 0 && "pt-xl",
           )}
         >

@@ -1387,6 +1387,7 @@ export function FilesLibrary({
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -8 }}
                       transition={fade.fast}
+                      className="w-full"
                     >
                       <MarkdownEditor
                         meta={openDocument.meta}
@@ -1407,7 +1408,7 @@ export function FilesLibrary({
                               values[openDocument.id] ?? openDocument.value,
                           }));
                         }}
-                        className="max-w-3xl"
+                        className="mx-auto max-w-3xl"
                       />
                     </motion.div>
                   </AnimatePresence>

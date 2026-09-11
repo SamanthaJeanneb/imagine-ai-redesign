@@ -598,7 +598,7 @@ function WorkspaceFrame({
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -8 }}
                 transition={fade.fast}
-                className="h-full overflow-y-auto"
+                className="h-full w-full min-w-0 overflow-y-auto"
               >
                 <MarkdownEditor
                   meta={activeDocument.meta}
