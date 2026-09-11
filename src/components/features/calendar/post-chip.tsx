@@ -159,14 +159,9 @@ export function PostChip({
         <AvatarImage src={author.avatarUrl} alt="" />
       </Avatar>
     );
+  // In review has no glyph: its color says so.
   const statusIcon =
-    post.status === "in_review" ? (
-      <Icon
-        name="eye"
-        size="s"
-        className={cn("shrink-0 @max-[6rem]/chip:hidden", muted)}
-      />
-    ) : post.status === "published" ? (
+    post.status === "published" ? (
       <Icon
         name="check"
         size="s"

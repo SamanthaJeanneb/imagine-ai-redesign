@@ -49,8 +49,8 @@ const EVENT_STYLE: CSSProperties & {
 
 /**
  * A connected-calendar event inside a cell. Quieter than a post: charcoal
- * wash, a calendar mark, the title, and the time. Hovering it is how you
- * draft a post about what is coming up.
+ * wash, the title, and the time. Hovering it is how you draft a post about
+ * what is coming up.
  */
 export function EventChip({
   event,
@@ -85,15 +85,8 @@ export function EventChip({
         aria-hidden="true"
         className="absolute inset-y-0 left-0 w-1.5 bg-[var(--chip-color)]"
       />
-      <span className="flex min-w-0 items-center gap-xs">
-        <Icon
-          name="calendar"
-          size="s"
-          className="shrink-0 text-imagine-foreground-muted"
-        />
-        <span className="min-w-0 flex-1 truncate type-caption font-semibold">
-          {event.title}
-        </span>
+      <span className="min-w-0 truncate type-caption font-semibold">
+        {event.title}
       </span>
       {dense || line ? null : (
         <span className="type-caption text-imagine-foreground-muted tabular-nums">
@@ -125,21 +118,16 @@ function EventPreview({
 }) {
   return (
     <div className="flex flex-col gap-m">
-      <div className="flex items-start gap-m">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-control bg-imagine-surface-raised text-imagine-foreground-muted">
-          <Icon name="calendar" size="l" />
+      <div className="flex min-w-0 flex-col gap-xxs">
+        <span className="type-body font-semibold">{event.title}</span>
+        <span className="type-small text-imagine-foreground-muted">
+          {event.whenLabel}
         </span>
-        <div className="flex min-w-0 flex-1 flex-col gap-xxs">
-          <span className="type-body font-semibold">{event.title}</span>
+        {event.location === undefined ? null : (
           <span className="type-small text-imagine-foreground-muted">
-            {event.whenLabel}
+            {event.location}
           </span>
-          {event.location === undefined ? null : (
-            <span className="type-small text-imagine-foreground-muted">
-              {event.location}
-            </span>
-          )}
-        </div>
+        )}
       </div>
       {event.notes === undefined ? null : (
         <p className="type-small text-imagine-foreground-muted">

@@ -17,6 +17,7 @@ import {
 } from "@/components/features/agent/composer";
 import { AssetPicker } from "@/components/features/agent/asset-picker";
 import {
+  LinkedInPost,
   LinkedInPostDraft,
   type PostAuthor,
 } from "@/components/features/agent/linkedin-post-draft";
@@ -2161,11 +2162,22 @@ export function PostDraftDemo() {
         />
       </Demo>
       <Demo label="Published, with analytics">
-        <LinkedInPostDraft
+        {/* The feed's own cut: folded behind "…more", one row of actions
+            with counts, the reactions it drew, and the impressions line. */}
+        <LinkedInPost
           author={AUTHOR_RAVI}
           body={POST_HIRING.preview?.body ?? ""}
           media={ASSETS.slice(2, 3)}
-          stats={POST_HIRING.preview?.stats}
+          stats={{
+            reactions: 192,
+            comments: 17,
+            reposts: 3,
+            impressions: 15714,
+          }}
+          timestamp="1mo"
+          edited
+          you
+          className="max-w-lg"
         />
       </Demo>
       <Demo label={editing ? "Editing" : "Text only"}>

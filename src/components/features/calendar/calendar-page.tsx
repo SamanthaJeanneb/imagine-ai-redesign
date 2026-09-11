@@ -47,7 +47,7 @@ interface CalendarPageProps {
 
 const POST_SEARCH_ICON = {
   draft: "pen",
-  in_review: "eye",
+  in_review: "clock-rotate-left",
   scheduled: "clock",
   published: "circle-check",
   failed: "triangle-exclamation",
