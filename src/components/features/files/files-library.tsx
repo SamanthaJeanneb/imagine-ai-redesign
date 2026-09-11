@@ -356,8 +356,9 @@ function NameDialog({
  * the tree and the way to add things; the browser on the right shows one
  * location as folders, documents, and images, with a breadcrumb that always
  * says where you are and lets you switch libraries or folders in place.
- * Documents open in an editor sheet that slides over the browser from the
- * right, framed like a page of its own; the tree stays live to switch files.
+ * Documents open in an editor sheet over the browser — from the bottom on
+ * a phone, from the right on a wider frame, framed like a page of its own;
+ * the tree stays live to switch files.
  * Images open in a preview. Deleting is immediate, with an undo on the toast.
  */
 export function FilesLibrary({
@@ -1274,10 +1275,11 @@ export function FilesLibrary({
           </div>
         </section>
 
-        {/* Editor: a sheet that slides in over the browser from the right,
-          framed the way a page is (the surface with rounded left corners on
-          a dimmed backdrop). The tree stays reachable to switch documents;
-          the scrim, Escape, and the close button all put the browser back. */}
+        {/* Editor: a sheet over the browser. On a phone it rises from the
+          bottom; on a wider frame it slides in from the right, framed the
+          way a page is (rounded left corners on a dimmed backdrop). The
+          tree stays reachable to switch documents; the scrim, Escape, and
+          the close button all put the browser back. */}
         <AnimatePresence initial={false}>
           {openDocument === undefined ? null : (
             <motion.div
@@ -1287,22 +1289,40 @@ export function FilesLibrary({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={fade.base}
-              className="absolute inset-0 z-20 flex justify-end bg-imagine-foreground/10"
+              className="absolute inset-0 z-20 flex bg-imagine-foreground/10 max-md:items-end md:justify-end"
               onClick={closeEditor}
             >
               <motion.div
                 role="dialog"
                 aria-label={openDocument.meta.title}
                 data-slot="files-editor"
-                initial={reduceMotion ? { opacity: 0 } : { x: "100%" }}
-                animate={reduceMotion ? { opacity: 1 } : { x: 0 }}
-                exit={reduceMotion ? { opacity: 0 } : { x: "100%" }}
+                initial={
+                  reduceMotion
+                    ? { opacity: 0 }
+                    : isMobile
+                      ? { y: "100%" }
+                      : { x: "100%" }
+                }
+                animate={
+                  reduceMotion
+                    ? { opacity: 1 }
+                    : isMobile
+                      ? { y: 0 }
+                      : { x: 0 }
+                }
+                exit={
+                  reduceMotion
+                    ? { opacity: 0 }
+                    : isMobile
+                      ? { y: "100%" }
+                      : { x: "100%" }
+                }
                 transition={reduceMotion ? fade.base : spring.soft}
                 style={isMobile ? undefined : { width: editorResize.width }}
                 className={cn(
                   "relative flex h-full max-w-full flex-col overflow-hidden bg-imagine-surface shadow-raised",
+                  "max-md:h-[calc(100%-var(--spacing-l))] max-md:w-full max-md:rounded-t-surface",
                   "md:rounded-l-surface",
-                  "max-md:w-full",
                 )}
                 onClick={(event) => {
                   event.stopPropagation();
@@ -1315,9 +1335,15 @@ export function FilesLibrary({
                   label="Resize editor"
                   className="max-md:hidden"
                 />
+                <div
+                  aria-hidden
+                  className="flex shrink-0 justify-center pt-s md:hidden"
+                >
+                  <span className="h-1 w-10 rounded-full bg-imagine-border" />
+                </div>
                 {/* Where the document lives, and the way out. Stays put while
                   the page below scrolls. */}
-                <div className="flex shrink-0 items-center gap-s px-l pt-l md:px-xxl md:pt-xl">
+                <div className="flex shrink-0 items-center gap-s px-l pt-s md:px-xxl md:pt-xl">
                   <Icon
                     name="file-lines"
                     size="s"
