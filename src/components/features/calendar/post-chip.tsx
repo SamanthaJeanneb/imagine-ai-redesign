@@ -20,6 +20,25 @@ import { hoverLift, press } from "@/styles/motion";
 export type PostChipStatus =
   "draft" | "in_review" | "scheduled" | "published" | "failed";
 
+export interface PostEngagementPerson {
+  id: string;
+  name: string;
+  headline: string;
+  avatarUrl?: string;
+}
+
+export interface PostEngagementComment {
+  id: string;
+  author: PostEngagementPerson;
+  body: string;
+  when: string;
+}
+
+export interface PostEngagement {
+  reactors: readonly (PostEngagementPerson & { reaction: string })[];
+  comments: readonly PostEngagementComment[];
+}
+
 export interface PostChipData {
   id: string;
   /** The first line of the post, for search results, rows, and labels. */
@@ -33,6 +52,8 @@ export interface PostChipData {
   label?: string;
   /** When present, hovering the chip previews the post as it will appear. */
   preview?: LinkedInPostContent;
+  /** Captured LinkedIn people and comments, available after publishing. */
+  engagement?: PostEngagement;
 }
 
 export type PostChipLines = 1 | 2 | 3 | 4;

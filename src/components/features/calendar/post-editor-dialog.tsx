@@ -9,6 +9,7 @@ import {
   type PostChipStatus,
   postChipStyle,
 } from "@/components/features/calendar/post-chip";
+import { LinkedInPostEditor } from "@/components/features/calendar/linkedin-post-detail";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -181,6 +182,20 @@ export function PostEditorDialog({
                 });
               }}
               className="min-h-64 resize-none type-body"
+            />
+          ) : presentation === "inline" ? (
+            <LinkedInPostEditor
+              post={draft.post}
+              body={body}
+              onBodyChange={(nextBody) => {
+                updatePost({
+                  title: titleFromBody(nextBody),
+                  preview: {
+                    ...preview,
+                    body: nextBody,
+                  },
+                });
+              }}
             />
           ) : (
             <LinkedInPost

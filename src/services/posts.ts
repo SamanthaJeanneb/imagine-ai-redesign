@@ -2,13 +2,22 @@ import type {
   LinkedInPostContent,
   PostAuthor,
 } from "@/components/features/agent/linkedin-post-draft";
-import type { PostChipData } from "@/components/features/calendar/post-chip";
+import type {
+  PostChipData,
+  PostEngagement,
+  PostEngagementPerson,
+} from "@/components/features/calendar/post-chip";
 import type { AssetTileData } from "@/components/features/files/asset-tile";
 import { type Asset, getAssetType, transformAssetRow } from "@/entities/asset";
 import { type Client, transformClientRow } from "@/entities/client";
+import {
+  transformEngagementCommentRow,
+  transformEngagementProfileRow,
+  transformEngagementReactionRow,
+} from "@/entities/engagement";
 import { type Post, toChipStatus, transformPostRow } from "@/entities/post";
-import { formatTime, toTitle } from "@/lib/format";
-import { getDb } from "@/mocks/db";
+import { formatRelative, formatTime, toTitle } from "@/lib/format";
+import { getDb, getNow } from "@/mocks/db";
 
 /**
  * Shared mapping from posts, clients, and assets onto the shapes the post
@@ -111,6 +120,54 @@ function toPostLabel(post: Post): Pick<PostChipData, "label"> {
   return { label: post.postLabel };
 }
 
+function toEngagementPerson(
+  profile: ReturnType<typeof transformEngagementProfileRow>,
+): PostEngagementPerson {
+  return {
+    id: profile.id,
+    name: profile.name,
+    headline: profile.headline,
+    ...(profile.avatarUrl === null ? {} : { avatarUrl: profile.avatarUrl }),
+  };
+}
+
+function toPostEngagement(postId: string): PostEngagement {
+  const db = getDb().app;
+  const profiles = new Map(
+    db.engagement_profiles.map((row) => {
+      const profile = transformEngagementProfileRow(row);
+      return [profile.id, profile];
+    }),
+  );
+  const now = getNow();
+
+  const reactors = db.engagement_reactions.flatMap((row) => {
+    const reaction = transformEngagementReactionRow(row);
+    if (reaction.postId !== postId) return [];
+    const profile = profiles.get(reaction.profileId);
+    return profile === undefined
+      ? []
+      : [{ ...toEngagementPerson(profile), reaction: reaction.type }];
+  });
+  const comments = db.engagement_comments.flatMap((row) => {
+    const comment = transformEngagementCommentRow(row);
+    if (comment.postId !== postId) return [];
+    const profile = profiles.get(comment.profileId);
+    return profile === undefined
+      ? []
+      : [
+          {
+            id: comment.id,
+            author: toEngagementPerson(profile),
+            body: comment.text,
+            when: formatRelative(comment.at, now),
+          },
+        ];
+  });
+
+  return { reactors, comments };
+}
+
 export function toPostMedia(
   post: Post,
   assets: ReadonlyMap<string, Asset>,
@@ -158,6 +215,9 @@ export function toPostChip(
     status: toChipStatus(post.status),
     ...toPostLabel(post),
     preview: toPostContent(post, client, assets),
+    ...(post.status === "published"
+      ? { engagement: toPostEngagement(post.id) }
+      : {}),
   };
 }
 

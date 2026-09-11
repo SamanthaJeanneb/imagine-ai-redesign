@@ -445,10 +445,11 @@ export function CalendarPage({
     if (editorValue === undefined) return calendarContent;
 
     const tabs: readonly EditorTab[] = [
-      { id: "calendar", label: "Calendar" },
+      { id: "calendar", label: "Calendar", icon: "calendar" },
       {
         id: editorValue.post.id,
         label: editorValue.post.title,
+        icon: editorValue.post.status === "published" ? "linkedin-in" : "pen",
         closable: true,
       },
     ];

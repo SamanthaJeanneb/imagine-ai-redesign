@@ -4,12 +4,13 @@ import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
 import { useId, type ReactNode } from "react";
 
-import { Icon } from "@/components/ui/icon";
+import { Icon, type IconName } from "@/components/ui/icon";
 import { spring } from "@/styles/motion";
 
 export interface EditorTab {
   id: string;
   label: string;
+  icon?: IconName;
   /** Tabs the user opened can be closed; the thread tab cannot. */
   closable?: boolean;
   dirty?: boolean;
@@ -95,6 +96,9 @@ export function EditorTabStrip({
                     }}
                     className="flex items-center gap-xs type-small font-medium whitespace-nowrap outline-none focus-visible:underline"
                   >
+                    {tab.icon === undefined ? null : (
+                      <Icon name={tab.icon} size="s" aria-hidden="true" />
+                    )}
                     {tab.dirty ? (
                       <span
                         aria-label="Unsaved changes"
