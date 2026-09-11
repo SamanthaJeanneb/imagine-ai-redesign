@@ -2,6 +2,7 @@
 
 import { cn } from "cn";
 import { motion } from "motion/react";
+import Link from "next/link";
 import { useState } from "react";
 
 import {
@@ -65,8 +66,7 @@ interface LinkedInPostDraftProps extends Omit<
   footer?: React.ReactNode;
 }
 
-/** LinkedIn's own colors, for the parts of the card that are LinkedIn's. */
-const LINKEDIN_BLUE = "#0a66c2";
+/** LinkedIn's own reaction colors, for the reactions the post drew. */
 const REACTION_LIKE = "#378fe9";
 const REACTION_INSIGHTFUL = "#e7a33e";
 
@@ -322,12 +322,12 @@ export function LinkedInPost({
             <Icon name="chart-simple" size="l" />
             {COUNT.format(stats.impressions)} impressions
           </span>
-          <span
-            style={{ color: LINKEDIN_BLUE }}
-            className="type-small font-semibold"
+          <Link
+            href="/analytics"
+            className="rounded-[2px] type-small font-semibold text-imagine-secondary underline-offset-4 outline-none hover:text-imagine-secondary-strong hover:underline focus-visible:ring-2 focus-visible:ring-ring/40"
           >
             View analytics
-          </span>
+          </Link>
         </motion.div>
       )}
     </motion.article>
