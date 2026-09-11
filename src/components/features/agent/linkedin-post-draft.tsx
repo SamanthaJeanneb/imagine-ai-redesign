@@ -68,7 +68,8 @@ interface LinkedInPostDraftProps extends Omit<
 
 /** LinkedIn's own reaction colors, for the reactions the post drew. */
 const REACTION_LIKE = "#378fe9";
-const REACTION_INSIGHTFUL = "#e7a33e";
+const REACTION_CELEBRATE = "#6dae4f";
+const REACTION_LOVE = "#df704d";
 
 /**
  * Where LinkedIn folds a post: about two lines of the feed before "…more",
@@ -263,9 +264,8 @@ export function LinkedInPost({
         </motion.div>
       ) : null}
 
-      {/* One row: the actions, each with its count, then the reactions it
-          drew (like and insightful). No second like: the thumb here is both
-          the button and the number. */}
+      {/* One row: the actions, each with its count, then LinkedIn's overlapping
+          reaction summary and its total. */}
       <motion.div
         layout="position"
         transition={fade.base}
@@ -294,20 +294,29 @@ export function LinkedInPost({
         {stats !== undefined && stats.reactions > 0 ? (
           <span
             aria-hidden="true"
-            className="flex shrink-0 items-center -space-x-1"
+            className="flex shrink-0 items-center gap-xs type-caption text-imagine-foreground-muted tabular-nums"
           >
-            <span
-              style={{ backgroundColor: REACTION_LIKE }}
-              className="flex size-4 items-center justify-center rounded-full text-white ring-1 ring-imagine-surface"
-            >
-              <Icon name="thumbs-up" active className="text-[9px]" />
+            <span className="flex items-center -space-x-1">
+              <span
+                style={{ backgroundColor: REACTION_LIKE }}
+                className="z-30 flex size-4 items-center justify-center rounded-full text-white ring-1 ring-imagine-surface"
+              >
+                <Icon name="thumbs-up" active className="text-[9px]" />
+              </span>
+              <span
+                style={{ backgroundColor: REACTION_CELEBRATE }}
+                className="z-20 flex size-4 items-center justify-center rounded-full text-[9px] leading-none ring-1 ring-imagine-surface"
+              >
+                👏
+              </span>
+              <span
+                className="z-10 flex size-4 items-center justify-center rounded-full bg-white text-[11px] leading-none ring-1 ring-imagine-surface"
+                style={{ color: REACTION_LOVE }}
+              >
+                ♥
+              </span>
             </span>
-            <span
-              style={{ backgroundColor: REACTION_INSIGHTFUL }}
-              className="flex size-4 items-center justify-center rounded-full text-white ring-1 ring-imagine-surface"
-            >
-              <Icon name="lightbulb" active className="text-[9px]" />
-            </span>
+            {COUNT.format(stats.reactions)}
           </span>
         ) : null}
       </motion.div>
