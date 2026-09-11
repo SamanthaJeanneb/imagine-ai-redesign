@@ -379,7 +379,7 @@ export function ChatSearchDialog({
           role="listbox"
           aria-label="Chats"
           aria-busy={pending}
-          className="-mx-xs flex h-[min(28rem,55vh)] flex-col overflow-y-auto"
+          className="-mx-xs flex h-80 flex-col overflow-y-auto"
         >
           {pending ? (
             <ResultSkeleton />
