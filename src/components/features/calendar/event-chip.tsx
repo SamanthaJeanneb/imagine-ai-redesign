@@ -101,7 +101,7 @@ export function EventChip({
       <HoverCardTrigger asChild>{chip}</HoverCardTrigger>
       <HoverCardContent
         aria-label={`Event: ${event.title}`}
-        className="w-80 p-l"
+        className="w-[26rem] p-l"
       >
         <EventPreview event={event} onDraft={onOpen} />
       </HoverCardContent>

@@ -68,7 +68,7 @@ interface LinkedInPostDraftProps extends Omit<
 /** LinkedIn's own colors, for the parts of the card that are LinkedIn's. */
 const LINKEDIN_BLUE = "#0a66c2";
 const REACTION_LIKE = "#378fe9";
-const REACTION_LOVE = "#df704d";
+const REACTION_INSIGHTFUL = "#e7a33e";
 
 /**
  * Where LinkedIn folds a post: about two lines of the feed before "…more",
@@ -127,8 +127,8 @@ export function foldBody(body: string): { shown: string; folded: boolean } {
 }
 
 /**
- * A post rendered the way it will look on LinkedIn: avatar, name with the
- * LinkedIn mark, headline, when and where; the body folded behind "…more";
+ * A post rendered the way it will look on LinkedIn: avatar, name, headline,
+ * when and who can see it; the body folded behind "…more";
  * media edge to edge; then one row of actions with their counts and the
  * reactions it drew, and the impressions line once it has gone out. Used for
  * drafts in the thread and for the hover preview on calendar chips.
@@ -184,13 +184,6 @@ export function LinkedInPost({
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="flex min-w-0 items-center gap-xs type-body">
             <span className="truncate font-semibold">{author.name}</span>
-            <span
-              aria-label="LinkedIn"
-              style={{ backgroundColor: LINKEDIN_BLUE }}
-              className="flex size-3.5 shrink-0 items-center justify-center rounded-[2px] text-white"
-            >
-              <Icon name="linkedin-in" className="text-[8px]" />
-            </span>
             {you ? (
               <span className="shrink-0 type-caption text-imagine-foreground-muted">
                 · You
@@ -209,7 +202,7 @@ export function LinkedInPost({
               </>
             ) : null}
             <span aria-hidden="true">·</span>
-            <Icon name="globe" size="s" aria-label="Anyone" />
+            <Icon name="users" size="s" aria-label="Anyone" />
           </span>
         </div>
         <Icon
@@ -271,8 +264,8 @@ export function LinkedInPost({
       ) : null}
 
       {/* One row: the actions, each with its count, then the reactions it
-          drew. No second like: the thumb here is both the button and the
-          number. */}
+          drew (like and insightful). No second like: the thumb here is both
+          the button and the number. */}
       <motion.div
         layout="position"
         transition={fade.base}
@@ -310,10 +303,10 @@ export function LinkedInPost({
               <Icon name="thumbs-up" active className="text-[9px]" />
             </span>
             <span
-              style={{ backgroundColor: REACTION_LOVE }}
+              style={{ backgroundColor: REACTION_INSIGHTFUL }}
               className="flex size-4 items-center justify-center rounded-full text-white ring-1 ring-imagine-surface"
             >
-              <Icon name="heart" active className="text-[9px]" />
+              <Icon name="lightbulb" active className="text-[9px]" />
             </span>
           </span>
         ) : null}
