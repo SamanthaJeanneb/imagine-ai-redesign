@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "cn";
 import { useState } from "react";
 
 import { LinkedInPost } from "@/components/features/agent/linkedin-post-draft";
@@ -99,7 +100,12 @@ export function PostEditorDialog({
 
   const editor = (
     <>
-      <div className="flex shrink-0 flex-row items-center gap-s border-b border-imagine-border px-l py-m">
+      <div
+        className={cn(
+          "flex shrink-0 flex-row items-center gap-s px-l py-m",
+          presentation === "dialog" && "border-b border-imagine-border",
+        )}
+      >
         <h2 className="type-body font-semibold">Edit post</h2>
         <span
           style={postChipStyle(draft.post.status)}
@@ -134,8 +140,20 @@ export function PostEditorDialog({
         </div>
       </div>
 
-      <div className="grid min-h-0 flex-1 overflow-y-auto md:grid-cols-[minmax(0,1.65fr)_minmax(18rem,0.95fr)] md:overflow-hidden">
-        <div className="min-w-0 overflow-y-auto border-b border-imagine-border p-l md:border-r md:border-b-0">
+      <div
+        className={cn(
+          "grid min-h-0 flex-1 overflow-y-auto md:grid-cols-[minmax(0,1.65fr)_minmax(18rem,0.95fr)] md:overflow-hidden",
+          presentation === "inline" && "gap-l px-l pb-l",
+        )}
+      >
+        <div
+          className={cn(
+            "min-w-0 overflow-y-auto p-l",
+            presentation === "dialog" &&
+              "border-b border-imagine-border md:border-r md:border-b-0",
+            presentation === "inline" && "px-0",
+          )}
+        >
           {author === undefined ? (
             <label className="mb-l flex items-center gap-s">
               <Avatar className="size-10">
@@ -183,7 +201,12 @@ export function PostEditorDialog({
             />
           )}
 
-          <div className="mt-l flex items-center gap-s border-t border-imagine-border pt-m">
+          <div
+            className={cn(
+              "mt-l flex items-center gap-s pt-m",
+              presentation === "dialog" && "border-t border-imagine-border",
+            )}
+          >
             {author === undefined ? (
               <Avatar className="size-7">
                 <AvatarFallback>{initials(draft.post.profile)}</AvatarFallback>
@@ -210,7 +233,12 @@ export function PostEditorDialog({
           </div>
         </div>
 
-        <div className="flex min-w-0 flex-col gap-l overflow-y-auto bg-imagine-surface-raised/35 p-l">
+        <div
+          className={cn(
+            "flex min-w-0 flex-col gap-l overflow-y-auto bg-imagine-surface-raised/35 p-l",
+            presentation === "inline" && "rounded-panel",
+          )}
+        >
           <fieldset className="flex flex-col gap-xs">
             <legend className="mb-xs type-small text-imagine-foreground-muted">
               Schedule
@@ -286,7 +314,12 @@ export function PostEditorDialog({
         </div>
       </div>
 
-      <footer className="flex shrink-0 items-center gap-xs border-t border-imagine-border px-l py-m">
+      <footer
+        className={cn(
+          "flex shrink-0 items-center gap-xs px-l py-m",
+          presentation === "dialog" && "border-t border-imagine-border",
+        )}
+      >
         {onDelete === undefined ? null : (
           <Button
             type="button"
