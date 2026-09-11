@@ -10,6 +10,8 @@ import { BrandMark, isLocalBrand } from "@/components/ui/brand-mark";
  * The kit is subset. Sharp names must exist in the kit. Marks that the kit
  * does not ship (Imagine's own, Google, X, HubSpot, Slack, Salesforce) render
  * from local SVGs in brand-mark.tsx so they never show the missing glyph.
+ * Local marks use a <span>, not <i>: the kit rewrites <i> tags and would
+ * replace a custom SVG with the missing-glyph placeholder.
  */
 export const ICON_NAMES = [
   "arrow-down",
@@ -117,7 +119,7 @@ export function Icon({
 }: IconProps) {
   if (isLocalBrand(name)) {
     return (
-      <i
+      <span
         data-slot="icon"
         data-size={size}
         aria-hidden="true"
@@ -125,7 +127,7 @@ export function Icon({
         {...props}
       >
         <BrandMark name={name} className="size-[1em]" />
-      </i>
+      </span>
     );
   }
 

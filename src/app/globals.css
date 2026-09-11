@@ -312,6 +312,19 @@
 }
 
 /*
+ * imagine-mark: the thinker cropped from the wordmark, used as an icon. Color
+ * comes from `currentColor` on the element (pair with `bg-current`).
+ */
+@utility imagine-mark {
+  display: block;
+  aspect-ratio: 1;
+  mask-image: url("/brand/imagine-mark.png");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+
+/*
  * logo-shimmer: the wordmark as a mask with a light band sweeping through it.
  * Used by `LogoLoader` for page loads. Set the width; the aspect is the logo's.
  */
