@@ -3,6 +3,8 @@
 import { usePathname, useRouter } from "next/navigation";
 
 import { Stepper } from "@/components/features/onboarding/stepper";
+import { BrandMark } from "@/components/ui/brand-mark";
+import { getOwner } from "@/services/onboarding";
 
 /**
  * The setup rail. Signing in counts as the first step, so it is always done and
@@ -23,26 +25,35 @@ export function OnboardingRail() {
   const pathname = usePathname();
   const router = useRouter();
   const current = STEPS.findIndex((step) => step.href === pathname);
+  const { email } = getOwner();
 
   return (
-    // Logo anchors the top; the stepper sits below with room to breathe. Width
-    // follows the viewport: never narrower than the labels need on one line,
-    // and never a sliver beside a wide screen's surface.
-    <div className="hidden w-[clamp(16rem,18vw,20rem)] shrink-0 flex-col gap-xxxl px-xl pt-section pb-xxl md:flex">
-      <span
-        role="img"
-        aria-label="Imagine AI"
-        className="block w-28 aspect-[138/43] bg-imagine-foreground mask-[url(/brand/imagine-logo.png)] mask-contain mask-no-repeat mask-center"
-      />
-      <Stepper
-        steps={STEPS}
-        current={current === -1 ? 1 : current}
-        onSelect={(index) => {
-          // Signing in has no step to go back to.
-          const href = STEPS[index]?.href;
-          if (href !== undefined) router.push(href);
-        }}
-      />
+    // Logo and steps at the top, signed-in line at the bottom. Width follows
+    // the viewport: never narrower than the labels need on one line, and never
+    // a sliver beside a wide screen's surface.
+    <div className="hidden w-[clamp(16rem,18vw,20rem)] shrink-0 flex-col justify-between self-stretch px-xl pt-section pb-xxl md:flex">
+      <div className="flex flex-col gap-xxxl">
+        <div className="flex items-center gap-s">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-control bg-imagine-foreground">
+            <BrandMark name="imagine" className="size-4 text-imagine-surface" />
+          </span>
+          <span className="type-title">Imagine AI</span>
+        </div>
+        <Stepper
+          steps={STEPS}
+          current={current === -1 ? 1 : current}
+          onSelect={(index) => {
+            // Signing in has no step to go back to.
+            const href = STEPS[index]?.href;
+            if (href !== undefined) router.push(href);
+          }}
+        />
+      </div>
+      {email ? (
+        <p className="type-micro text-imagine-foreground-faint">
+          Signed in as {email}
+        </p>
+      ) : null}
     </div>
   );
 }

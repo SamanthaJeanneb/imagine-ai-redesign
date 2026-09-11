@@ -26,7 +26,7 @@ export function StepHeading({
   return (
     <div
       data-slot="step-heading"
-      className={cn("flex flex-col gap-l", className)}
+      className={cn("flex flex-col gap-xl", className)}
     >
       <Progress
         value={total > 0 ? step / total : 0}

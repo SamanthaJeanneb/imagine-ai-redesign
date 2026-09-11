@@ -24,6 +24,8 @@ import { fade, stagger } from "@/styles/motion";
 interface CalendarTimeGridProps {
   /** One day, or a Monday week of them. */
   days: readonly CalendarDay[];
+  /** Rows share the height available instead of taking a minimum. */
+  fill?: boolean;
   selectedPostId?: string;
   onOpenPost?: (post: PostChipData, options?: PostOpenOptions) => void;
   onOpenEvent?: (event: EventChipData) => void;
@@ -40,6 +42,12 @@ const LAST_HOUR = 18;
 function toHour(time: string): number | null {
   const hour = Number(time.split(":", 1)[0]);
   return Number.isNaN(hour) ? null : hour;
+}
+
+function columnTemplate(single: boolean): string {
+  return single
+    ? "grid-cols-[var(--spacing-xxxl)_minmax(0,1fr)]"
+    : "min-w-[44rem] grid-cols-[var(--spacing-xxxl)_repeat(7,minmax(0,1fr))]";
 }
 
 /** The working day, widened to hold anything scheduled outside it. */
@@ -75,6 +83,7 @@ function hoursFor(days: readonly CalendarDay[]): readonly number[] {
  */
 export function CalendarTimeGrid({
   days,
+  fill = true,
   selectedPostId,
   onOpenPost,
   onOpenEvent,
@@ -84,12 +93,19 @@ export function CalendarTimeGrid({
   const reduceMotion = useReducedMotion();
   const hours = hoursFor(days);
   const single = days.length === 1;
+  const columns = columnTemplate(single);
   const hasAllDay = days.some((day) =>
     (day.events ?? []).some((event) => event.allDay),
   );
 
   return (
-    <div className={cn("min-w-0 overflow-x-auto p-m", className)}>
+    <div
+      className={cn(
+        "min-w-0 overflow-x-auto p-m",
+        fill && "flex min-h-0 flex-1 flex-col",
+        className,
+      )}
+    >
       <motion.div
         data-slot="calendar-time-grid"
         role="grid"
@@ -97,42 +113,40 @@ export function CalendarTimeGrid({
         animate={{ opacity: 1 }}
         transition={fade.slow}
         className={cn(
-          "grid min-w-0 overflow-hidden rounded-panel bg-imagine-border shadow-raised",
-          // The hour gutter, then a column per day.
-          single
-            ? "grid-cols-[var(--spacing-xxxl)_minmax(0,1fr)]"
-            : "min-w-[44rem] grid-cols-[var(--spacing-xxxl)_repeat(7,minmax(0,1fr))]",
-          "gap-px",
+          "flex min-w-0 flex-col overflow-hidden rounded-panel bg-imagine-border shadow-raised",
+          fill && "min-h-0 flex-1",
         )}
       >
         {/* Heading row: the gutter has nothing to say. */}
-        <span aria-hidden="true" className="bg-imagine-surface-raised" />
-        {days.map((day) => (
-          <span
-            key={day.date}
-            role="columnheader"
-            className="flex min-w-0 items-center justify-center gap-xs overflow-hidden bg-imagine-surface-raised px-xs py-xs"
-          >
-            <span className="type-micro text-imagine-foreground-muted">
-              {single
-                ? formatWeekdayLong(day.date)
-                : formatWeekdayShort(day.date)}
-            </span>
+        <div className={cn("grid shrink-0 gap-px", columns)}>
+          <span aria-hidden="true" className="bg-imagine-surface-raised" />
+          {days.map((day) => (
             <span
-              className={cn(
-                "flex size-5 items-center justify-center rounded-full type-small tabular-nums",
-                day.isToday
-                  ? "bg-imagine-primary font-semibold text-imagine-primary-foreground"
-                  : "text-imagine-foreground-muted",
-              )}
+              key={day.date}
+              role="columnheader"
+              className="flex min-w-0 items-center justify-center gap-xs overflow-hidden bg-imagine-surface-raised px-xs py-xs"
             >
-              {day.dayNumber}
+              <span className="type-micro text-imagine-foreground-muted">
+                {single
+                  ? formatWeekdayLong(day.date)
+                  : formatWeekdayShort(day.date)}
+              </span>
+              <span
+                className={cn(
+                  "flex size-5 items-center justify-center rounded-full type-small tabular-nums",
+                  day.isToday
+                    ? "bg-imagine-primary font-semibold text-imagine-primary-foreground"
+                    : "text-imagine-foreground-muted",
+                )}
+              >
+                {day.dayNumber}
+              </span>
             </span>
-          </span>
-        ))}
+          ))}
+        </div>
 
         {hasAllDay ? (
-          <div className="col-span-full grid grid-cols-subgrid">
+          <div className={cn("grid shrink-0 gap-px", columns)}>
             <span className="bg-imagine-surface-raised pt-xs pr-xs text-right type-micro text-imagine-foreground-muted">
               All day
             </span>
@@ -166,76 +180,86 @@ export function CalendarTimeGrid({
           </div>
         ) : null}
 
-        {hours.map((hour) => (
-          <div key={hour} className="col-span-full grid grid-cols-subgrid">
-            <span className="bg-imagine-surface-raised pt-xs pr-xs text-right type-micro text-imagine-foreground-muted tabular-nums">
-              {hour}:00
-            </span>
-            {days.map((day, dayIndex) => (
-              <div
-                key={day.date}
-                role="gridcell"
-                className="group/cell @container/chip relative flex min-h-12 flex-col gap-xs bg-imagine-surface p-xs"
-              >
-                {onCreatePost === undefined ? null : (
-                  <AddPostButton
-                    when={`${formatDayShort(day.date)} at ${String(hour)}:00`}
-                    onClick={() => {
-                      onCreatePost(
-                        day.date,
-                        `${String(hour).padStart(2, "0")}:00`,
-                      );
-                    }}
-                  />
-                )}
-                {(day.events ?? [])
-                  .filter(
-                    (event) => !event.allDay && toHour(event.time) === hour,
-                  )
-                  .map((event) => (
-                    <motion.div
-                      key={event.id}
-                      initial={reduceMotion ? false : { opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        ...fade.slow,
-                        delay: dayIndex * stagger.calendar,
+        <div
+          className={cn(
+            "grid min-h-0 gap-px bg-imagine-border",
+            columns,
+            fill
+              ? "min-h-0 flex-1 auto-rows-fr overflow-y-auto"
+              : "auto-rows-min",
+          )}
+        >
+          {hours.map((hour) => (
+            <div key={hour} className="contents">
+              <span className="bg-imagine-surface-raised pt-xs pr-xs text-right type-micro text-imagine-foreground-muted tabular-nums">
+                {hour}:00
+              </span>
+              {days.map((day, dayIndex) => (
+                <div
+                  key={day.date}
+                  role="gridcell"
+                  className="group/cell @container/chip relative flex min-h-12 flex-col gap-xs overflow-hidden bg-imagine-surface p-xs"
+                >
+                  {onCreatePost === undefined ? null : (
+                    <AddPostButton
+                      when={`${formatDayShort(day.date)} at ${String(hour)}:00`}
+                      onClick={() => {
+                        onCreatePost(
+                          day.date,
+                          `${String(hour).padStart(2, "0")}:00`,
+                        );
                       }}
-                    >
-                      <EventChip
-                        event={event}
-                        dense={!single}
-                        onOpen={onOpenEvent}
-                      />
-                    </motion.div>
-                  ))}
-                {day.posts
-                  .filter((post) => toHour(post.time) === hour)
-                  .map((post) => (
-                    <motion.div
-                      key={post.id}
-                      initial={reduceMotion ? false : { opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        ...fade.slow,
-                        delay: dayIndex * stagger.calendar,
-                      }}
-                    >
-                      <PostChip
-                        post={post}
-                        dense={!single}
-                        // A day has the width for a paragraph; a week's column
-                        // has room for a couple of lines.
-                        lines={single ? 4 : 2}
-                        selected={post.id === selectedPostId}
-                        onOpen={onOpenPost}
-                      />
-                    </motion.div>
-                  ))}
-              </div>
-            ))}
-          </div>
-        ))}
+                    />
+                  )}
+                  {(day.events ?? [])
+                    .filter(
+                      (event) => !event.allDay && toHour(event.time) === hour,
+                    )
+                    .map((event) => (
+                      <motion.div
+                        key={event.id}
+                        initial={reduceMotion ? false : { opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          ...fade.slow,
+                          delay: dayIndex * stagger.calendar,
+                        }}
+                      >
+                        <EventChip
+                          event={event}
+                          dense={!single}
+                          onOpen={onOpenEvent}
+                        />
+                      </motion.div>
+                    ))}
+                  {day.posts
+                    .filter((post) => toHour(post.time) === hour)
+                    .map((post) => (
+                      <motion.div
+                        key={post.id}
+                        initial={reduceMotion ? false : { opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          ...fade.slow,
+                          delay: dayIndex * stagger.calendar,
+                        }}
+                      >
+                        <PostChip
+                          post={post}
+                          dense={!single}
+                          // A day has the width for a paragraph; a week's column
+                          // has room for a couple of lines.
+                          lines={single ? 4 : 2}
+                          selected={post.id === selectedPostId}
+                          onOpen={onOpenPost}
+                        />
+                      </motion.div>
+                    ))}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
       </motion.div>
     </div>
   );

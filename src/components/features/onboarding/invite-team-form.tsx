@@ -231,7 +231,7 @@ export function InviteTeamForm({
   return (
     <form
       data-slot="invite-team-form"
-      className={cn("flex w-full max-w-lg flex-col gap-xl", className)}
+      className={cn("flex w-full max-w-lg flex-col gap-xxl", className)}
       onSubmit={(event) => {
         event.preventDefault();
         onContinue();
@@ -295,7 +295,7 @@ export function InviteTeamForm({
         </Stagger>
       </Field>
 
-      <div className="flex flex-wrap items-center gap-l">
+      <div className="mt-xl flex flex-wrap items-center gap-l">
         <Button type="submit" size="lg">
           Continue
         </Button>

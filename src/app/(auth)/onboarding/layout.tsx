@@ -15,7 +15,7 @@ export default function OnboardingLayout({
 }) {
   return (
     <OnboardingProvider>
-      <div className="flex flex-1 bg-imagine-background">
+      <div className="flex min-h-svh flex-1 bg-imagine-background">
         <OnboardingRail />
         <main className="flex min-w-0 flex-1 justify-center rounded-none bg-imagine-surface px-l pt-section pb-xxl md:rounded-l-surface md:px-xl">
           <div className="flex w-full max-w-lg flex-col gap-xl">{children}</div>

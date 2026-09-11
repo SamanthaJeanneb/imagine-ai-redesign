@@ -37,7 +37,7 @@ export function ConnectLinkedIn({
   return (
     <div
       data-slot="connect-linkedin"
-      className={cn("flex w-full max-w-lg flex-col gap-xl", className)}
+      className={cn("flex w-full max-w-lg flex-col gap-xxl", className)}
     >
       <motion.div
         initial={{ opacity: 0, y: 6 }}
@@ -71,7 +71,7 @@ export function ConnectLinkedIn({
         ))}
       </Stagger>
 
-      <div className="flex flex-wrap items-center gap-l">
+      <div className="mt-xl flex flex-wrap items-center gap-l">
         <Button size="lg" disabled={pending} onClick={onConnect}>
           {pending ? (
             <Spinner size="s" data-icon="inline-start" />

@@ -113,7 +113,7 @@ export function OrganizationForm({
   return (
     <form
       data-slot="organization-form"
-      className={cn("flex w-full max-w-lg flex-col gap-xl", className)}
+      className={cn("flex w-full max-w-lg flex-col gap-xxl", className)}
       onSubmit={(event) => {
         event.preventDefault();
         if (name.trim()) onContinue({ name: name.trim(), logo });
@@ -153,7 +153,7 @@ export function OrganizationForm({
       <Button
         type="submit"
         size="lg"
-        className="self-start"
+        className="mt-xl self-start"
         disabled={!name.trim()}
       >
         Continue
