@@ -382,7 +382,7 @@ export function PostEditorDialog({
 
   if (presentation === "inline") {
     return (
-      <div className="flex h-full min-h-0 flex-col overflow-hidden bg-imagine-surface">
+      <div className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden bg-imagine-surface">
         {editor}
       </div>
     );
