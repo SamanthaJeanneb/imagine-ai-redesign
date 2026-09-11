@@ -2,7 +2,7 @@
 
 import { cn } from "cn";
 import { motion } from "motion/react";
-import { useId, useState, type ReactNode } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
 
 import type { SidebarThread } from "@/components/layout/sidebar";
 import {
@@ -11,16 +11,48 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Icon } from "@/components/ui/icon";
 import { InputGroupInput } from "@/components/ui/input-group";
-import { pressRow } from "@/styles/motion";
+import { Skeleton } from "@/components/ui/skeleton";
+import { duration, pressRow } from "@/styles/motion";
 
 /**
  * Centered search over every chat. Idle, it groups the current thread under
  * Last opened and the rest under Recent chats. Typing filters as you go:
  * every word has to match, titles rank above body text, and the hit is
- * marked in the row.
+ * marked in the row. The list pane keeps its height while results settle, so
+ * the popup does not jump.
  */
+
+const SEARCH_DELAY_MS = duration.slow * 1000;
+
+/** Row widths for the loading stand-in, so the shimmer does not look stamped. */
+const SKELETON_RECENT = ["w-2/3", "w-3/5", "w-1/2", "w-3/5", "w-2/3"] as const;
+
+function SkeletonRow({ width }: { width: string }) {
+  return (
+    <div className="flex items-center gap-s px-xs py-s">
+      <Skeleton className="size-4 rounded-full" />
+      <Skeleton className={cn("h-4", width)} />
+    </div>
+  );
+}
+
+function ResultSkeleton() {
+  return (
+    <div className="flex flex-col gap-xl" aria-hidden="true">
+      <section className="flex flex-col gap-s">
+        <Skeleton className="mx-xs h-4 w-24" />
+        <SkeletonRow width="w-3/5" />
+      </section>
+      <section className="flex flex-col gap-s">
+        <Skeleton className="mx-xs h-4 w-28" />
+        {SKELETON_RECENT.map((width, index) => (
+          <SkeletonRow key={index} width={width} />
+        ))}
+      </section>
+    </div>
+  );
+}
 
 function wordsIn(query: string): string[] {
   return query.trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -225,6 +257,7 @@ export function ChatSearchDialog({
   const listId = useId();
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [pending, setPending] = useState(true);
 
   const words = wordsIn(query);
   const lastOpened =
@@ -245,6 +278,20 @@ export function ChatSearchDialog({
     listed.length === 0 || activeIndex < 0
       ? -1
       : Math.min(activeIndex, listed.length - 1);
+
+  useEffect(() => {
+    if (!open) {
+      setPending(true);
+      return;
+    }
+    setPending(true);
+    const id = window.setTimeout(() => {
+      setPending(false);
+    }, SEARCH_DELAY_MS);
+    return () => {
+      window.clearTimeout(id);
+    };
+  }, [open, query]);
 
   function close() {
     onOpenChange(false);
@@ -296,12 +343,12 @@ export function ChatSearchDialog({
             switch (event.key) {
               case "ArrowDown":
                 event.preventDefault();
-                if (listed.length === 0) return;
+                if (pending || listed.length === 0) return;
                 setActiveIndex((active + 1) % listed.length);
                 break;
               case "ArrowUp":
                 event.preventDefault();
-                if (listed.length === 0) return;
+                if (pending || listed.length === 0) return;
                 setActiveIndex(
                   active < 0
                     ? listed.length - 1
@@ -309,6 +356,7 @@ export function ChatSearchDialog({
                 );
                 break;
               case "Enter": {
+                if (pending) return;
                 const hit = listed[active];
                 if (hit !== undefined) {
                   event.preventDefault();
@@ -330,15 +378,17 @@ export function ChatSearchDialog({
           id={listId}
           role="listbox"
           aria-label="Chats"
-          className="-mx-xs flex max-h-[min(28rem,55vh)] flex-col gap-xl overflow-y-auto"
+          aria-busy={pending}
+          className="-mx-xs flex h-[min(28rem,55vh)] flex-col overflow-y-auto"
         >
-          {listed.length === 0 ? (
-            <p className="flex items-center gap-s px-xs py-m type-small text-imagine-foreground-muted">
-              <Icon name="magnifying-glass" size="s" />
-              {words.length === 0 ? "No chats yet" : "No chats match"}
+          {pending ? (
+            <ResultSkeleton />
+          ) : listed.length === 0 ? (
+            <p className="flex flex-1 items-center justify-center type-small text-imagine-foreground-muted">
+              No results
             </p>
           ) : (
-            <>
+            <div className="flex flex-col gap-xl">
               <ChatSection
                 label="Last opened"
                 threads={lastOpenedHits}
@@ -359,7 +409,7 @@ export function ChatSearchDialog({
                 onHover={setActiveIndex}
                 onChoose={choose}
               />
-            </>
+            </div>
           )}
         </div>
       </DialogContent>
