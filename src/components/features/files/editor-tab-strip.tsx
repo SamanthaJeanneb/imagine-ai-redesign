@@ -29,8 +29,9 @@ interface EditorTabStripProps {
 /**
  * The strip that appears above the thread when a document opens: "Current
  * post" plus one tab per open file. Sits on the page background. The active
- * tab is the page color and joins the page with no seam; its drop shadow
- * sections it off from the neighbors. Closing collapses the tab width.
+ * tab is the page color and joins the page with no line under its name;
+ * side and top borders section it off from the neighbors. Closing
+ * collapses the tab width.
  */
 export function EditorTabStrip({
   tabs,
@@ -55,14 +56,19 @@ export function EditorTabStrip({
             animate={{ height: 36, opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={spring.settle}
-            className="shrink-0 overflow-hidden"
+            className="relative z-20 shrink-0 overflow-hidden"
           >
             {/* Tabs start past the page's corner radius so the active tab meets
-                a flat edge. The active tab drops under the page to hide the seam. */}
+                a flat edge. The rule sits behind the tabs; the open tab paints
+                over it so its name is not underlined. */}
             <div
               role="tablist"
-              className="flex h-9 min-w-0 items-end gap-xxs overflow-x-auto overflow-y-hidden border-b border-imagine-border pt-xs pr-xs pl-l"
+              className="relative flex h-9 min-w-0 items-end gap-xxs overflow-x-auto overflow-y-hidden pt-xs pr-xs pl-l"
             >
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-px bg-imagine-border"
+              />
               <AnimatePresence initial={false}>
                 {tabs.map((tab) => {
                   const active = tab.id === activeId;
@@ -74,14 +80,14 @@ export function EditorTabStrip({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 2 }}
                       transition={fade.fast}
-                      className="group/tab relative -mb-px max-w-56 shrink-0"
+                      className="group/tab relative z-[1] max-w-56 shrink-0"
                     >
                       {active ? (
                         <motion.span
                           layoutId={indicatorId}
                           aria-hidden="true"
                           transition={spring.snappy}
-                          className="absolute inset-0 rounded-t-control bg-imagine-surface shadow-floating ring-1 ring-imagine-border"
+                          className="absolute inset-x-0 top-0 -bottom-px rounded-t-control border-x border-t border-imagine-border bg-imagine-surface"
                         />
                       ) : (
                         <span
@@ -140,10 +146,14 @@ export function EditorTabStrip({
           </motion.div>
         ) : null}
       </AnimatePresence>
-      {/* The page. Sits above the tabs so it covers the active tab's bottom
-          shadow, leaving the shadow on its sides and top. Padding keeps the
-          calendar toolbar (and anything else) off the seam. */}
-      <div className="relative z-10 min-h-0 flex-1 overflow-hidden rounded-panel bg-imagine-surface">
+      {/* The page. A flat top under the tabs so the open tab joins it with no
+          line. Padding keeps the calendar toolbar off the join. */}
+      <div
+        className={cn(
+          "relative z-10 min-h-0 flex-1 overflow-hidden bg-imagine-surface",
+          tabs.length > 0 ? "rounded-b-panel" : "rounded-panel",
+        )}
+      >
         <motion.div
           key={activeId}
           initial={{
