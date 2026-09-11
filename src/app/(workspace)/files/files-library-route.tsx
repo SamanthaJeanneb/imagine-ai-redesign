@@ -15,7 +15,7 @@ interface FilesLibraryRouteProps {
   documents: readonly OpenDocument[];
 }
 
-/** Wires the library's "Send to chat" into a fresh thread on `/agent`. */
+/** Wires "Send to chat" into the centered new-chat experience. */
 export function FilesLibraryRoute(props: FilesLibraryRouteProps) {
   const chat = useChat();
   const router = useRouter();
@@ -24,9 +24,9 @@ export function FilesLibraryRoute(props: FilesLibraryRouteProps) {
     <FilesLibrary
       {...props}
       onSendToChat={(resource) => {
-        chat.reset();
+        chat.startNew();
         chat.attach(resource);
-        router.push("/agent");
+        router.push("/landing-2");
       }}
     />
   );
