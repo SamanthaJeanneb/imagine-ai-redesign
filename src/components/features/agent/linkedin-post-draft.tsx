@@ -11,7 +11,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Icon, type IconName } from "@/components/ui/icon";
-import { spring } from "@/styles/motion";
+import { fade } from "@/styles/motion";
 
 export interface PostAuthor {
   name: string;
@@ -157,9 +157,13 @@ export function LinkedInPost({
   const folded = !expanded && fold.folded;
 
   return (
+    // The height change on "…more" and on entering edit is a short ease-out,
+    // not a spring: nothing overshoots and nothing keeps settling. What sits
+    // under the body slides down with `layout="position"` instead of being
+    // stretched by the card's own size animation.
     <motion.article
       layout
-      transition={spring.settle}
+      transition={fade.base}
       data-slot="linkedin-post"
       className={cn(
         "flex flex-col overflow-hidden rounded-panel bg-imagine-surface shadow-raised transition-shadow",
@@ -248,7 +252,9 @@ export function LinkedInPost({
       </div>
 
       {media.length > 0 ? (
-        <div
+        <motion.div
+          layout="position"
+          transition={fade.base}
           className={cn(
             "mt-s grid gap-px overflow-hidden",
             media.length > 1 ? "grid-cols-2" : "grid-cols-1",
@@ -261,13 +267,17 @@ export function LinkedInPost({
               className="aspect-[4/3] rounded-none"
             />
           ))}
-        </div>
+        </motion.div>
       ) : null}
 
       {/* One row: the actions, each with its count, then the reactions it
           drew. No second like: the thumb here is both the button and the
           number. */}
-      <div className="flex items-center justify-between gap-m px-l py-m">
+      <motion.div
+        layout="position"
+        transition={fade.base}
+        className="flex items-center justify-between gap-m px-l py-m"
+      >
         <div className="flex items-center gap-l">
           {ACTIONS.map((action) => {
             const count =
@@ -307,10 +317,14 @@ export function LinkedInPost({
             </span>
           </span>
         ) : null}
-      </div>
+      </motion.div>
 
       {stats?.impressions === undefined ? null : (
-        <div className="flex items-center justify-between gap-m border-t border-imagine-border px-l py-s">
+        <motion.div
+          layout="position"
+          transition={fade.base}
+          className="flex items-center justify-between gap-m border-t border-imagine-border px-l py-s"
+        >
           <span className="inline-flex items-center gap-xs type-small font-semibold tabular-nums">
             <Icon name="chart-simple" size="l" />
             {COUNT.format(stats.impressions)} impressions
@@ -321,7 +335,7 @@ export function LinkedInPost({
           >
             View analytics
           </span>
-        </div>
+        </motion.div>
       )}
     </motion.article>
   );
