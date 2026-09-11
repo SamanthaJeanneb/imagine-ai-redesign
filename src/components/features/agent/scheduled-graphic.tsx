@@ -36,7 +36,7 @@ const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
 /**
  * The confirmation graphic the agent replies with once a post is scheduled:
- * a calendar tile, the week with the new day lit in the accent gradient, and
+ * a calendar tile, the week with the new day lit in the accent, and
  * quick actions. Day numbers are derived from the scheduled day so the strip
  * reads as the real week.
  */
@@ -65,7 +65,7 @@ export function ScheduledGraphic({
       >
         <div className="flex items-center gap-m">
           <span className="flex size-11 shrink-0 flex-col overflow-hidden rounded-control bg-imagine-surface shadow-control">
-            <span className="flex h-3.5 items-center justify-center accent-gradient type-micro leading-none text-imagine-secondary-foreground">
+            <span className="flex h-3.5 items-center justify-center bg-imagine-secondary type-micro leading-none text-imagine-secondary-foreground">
               {monthLabel}
             </span>
             <span className="flex flex-1 items-center justify-center type-heading leading-none font-semibold tabular-nums">
@@ -108,7 +108,7 @@ export function ScheduledGraphic({
                   className={cn(
                     "flex h-14 w-full flex-col items-center justify-center gap-xxs rounded-control transition-colors",
                     isTarget
-                      ? "accent-gradient text-imagine-secondary-foreground shadow-control ring-4 inset-shadow-highlight ring-imagine-secondary-soft"
+                      ? "bg-imagine-secondary text-imagine-secondary-foreground shadow-control ring-4 inset-shadow-highlight ring-imagine-secondary-soft"
                       : "text-imagine-foreground",
                   )}
                 >

@@ -48,9 +48,9 @@ const EVENT_STYLE: CSSProperties & {
 };
 
 /**
- * A connected-calendar event inside a cell. Quieter than a post: charcoal
- * wash, the title, and the time. Hovering it is how you draft a post about
- * what is coming up.
+ * A connected-calendar event inside a cell. Quieter than a post: a flat
+ * charcoal wash, the title, and the time. Hovering it is how you draft a post
+ * about what is coming up.
  */
 export function EventChip({
   event,
@@ -75,23 +75,21 @@ export function EventChip({
       aria-label={`${event.title}, ${event.whenLabel}, ${event.calendarName}`}
       style={EVENT_STYLE}
       className={cn(
-        "relative flex w-full min-w-0 flex-col gap-xxs overflow-hidden rounded-control px-s pl-m text-left text-imagine-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-imagine-surface",
+        "relative flex w-full min-w-0 flex-col gap-xxs overflow-hidden rounded-control px-s pl-m text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-imagine-surface",
         line ? "py-xxs" : "py-xs",
-        "chip-wash shadow-control @max-[6rem]/chip:pr-xs @max-[6rem]/chip:pl-s",
+        "chip-wash chip-ink @max-[6rem]/chip:pr-xs @max-[6rem]/chip:pl-s",
         className,
       )}
     >
       <span
         aria-hidden="true"
-        className="absolute inset-y-0 left-0 w-1.5 bg-[var(--chip-color)]"
+        className="absolute inset-y-0 left-0 w-1 bg-[var(--chip-color)]"
       />
       <span className="min-w-0 truncate type-caption font-semibold">
         {event.title}
       </span>
       {dense || line ? null : (
-        <span className="type-caption text-imagine-foreground-muted tabular-nums">
-          {range}
-        </span>
+        <span className="type-caption tabular-nums opacity-75">{range}</span>
       )}
     </motion.button>
   );

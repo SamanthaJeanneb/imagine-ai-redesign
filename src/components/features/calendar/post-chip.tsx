@@ -159,9 +159,10 @@ function toExcerpt(post: PostChipData): string {
 /**
  * A post inside a calendar cell, laid out like a card: who it goes out from,
  * the label, as much of the post as the cell allows, and the time. Every chip
- * has a solid left rail and a gradient wash of its color, deepest at the rail.
- * The color is the post's status, so a month reads as scheduled, in review,
- * or published at a glance. A check once published, a warning when it failed,
+ * is flat: a pastel fill of its color, a solid rail of it at the left, and
+ * its text in the same hue, the way a calendar app draws an event. The color
+ * is the post's status, so a month reads as scheduled, in review, or
+ * published at a glance. A check once published, a warning when it failed,
  * a dashed edge on drafts. Selecting a chip fills it solid and lifts it.
  */
 export function PostChip({
@@ -175,7 +176,8 @@ export function PostChip({
 }: PostChipProps) {
   const inverted = selected || STATUS_COLOR[post.status].darkWash;
   const author = post.preview?.author;
-  const muted = inverted ? "opacity-80" : "text-imagine-foreground-muted";
+  // Secondary lines stay in the chip's hue, a step quieter.
+  const muted = inverted ? "opacity-80" : "opacity-75";
   const avatar =
     author?.avatarUrl === undefined ? null : (
       <Avatar
@@ -227,8 +229,8 @@ export function PostChip({
         // keeps only the avatar and the excerpt, and pulls its padding in.
         // The cell is the `chip` container; see the calendar grids.
         "@max-[6rem]/chip:pl-s",
-        selected ? "chip-solid shadow-raised" : "chip-wash shadow-control",
-        inverted ? "text-[var(--chip-contrast)]" : "text-imagine-foreground",
+        selected ? "chip-solid shadow-raised" : "chip-wash",
+        inverted ? "text-[var(--chip-contrast)]" : "chip-ink",
         post.status === "draft" &&
           !selected &&
           "border border-dashed border-[var(--chip-color)]",
@@ -238,7 +240,7 @@ export function PostChip({
       {selected ? null : (
         <span
           aria-hidden="true"
-          className="absolute inset-y-0 left-0 w-1.5 bg-[var(--chip-color)]"
+          className="absolute inset-y-0 left-0 w-1 bg-[var(--chip-color)]"
         />
       )}
       {line ? (
