@@ -69,7 +69,7 @@ interface LinkedInPostDraftProps extends Omit<
 /** LinkedIn's own reaction colors, for the reactions the post drew. */
 const REACTION_LIKE = "#378fe9";
 const REACTION_CELEBRATE = "#6dae4f";
-const REACTION_LOVE = "#df704d";
+const REACTION_INSIGHTFUL = "#e7a33e";
 
 /**
  * Where LinkedIn folds a post: about two lines of the feed before "…more",
@@ -307,13 +307,13 @@ export function LinkedInPost({
                 style={{ backgroundColor: REACTION_CELEBRATE }}
                 className="z-20 flex size-4 items-center justify-center rounded-full text-white ring-1 ring-imagine-surface"
               >
-                <Icon name="hands-clapping" active className="text-[9px]" />
+                <Icon name="sun" active className="text-[9px]" />
               </span>
               <span
-                style={{ backgroundColor: REACTION_LOVE }}
+                style={{ backgroundColor: REACTION_INSIGHTFUL }}
                 className="z-10 flex size-4 items-center justify-center rounded-full text-white ring-1 ring-imagine-surface"
               >
-                <Icon name="heart" active className="text-[9px]" />
+                <Icon name="lightbulb" active className="text-[9px]" />
               </span>
             </span>
             {COUNT.format(stats.reactions)}
