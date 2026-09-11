@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { PREVIEW_LAYOUT_ID } from "@/components/features/agent/chat-dock";
@@ -21,6 +22,10 @@ import {
   type PostChipStatus,
   postChipStyle,
 } from "@/components/features/calendar/post-chip";
+import {
+  PostEditorDialog,
+  type PostEditorValue,
+} from "@/components/features/calendar/post-editor-dialog";
 import { Icon, type IconName } from "@/components/ui/icon";
 import type { SearchBoxResult } from "@/components/ui/search-box";
 import {
@@ -185,18 +190,53 @@ export function CalendarPage({
   eventsByDay = {},
   today,
 }: CalendarPageProps) {
+  const router = useRouter();
   const chat = useChat();
   const isMobile = useMediaQuery(MOBILE_QUERY);
   const [view, setView] = useState<CalendarView>("month");
   const [anchor, setAnchor] = useState(today);
   const [search, setSearch] = useState("");
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [edits, setEdits] = useState<Record<string, PostEditorValue>>({});
+  const [deletedPostIds, setDeletedPostIds] = useState<readonly string[]>([]);
+
+  // This mock editor keeps changes for the life of the calendar page,
+  // including moving a post to another day.
+  const visiblePostsByDay: Record<string, readonly PostChipData[]> = {};
+  for (const [date, posts] of Object.entries(postsByDay)) {
+    for (const original of posts) {
+      if (deletedPostIds.includes(original.id)) continue;
+      const edit = edits[original.id];
+      const post = edit?.post ?? original;
+      const postDate = edit?.date ?? date;
+      visiblePostsByDay[postDate] = [
+        ...(visiblePostsByDay[postDate] ?? []),
+        post,
+      ];
+    }
+  }
+
   const selected = chat.attached
     .flatMap((item) => (item.kind === "post" ? [item.post.id] : []))
     .at(-1);
 
-  /** Selecting a post attaches it to the chat, so the next message is about it. */
-  function attach(post: PostChipData) {
-    chat.toggleAttached({ kind: "post", post });
+  function dateFor(postId: string): string | undefined {
+    return Object.entries(visiblePostsByDay).find(([, posts]) =>
+      posts.some((post) => post.id === postId),
+    )?.[0];
+  }
+
+  /** A calendar post opens for editing and becomes context for the chat. */
+  function openPost(post: PostChipData) {
+    chat.attach({ kind: "post", post });
+    setEditingPostId(post.id);
+  }
+
+  function savePost(value: PostEditorValue) {
+    setEdits((current) => ({ ...current, [value.post.id]: value }));
+    // Replace a stale attached copy with the edited one.
+    chat.clearAttached(value.post.id);
+    chat.attach({ kind: "post", post: value.post });
   }
 
   /** An event fills the composer so the next message can be a post about it. */
@@ -210,14 +250,14 @@ export function CalendarPage({
   const range = buildCalendarRange(
     view,
     anchor,
-    postsByDay,
+    visiblePostsByDay,
     today,
     search,
     eventsByDay,
   );
   const query = search.trim();
   // The dropdown searches every post and event, not just the range on screen.
-  const hits = searchPosts(postsByDay, query);
+  const hits = searchPosts(visiblePostsByDay, query);
   const eventHits = searchEvents(eventsByDay, query);
   const searchResults: SearchBoxResult[] = [
     ...hits.map(({ date, post }) => ({
@@ -239,7 +279,7 @@ export function CalendarPage({
     if (postHit !== undefined) {
       setSearch("");
       setAnchor(postHit.date);
-      if (selected !== postHit.post.id) attach(postHit.post);
+      openPost(postHit.post);
       return;
     }
     const eventHit = eventHits.find((entry) => entry.event.id === id);
@@ -257,10 +297,32 @@ export function CalendarPage({
     query === ""
       ? shown
       : countPosts(
-          buildCalendarRange(view, anchor, postsByDay, today, "", eventsByDay)
-            .days,
+          buildCalendarRange(
+            view,
+            anchor,
+            visiblePostsByDay,
+            today,
+            "",
+            eventsByDay,
+          ).days,
         ),
   );
+  const editingPost =
+    editingPostId === null
+      ? undefined
+      : Object.values(visiblePostsByDay)
+          .flat()
+          .find((post) => post.id === editingPostId);
+  const editingDate =
+    editingPostId === null ? undefined : dateFor(editingPostId);
+  const editorValue =
+    editingPost === undefined || editingDate === undefined
+      ? undefined
+      : (edits[editingPost.id] ?? {
+          post: editingPost,
+          date: editingDate,
+          internalNotes: "",
+        });
 
   return (
     <div className="@container/page flex min-h-0 flex-1 flex-col gap-xl">
@@ -286,7 +348,7 @@ export function CalendarPage({
       {isMobile && (view === "month" || view === "week") ? (
         <MonthAgenda
           days={range.days}
-          onOpenPost={attach}
+          onOpenPost={openPost}
           onOpenEvent={draftFromEvent}
           {...(selected === undefined ? {} : { selectedPostId: selected })}
         />
@@ -301,7 +363,7 @@ export function CalendarPage({
             // The page arrives by morphing out of the composer preview, which
             // opens on the month.
             layoutId={PREVIEW_LAYOUT_ID.calendar}
-            onOpenPost={attach}
+            onOpenPost={openPost}
             onOpenEvent={draftFromEvent}
             {...(selected === undefined ? {} : { selectedPostId: selected })}
             className="h-full min-w-[36rem]"
@@ -311,7 +373,7 @@ export function CalendarPage({
         <div className="min-h-0 min-w-0 flex-1 overflow-x-auto">
           <CalendarTimeGrid
             days={range.days}
-            onOpenPost={attach}
+            onOpenPost={openPost}
             onOpenEvent={draftFromEvent}
             {...(selected === undefined ? {} : { selectedPostId: selected })}
           />
@@ -335,6 +397,26 @@ export function CalendarPage({
           )}
         </AnimatePresence>
       </div>
+
+      {editorValue === undefined ? null : (
+        <PostEditorDialog
+          key={editorValue.post.id}
+          value={editorValue}
+          open
+          onOpenChange={(open) => {
+            if (!open) setEditingPostId(null);
+          }}
+          onSave={savePost}
+          onOpenAgent={(value) => {
+            savePost(value);
+            router.push("/agent");
+          }}
+          onDelete={(postId) => {
+            setDeletedPostIds((current) => [...current, postId]);
+            chat.clearAttached(postId);
+          }}
+        />
+      )}
     </div>
   );
 }
