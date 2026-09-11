@@ -324,9 +324,14 @@ export function LinkedInPost({
           </span>
           <Link
             href="/analytics"
-            className="rounded-[2px] type-small font-semibold text-imagine-secondary underline-offset-4 outline-none hover:text-imagine-secondary-strong hover:underline focus-visible:ring-2 focus-visible:ring-ring/40"
+            className="group/analytics inline-flex items-center gap-xs rounded-[2px] type-small font-semibold text-imagine-secondary underline-offset-4 outline-none hover:text-imagine-secondary-strong hover:underline focus-visible:ring-2 focus-visible:ring-ring/40"
           >
             View analytics
+            <Icon
+              name="arrow-right"
+              size="s"
+              className="transition-transform duration-150 ease-out group-hover/analytics:translate-x-0.5"
+            />
           </Link>
         </motion.div>
       )}
