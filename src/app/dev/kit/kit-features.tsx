@@ -1127,17 +1127,23 @@ export function SidebarDemo() {
 }
 
 export function ChatChromeDemo() {
-  const [panel, setPanel] = useState<ChatPanelMode | null>("history");
-  const [columnPanel, setColumnPanel] = useState<ChatPanelMode | null>(null);
+  const [panel, setPanel] = useState<ChatPanelMode | null>(null);
 
   return (
     <div className="flex flex-col gap-xl">
-      <Demo label="Chat title, controls, and context panel">
+      <Demo label="Chat title with history, and files panel">
         <LayoutGroup id="kit-chat-context">
           <div className="flex h-96 overflow-hidden border border-imagine-border bg-imagine-surface">
             <div className="flex min-w-0 flex-1 flex-col p-l">
               <div className="flex h-8 items-center gap-s">
-                <ChatTitle title="What made Friday's post take off" />
+                <ChatTitle
+                  title="What made Friday's post take off"
+                  threads={THREADS}
+                  currentThreadId="t1"
+                  onSelectThread={(id) => {
+                    toast(`Open ${id}`);
+                  }}
+                />
                 <ChatControls
                   panel={panel}
                   onPanelChange={setPanel}
@@ -1145,59 +1151,38 @@ export function ChatChromeDemo() {
                 />
               </div>
               <p className="mt-auto max-w-sm type-small text-imagine-foreground-muted">
-                Toggle history and files to inspect both working-panel states.
+                Open history from the arrow beside the name. Toggle files for
+                the working panel.
               </p>
             </div>
             <AnimatePresence initial={false}>
-              {panel === null ? null : (
+              {panel === "files" ? (
                 <ChatContextPanel
                   key="kit-context-panel"
-                  mode={panel}
-                  threads={THREADS}
                   fileSections={FILE_SECTIONS}
-                  currentThreadId="t1"
-                  currentTitle="What made Friday's post take off"
-                  onSelectThread={(id) => {
-                    toast(`Open ${id}`);
-                  }}
                   onClose={() => {
                     setPanel(null);
                   }}
                 />
-              )}
+              ) : null}
             </AnimatePresence>
           </div>
         </LayoutGroup>
       </Demo>
 
-      <Demo label="Docked chat column, with its history panel">
+      <Demo label="Docked chat column, with history on the title">
         <KitChatScope>
           <LayoutGroup id="kit-chat-column">
             <div className="flex h-96 justify-end overflow-hidden border border-imagine-border bg-imagine-surface">
               <ChatColumn
                 page="analytics"
                 title="New chat"
-                panel={columnPanel}
-                onPanelChange={setColumnPanel}
+                threads={THREADS}
+                currentThreadId={null}
+                onSelectThread={(id) => {
+                  toast(`Open ${id}`);
+                }}
               />
-              <AnimatePresence initial={false}>
-                {columnPanel === null ? null : (
-                  <ChatContextPanel
-                    key="kit-column-context"
-                    mode={columnPanel}
-                    threads={THREADS}
-                    fileSections={FILE_SECTIONS}
-                    currentThreadId={null}
-                    currentTitle="New chat"
-                    onSelectThread={(id) => {
-                      toast(`Open ${id}`);
-                    }}
-                    onClose={() => {
-                      setColumnPanel(null);
-                    }}
-                  />
-                )}
-              </AnimatePresence>
             </div>
           </LayoutGroup>
         </KitChatScope>

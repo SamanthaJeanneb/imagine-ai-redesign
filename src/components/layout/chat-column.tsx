@@ -8,8 +8,8 @@ import { ChatDock } from "@/components/features/agent/chat-dock";
 import { ChatEmptyMark } from "@/components/features/agent/chat-empty-mark";
 import { useChat } from "@/components/features/agent/chat-provider";
 import type { ComposerPreview } from "@/components/features/agent/composer";
-import type { ChatPanelMode } from "@/components/layout/chat-context-panel";
-import { ChatControls, ChatTitle } from "@/components/layout/chat-controls";
+import { ChatTitle } from "@/components/layout/chat-controls";
+import type { SidebarThread } from "@/components/layout/sidebar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { ResizeHandle } from "@/components/ui/resize-handle";
@@ -29,8 +29,9 @@ interface ChatColumnProps {
   /** The page beside the chat. Its own preview chip is not offered. */
   page: ComposerPreview;
   title: string;
-  panel: ChatPanelMode | null;
-  onPanelChange: (panel: ChatPanelMode | null) => void;
+  threads: readonly SidebarThread[];
+  currentThreadId: string | null;
+  onSelectThread: (id: string) => void;
   /** Sits over the page instead of taking a column, on a narrow frame. */
   overlay?: boolean;
   /** Phone overlay: fill the surface. */
@@ -42,15 +43,16 @@ interface ChatColumnProps {
 /**
  * The chat as a right column, beside the calendar and analytics pages. The
  * same conversation as `/agent`, narrower: it takes the full height of the
- * surface, the title and history sit at the top of the open column, the
+ * surface, the title and its history sit at the top of the open column, the
  * thread scrolls, the composer holds the foot, and the preview that opens
  * this page is not on offer.
  */
 export function ChatColumn({
   page,
   title,
-  panel,
-  onPanelChange,
+  threads,
+  currentThreadId,
+  onSelectThread,
   overlay = false,
   fullWidth = false,
   onClose,
@@ -100,14 +102,15 @@ export function ChatColumn({
         className="flex min-h-0 w-full shrink-0 flex-col border-l border-imagine-foreground/12"
       >
         <div className="mt-m flex h-8 shrink-0 items-center gap-s px-l">
-          <ChatTitle title={title} />
-          <div className="-mr-s ml-auto flex items-center">
-            <ChatControls
-              panel={panel}
-              onPanelChange={onPanelChange}
-              showFiles={false}
-            />
-            {onClose === undefined ? null : (
+          <ChatTitle
+            title={title}
+            threads={threads}
+            currentThreadId={currentThreadId}
+            onSelectThread={onSelectThread}
+            className="flex-1"
+          />
+          {onClose === undefined ? null : (
+            <div className="-mr-s ml-auto flex items-center">
               <Button
                 size="icon-sm"
                 variant="ghost"
@@ -117,8 +120,8 @@ export function ChatColumn({
               >
                 <Icon name="xmark" />
               </Button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
         {/* Padding lives on the scrollport. `overflow-y-auto` also clips x,
             and the dock sits flush to that edge — its shadow and side radius

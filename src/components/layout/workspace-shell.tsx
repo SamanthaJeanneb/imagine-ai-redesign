@@ -25,10 +25,7 @@ import { AccountControls, type AccountUser } from "@/components/layout/account";
 import { ChatColumn } from "@/components/layout/chat-column";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import {
-  ChatContextPanel,
-  type ChatPanelMode,
-} from "@/components/layout/chat-context-panel";
+import { type ChatPanelMode } from "@/components/layout/chat-context-panel";
 import { ChatControls, ChatTitle } from "@/components/layout/chat-controls";
 import { FilesPanel } from "@/components/layout/files-panel";
 import { PageAsideHostProvider } from "@/components/layout/page-aside";
@@ -145,6 +142,9 @@ interface WorkspaceHeaderProps {
   compact: boolean;
   prefix: boolean;
   chatTitle?: string;
+  chatThreads?: readonly SidebarThread[];
+  currentThreadId?: string | null;
+  onSelectThread?: (id: string) => void;
   chatOpen: boolean;
   /** Docked chat is an overlay; the header holds the way into it. */
   chatOverlay?: boolean;
@@ -176,6 +176,9 @@ function WorkspaceHeader({
   compact,
   prefix,
   chatTitle,
+  chatThreads,
+  currentThreadId = null,
+  onSelectThread,
   chatOpen,
   chatOverlay = false,
   chatOverlayOpen = false,
@@ -222,7 +225,24 @@ function WorkspaceHeader({
       ) : null}
       <AnimatePresence initial={false}>
         {!chatOpen || chatTitle === undefined ? null : (
-          <ChatTitle key="title" title={chatTitle} />
+          <motion.div
+            key="title"
+            initial={{ opacity: 0, x: -8 }}
+            animate={{
+              opacity: 1,
+              x: 0,
+              transition: { ...fade.base, delay: 0.1 },
+            }}
+            exit={{ opacity: 0, x: -8, transition: fade.fast }}
+            className="min-w-0"
+          >
+            <ChatTitle
+              title={chatTitle}
+              {...(chatThreads === undefined ? {} : { threads: chatThreads })}
+              currentThreadId={currentThreadId}
+              {...(onSelectThread === undefined ? {} : { onSelectThread })}
+            />
+          </motion.div>
         )}
       </AnimatePresence>
       {/* Both clusters end on the same glyph edge: the gear's or the
@@ -438,7 +458,7 @@ function WorkspaceFrame({
   }
 
   /**
-   * Show a thread from the rail or the history panel. The new one has no
+   * Show a thread from the rail or the title's history. The new one has no
    * page of its own: empty, it is the landing; with messages, the thread on
    * `/agent`, whose URL then settles on its own.
    */
@@ -522,6 +542,9 @@ function WorkspaceFrame({
       compact={chatOpen || isMobile}
       prefix={!docked && !isMobile}
       {...(chatTitle === undefined ? {} : { chatTitle })}
+      chatThreads={visibleThreads}
+      currentThreadId={chat.threadId}
+      onSelectThread={openThread}
       chatOpen={chatOpen}
       chatOverlay={docked}
       chatOverlayOpen={chatOverlayOpen}
@@ -619,9 +642,7 @@ function WorkspaceFrame({
   // `contents` on wide frames so the page rail is a flex item of the row.
   // Hidden below `xl` before JS hydrates, so a third column cannot crush
   // the page while the window is still being measured.
-  const pageAside = (
-    <div ref={setAsideHost} className="hidden xl:contents" />
-  );
+  const pageAside = <div ref={setAsideHost} className="hidden xl:contents" />;
   const overlayChat = docked && isCompact;
   const column =
     chatColumn === undefined ? null : (
@@ -629,8 +650,9 @@ function WorkspaceFrame({
         key="chat"
         page={chatColumn}
         title={chatTitle ?? "New chat"}
-        panel={panel}
-        onPanelChange={changePanel}
+        threads={visibleThreads}
+        currentThreadId={chat.threadId}
+        onSelectThread={openThread}
         overlay={overlayChat}
         fullWidth={isMobile}
         className={overlayChat ? undefined : "max-xl:hidden"}
@@ -644,9 +666,9 @@ function WorkspaceFrame({
       />
     );
   const contextPanel =
-    panel === null ||
+    panel !== "files" ||
     chatTitle === undefined ||
-    !(chatOpen || docked) ? null : panel === "files" ? (
+    !(chatOpen || docked) ? null : (
       <motion.div
         key="files-panel"
         initial={{ width: 0, opacity: 0 }}
@@ -697,19 +719,6 @@ function WorkspaceFrame({
           }}
         />
       </motion.div>
-    ) : (
-      <ChatContextPanel
-        key="context-panel"
-        mode="history"
-        threads={visibleThreads}
-        fileSections={fileSections}
-        currentThreadId={chat.threadId}
-        currentTitle={chatTitle}
-        onSelectThread={openThread}
-        onClose={() => {
-          changePanel(null);
-        }}
-      />
     );
 
   const showChatInFlow = column !== null && !overlayChat;
@@ -724,11 +733,7 @@ function WorkspaceFrame({
       {...(activeThreadId === undefined ? {} : { activeThreadId })}
       threads={visibleThreads}
       collapsed={isMobile ? false : collapsed}
-      onCollapsedChange={
-        isMobile
-          ? undefined
-          : setCollapsed
-      }
+      onCollapsedChange={isMobile ? undefined : setCollapsed}
       onNavigate={(key) => {
         // A preview left open would follow the chat into its column.
         chat.setPreview(null);
@@ -789,7 +794,9 @@ function WorkspaceFrame({
                 <AnimatePresence initial={false}>{column}</AnimatePresence>
               ) : null}
               {inFlowPanels ? (
-                <AnimatePresence initial={false}>{contextPanel}</AnimatePresence>
+                <AnimatePresence initial={false}>
+                  {contextPanel}
+                </AnimatePresence>
               ) : null}
             </div>
           ) : (
