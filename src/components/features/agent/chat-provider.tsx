@@ -11,6 +11,7 @@ import {
 } from "react";
 
 import type { ComposerPreview } from "@/components/features/agent/composer";
+import type { MessagePart } from "@/components/features/agent/agent-message";
 import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
 import type { DraggableResource } from "@/components/features/files/resource-drag";
@@ -108,12 +109,27 @@ export interface ChatActions {
    * first message names it.
    */
   startNew: () => void;
+  /** Start a fresh conversation with a complete, editable post in the thread. */
+  startPostChat: (post: PostChipData) => void;
   /** Close the preview and mark the page it opens as arriving by morph. */
   expand: (preview: ComposerPreview) => void;
   landed: () => void;
 }
 
 const ChatContext = createContext<(ChatState & ChatActions) | null>(null);
+
+function postDraftPart(post: PostChipData): MessagePart {
+  return {
+    type: "post_draft",
+    postId: post.id,
+    author: post.preview?.author ?? {
+      name: post.profile,
+      headline: "LinkedIn",
+    },
+    body: post.preview?.body ?? post.title,
+    ...(post.preview?.media === undefined ? {} : { media: post.preview.media }),
+  };
+}
 
 /** What pressing a button in a reply says on the user's behalf. */
 const INTENT_PROMPT: Record<string, string> = {
@@ -305,6 +321,21 @@ export function ChatProvider({
     setPreviewState(null);
   }, []);
 
+  const startPostChat = useCallback((post: PostChipData) => {
+    setThreadId(NEW_THREAD_ID);
+    setMessages([
+      {
+        id: `post-${post.id}`,
+        role: "assistant",
+        parts: [postDraftPart(post)],
+      },
+    ]);
+    setStreaming(null);
+    setDraft("");
+    setAttached([{ kind: "post", post }]);
+    setPreviewState(null);
+  }, []);
+
   const expand = useCallback((next: ComposerPreview) => {
     setPreviewState(null);
     setHandoff(next);
@@ -337,6 +368,7 @@ export function ChatProvider({
       open,
       reset,
       startNew,
+      startPostChat,
       expand,
       landed,
     }),
@@ -359,6 +391,7 @@ export function ChatProvider({
       open,
       reset,
       startNew,
+      startPostChat,
       expand,
       landed,
     ],

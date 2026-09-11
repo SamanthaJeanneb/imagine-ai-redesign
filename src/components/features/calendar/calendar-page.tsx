@@ -412,8 +412,7 @@ export function CalendarPage({
               ...current,
               [value.post.id]: value,
             }));
-            chat.startNew();
-            chat.attach({ kind: "post", post: value.post });
+            chat.startPostChat(value.post);
             router.push("/agent");
           }}
           onDelete={(postId) => {
