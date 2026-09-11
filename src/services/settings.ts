@@ -27,16 +27,29 @@ function toMemberRole(value: string): MemberRole {
 export interface GeneralSettings {
   orgName: string;
   logoUrl?: string;
+}
+
+/** Settings, General. The organization and its appearance. */
+export function getGeneralSettings(): GeneralSettings {
+  const org = getOrganization();
+  const logoUrl = getWorkspaceLogoUrl();
+
+  return {
+    orgName: org.name,
+    ...(logoUrl === undefined ? {} : { logoUrl }),
+  };
+}
+
+export interface MembersSettings {
   members: readonly Member[];
   /** Whoever is signed in, so the list can mark them. */
   currentUserId: string;
 }
 
-/** Settings, General. The organization and everyone in it. */
-export function getGeneralSettings(): GeneralSettings {
+/** Settings, Members. Everyone with access to the organization. */
+export function getMembersSettings(): MembersSettings {
   const db = getDb();
   const org = getOrganization();
-  const logoUrl = getWorkspaceLogoUrl();
   const usersById = new Map(db.public.users.map((user) => [user.id, user]));
 
   const members = db.app.organization_members
@@ -54,8 +67,6 @@ export function getGeneralSettings(): GeneralSettings {
     });
 
   return {
-    orgName: org.name,
-    ...(logoUrl === undefined ? {} : { logoUrl }),
     members,
     currentUserId: org.created_by,
   };

@@ -77,9 +77,9 @@ function initials(name: string): string {
 }
 
 /**
- * Settings, General: who can work in the organization. One row per member
- * with their role as a select; the owner's role is fixed, and removal asks
- * first. Rows leave by collapsing so the list closes up behind them.
+ * Settings, Members: who can work in the organization. One row per member with
+ * their role as a select; the owner's role is fixed, and removal asks first.
+ * Rows leave by collapsing so the list closes up behind them.
  */
 export function MembersList({
   members,

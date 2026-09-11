@@ -15,12 +15,13 @@ export interface SettingsTab {
 
 export const SETTINGS_TABS: readonly SettingsTab[] = [
   { href: "/settings", label: "General" },
+  { href: "/settings/members", label: "Members" },
   { href: "/settings/profiles", label: "Profiles" },
   { href: "/settings/integrations", label: "Integrations" },
   { href: "/settings/api", label: "API" },
 ];
 
-/** `/settings/profiles/anything` is Profiles; `/settings` alone is General. */
+/** Nested settings paths activate their section; `/settings` alone is General. */
 function isActive(tab: SettingsTab, pathname: string, first: boolean): boolean {
   if (first) return pathname === tab.href;
   return pathname === tab.href || pathname.startsWith(`${tab.href}/`);
