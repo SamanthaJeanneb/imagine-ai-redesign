@@ -6,14 +6,21 @@ import { getCalendarPosts } from "@/services/calendar";
  * the search all change in the browser, and `lib/calendar` builds the cells.
  */
 export default function CalendarPage() {
-  const { postsByDay, eventsByDay, today, labelOptions, newPostProfile } =
-    getCalendarPosts();
+  const {
+    postsByDay,
+    eventsByDay,
+    today,
+    mediaLibrary,
+    labelOptions,
+    newPostProfile,
+  } = getCalendarPosts();
 
   return (
     <CalendarPageView
       postsByDay={postsByDay}
       eventsByDay={eventsByDay}
       today={today}
+      mediaLibrary={mediaLibrary}
       labelOptions={labelOptions}
       newPostProfile={newPostProfile}
     />

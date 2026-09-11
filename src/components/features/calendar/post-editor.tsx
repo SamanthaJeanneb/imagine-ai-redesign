@@ -1,24 +1,16 @@
 "use client";
 
-import { cn } from "cn";
 import { useState } from "react";
 
-import { LinkedInPost } from "@/components/features/agent/linkedin-post-draft";
+import { LinkedInPostEditor } from "@/components/features/calendar/linkedin-post-detail";
 import {
   type PostChipData,
   type PostChipStatus,
   postChipStyle,
 } from "@/components/features/calendar/post-chip";
-import { LinkedInPostEditor } from "@/components/features/calendar/linkedin-post-detail";
 import type { AssetTileData } from "@/components/features/files/asset-tile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import {
@@ -36,15 +28,14 @@ export interface PostEditorValue {
   internalNotes: string;
 }
 
-interface PostEditorDialogProps {
+interface PostEditorProps {
   value: PostEditorValue;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   onSave: (value: PostEditorValue) => void;
   onOpenAgent: (value: PostEditorValue) => void;
+  /** The editor asking for its tab to go away, after a delete. */
+  onClose: () => void;
   onDelete?: (postId: string) => void;
-  presentation?: "dialog" | "inline";
-  /** Assets the inline editor can attach to the post. */
+  /** Assets the editor can attach to the post. */
   mediaLibrary?: readonly AssetTileData[];
   /** The labels this workspace files posts under. */
   labelOptions?: readonly string[];
@@ -84,25 +75,23 @@ function titleFromBody(body: string): string {
 }
 
 /**
- * The focused calendar editor. It keeps the post and its publishing controls
- * in one modal, while the attached chip remains visible in the chat behind it.
+ * A post's own tab: the post as it reads on LinkedIn, editable, with the
+ * publishing controls beside it. The attached chip stays in the chat, so the
+ * agent can be asked about whatever is on screen.
  */
-export function PostEditorDialog({
+export function PostEditor({
   value,
-  open,
-  onOpenChange,
   onSave,
   onOpenAgent,
+  onClose,
   onDelete,
-  presentation = "dialog",
   mediaLibrary,
   labelOptions = [],
-}: PostEditorDialogProps) {
+}: PostEditorProps) {
   const [draft, setDraft] = useState(value);
   const preview = draft.post.preview;
   const author = preview?.author;
   const body = preview?.body ?? draft.post.title;
-  const currentStatus = STATUS_LABEL[draft.post.status];
   // A post can carry a label the workspace has since renamed; keep it listed.
   const label = draft.post.label;
   const labels =
@@ -117,100 +106,41 @@ export function PostEditorDialog({
     }));
   }
 
-  function save() {
-    onSave(draft);
-    if (presentation === "dialog") onOpenChange(false);
-  }
-
-  const editor = (
-    <>
-      <div
-        className={cn(
-          "flex shrink-0 flex-row items-center gap-s px-l py-m",
-          presentation === "dialog" && "border-b border-imagine-border",
-          presentation === "inline" && "mx-auto w-full max-w-6xl",
-        )}
-      >
+  return (
+    <div className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden bg-imagine-surface">
+      <div className="mx-auto flex w-full max-w-6xl shrink-0 flex-row items-center gap-s px-l py-m">
         <h2 className="type-body font-semibold">Edit post</h2>
         <span
           style={postChipStyle(draft.post.status)}
           className="rounded-control bg-[color-mix(in_srgb,var(--chip-color)_18%,transparent)] px-s py-xxs type-caption text-imagine-foreground-muted"
         >
-          {currentStatus}
+          {STATUS_LABEL[draft.post.status]}
         </span>
-        <div className="ml-auto flex items-center gap-xs">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              onOpenAgent(draft);
-            }}
-          >
-            <Icon name="imagine" size="s" />
-            Open in agent
-          </Button>
-          {presentation === "dialog" ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Close editor"
-              onClick={() => {
-                onOpenChange(false);
-              }}
-            >
-              <Icon name="xmark" />
-            </Button>
-          ) : null}
-        </div>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => {
+            onOpenAgent(draft);
+          }}
+          className="ml-auto"
+        >
+          <Icon name="imagine" size="s" />
+          Open in agent
+        </Button>
       </div>
 
-      <div
-        className={cn(
-          "grid min-h-0 flex-1 overflow-y-auto md:overflow-hidden",
-          presentation === "dialog" &&
-            "md:grid-cols-[minmax(0,1.65fr)_minmax(18rem,0.95fr)]",
-          presentation === "inline" &&
-            "mx-auto w-full max-w-6xl gap-l px-l pb-l md:grid-cols-[minmax(0,1fr)_20rem]",
-        )}
-      >
-        <div
-          className={cn(
-            "min-w-0 overflow-y-auto p-l",
-            presentation === "dialog" &&
-              "border-b border-imagine-border md:border-r md:border-b-0",
-            presentation === "inline" && "px-0",
-          )}
-        >
-          {author === undefined ? (
-            <label className="mb-l flex items-center gap-s">
-              <Avatar className="size-10">
-                <AvatarFallback>{initials(draft.post.profile)}</AvatarFallback>
-              </Avatar>
-              <span className="min-w-0 flex-1">
-                <span className="block type-small font-semibold">
-                  {draft.post.profile}
-                </span>
-                <span className="block type-caption text-imagine-foreground-muted">
-                  LinkedIn
-                </span>
-              </span>
-            </label>
-          ) : null}
-
+      <div className="mx-auto grid min-h-0 w-full max-w-6xl flex-1 gap-l overflow-y-auto px-l pb-l md:grid-cols-[minmax(0,1fr)_20rem] md:overflow-hidden">
+        <div className="min-w-0 overflow-y-auto py-l">
           {preview === undefined ? (
             <Textarea
               aria-label="Post body"
               value={body}
               onChange={(event) => {
-                const nextBody = event.target.value;
-                updatePost({
-                  title: titleFromBody(nextBody),
-                });
+                updatePost({ title: titleFromBody(event.target.value) });
               }}
               className="min-h-64 resize-none type-body"
             />
-          ) : presentation === "inline" ? (
+          ) : (
             <LinkedInPostEditor
               post={draft.post}
               body={body}
@@ -218,10 +148,7 @@ export function PostEditorDialog({
               onBodyChange={(nextBody) => {
                 updatePost({
                   title: titleFromBody(nextBody),
-                  preview: {
-                    ...preview,
-                    body: nextBody,
-                  },
+                  preview: { ...preview, body: nextBody },
                 });
               }}
               onMediaChange={(media) => {
@@ -231,50 +158,22 @@ export function PostEditorDialog({
                 });
               }}
             />
-          ) : (
-            <LinkedInPost
-              {...preview}
-              body={body}
-              timestamp={draft.post.time}
-              editing
-              onBodyChange={(nextBody) => {
-                updatePost({
-                  title: titleFromBody(nextBody),
-                  preview: {
-                    ...preview,
-                    body: nextBody,
-                  },
-                });
-              }}
-              className="shadow-none ring-1 ring-imagine-border"
-            />
           )}
 
-          <div
-            className={cn(
-              "mt-l flex items-center gap-s pt-m",
-              presentation === "dialog" && "border-t border-imagine-border",
-            )}
-          >
+          <div className="mt-l flex items-center gap-s pt-m">
             {draft.post.engagement === undefined ? (
               <>
-                {author === undefined ? (
-                  <Avatar className="size-7">
-                    <AvatarFallback>
-                      {initials(draft.post.profile)}
-                    </AvatarFallback>
-                  </Avatar>
-                ) : (
-                  <Avatar
-                    shape={author.kind === "company" ? "square" : "circle"}
-                    className="size-7"
-                  >
-                    {author.avatarUrl === undefined ? null : (
-                      <AvatarImage src={author.avatarUrl} alt="" />
-                    )}
-                    <AvatarFallback>{initials(author.name)}</AvatarFallback>
-                  </Avatar>
-                )}
+                <Avatar
+                  shape={author?.kind === "company" ? "square" : "circle"}
+                  className="size-7"
+                >
+                  {author?.avatarUrl === undefined ? null : (
+                    <AvatarImage src={author.avatarUrl} alt="" />
+                  )}
+                  <AvatarFallback>
+                    {initials(author?.name ?? draft.post.profile)}
+                  </AvatarFallback>
+                </Avatar>
                 <Input
                   aria-label="First comment"
                   placeholder="Add a first comment"
@@ -288,12 +187,7 @@ export function PostEditorDialog({
           </div>
         </div>
 
-        <div
-          className={cn(
-            "flex min-w-0 flex-col gap-l overflow-y-auto bg-imagine-surface-raised/35 p-l",
-            presentation === "inline" && "rounded-panel",
-          )}
-        >
+        <div className="flex min-w-0 flex-col gap-l overflow-y-auto rounded-panel bg-imagine-surface-raised/35 p-l">
           <fieldset className="flex flex-col gap-xs">
             <legend className="mb-xs type-small text-imagine-foreground-muted">
               Schedule
@@ -352,9 +246,9 @@ export function PostEditorDialog({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={NO_LABEL}>No label</SelectItem>
-                {labels.map((label) => (
-                  <SelectItem key={label} value={label}>
-                    {label}
+                {labels.map((item) => (
+                  <SelectItem key={item} value={item}>
+                    {item}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -380,20 +274,14 @@ export function PostEditorDialog({
         </div>
       </div>
 
-      <footer
-        className={cn(
-          "flex shrink-0 items-center gap-xs px-l py-m",
-          presentation === "dialog" && "border-t border-imagine-border",
-          presentation === "inline" && "mx-auto w-full max-w-6xl",
-        )}
-      >
+      <footer className="mx-auto flex w-full max-w-6xl shrink-0 items-center gap-xs px-l py-m">
         {onDelete === undefined ? null : (
           <Button
             type="button"
             variant="ghost"
             onClick={() => {
               onDelete(draft.post.id);
-              onOpenChange(false);
+              onClose();
             }}
             className="text-destructive hover:text-destructive"
           >
@@ -404,44 +292,21 @@ export function PostEditorDialog({
           type="button"
           variant="outline"
           onClick={() => {
-            onSave({
-              ...draft,
-              post: { ...draft.post, status: "published" },
-            });
-            if (presentation === "dialog") onOpenChange(false);
+            onSave({ ...draft, post: { ...draft.post, status: "published" } });
           }}
           className="ml-auto"
         >
           Publish now
         </Button>
-        <Button type="button" onClick={save}>
+        <Button
+          type="button"
+          onClick={() => {
+            onSave(draft);
+          }}
+        >
           Save
         </Button>
       </footer>
-    </>
-  );
-
-  if (presentation === "inline") {
-    return (
-      <div className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden bg-imagine-surface">
-        {editor}
-      </div>
-    );
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        showCloseButton={false}
-        overlayClassName="z-[60]"
-        className="z-[70] flex max-h-[min(46rem,calc(100dvh-2rem))] w-[min(64rem,calc(100vw-2rem))] max-w-none flex-col gap-0 overflow-hidden rounded-panel bg-imagine-surface p-0 sm:max-w-none"
-      >
-        <DialogTitle className="sr-only">Edit post</DialogTitle>
-        <DialogDescription className="sr-only">
-          Edit the post content, schedule, status, and internal notes.
-        </DialogDescription>
-        {editor}
-      </DialogContent>
-    </Dialog>
+    </div>
   );
 }

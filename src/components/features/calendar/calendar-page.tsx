@@ -24,9 +24,9 @@ import {
   postChipStyle,
 } from "@/components/features/calendar/post-chip";
 import {
-  PostEditorDialog,
+  PostEditor,
   type PostEditorValue,
-} from "@/components/features/calendar/post-editor-dialog";
+} from "@/components/features/calendar/post-editor";
 import {
   EditorTabStrip,
   type EditorTab,
@@ -55,8 +55,6 @@ interface CalendarPageProps {
   eventsByDay?: EventsByDay;
   /** The mock's fixed clock, as a date key. Where "Today" goes back to. */
   today: string;
-  /** `/calendar-2` opens posts as tabs; the primary calendar uses a modal. */
-  editorPresentation?: "dialog" | "tabs";
   /** Assets the editor can attach to a post. */
   mediaLibrary?: readonly AssetTileData[];
   /** The labels a post can be filed under. */
@@ -205,7 +203,6 @@ export function CalendarPage({
   postsByDay,
   eventsByDay = {},
   today,
-  editorPresentation = "dialog",
   mediaLibrary,
   labelOptions,
   newPostProfile,
@@ -255,12 +252,11 @@ export function CalendarPage({
   /** A calendar post opens for editing and becomes context for the chat. */
   function openPost(post: PostChipData, options?: PostOpenOptions) {
     chat.attach({ kind: "post", post });
-    if (editorPresentation === "tabs") {
-      setOpenPostIds((current) =>
-        current.includes(post.id) ? current : [...current, post.id],
-      );
-      if (options?.background === true) return;
-    }
+    setOpenPostIds((current) =>
+      current.includes(post.id) ? current : [...current, post.id],
+    );
+    // Command-click opens the tab without leaving the calendar.
+    if (options?.background === true) return;
     setEditingPostId(post.id);
     setActiveEditorId(post.id);
   }
@@ -460,18 +456,14 @@ export function CalendarPage({
 
   const editor =
     editorValue === undefined ? null : (
-      <PostEditorDialog
+      <PostEditor
         key={editorValue.post.id}
         value={editorValue}
-        open
-        presentation={editorPresentation === "tabs" ? "inline" : "dialog"}
         {...(mediaLibrary === undefined ? {} : { mediaLibrary })}
         {...(labelOptions === undefined ? {} : { labelOptions })}
-        onOpenChange={(open) => {
-          if (!open) {
-            setEditingPostId(null);
-            setActiveEditorId("calendar");
-          }
+        onClose={() => {
+          setEditingPostId(null);
+          setActiveEditorId("calendar");
         }}
         onSave={savePost}
         onOpenAgent={(value) => {
@@ -494,60 +486,51 @@ export function CalendarPage({
       />
     );
 
-  if (editorPresentation === "tabs") {
-    // Keep one stable content frame so opening a post does not remount the
-    // entire calendar before the editor enters. The chrome reveals only when
-    // there is a post tab.
-    const tabs: readonly EditorTab[] =
-      openEditorValues.length === 0
-        ? []
-        : [
-            { id: "calendar", label: "Calendar", icon: "calendar" },
-            ...openEditorValues.map(({ post }) => ({
-              id: post.id,
-              label: post.title,
-              icon:
-                post.status === "published"
-                  ? ("linkedin-in" as const)
-                  : ("pen" as const),
-              closable: true,
-            })),
-          ];
-    const activeId =
-      activeEditorId !== "calendar" &&
-      openEditorValues.some(({ post }) => post.id === activeEditorId)
-        ? activeEditorId
-        : "calendar";
-
-    return (
-      <EditorTabStrip
-        tabs={tabs}
-        activeId={activeId}
-        onActivate={(id) => {
-          setActiveEditorId(id);
-          setEditingPostId(id === "calendar" ? null : id);
-        }}
-        onClose={(id) => {
-          const index = openPostIds.indexOf(id);
-          const remaining = openPostIds.filter((postId) => postId !== id);
-          setOpenPostIds(remaining);
-          if (activeEditorId !== id) return;
-          const nextId =
-            remaining[Math.max(0, index - 1)] ?? remaining[0] ?? "calendar";
-          setActiveEditorId(nextId);
-          setEditingPostId(nextId === "calendar" ? null : nextId);
-        }}
-        className="min-h-0 flex-1"
-      >
-        {activeId === "calendar" ? calendarContent : editor}
-      </EditorTabStrip>
-    );
-  }
+  // Keep one stable content frame so opening a post does not remount the
+  // entire calendar before the editor enters. The chrome reveals only when
+  // there is a post tab.
+  const tabs: readonly EditorTab[] =
+    openEditorValues.length === 0
+      ? []
+      : [
+          { id: "calendar", label: "Calendar", icon: "calendar" },
+          ...openEditorValues.map(({ post }) => ({
+            id: post.id,
+            label: post.title,
+            icon:
+              post.status === "published"
+                ? ("linkedin-in" as const)
+                : ("pen" as const),
+            closable: true,
+          })),
+        ];
+  const activeId =
+    activeEditorId !== "calendar" &&
+    openEditorValues.some(({ post }) => post.id === activeEditorId)
+      ? activeEditorId
+      : "calendar";
 
   return (
-    <>
-      {calendarContent}
-      {editor}
-    </>
+    <EditorTabStrip
+      tabs={tabs}
+      activeId={activeId}
+      onActivate={(id) => {
+        setActiveEditorId(id);
+        setEditingPostId(id === "calendar" ? null : id);
+      }}
+      onClose={(id) => {
+        const index = openPostIds.indexOf(id);
+        const remaining = openPostIds.filter((postId) => postId !== id);
+        setOpenPostIds(remaining);
+        if (activeEditorId !== id) return;
+        const nextId =
+          remaining[Math.max(0, index - 1)] ?? remaining[0] ?? "calendar";
+        setActiveEditorId(nextId);
+        setEditingPostId(nextId === "calendar" ? null : nextId);
+      }}
+      className="min-h-0 flex-1"
+    >
+      {activeId === "calendar" ? calendarContent : editor}
+    </EditorTabStrip>
   );
 }
