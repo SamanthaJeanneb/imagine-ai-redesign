@@ -51,6 +51,8 @@ export const ICON_NAMES = [
   "gear",
   "google",
   "grip",
+  "hands-clapping",
+  "heart",
   "hubspot",
   "image",
   "imagine",

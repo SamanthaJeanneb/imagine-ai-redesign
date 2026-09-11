@@ -305,15 +305,15 @@ export function LinkedInPost({
               </span>
               <span
                 style={{ backgroundColor: REACTION_CELEBRATE }}
-                className="z-20 flex size-4 items-center justify-center rounded-full text-[9px] leading-none ring-1 ring-imagine-surface"
+                className="z-20 flex size-4 items-center justify-center rounded-full text-white ring-1 ring-imagine-surface"
               >
-                👏
+                <Icon name="hands-clapping" active className="text-[9px]" />
               </span>
               <span
-                className="z-10 flex size-4 items-center justify-center rounded-full bg-white text-[11px] leading-none ring-1 ring-imagine-surface"
-                style={{ color: REACTION_LOVE }}
+                style={{ backgroundColor: REACTION_LOVE }}
+                className="z-10 flex size-4 items-center justify-center rounded-full text-white ring-1 ring-imagine-surface"
               >
-                ♥
+                <Icon name="heart" active className="text-[9px]" />
               </span>
             </span>
             {COUNT.format(stats.reactions)}
