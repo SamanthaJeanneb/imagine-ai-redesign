@@ -15,10 +15,10 @@ const STEPS: readonly { id: string; label: string; href?: string }[] = [
   {
     id: "organization",
     label: "Set up organization",
-    href: "/onboarding/organization",
+    href: "/onboarding-1/organization",
   },
-  { id: "team", label: "Invite team", href: "/onboarding/team" },
-  { id: "linkedin", label: "Connect LinkedIn", href: "/onboarding/linkedin" },
+  { id: "team", label: "Invite team", href: "/onboarding-1/team" },
+  { id: "linkedin", label: "Connect LinkedIn", href: "/onboarding-1/linkedin" },
 ];
 
 export function OnboardingRail() {

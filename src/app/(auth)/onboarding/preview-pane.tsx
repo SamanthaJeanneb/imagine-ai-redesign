@@ -115,7 +115,7 @@ function WorkspaceMock({
   className?: string;
 }) {
   const named = orgName.trim() !== "";
-  const ringId = "onboarding-2-focus";
+  const ringId = "onboarding-focus";
 
   return (
     <div

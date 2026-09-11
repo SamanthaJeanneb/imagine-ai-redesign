@@ -12,8 +12,8 @@ interface StepFrameProps {
   /** The form or panel for this step. */
   children: ReactNode;
   /**
-   * Pinned to the foot of the column. The primary action and Back go
-   * together at the left; a skip link takes `ml-auto` for the right edge.
+   * Pinned to the foot of the column. Back at the left edge; the primary
+   * action at the right, with a skip link just before it.
    */
   actions: ReactNode;
   className?: string;
@@ -57,7 +57,7 @@ export function StepFrame({
         </div>
         {children}
       </div>
-      <div className="flex flex-wrap items-center gap-l">{actions}</div>
+      <div className="flex items-center justify-between gap-l">{actions}</div>
     </div>
   );
 }
