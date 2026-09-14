@@ -33,10 +33,7 @@ import {
 } from "@/components/ui/select";
 import type { MembersSettings as MembersSettingsData } from "@/services/settings";
 
-const INVITE_ROLES: readonly Exclude<MemberRole, "owner">[] = [
-  "admin",
-  "member",
-];
+const INVITE_ROLES: readonly MemberRole[] = ["admin", "member"];
 
 /** "jane.doe@acme.com" → "Jane Doe", for the row until they sign in. */
 function nameFromEmail(email: string): string {

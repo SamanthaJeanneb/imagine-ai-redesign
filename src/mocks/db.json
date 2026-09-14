@@ -50,7 +50,7 @@
         "id": "mem_01",
         "org_id": "org_acme",
         "user_id": "usr_sam",
-        "role": "owner",
+        "role": "admin",
         "member_name": "Samantha Brown",
         "joined_at": "2026-01-14T10:00:00.000Z"
       },

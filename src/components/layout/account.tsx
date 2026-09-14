@@ -82,11 +82,11 @@ function ThemeMenu() {
 
   return (
     <DropdownMenuSub>
-      <DropdownMenuSubTrigger>
+      <DropdownMenuSubTrigger className="gap-s px-s py-s">
         <Icon name={isDark ? "moon" : "sun"} />
         Theme
       </DropdownMenuSubTrigger>
-      <DropdownMenuSubContent>
+      <DropdownMenuSubContent className="p-s">
         <DropdownMenuRadioGroup
           value={mounted ? toThemeValue(theme) : ""}
           onValueChange={(next) => {
@@ -94,7 +94,11 @@ function ThemeMenu() {
           }}
         >
           {THEMES.map((option) => (
-            <DropdownMenuRadioItem key={option.value} value={option.value}>
+            <DropdownMenuRadioItem
+              key={option.value}
+              value={option.value}
+              className="px-s py-s"
+            >
               {option.label}
             </DropdownMenuRadioItem>
           ))}
@@ -144,15 +148,15 @@ export function AccountControls({
             </span>
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-64">
-          <div className="flex items-center gap-s px-1.5 py-1.5">
+        <DropdownMenuContent align="end" className="w-64 p-s">
+          <div className="flex items-center gap-s p-s">
             <Avatar>
               {user.avatarUrl ? (
                 <AvatarImage src={user.avatarUrl} alt="" />
               ) : null}
               <AvatarFallback>{initials(user.name)}</AvatarFallback>
             </Avatar>
-            <div className="flex min-w-0 flex-col">
+            <div className="flex min-w-0 flex-col gap-xxs">
               <span className="truncate type-small font-medium text-imagine-foreground">
                 {user.name}
               </span>
@@ -166,16 +170,19 @@ export function AccountControls({
               )}
             </div>
           </div>
-          <DropdownMenuSeparator />
+          <DropdownMenuSeparator className="-mx-s my-xs" />
           <DropdownMenuGroup>
-            <DropdownMenuItem onSelect={onOpenSettings}>
+            <DropdownMenuItem
+              onSelect={onOpenSettings}
+              className="gap-s px-s py-s"
+            >
               <Icon name="gear" />
               Settings
             </DropdownMenuItem>
             <ThemeMenu />
           </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={onSignOut}>
+          <DropdownMenuSeparator className="-mx-s my-xs" />
+          <DropdownMenuItem onSelect={onSignOut} className="gap-s px-s py-s">
             <Icon name="right-from-bracket" />
             Sign out
           </DropdownMenuItem>

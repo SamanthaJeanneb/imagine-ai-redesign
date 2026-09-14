@@ -18,10 +18,10 @@ import { formatRelative } from "@/lib/format";
 import { getDb, getNow, getOrganization } from "@/mocks/db";
 import { getWorkspaceLogoUrl } from "@/services/workspace";
 
-const MEMBER_ROLES: readonly MemberRole[] = ["owner", "admin", "member"];
+const MEMBER_ROLES: readonly MemberRole[] = ["admin", "member"];
 
 function toMemberRole(value: string): MemberRole {
-  return MEMBER_ROLES.find((role) => role === value) ?? "member";
+  return MEMBER_ROLES.find((role) => role === value) ?? "admin";
 }
 
 export interface GeneralSettings {

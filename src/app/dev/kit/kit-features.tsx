@@ -2540,7 +2540,7 @@ const MEMBERS: readonly Member[] = [
     name: "Samantha Brown",
     email: "sam@acme.com",
     avatarUrl: "https://i.pravatar.cc/96?img=26",
-    role: "owner",
+    role: "admin",
   },
   {
     id: "usr_sarah",

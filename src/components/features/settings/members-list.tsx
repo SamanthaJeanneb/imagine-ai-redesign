@@ -34,8 +34,8 @@ import {
 } from "@/components/ui/tooltip";
 import { fade } from "@/styles/motion";
 
-/** `organization_members.role`, narrowed. */
-export type MemberRole = "owner" | "admin" | "member";
+/** `organization_members.role`, narrowed to what settings can assign. */
+export type MemberRole = "admin" | "member";
 
 export interface Member {
   id: string;
@@ -57,16 +57,11 @@ interface MembersListProps {
 }
 
 export const ROLE_LABEL: Record<MemberRole, string> = {
-  owner: "Owner",
   admin: "Admin",
   member: "Member",
 };
 
-/** The roles a member can be moved between. Ownership does not transfer here. */
-const ASSIGNABLE_ROLES: readonly Exclude<MemberRole, "owner">[] = [
-  "admin",
-  "member",
-];
+const ASSIGNABLE_ROLES: readonly MemberRole[] = ["admin", "member"];
 
 function initials(name: string): string {
   return name
@@ -78,8 +73,7 @@ function initials(name: string): string {
 
 /**
  * Settings, Members: who can work in the organization. One row per member with
- * their role as a select; the owner's role is fixed, and removal asks first.
- * Rows leave by collapsing so the list closes up behind them.
+ * their role as a select, and removal asks first.
  */
 export function MembersList({
   members,
@@ -97,7 +91,6 @@ export function MembersList({
       <AnimatePresence initial={false}>
         {members.map((member) => {
           const isSelf = member.id === currentUserId;
-          const fixedRole = member.role === "owner";
           return (
             <StaggerItem
               key={member.id}
@@ -131,40 +124,34 @@ export function MembersList({
                     {member.email}
                   </span>
                 </span>
-                {fixedRole ? (
-                  <span className="px-2.5 type-small text-imagine-foreground-muted">
-                    {ROLE_LABEL.owner}
-                  </span>
-                ) : (
-                  <Select
-                    value={member.role}
-                    onValueChange={(next) => {
-                      const role = ASSIGNABLE_ROLES.find(
-                        (candidate) => candidate === next,
-                      );
-                      if (role !== undefined) onRoleChange?.(member.id, role);
-                    }}
+                <Select
+                  value={member.role}
+                  onValueChange={(next) => {
+                    const role = ASSIGNABLE_ROLES.find(
+                      (candidate) => candidate === next,
+                    );
+                    if (role !== undefined) onRoleChange?.(member.id, role);
+                  }}
+                >
+                  <SelectTrigger
+                    size="sm"
+                    aria-label={`Role for ${member.name}`}
+                    className="w-28 border-transparent bg-transparent shadow-none hover:bg-imagine-surface-raised"
                   >
-                    <SelectTrigger
-                      size="sm"
-                      aria-label={`Role for ${member.name}`}
-                      className="w-28 border-transparent bg-transparent shadow-none hover:bg-imagine-surface-raised"
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent align="end">
-                      <SelectGroup>
-                        {ASSIGNABLE_ROLES.map((role) => (
-                          <SelectItem key={role} value={role}>
-                            {ROLE_LABEL[role]}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                )}
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent align="end">
+                    <SelectGroup>
+                      {ASSIGNABLE_ROLES.map((role) => (
+                        <SelectItem key={role} value={role}>
+                          {ROLE_LABEL[role]}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
                 <div className="flex size-control-sm shrink-0 items-center justify-center">
-                  {fixedRole || isSelf || onRemove === undefined ? null : (
+                  {isSelf || onRemove === undefined ? null : (
                     <AlertDialog>
                       <Tooltip>
                         <TooltipTrigger asChild>
