@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "cn";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useState } from "react";
@@ -203,10 +202,10 @@ export function AgentWorkspace({
               key="below"
               exit={blurOut}
               transition={fade.base}
-              className={cn(
-                "flex min-w-0 flex-col",
-                centered ? "shrink-0" : "shrink-0 xl:min-h-0 xl:flex-1",
-              )}
+              // Natural height in both modes: the calendar takes the room it
+              // needs and the page scrolls, rather than the strip squeezing
+              // into what a laptop leaves under the composer.
+              className="flex min-w-0 shrink-0 flex-col"
             >
               {centered ? (
                 <div className="mx-auto flex w-full max-w-4xl min-w-0 flex-col gap-xxl pt-xxl pb-l md:gap-xxxl md:pt-xxxl">

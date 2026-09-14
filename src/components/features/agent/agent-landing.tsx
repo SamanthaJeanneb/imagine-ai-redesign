@@ -96,7 +96,7 @@ export function LandingBelow({
     <div
       className={cn(
         LANDING_COLUMN,
-        "flex flex-col gap-xl pt-xl md:gap-xxl md:pt-xxl xl:min-h-0 xl:flex-1",
+        "flex flex-col gap-xl pt-xl md:gap-xxl md:pt-xxl",
       )}
     >
       {entries.length === 0 ? null : (
@@ -134,17 +134,19 @@ export function LandingBelow({
           ) : null}
         </section>
       )}
-      <section className="flex flex-col gap-l xl:min-h-0 xl:flex-1">
+      <section className="flex flex-col gap-l">
         <h2 className="type-heading">Next two weeks</h2>
         {/* The strip shrinks with the column, its chips slimming to a line
-            before its cells get narrower than a word. */}
-        <div className="min-w-0 xl:min-h-0 xl:flex-1">
+            before its cells get narrower than a word. It is never squeezed
+            to the height left on screen: both weeks show at full height and
+            the page scrolls to reach them. */}
+        <div className="min-w-0">
           <CalendarGrid
             days={days}
             density="strip"
+            fill={false}
             onOpenPost={onOpenPost}
             onOpenEvent={onOpenEvent}
-            className="h-full min-h-0 flex-1"
             {...(selectedPostId === undefined ? {} : { selectedPostId })}
           />
         </div>
