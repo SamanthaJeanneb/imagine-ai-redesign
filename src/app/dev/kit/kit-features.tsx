@@ -1646,14 +1646,23 @@ export function ComposerDemo() {
               onAttach={() => {
                 toast("Attach");
               }}
+              {...(preview === null
+                ? {}
+                : {
+                    expandLabel:
+                      preview === "calendar"
+                        ? "Open calendar"
+                        : "Open analytics",
+                    onExpand: () => {
+                      toast(
+                        preview === "calendar"
+                          ? "Expands to /calendar"
+                          : "Expands to /analytics",
+                      );
+                    },
+                  })}
             >
-              <PreviewSurface
-                open={preview === "calendar"}
-                expandLabel="Open calendar"
-                onExpand={() => {
-                  toast("Expands to /calendar");
-                }}
-              >
+              <PreviewSurface open={preview === "calendar"}>
                 <CalendarGrid
                   days={TWO_WEEKS}
                   density="preview"
@@ -1665,13 +1674,7 @@ export function ComposerDemo() {
                   }}
                 />
               </PreviewSurface>
-              <PreviewSurface
-                open={preview === "analytics"}
-                expandLabel="Open analytics"
-                onExpand={() => {
-                  toast("Expands to /analytics");
-                }}
-              >
+              <PreviewSurface open={preview === "analytics"}>
                 <ChartBlock
                   kind="bar"
                   data={IMPRESSIONS}

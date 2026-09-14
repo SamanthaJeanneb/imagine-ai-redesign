@@ -143,16 +143,18 @@ export function ChatDock({
       {...(attachmentContent === undefined
         ? {}
         : { attachments: attachmentContent })}
+      {...(isDock
+        ? {
+            expandLabel: EXPAND_LABEL[shown],
+            onExpand: () => {
+              chat.expand(shown);
+              router.push(PREVIEW_PAGE[shown]);
+            },
+          }
+        : {})}
     >
       {isDock ? (
-        <PreviewSurface
-          open={chat.preview !== null}
-          expandLabel={EXPAND_LABEL[shown]}
-          onExpand={() => {
-            chat.expand(shown);
-            router.push(PREVIEW_PAGE[shown]);
-          }}
-        >
+        <PreviewSurface open={chat.preview !== null}>
           {/* Only the visible preview carries the shared id: a hidden one
               would measure as nothing and the page's block would morph from it. */}
           <Activity mode={shown === "calendar" ? "visible" : "hidden"}>

@@ -2,7 +2,7 @@
 
 import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 import {
   hasResourceDrag,
@@ -26,6 +26,44 @@ const PREVIEW_OPTIONS: readonly {
 
 const ALL_PREVIEWS: readonly ComposerPreview[] = ["calendar", "analytics"];
 
+const DEFAULT_PLACEHOLDER = "Ask about your LinkedIn, or describe a post";
+const COMPACT_PLACEHOLDER = "Ask Imagine";
+
+let measureCtx: CanvasRenderingContext2D | null | undefined;
+
+function getMeasureContext(): CanvasRenderingContext2D | null {
+  if (measureCtx !== undefined) return measureCtx;
+  if (typeof document === "undefined") {
+    measureCtx = null;
+    return null;
+  }
+  measureCtx = document.createElement("canvas").getContext("2d");
+  return measureCtx;
+}
+
+/** Whether `text` would sit on one line in this field's content box. */
+function placeholderFitsOneLine(
+  field: HTMLTextAreaElement,
+  text: string,
+): boolean {
+  const ctx = getMeasureContext();
+  if (ctx === null) return true;
+  const styles = getComputedStyle(field);
+  ctx.font = `${styles.fontStyle} ${styles.fontWeight} ${styles.fontSize} ${styles.fontFamily}`;
+  const letterSpacing =
+    styles.letterSpacing === "normal"
+      ? 0
+      : Number.parseFloat(styles.letterSpacing);
+  const textWidth =
+    ctx.measureText(text).width +
+    letterSpacing * Math.max(0, text.length - 1);
+  const available =
+    field.clientWidth -
+    Number.parseFloat(styles.paddingLeft) -
+    Number.parseFloat(styles.paddingRight);
+  return textWidth <= available;
+}
+
 interface ComposerProps {
   /** `hero` is the landing prompt; `dock` is the thread's bottom bar. */
   variant?: "hero" | "dock";
@@ -48,6 +86,9 @@ interface ComposerProps {
   /** Files and assets can be dropped directly onto the composer. */
   onResourceDrop?: (resource: DraggableResource) => void;
   onAttach?: () => void;
+  /** Trailing action on the chip row while a preview is open, e.g. "Open calendar". */
+  expandLabel?: string;
+  onExpand?: () => void;
   /** Off for reduced motion, where the hero should not slide into the dock. */
   animateLayout?: boolean;
   className?: string;
@@ -62,7 +103,7 @@ export function Composer({
   value,
   onValueChange,
   onSend,
-  placeholder = "Ask about your LinkedIn, or describe a post",
+  placeholder = DEFAULT_PLACEHOLDER,
   preview = null,
   onPreviewChange,
   previews = ALL_PREVIEWS,
@@ -71,14 +112,41 @@ export function Composer({
   attachments,
   onResourceDrop,
   onAttach,
+  expandLabel,
+  onExpand,
   animateLayout = true,
   className,
 }: ComposerProps) {
   const [focused, setFocused] = useState(false);
   const [dropActive, setDropActive] = useState(false);
+  const [compactPlaceholder, setCompactPlaceholder] = useState(false);
   const dragDepth = useRef(0);
+  const fieldRef = useRef<HTMLTextAreaElement>(null);
   const canSend = value.trim().length > 0;
   const isDock = variant === "dock";
+  const isDefaultPlaceholder = placeholder === DEFAULT_PLACEHOLDER;
+
+  useLayoutEffect(() => {
+    if (!isDefaultPlaceholder) {
+      setCompactPlaceholder(false);
+      return;
+    }
+    const field = fieldRef.current;
+    if (field === null) return;
+    let cancelled = false;
+    const measure = () => {
+      if (cancelled) return;
+      setCompactPlaceholder(!placeholderFitsOneLine(field, DEFAULT_PLACEHOLDER));
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(field);
+    void document.fonts.ready.then(measure);
+    return () => {
+      cancelled = true;
+      observer.disconnect();
+    };
+  }, [isDefaultPlaceholder]);
 
   function submit() {
     if (!canSend) return;
@@ -156,8 +224,8 @@ export function Composer({
         ) : null}
       </AnimatePresence>
 
-      {/* The preview sits on top, like the wireframe: the open chip below it
-          is the way to dismiss, the corner icon the way to expand. */}
+      {/* The preview sits on top: the open chip below it dismisses, and
+          Open calendar / Open analytics sits on that same row, trailing. */}
       {children}
 
       {isDock && onPreviewChange ? (
@@ -204,6 +272,16 @@ export function Composer({
               );
             })}
           </AnimatePresence>
+          {preview !== null && expandLabel !== undefined ? (
+            <Button
+              size="xs"
+              variant="link"
+              onClick={onExpand}
+              className="ml-auto px-0 text-imagine-secondary hover:text-imagine-secondary-strong"
+            >
+              {expandLabel}
+            </Button>
+          ) : null}
         </div>
       ) : null}
 
@@ -232,9 +310,14 @@ export function Composer({
           </Button>
         ) : null}
         <textarea
+          ref={fieldRef}
           rows={1}
           value={value}
-          placeholder={placeholder}
+          placeholder={
+            isDefaultPlaceholder && compactPlaceholder
+              ? COMPACT_PLACEHOLDER
+              : placeholder
+          }
           aria-label="Message the agent"
           onChange={(event) => {
             onValueChange(event.target.value);

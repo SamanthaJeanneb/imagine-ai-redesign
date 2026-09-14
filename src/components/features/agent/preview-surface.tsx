@@ -3,29 +3,23 @@
 import { cn } from "cn";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
-import { Button } from "@/components/ui/button";
 import { fade, spring } from "@/styles/motion";
 
 interface PreviewSurfaceProps {
   open: boolean;
-  /** Label for the expand action, e.g. "Open calendar". */
-  expandLabel: string;
-  onExpand?: () => void;
   children: React.ReactNode;
   className?: string;
 }
 
 /**
  * The calendar or analytics preview that grows out of the composer frame.
- * The clip springs open on height; the content fades in a beat later; the
- * expand action sits under the preview, trailing, so it never covers a cell.
- * The children carry the shared `layoutId`, so what morphs into the page is
- * the grid or the chart itself, not this frame.
+ * The clip springs open on height; the content fades in a beat later. The
+ * children carry the shared `layoutId`, so what morphs into the page is the
+ * grid or the chart itself, not this frame. Expand lives on the chip row
+ * under the preview, inline with Calendar / Analytics.
  */
 export function PreviewSurface({
   open,
-  expandLabel,
-  onExpand,
   children,
   className,
 }: PreviewSurfaceProps) {
@@ -48,10 +42,7 @@ export function PreviewSurface({
           transition={spring.soft}
           className="overflow-hidden"
         >
-          <div
-            data-slot="preview-surface"
-            className={cn("m-m flex flex-col gap-s", className)}
-          >
+          <div data-slot="preview-surface" className={cn("m-m", className)}>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -59,16 +50,6 @@ export function PreviewSurface({
             >
               {children}
             </motion.div>
-            <div className="flex justify-end">
-              <Button
-                size="sm"
-                variant="link"
-                onClick={onExpand}
-                className="px-0 text-imagine-secondary hover:text-imagine-secondary-strong"
-              >
-                {expandLabel}
-              </Button>
-            </div>
           </div>
         </motion.div>
       ) : null}
