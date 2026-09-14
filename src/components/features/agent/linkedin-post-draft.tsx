@@ -64,6 +64,13 @@ interface LinkedInPostProps extends LinkedInPostContent {
   /** Turns the body into an editable field. */
   editing?: boolean;
   onBodyChange?: (body: string) => void;
+  /**
+   * Calendar editor: type in the body as LinkedIn shows it, without the
+   * raised field used when editing a draft in chat.
+   */
+  plainEditing?: boolean;
+  /** When set, a remove control appears on each media tile. */
+  onRemoveMedia?: (id: string) => void;
   className?: string;
 }
 
@@ -226,6 +233,8 @@ export function LinkedInPost({
   onExpandedChange,
   editing = false,
   onBodyChange,
+  plainEditing = false,
+  onRemoveMedia,
   className,
 }: LinkedInPostProps) {
   const [expandedState, setExpandedState] = useState(false);
@@ -249,7 +258,7 @@ export function LinkedInPost({
       data-slot="linkedin-post"
       className={cn(
         "flex flex-col overflow-hidden rounded-panel bg-imagine-surface shadow-raised transition-shadow",
-        editing && "ring-2 ring-ring/30",
+        editing && !plainEditing && "ring-2 ring-ring/30",
         className,
       )}
     >
@@ -271,7 +280,15 @@ export function LinkedInPost({
             onChange={(event) => {
               onBodyChange?.(event.target.value);
             }}
-            className="field-sizing-content w-full resize-none rounded-control bg-imagine-surface-raised/60 px-s py-xs type-body outline-none"
+            {...(plainEditing
+              ? { placeholder: "What do you want to talk about?" }
+              : {})}
+            className={cn(
+              "field-sizing-content w-full resize-none type-body outline-none",
+              plainEditing
+                ? "bg-transparent p-0 whitespace-pre-line placeholder:text-imagine-foreground-faint"
+                : "rounded-control bg-imagine-surface-raised/60 px-s py-xs",
+            )}
           />
         ) : (
           <p className="type-body whitespace-pre-line">
@@ -303,13 +320,32 @@ export function LinkedInPost({
             media.length > 1 ? "grid-cols-2" : "grid-cols-1",
           )}
         >
-          {media.slice(0, 2).map((asset) => (
-            <AssetTile
-              key={asset.id}
-              asset={asset}
-              className="aspect-[4/3] rounded-none"
-            />
-          ))}
+          {media.slice(0, 2).map((asset) =>
+            onRemoveMedia === undefined ? (
+              <AssetTile
+                key={asset.id}
+                asset={asset}
+                className="aspect-[4/3] rounded-none"
+              />
+            ) : (
+              <div key={asset.id} className="group/media relative">
+                <AssetTile
+                  asset={asset}
+                  className="aspect-[4/3] rounded-none"
+                />
+                <button
+                  type="button"
+                  aria-label={`Remove ${asset.caption ?? "media"}`}
+                  onClick={() => {
+                    onRemoveMedia(asset.id);
+                  }}
+                  className="absolute top-xs right-xs flex size-7 items-center justify-center rounded-full bg-imagine-surface/80 text-imagine-foreground opacity-0 backdrop-blur transition-opacity group-hover/media:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/40"
+                >
+                  <Icon name="xmark" size="s" />
+                </button>
+              </div>
+            ),
+          )}
         </motion.div>
       ) : null}
 

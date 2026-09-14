@@ -3,15 +3,12 @@
 import { cn } from "cn";
 import { useRef } from "react";
 
-import {
-  AssetTile,
-  type AssetTileData,
-} from "@/components/features/files/asset-tile";
+import type { AssetTileData } from "@/components/features/files/asset-tile";
 import type {
   PostChipData,
   PostEngagementPerson,
 } from "@/components/features/calendar/post-chip";
-import { LinkedInActor } from "@/components/features/agent/linkedin-post-draft";
+import { LinkedInPost } from "@/components/features/agent/linkedin-post-draft";
 import {
   LinkedInReaction,
   LinkedInReactionCluster,
@@ -20,7 +17,7 @@ import {
 } from "@/components/features/agent/linkedin-reaction";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DashedAction } from "@/components/ui/dashed-action";
-import { Icon, type IconName } from "@/components/ui/icon";
+import { Icon } from "@/components/ui/icon";
 
 interface LinkedInPostEditorProps {
   post: PostChipData;
@@ -63,17 +60,6 @@ function revokeBlobSrc(src: string | undefined) {
 }
 
 const COUNT = new Intl.NumberFormat("en-US");
-
-const ACTIONS: readonly {
-  icon: IconName;
-  label: string;
-  count?: "reactions" | "comments" | "reposts";
-}[] = [
-  { icon: "thumbs-up", label: "Like", count: "reactions" },
-  { icon: "comment", label: "Comment", count: "comments" },
-  { icon: "arrows-rotate", label: "Repost", count: "reposts" },
-  { icon: "paper-plane", label: "Send" },
-];
 
 function initials(name: string): string {
   return name
@@ -120,46 +106,28 @@ export function LinkedInPostEditor({
   );
 
   return (
-    <div className="mx-auto w-full max-w-[680px]">
-      <LinkedInActor author={preview.author} timestamp={post.time} />
-
-      <textarea
-        value={body}
-        aria-label="Post body"
-        placeholder="What do you want to share?"
-        onChange={(event) => {
-          onBodyChange(event.target.value);
-        }}
-        className="mt-l field-sizing-content min-h-36 w-full resize-none rounded-control bg-imagine-surface-raised/60 px-s py-xs type-body leading-relaxed transition-colors outline-none placeholder:text-imagine-foreground-faint hover:bg-imagine-surface-raised focus-visible:ring-2 focus-visible:ring-ring/30"
+    <div className="mx-auto flex w-full max-w-[680px] flex-col gap-l">
+      <LinkedInPost
+        author={preview.author}
+        body={body}
+        media={media}
+        stats={stats}
+        timestamp={post.time}
+        you
+        editing
+        plainEditing
+        expanded
+        onBodyChange={onBodyChange}
+        onRemoveMedia={
+          onMediaChange === undefined
+            ? undefined
+            : (id) => {
+                const removed = media.find((item) => item.id === id);
+                revokeBlobSrc(removed?.src);
+                onMediaChange(media.filter((item) => item.id !== id));
+              }
+        }
       />
-
-      {media.length > 0 ? (
-        <div
-          className={cn(
-            "mt-m grid gap-xs overflow-hidden rounded-control",
-            media.length > 1 ? "grid-cols-2" : "grid-cols-1",
-          )}
-        >
-          {media.slice(0, 2).map((asset) => (
-            <div key={asset.id} className="group/media relative">
-              <AssetTile asset={asset} className="aspect-[4/3] rounded-none" />
-              {onMediaChange === undefined ? null : (
-                <button
-                  type="button"
-                  aria-label={`Remove ${asset.caption ?? "media"}`}
-                  onClick={() => {
-                    revokeBlobSrc(asset.src);
-                    onMediaChange(media.filter((item) => item.id !== asset.id));
-                  }}
-                  className="absolute top-xs right-xs flex size-7 items-center justify-center rounded-full bg-imagine-surface/80 text-imagine-foreground opacity-0 backdrop-blur transition-opacity group-hover/media:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/40"
-                >
-                  <Icon name="xmark" size="s" />
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      ) : null}
 
       {onMediaChange === undefined || media.length >= MEDIA_LIMIT ? null : (
         <>
@@ -183,7 +151,6 @@ export function LinkedInPostEditor({
           />
           <DashedAction
             icon="upload"
-            className="mt-m"
             onClick={() => {
               fileInputRef.current?.click();
             }}
@@ -193,44 +160,8 @@ export function LinkedInPostEditor({
         </>
       )}
 
-      <div className="mt-l grid grid-cols-4 gap-xs">
-        {ACTIONS.map((action) => {
-          const count =
-            action.count === undefined ? undefined : stats?.[action.count];
-          return (
-            <button
-              key={action.label}
-              type="button"
-              className="flex min-w-0 items-center justify-center gap-xs rounded-control py-s type-small font-semibold text-imagine-foreground-muted transition-colors hover:bg-imagine-surface-raised hover:text-imagine-foreground"
-            >
-              <Icon name={action.icon} size="l" />
-              <span className="hidden sm:inline">{action.label}</span>
-              {count === undefined ? null : (
-                <span className="tabular-nums">{COUNT.format(count)}</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {stats?.impressions === undefined ? null : (
-        <div className="mt-m flex items-center justify-between gap-m">
-          <span className="inline-flex items-center gap-xs type-small font-semibold tabular-nums">
-            <Icon name="chart-simple" size="l" />
-            {COUNT.format(stats.impressions)} impressions
-          </span>
-          <a
-            href="/analytics"
-            className="inline-flex items-center gap-xs type-small font-semibold text-imagine-secondary hover:underline"
-          >
-            View analytics
-            <Icon name="arrow-right" size="s" />
-          </a>
-        </div>
-      )}
-
       {post.engagement === undefined ? null : (
-        <section className="mt-xl">
+        <section>
           <div className="mb-l flex items-center justify-between gap-m">
             <div className="flex min-w-0 items-center">
               {reactors.slice(0, 6).map((reactor, index) => (
