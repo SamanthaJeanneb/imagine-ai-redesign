@@ -115,8 +115,8 @@ function linesFor(
 /*
  * The heights a fitted cell budgets with, from the tokens the chips are built
  * from, so the grid and the chips cannot drift apart. Each chip is padding
- * plus its lines of caption text plus the gaps between them; a draft's dashed
- * border and the shadow are inside the margin below.
+ * plus its lines of caption text plus the gaps between them; the selected
+ * chip's shadow is inside the margin below.
  */
 const LINE = typeScale.caption.lineHeight;
 const CHIP_MARGIN = 2;

@@ -171,7 +171,6 @@ export function PostStatusPill({
       style={postChipStyle(status)}
       className={cn(
         "inline-flex h-6 shrink-0 items-center rounded-full chip-wash px-s type-caption font-medium whitespace-nowrap text-imagine-foreground",
-        status === "draft" && "border border-dashed border-[var(--chip-color)]",
         className,
       )}
     >
@@ -203,8 +202,9 @@ function toExcerpt(post: PostChipData): string {
  * is flat: a pastel fill of its color and a solid rail of it at the left, the
  * way a calendar app draws an event, with the text in the foreground. The color
  * is the post's status, so a month reads as scheduled, in review, or
- * published at a glance. A check once published, a warning when it failed,
- * a dashed edge on drafts. Selecting a chip fills it solid and lifts it.
+ * published at a glance. A check once published, a warning when it failed;
+ * a planned post is yellow and nothing more. Selecting a chip fills it solid
+ * and lifts it.
  */
 export function PostChip({
   post,
@@ -271,9 +271,6 @@ export function PostChip({
         "@max-[6rem]/chip:pl-s",
         selected ? "chip-solid shadow-raised" : "chip-wash",
         inverted ? "text-[var(--chip-contrast)]" : "text-imagine-foreground",
-        post.status === "draft" &&
-          !selected &&
-          "border border-dashed border-[var(--chip-color)]",
         className,
       )}
     >
