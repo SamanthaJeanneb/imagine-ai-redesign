@@ -17,8 +17,11 @@ import { ambient, spring } from "@/styles/motion";
 /** Pixels the front-most layer travels at the panel's edge. */
 const PARALLAX = 18;
 
+/** The cloud asset's aspect ratio. */
+const CLOUD_ASPECT = "1024 / 665";
+
 interface CloudProps {
-  /** Percent box within the panel. */
+  /** Percent box within the scene. */
   style: CSSProperties;
   /** Depth from 0 (far, moves against the pointer) to 1 (near, moves with it). */
   depth: number;
@@ -26,14 +29,16 @@ interface CloudProps {
   y: MotionValue<number>;
   /** Seconds into the drift loop, so the clouds are not in step. */
   offset: number;
+  /** Mirror it, so one asset reads as several clouds. */
+  flip?: boolean;
   className?: string;
 }
 
 /**
- * A cloud is four blurred puffs on a flat base. Blur is on the puffs, not the
- * cloud, so each stays its own compositor layer and the drift is a transform.
+ * One cloud photograph, positioned by percent. The parallax offset lives on
+ * the outer layer and the slow drift on the inner, so neither fights the other.
  */
-function Cloud({ style, depth, x, y, offset, className }: CloudProps) {
+function Cloud({ style, depth, x, y, offset, flip, className }: CloudProps) {
   const reduceMotion = useReducedMotion();
   const shift = (depth - 0.5) * 2 * PARALLAX;
   const cloudX = useTransform(x, [-0.5, 0.5], [-shift, shift]);
@@ -46,7 +51,8 @@ function Cloud({ style, depth, x, y, offset, className }: CloudProps) {
       style={{ ...style, x: cloudX, y: cloudY, willChange: "transform" }}
     >
       <motion.div
-        className="relative aspect-[5/2] w-full"
+        className="relative w-full"
+        style={{ aspectRatio: CLOUD_ASPECT }}
         animate={
           reduceMotion
             ? undefined
@@ -65,10 +71,16 @@ function Cloud({ style, depth, x, y, offset, className }: CloudProps) {
           delay: -offset,
         }}
       >
-        <span className="absolute bottom-0 left-[4%] h-[52%] w-[92%] rounded-full bg-white/95 blur-sm dark:bg-white/30" />
-        <span className="absolute bottom-[24%] left-[12%] h-[62%] w-[40%] rounded-full bg-white blur-sm dark:bg-white/34" />
-        <span className="absolute bottom-[18%] left-[40%] h-[84%] w-[40%] rounded-full bg-white blur-sm dark:bg-white/38" />
-        <span className="absolute bottom-[26%] left-[68%] h-[50%] w-[28%] rounded-full bg-white/95 blur-sm dark:bg-white/30" />
+        <Image
+          src="/brand/cloud.webp"
+          alt=""
+          fill
+          sizes="(min-width: 768px) 24vw, 0px"
+          className={cn(
+            "object-contain dark:opacity-40 dark:brightness-90",
+            flip && "-scale-x-100",
+          )}
+        />
       </motion.div>
     </motion.div>
   );
@@ -81,9 +93,9 @@ interface ThinkerPanelProps {
 }
 
 /**
- * The brand half of sign-in: a headline, the thinker on his rock floating
- * among clouds, and a footer line. Everything leans a little toward the
- * pointer; the far clouds lean away, so the scene has depth.
+ * The brand half of sign-in: a headline and the thinker on his rock, floating
+ * among clouds. Everything leans a little toward the pointer; the far clouds
+ * lean away, so the scene has depth.
  */
 export function ThinkerPanel({ corner, className }: ThinkerPanelProps) {
   const reduceMotion = useReducedMotion();
@@ -101,7 +113,6 @@ export function ThinkerPanel({ corner, className }: ThinkerPanelProps) {
     [-0.5, 0.5],
     [-PARALLAX * 0.25, PARALLAX * 0.25],
   );
-  const glowX = useTransform(x, [-0.5, 0.5], [PARALLAX, -PARALLAX]);
 
   function track(event: PointerEvent<HTMLDivElement>) {
     if (reduceMotion) return;
@@ -120,19 +131,12 @@ export function ThinkerPanel({ corner, className }: ThinkerPanelProps) {
       onPointerMove={track}
       onPointerLeave={release}
       className={cn(
-        "relative isolate flex flex-col overflow-hidden bg-imagine-secondary/12 dark:bg-imagine-secondary/8",
+        "relative isolate flex flex-col overflow-hidden bg-imagine-secondary/6 dark:bg-imagine-secondary/5",
         className,
       )}
     >
-      {/* Warm glow behind the figure. */}
-      <motion.div
-        aria-hidden="true"
-        style={{ x: glowX }}
-        className="pointer-events-none absolute inset-x-[-20%] top-[18%] h-[70%] rounded-full bg-[radial-gradient(ellipse_at_center,var(--imagine-secondary)_0%,transparent_65%)] opacity-25 blur-2xl dark:opacity-30"
-      />
-
       <div className="relative z-10 flex items-start justify-between gap-l p-xl pb-0">
-        <h2 className="mx-auto max-w-80 pt-m text-center type-display text-balance text-imagine-foreground">
+        <h2 className="mx-auto max-w-80 pt-s text-center type-display text-balance text-imagine-foreground">
           Turn what you know into your next post.
         </h2>
         {corner ? <div className="absolute top-l right-l">{corner}</div> : null}
@@ -145,7 +149,7 @@ export function ThinkerPanel({ corner, className }: ThinkerPanelProps) {
           x={x}
           y={y}
           offset={3}
-          style={{ left: "-8%", top: "44%", width: "48%" }}
+          style={{ left: "-16%", top: "36%", width: "62%" }}
           className="opacity-90"
         />
         <Cloud
@@ -153,7 +157,8 @@ export function ThinkerPanel({ corner, className }: ThinkerPanelProps) {
           x={x}
           y={y}
           offset={9}
-          style={{ right: "-8%", top: "36%", width: "44%" }}
+          flip
+          style={{ right: "-18%", top: "26%", width: "58%" }}
           className="opacity-85"
         />
         <Cloud
@@ -161,12 +166,12 @@ export function ThinkerPanel({ corner, className }: ThinkerPanelProps) {
           x={x}
           y={y}
           offset={14}
-          style={{ left: "20%", top: "72%", width: "60%" }}
+          style={{ left: "14%", top: "62%", width: "76%" }}
         />
 
         <motion.div
           style={{ x: statueX, y: statueY, willChange: "transform" }}
-          className="absolute inset-x-0 top-[5%] bottom-[7%]"
+          className="absolute inset-x-0 top-[9%] bottom-[4%]"
         >
           <motion.div
             className="relative size-full"
@@ -203,36 +208,24 @@ export function ThinkerPanel({ corner, className }: ThinkerPanelProps) {
           x={x}
           y={y}
           offset={0}
-          style={{ left: "-4%", top: "68%", width: "36%" }}
+          flip
+          style={{ left: "-14%", top: "64%", width: "50%" }}
         />
         <Cloud
           depth={0.9}
           x={x}
           y={y}
           offset={6}
-          style={{ right: "-3%", top: "60%", width: "32%" }}
+          style={{ right: "-12%", top: "56%", width: "46%" }}
         />
         <Cloud
           depth={1}
           x={x}
           y={y}
           offset={12}
-          style={{ left: "30%", top: "86%", width: "42%" }}
+          flip
+          style={{ left: "22%", top: "80%", width: "58%" }}
         />
-      </div>
-
-      <div className="relative z-10 mx-xl mb-l flex items-center justify-between gap-l border-t border-imagine-foreground/10 pt-m type-micro text-imagine-foreground-muted">
-        <span>LinkedIn content for B2B teams</span>
-        <span className="inline-flex items-center gap-xs tracking-normal normal-case">
-          Backed by
-          <span
-            aria-hidden="true"
-            className="ml-xs inline-flex size-4 items-center justify-center rounded-xs bg-imagine-foreground type-caption font-semibold text-imagine-surface"
-          >
-            Y
-          </span>
-          Combinator
-        </span>
       </div>
     </div>
   );
