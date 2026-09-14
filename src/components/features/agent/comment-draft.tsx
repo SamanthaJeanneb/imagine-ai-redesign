@@ -30,8 +30,6 @@ export interface CommentDraftContent {
 interface CommentDraftProps extends CommentDraftContent {
   /** Post it; the id is whatever the caller needs to act on. */
   onPost?: (body: string) => void;
-  /** Ask for a different take. */
-  onRegenerate?: () => void;
   className?: string;
 }
 
@@ -63,14 +61,13 @@ function Person({
 /**
  * A comment, drafted. The thing being answered sits above in a muted quote;
  * the reply below reads as a LinkedIn comment from the profile, editable in
- * place. Post keeps the text in this session; another angle goes to the agent.
+ * place. Post keeps the text in this session.
  */
 export function CommentDraft({
   target,
   author,
   body: initialBody,
   onPost,
-  onRegenerate,
   className,
 }: CommentDraftProps) {
   const [editing, setEditing] = useState(false);
@@ -155,12 +152,6 @@ export function CommentDraft({
             }}
           >
             {editing ? "Done" : "Edit"}
-          </Button>
-        )}
-        {editing || posted || onRegenerate === undefined ? null : (
-          <Button size="sm" variant="ghost" onClick={onRegenerate}>
-            <Icon name="arrows-rotate" size="s" data-icon="inline-start" />
-            Another angle
           </Button>
         )}
       </div>

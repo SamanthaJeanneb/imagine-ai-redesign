@@ -71,8 +71,10 @@ interface LinkedInPostDraftProps extends Omit<
   LinkedInPostProps,
   "timestamp" | "expanded" | "onExpandedChange"
 > {
-  /** Actions rendered under the post (Schedule, Edit, Regenerate). */
+  /** Actions rendered under the post (Schedule, Edit). */
   footer?: React.ReactNode;
+  /** Preview / Show full post under the card. Default on. */
+  foldControl?: boolean;
 }
 
 /** The feed's overlapping trio when a post has reactions but no type breakdown. */
@@ -383,11 +385,12 @@ export function LinkedInPost({
  */
 export function LinkedInPostDraft({
   footer,
+  foldControl = true,
   className,
   ...post
 }: LinkedInPostDraftProps) {
   const [expanded, setExpanded] = useState(true);
-  const foldable = foldBody(post.body).folded && !post.editing;
+  const foldable = foldControl && foldBody(post.body).folded && !post.editing;
 
   return (
     <div className={cn("flex w-full max-w-lg flex-col gap-s", className)}>

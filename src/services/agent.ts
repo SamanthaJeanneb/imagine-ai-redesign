@@ -348,7 +348,6 @@ const REPLY_FOR_INTENT: Record<string, string> = {
   approve: "schedule",
   comment: "comment",
   reply: "comment",
-  "regenerate-comment": "comment",
   outreach: "outreach",
 };
 

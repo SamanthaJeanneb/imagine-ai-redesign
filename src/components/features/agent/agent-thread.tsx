@@ -51,6 +51,12 @@ export function AgentThread({
 }: AgentThreadProps) {
   const endRef = useRef<HTMLDivElement>(null);
   const last = messages.at(-1);
+  const scheduledPostIds = new Set<string>();
+  for (const message of messages) {
+    for (const part of message.parts) {
+      if (part.type === "scheduled") scheduledPostIds.add(part.postId);
+    }
+  }
 
   // Scroll the overflow parent to its end, not the sentinel into view: the
   // dock sits after the thread and is sticky, so aligning the sentinel to the
@@ -93,6 +99,7 @@ export function AgentThread({
             thinking={thinking && index === messages.length - 1}
             {...(thinkingStatuses === undefined ? {} : { thinkingStatuses })}
             {...(onIntent === undefined ? {} : { onIntent })}
+            scheduledPostIds={scheduledPostIds}
           />
         ),
       )}

@@ -963,9 +963,6 @@ export function InteractionFeedDemo() {
               onPost={() => {
                 toast("Posted");
               }}
-              onRegenerate={() => {
-                toast("Regenerating");
-              }}
             />
           </Demo>
           <Demo label="Agent message with a comment draft part">

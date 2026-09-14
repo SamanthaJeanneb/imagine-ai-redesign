@@ -134,14 +134,9 @@ function postDraftPart(post: PostChipData): MessagePart {
 /** What pressing a button in a reply says on the user's behalf. */
 const INTENT_PROMPT: Record<string, string> = {
   schedule: "Schedule it.",
-  edit: "I want to edit it first.",
-  regenerate: "Try another angle.",
-  move: "Move it to another day.",
-  unschedule: "Take it off the calendar.",
   "browse-files": "Let me pick from the files.",
   comment: "Draft a reply to this comment.",
   reply: "Draft a reply to this comment.",
-  "regenerate-comment": "Try a different reply.",
   "post-comment": "Post it.",
   outreach: "Draft a comment on their latest post.",
 };
@@ -155,7 +150,6 @@ const REPLY_FOR_INTENT: Record<string, ReplyIntent> = {
   approve: "schedule",
   comment: "comment",
   reply: "comment",
-  "regenerate-comment": "comment",
   outreach: "outreach",
 };
 

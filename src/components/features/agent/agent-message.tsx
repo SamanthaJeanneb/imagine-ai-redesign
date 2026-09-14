@@ -68,6 +68,8 @@ interface AgentMessageProps {
   thinking?: boolean;
   thinkingStatuses?: readonly string[];
   onIntent?: (intent: string, postId?: string) => void;
+  /** Posts the agent has already put on the calendar in this thread. */
+  scheduledPostIds?: ReadonlySet<string>;
   className?: string;
 }
 
@@ -81,17 +83,22 @@ type DraftPartData = Extract<MessagePart, { type: "post_draft" }>;
 
 /**
  * A draft in the thread. Edit opens the body in place; Done keeps the
- * change in this session. Schedule still goes to the agent.
+ * change in this session. Schedule still goes to the agent. Once that post
+ * is on the calendar, the actions go away so the confirmation stands alone.
  */
 function DraftPart({
   part,
   onIntent,
+  scheduled = false,
 }: {
   part: DraftPartData;
   onIntent?: (intent: string, postId?: string) => void;
+  scheduled?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [body, setBody] = useState(part.body);
+  const [justScheduled, setJustScheduled] = useState(false);
+  const hideActions = scheduled || justScheduled;
 
   return (
     <LinkedInPostDraft
@@ -101,28 +108,32 @@ function DraftPart({
       you
       editing={editing}
       onBodyChange={setBody}
+      foldControl={!hideActions}
       footer={
-        <>
-          <Button
-            size="sm"
-            onClick={() => {
-              setEditing(false);
-              onIntent?.("schedule", part.postId);
-            }}
-          >
-            Schedule
-          </Button>
-          <Button
-            size="sm"
-            variant="soft"
-            aria-pressed={editing}
-            onClick={() => {
-              setEditing((current) => !current);
-            }}
-          >
-            {editing ? "Done" : "Edit"}
-          </Button>
-        </>
+        hideActions ? undefined : (
+          <>
+            <Button
+              size="sm"
+              onClick={() => {
+                setEditing(false);
+                setJustScheduled(true);
+                onIntent?.("schedule", part.postId);
+              }}
+            >
+              Schedule
+            </Button>
+            <Button
+              size="sm"
+              variant="soft"
+              aria-pressed={editing}
+              onClick={() => {
+                setEditing((current) => !current);
+              }}
+            >
+              {editing ? "Done" : "Edit"}
+            </Button>
+          </>
+        )
       }
     />
   );
@@ -131,9 +142,11 @@ function DraftPart({
 function Part({
   part,
   onIntent,
+  scheduledPostIds,
 }: {
   part: MessagePart;
   onIntent?: (intent: string, postId?: string) => void;
+  scheduledPostIds?: ReadonlySet<string>;
 }) {
   switch (part.type) {
     case "text":
@@ -158,7 +171,13 @@ function Part({
         />
       );
     case "post_draft":
-      return <DraftPart part={part} onIntent={onIntent} />;
+      return (
+        <DraftPart
+          part={part}
+          onIntent={onIntent}
+          scheduled={scheduledPostIds?.has(part.postId) ?? false}
+        />
+      );
     case "scheduled":
       return (
         <ScheduledGraphic
@@ -187,7 +206,6 @@ function Part({
           author={part.author}
           body={part.body}
           onPost={() => onIntent?.("post-comment", part.commentId)}
-          onRegenerate={() => onIntent?.("regenerate-comment", part.commentId)}
         />
       );
     default:
@@ -204,6 +222,7 @@ export function AgentMessage({
   thinking = false,
   thinkingStatuses = DEFAULT_STATUSES,
   onIntent,
+  scheduledPostIds,
   className,
 }: AgentMessageProps) {
   return (
@@ -218,7 +237,11 @@ export function AgentMessage({
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...fade.base, delay: index * stagger.list }}
         >
-          <Part part={part} onIntent={onIntent} />
+          <Part
+            part={part}
+            onIntent={onIntent}
+            scheduledPostIds={scheduledPostIds}
+          />
         </motion.div>
       ))}
       {thinking ? <ThinkingIndicator statuses={thinkingStatuses} /> : null}

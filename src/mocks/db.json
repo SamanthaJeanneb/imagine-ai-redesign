@@ -5231,7 +5231,7 @@
           },
           {
             "type": "text",
-            "text": "This is the customer call she mentioned on Tuesday. Nothing is scheduled yet, so you can edit it or ask for another angle."
+            "text": "This is the customer call she mentioned on Tuesday. Nothing is scheduled yet, so you can edit it or schedule it as is."
           },
           {
             "type": "post_draft",
