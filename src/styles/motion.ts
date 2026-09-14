@@ -11,7 +11,15 @@ export const spring = {
   soft: { type: "spring", bounce: 0.15, visualDuration: 0.4 },
   /** Size changes that must not overshoot: a post or document entering edit mode. */
   settle: { type: "spring", bounce: 0, visualDuration: 0.3 },
+  /** Parallax following the pointer: heavy and slow, so scenery lags the hand. */
+  lazy: { type: "spring", stiffness: 60, damping: 22, mass: 1.2 },
 } as const satisfies Record<string, Transition>;
+
+/** Seconds. Ambient loops that never finish: drifting clouds, a floating figure. */
+export const ambient = {
+  drift: 18,
+  float: 7,
+} as const;
 
 /** Seconds. */
 export const duration = {
