@@ -14,8 +14,7 @@ import {
   toConnectionState,
   transformClientRow,
 } from "@/entities/client";
-import { formatRelative } from "@/lib/format";
-import { getDb, getNow, getOrganization } from "@/mocks/db";
+import { getDb, getOrganization } from "@/mocks/db";
 import { getWorkspaceLogoUrl } from "@/services/workspace";
 
 const MEMBER_ROLES: readonly MemberRole[] = ["admin", "member"];
@@ -202,26 +201,12 @@ function linkedInIntegration(): ConnectedIntegration | null {
     description: "Publishing and analytics for every profile you manage.",
     icon: "linkedin-in",
     status: "connected",
-    facts: [`${String(auths.length)} profiles`, "All connected"],
   };
-}
-
-/** "47 contacts, 9 deals": what a CRM connection has brought in. */
-function crmFacts(connectionId: string): string {
-  const db = getDb();
-  const contacts = db.app.crm_contacts.filter(
-    (contact) => contact.connection_id === connectionId,
-  ).length;
-  const deals = db.app.crm_opportunities.filter(
-    (opportunity) => opportunity.connection_id === connectionId,
-  ).length;
-  return `${String(contacts)} contacts, ${String(deals)} deals`;
 }
 
 /** Settings, Integrations. Connected rows come from `crm_connections`. */
 export function getIntegrations(): Integrations {
   const db = getDb();
-  const now = getNow();
   const linkedIn = linkedInIntegration();
 
   const connected = [
@@ -236,12 +221,6 @@ export function getIntegrations(): Integrations {
           description: provider.description,
           icon: provider.icon,
           status: connection.status === "connected" ? "connected" : "expired",
-          facts: [
-            connection.last_synced_at === null
-              ? "Never synced"
-              : `Synced ${formatRelative(connection.last_synced_at, now)}`,
-            crmFacts(connection.id),
-          ],
         },
       ];
     }),

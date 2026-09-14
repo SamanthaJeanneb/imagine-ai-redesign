@@ -33,7 +33,6 @@ export function IntegrationsSettings({
           ? {
               ...candidate,
               status: "connected",
-              facts: ["Synced just now", candidate.facts[1]],
             }
           : candidate,
       ),
@@ -47,7 +46,6 @@ export function IntegrationsSettings({
     const row: ConnectedIntegration = {
       ...item,
       status: "connected",
-      facts: ["Connected just now", "First sync running"],
     };
     setAvailable((current) =>
       current.filter((candidate) => candidate.id !== id),
@@ -92,13 +90,7 @@ export function IntegrationsSettings({
             transition={fade.base}
           >
             <SettingsSection title="Available">
-              <IntegrationGrid
-                items={available}
-                onAdd={add}
-                onBrowseAll={() => {
-                  toast("More integrations are on the way.");
-                }}
-              />
+              <IntegrationGrid items={available} onAdd={add} />
             </SettingsSection>
           </motion.div>
         )}

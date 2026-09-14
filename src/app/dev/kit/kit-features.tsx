@@ -2689,7 +2689,6 @@ export function IntegrationsDemo() {
                 "Contacts, deals, and stages sync into the agent's context.",
               icon: "hubspot",
               status: "connected",
-              facts: ["Synced 2h ago", "1,204 contacts"],
             },
             {
               id: "slack",
@@ -2697,7 +2696,6 @@ export function IntegrationsDemo() {
               description: "Approval requests and weekly recaps in #marketing.",
               icon: "slack",
               status: "expired",
-              facts: ["Expired 3 days ago", "2 channels"],
             },
             {
               id: "linkedin",
@@ -2705,7 +2703,6 @@ export function IntegrationsDemo() {
               description: "Publishing and analytics for 5 profiles.",
               icon: "linkedin-in",
               status: "connected",
-              facts: ["Synced 12m ago", "5 profiles"],
             },
           ]}
           onReconnect={(id) => {
@@ -2737,9 +2734,6 @@ export function IntegrationsDemo() {
           ]}
           onAdd={(id) => {
             toast(`Add ${id}`);
-          }}
-          onBrowseAll={() => {
-            toast("Browse all");
           }}
         />
       </Demo>

@@ -14,8 +14,6 @@ export interface ConnectedIntegration {
   description: string;
   icon: IconName;
   status: "connected" | "expired";
-  /** Two short facts, e.g. "Synced 2h ago", "1,204 contacts". */
-  facts: readonly [string, string];
 }
 
 export interface AvailableIntegration {
@@ -41,7 +39,7 @@ interface IntegrationRowsProps {
 }
 
 /**
- * Connected services as rows: mark, name, two facts, and Reconnect. Expired
+ * Connected services as rows: mark, name, description, and Reconnect. Expired
  * rows make Reconnect the emphasized action.
  */
 export function IntegrationRows({
@@ -70,10 +68,6 @@ export function IntegrationRows({
                 {item.description}
               </span>
             </button>
-            <span className="hidden items-center gap-l type-small text-imagine-foreground-muted tabular-nums sm:flex">
-              <span>{item.facts[0]}</span>
-              <span>{item.facts[1]}</span>
-            </span>
             <Button
               size="sm"
               variant={item.status === "expired" ? "default" : "ghost"}
@@ -91,18 +85,16 @@ export function IntegrationRows({
 interface IntegrationGridProps {
   items: readonly AvailableIntegration[];
   onAdd?: (id: string) => void;
-  onBrowseAll?: () => void;
   className?: string;
 }
 
 /**
  * Services available to add, as soft tiles that lift on hover, ending in a
- * quiet "Browse all" tile.
+ * quiet "More coming soon" tile.
  */
 export function IntegrationGrid({
   items,
   onAdd,
-  onBrowseAll,
   className,
 }: IntegrationGridProps) {
   return (
@@ -134,17 +126,10 @@ export function IntegrationGrid({
         </StaggerItem>
       ))}
       <StaggerItem>
-        <motion.button
-          type="button"
-          whileHover={hoverLift.whileHover}
-          whileTap={press.whileTap}
-          transition={press.transition}
-          onClick={onBrowseAll}
-          className="flex h-full min-h-32 w-full items-center justify-center gap-s rounded-panel border border-dashed border-imagine-foreground-faint/60 type-small text-imagine-foreground-muted outline-none hover:border-imagine-foreground-muted hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
-        >
+        <div className="flex h-full min-h-32 w-full items-center justify-center gap-s rounded-panel border border-dashed border-imagine-foreground-faint/60 type-small text-imagine-foreground-muted">
           <Icon name="puzzle-piece" size="s" />
-          Browse all
-        </motion.button>
+          More coming soon
+        </div>
       </StaggerItem>
     </Stagger>
   );
