@@ -280,6 +280,11 @@ export function Composer({
               className="ml-auto px-0 text-imagine-secondary hover:text-imagine-secondary-strong"
             >
               {expandLabel}
+              <Icon
+                name="up-right-from-square"
+                size="s"
+                data-icon="inline-end"
+              />
             </Button>
           ) : null}
         </div>
