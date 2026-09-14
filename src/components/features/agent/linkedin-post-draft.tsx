@@ -186,6 +186,36 @@ export function LinkedInActor({
 }
 
 /**
+ * Calendar editor: the feed paragraph sizes the wrap; a borderless textarea
+ * sits on top so typing does not reflow words the way a field would.
+ */
+function LinkedInPlainBody({
+  body,
+  onChange,
+}: {
+  body: string;
+  onChange?: (body: string) => void;
+}) {
+  return (
+    <div className="relative">
+      <p aria-hidden="true" className="invisible type-body whitespace-pre-line">
+        {`${body}\n`}
+      </p>
+      <textarea
+        value={body}
+        aria-label="Post body"
+        rows={1}
+        placeholder="What do you want to talk about?"
+        onChange={(event) => {
+          onChange?.(event.target.value);
+        }}
+        className="absolute inset-0 size-full resize-none overflow-hidden border-0 bg-transparent p-0 font-sans type-body whitespace-pre-line outline-none placeholder:text-imagine-foreground-faint"
+      />
+    </div>
+  );
+}
+
+/**
  * The part of the body that shows before "…more". Cuts at the fold length,
  * on a word, or after the third line, whichever comes first.
  */
@@ -252,7 +282,10 @@ export function LinkedInPost({
     // under the body slides down with `layout="position"` instead of being
     // stretched by the card's own size animation.
     <motion.article
-      layout
+      // Size layout interpolates width, which reflows wrapping copy. Chat
+      // still uses it so the raised field can grow; the calendar editor
+      // only eases sibling position so the body stays where LinkedIn put it.
+      layout={plainEditing ? "position" : true}
       layoutDependency={`${String(expanded)}:${String(editing)}`}
       transition={fade.base}
       data-slot="linkedin-post"
@@ -272,23 +305,18 @@ export function LinkedInPost({
         />
       </div>
 
-      <div className="px-l pt-s">
-        {editing ? (
+      <div className="min-w-0 px-l pt-s">
+        {editing && plainEditing ? (
+          <LinkedInPlainBody body={body} onChange={onBodyChange} />
+        ) : editing ? (
           <textarea
             value={body}
             aria-label="Post body"
+            rows={1}
             onChange={(event) => {
               onBodyChange?.(event.target.value);
             }}
-            {...(plainEditing
-              ? { placeholder: "What do you want to talk about?" }
-              : {})}
-            className={cn(
-              "field-sizing-content w-full resize-none type-body outline-none",
-              plainEditing
-                ? "bg-transparent p-0 whitespace-pre-line placeholder:text-imagine-foreground-faint"
-                : "rounded-control bg-imagine-surface-raised/60 px-s py-xs",
-            )}
+            className="field-sizing-content w-full min-w-0 resize-none rounded-control bg-imagine-surface-raised/60 px-s py-xs type-body outline-none"
           />
         ) : (
           <p className="type-body whitespace-pre-line">
