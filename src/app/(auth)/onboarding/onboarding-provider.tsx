@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, type ReactNode, useContext, useState } from "react";
+import {
+  createContext,
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
+  useContext,
+  useState,
+} from "react";
 
 import type { ProfileSummary } from "@/components/features/settings/profile-list";
 
@@ -15,12 +22,9 @@ interface OnboardingState {
     name: string;
     logoUrl: string | undefined;
   }) => void;
-  /** The LinkedIn account has been linked. */
-  linkedInConnected: boolean;
-  setLinkedInConnected: (connected: boolean) => void;
-  /** The identities the agent will post as, chosen after connecting. */
-  postAs: readonly ProfileSummary[];
-  setPostAs: (profiles: readonly ProfileSummary[]) => void;
+  /** The LinkedIn accounts linked so far, in the order they connected. */
+  accounts: readonly ProfileSummary[];
+  setAccounts: Dispatch<SetStateAction<readonly ProfileSummary[]>>;
 }
 
 const OnboardingContext = createContext<OnboardingState | null>(null);
@@ -30,8 +34,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     name: string;
     logoUrl: string | undefined;
   }>({ name: "", logoUrl: undefined });
-  const [linkedInConnected, setLinkedInConnected] = useState(false);
-  const [postAs, setPostAs] = useState<readonly ProfileSummary[]>([]);
+  const [accounts, setAccounts] = useState<readonly ProfileSummary[]>([]);
 
   return (
     <OnboardingContext.Provider
@@ -39,10 +42,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
         orgName: organization.name,
         orgLogoUrl: organization.logoUrl,
         setOrganization,
-        linkedInConnected,
-        setLinkedInConnected,
-        postAs,
-        setPostAs,
+        accounts,
+        setAccounts,
       }}
     >
       {children}

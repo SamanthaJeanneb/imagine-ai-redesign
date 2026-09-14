@@ -33,14 +33,10 @@ export function getOwner(): TeamMember {
   };
 }
 
-/**
- * Who the owner's LinkedIn account can post as once it connects. A member
- * profile is a login; these are the identities behind it (`app.clients`):
- * the owner's own profile, then every company page they administer.
- */
-export function getPostingIdentities(): readonly ProfileSummary[] {
+/** The owner's own LinkedIn, as it will read once linked. */
+export function getOwnAccount(): ProfileSummary {
   const owner = getOwner();
-  const self: ProfileSummary = {
+  return {
     id: `member-${owner.id}`,
     name: owner.name ?? owner.email,
     headline: "Your profile",
@@ -48,19 +44,35 @@ export function getPostingIdentities(): readonly ProfileSummary[] {
     kind: "person",
     status: "connected",
   };
-  const pages = getDb()
-    .app.clients.filter((client) => client.is_company)
+}
+
+/**
+ * What the other LinkedIn sign-ins during onboarding resolve to, in order:
+ * the company page first, then the people the org posts for (`app.clients`).
+ * A real sign-in would return whoever logged in; the mock hands these out.
+ */
+export function getConnectableAccounts(): readonly ProfileSummary[] {
+  const owner = getOwner();
+  return getDb()
+    .app.clients.filter((client) => client.name !== owner.name)
+    .toSorted((a, b) => Number(b.is_company) - Number(a.is_company))
     .map<ProfileSummary>((client) => ({
       id: client.id,
       name: client.name,
-      headline: "Company page you admin",
+      headline: client.is_company
+        ? "Company page"
+        : (client.description ?? "LinkedIn profile"),
       ...(client.profile_picture_path === null
         ? {}
         : { avatarUrl: client.profile_picture_path }),
-      kind: "company",
+      kind: client.is_company ? "company" : "person",
       status: "connected",
     }));
-  return [self, ...pages];
+}
+
+/** Where the last step books the strategy meeting with the team. */
+export function getStrategyMeetingUrl(): string {
+  return "https://cal.com/imagine-ai/strategy";
 }
 
 /** The link that lands on the join screen. */

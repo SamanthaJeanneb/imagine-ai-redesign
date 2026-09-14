@@ -28,7 +28,7 @@ export function TeamStep({ inviteUrl, owner }: TeamStepProps) {
   return (
     <StepFrame
       step={3}
-      total={4}
+      total={6}
       title="Who's on your team?"
       description="Add the people who write, review, or approve posts. You can always invite more from settings."
       actions={

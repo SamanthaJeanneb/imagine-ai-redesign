@@ -1,14 +1,18 @@
 import { LinkedInStep } from "@/app/(auth)/onboarding/linkedin/linkedin-step";
-import { getOwner, getPostingIdentities } from "@/services/onboarding";
+import {
+  getConnectableAccounts,
+  getOwnAccount,
+  getOwner,
+} from "@/services/onboarding";
 
 export default function LinkedInStepPage() {
   const owner = getOwner();
 
   return (
     <LinkedInStep
-      accountName={owner.name ?? owner.email}
-      accountNote={`${owner.email}, ${owner.role}`}
-      identities={getPostingIdentities()}
+      ownAccount={getOwnAccount()}
+      ownAccountNote={`${owner.email}, ${owner.role}`}
+      connectable={getConnectableAccounts()}
     />
   );
 }

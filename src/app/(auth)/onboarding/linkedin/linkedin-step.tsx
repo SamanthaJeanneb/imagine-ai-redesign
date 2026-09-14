@@ -1,78 +1,146 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useRef, useState } from "react";
 
 import { useOnboarding } from "@/app/(auth)/onboarding/onboarding-provider";
 import { StepFrame } from "@/app/(auth)/onboarding/step-frame";
-import { ProfileSelector } from "@/components/features/agent/profile-selector";
-import { ConnectLinkedIn } from "@/components/features/onboarding/connect-linkedin";
+import {
+  type AccountSlot,
+  ConnectAccounts,
+} from "@/components/features/onboarding/connect-accounts";
 import type { ProfileSummary } from "@/components/features/settings/profile-list";
 import { Button } from "@/components/ui/button";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Icon } from "@/components/ui/icon";
-import { Spinner } from "@/components/ui/spinner";
 import { wait } from "@/lib/wait";
-import { fade } from "@/styles/motion";
 
 const PERMISSIONS = [
   "Publish posts you approve, on the schedule you set",
   "Read post analytics to plan what to write next",
 ];
 
+/** How long the mock waits on LinkedIn before a sign-in resolves. */
+const CONNECT_DELAY_MS = 900;
+
 interface LinkedInStepProps {
-  accountName: string;
-  accountNote: string;
-  /** Who the account can post as: the member's own profile and their company pages. */
-  identities: readonly ProfileSummary[];
+  /** The signed-in member's own LinkedIn, the first row. */
+  ownAccount: ProfileSummary;
+  ownAccountNote: string;
+  /** What the other sign-ins resolve to, in order. */
+  connectable: readonly ProfileSummary[];
 }
 
 /**
- * Last step. Connecting links the member's LinkedIn account; that is a login,
- * not a voice. Once linked, a "Post as" field appears under the same heading,
- * the picker the workspace header uses, for which identities the agent writes
- * for: the member's own profile and any company page they admin. Then the
- * workspace opens with those chosen.
+ * Step four. Every LinkedIn the org will post from, connected in one go:
+ * the member's own account is the first row; "Add another" appends a row
+ * for each further sign-in, and each row connects on its own so several can
+ * be waiting on LinkedIn at once. Each one lands in the shared list as it
+ * connects; Continue shows what got connected.
  */
 export function LinkedInStep({
-  accountName,
-  accountNote,
-  identities,
+  ownAccount,
+  ownAccountNote,
+  connectable,
 }: LinkedInStepProps) {
   const router = useRouter();
-  const [pending, start] = useTransition();
-  const { linkedInConnected, setLinkedInConnected, postAs, setPostAs } =
-    useOnboarding();
-  const selectedIds = postAs.map((profile) => profile.id);
+  const { accounts, setAccounts } = useOnboarding();
+  const [slots, setSlots] = useState<readonly AccountSlot[]>(() =>
+    // Coming back to this step, the rows are whatever already connected.
+    accounts.length > 0
+      ? accounts.map((profile) => ({
+          id: profile.id,
+          status: "connected",
+          profile,
+          removable: profile.id !== ownAccount.id,
+        }))
+      : [
+          {
+            id: ownAccount.id,
+            status: "idle",
+            name: ownAccount.name,
+            note: ownAccountNote,
+            removable: false,
+          },
+        ],
+  );
+  // Which mock identity the next sign-in hands back, and a counter for row ids.
+  const nextIdentity = useRef(
+    accounts.filter((profile) => profile.id !== ownAccount.id).length,
+  );
+  const nextRow = useRef(0);
 
-  function connect() {
-    start(async () => {
-      await wait(900);
-      setLinkedInConnected(true);
-      // Their own profile to begin with; the company page waits to be chosen.
-      setPostAs(identities.filter((profile) => profile.kind === "person"));
+  const connected = slots.filter((slot) => slot.status === "connected");
+  const connecting = slots.some((slot) => slot.status === "connecting");
+
+  function update(id: string, patch: Partial<AccountSlot>) {
+    setSlots((current) =>
+      current.map((slot) => (slot.id === id ? { ...slot, ...patch } : slot)),
+    );
+  }
+
+  function connect(id: string) {
+    if (slots.find((row) => row.id === id)?.status !== "idle") return;
+
+    // Decide up front who signs in, so two rows in flight get two people.
+    let profile: ProfileSummary;
+    if (id === ownAccount.id) {
+      profile = ownAccount;
+    } else {
+      const index = nextIdentity.current;
+      nextIdentity.current += 1;
+      profile = connectable[index % Math.max(connectable.length, 1)] ?? {
+        id: `linkedin-${String(index)}`,
+        name: "LinkedIn member",
+        headline: "LinkedIn profile",
+        kind: "person",
+        status: "connected",
+      };
+    }
+
+    update(id, { status: "connecting" });
+    void wait(CONNECT_DELAY_MS).then(() => {
+      update(id, { status: "connected", profile });
+      // Straight into the shared list, so the preview beside us fills in.
+      setAccounts((current) =>
+        current.some((account) => account.id === profile.id)
+          ? current
+          : [...current, profile],
+      );
     });
   }
 
-  function finish() {
-    start(() => {
-      router.push("/agent");
-    });
+  function add() {
+    nextRow.current += 1;
+    setSlots((current) => [
+      ...current,
+      { id: `row-${String(nextRow.current)}`, status: "idle", removable: true },
+    ]);
+  }
+
+  function remove(id: string) {
+    setSlots((current) => current.filter((slot) => slot.id !== id));
+  }
+
+  function next() {
+    router.push("/onboarding/accounts");
+  }
+
+  function skip() {
+    setAccounts([]);
+    router.push("/onboarding/meeting");
   }
 
   return (
     <StepFrame
       step={4}
-      total={4}
-      title="Connect your LinkedIn"
-      description="The agent drafts as you and publishes only what you approve. Connect now to post from day one, or skip and do it later."
+      total={6}
+      title="Connect your LinkedIn accounts"
+      description="Connect your own, your company page, and anyone else you'll post for. The agent drafts for each and publishes only what you approve."
       actions={
         <>
           <Button
             variant="link"
             className="text-imagine-foreground-muted max-md:self-start"
-            disabled={pending}
+            disabled={connecting}
             onClick={() => {
               router.push("/onboarding/team");
             }}
@@ -80,89 +148,35 @@ export function LinkedInStep({
             Back
           </Button>
           <div className="flex items-center gap-l max-md:w-full max-md:flex-col-reverse max-md:gap-s">
-            {linkedInConnected ? null : (
+            {connected.length === 0 ? (
               <Button
                 variant="link"
                 className="text-imagine-foreground-muted"
-                disabled={pending}
-                onClick={finish}
+                disabled={connecting}
+                onClick={skip}
               >
                 Skip for now
               </Button>
-            )}
-            {linkedInConnected ? (
-              <Button
-                size="lg"
-                disabled={pending || postAs.length === 0}
-                onClick={finish}
-                className="max-md:w-full"
-              >
-                {pending ? <Spinner size="s" data-icon="inline-start" /> : null}
-                Open workspace
-              </Button>
-            ) : (
-              <Button
-                size="lg"
-                disabled={pending}
-                onClick={connect}
-                className="max-md:w-full"
-              >
-                {pending ? (
-                  <Spinner size="s" data-icon="inline-start" />
-                ) : (
-                  <Icon name="linkedin-in" data-icon="inline-start" />
-                )}
-                Connect LinkedIn
-              </Button>
-            )}
+            ) : null}
+            <Button
+              size="lg"
+              disabled={connecting || connected.length === 0}
+              onClick={next}
+              className="max-md:w-full"
+            >
+              Continue
+            </Button>
           </div>
         </>
       }
     >
-      <div className="flex flex-col gap-xxl">
-        <ConnectLinkedIn
-          accountName={accountName}
-          accountNote={accountNote}
-          permissions={linkedInConnected ? [] : PERMISSIONS}
-          pending={pending}
-          connected={linkedInConnected}
-          showActions={false}
-          onConnect={connect}
-          onSkip={finish}
-        />
-        <AnimatePresence initial={false}>
-          {linkedInConnected ? (
-            <motion.div
-              key="post-as"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={fade.base}
-            >
-              <Field>
-                <FieldLabel>Post as</FieldLabel>
-                <ProfileSelector
-                  profiles={identities}
-                  selectedIds={selectedIds}
-                  onSelectedIdsChange={(ids) => {
-                    const chosen = new Set(ids);
-                    setPostAs(
-                      identities.filter((profile) => chosen.has(profile.id)),
-                    );
-                  }}
-                  // The header's control, dressed as a field: a bordered
-                  // trigger the width of the column, chevron at the far end.
-                  className="h-control-base w-full justify-start rounded-lg border border-imagine-border bg-imagine-surface px-m shadow-control hover:bg-imagine-surface-raised [&>[data-icon=inline-end]]:ml-auto"
-                />
-                <FieldDescription>
-                  Your account can post as your own profile and as any company
-                  page you admin. Add more later in Settings.
-                </FieldDescription>
-              </Field>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
-      </div>
+      <ConnectAccounts
+        slots={slots}
+        permissions={PERMISSIONS}
+        onConnect={connect}
+        onAdd={add}
+        onRemove={remove}
+      />
     </StepFrame>
   );
 }

@@ -39,7 +39,7 @@ export default function OrganizationStepPage() {
   return (
     <StepFrame
       step={2}
-      total={4}
+      total={6}
       title="What's your organization called?"
       description="This is the workspace your team and the agent will share. You can change the name and logo later in settings."
       actions={

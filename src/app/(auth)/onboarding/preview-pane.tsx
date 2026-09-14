@@ -16,11 +16,15 @@ import {
 import { Icon } from "@/components/ui/icon";
 import { fade, spring } from "@/styles/motion";
 
-type Focus = "organization" | "team" | "linkedin";
+/** Which part of the mock the current step fills in; `none` for the meeting. */
+type Focus = "organization" | "team" | "linkedin" | "none";
 
 function focusFor(pathname: string): Focus {
   if (pathname.endsWith("/team")) return "team";
-  if (pathname.endsWith("/linkedin")) return "linkedin";
+  if (pathname.endsWith("/linkedin") || pathname.endsWith("/accounts")) {
+    return "linkedin";
+  }
+  if (pathname.endsWith("/meeting")) return "none";
   return "organization";
 }
 
@@ -92,14 +96,13 @@ function RailRow({
  * The workspace as it will open: the rail from `Sidebar` (organization, New
  * chat, the nav, recent chats, Help center) beside the page with its header
  * row (who the agent is posting as, the account) and the centered landing.
- * The name, logo, and posting identities fill in as each step sets them; the
+ * The name, logo, and connected accounts fill in as each step sets them; the
  * ring moves to the part the current step is about.
  */
 function WorkspaceMock({
   orgName,
   orgLogoUrl,
-  postAs,
-  linkedInConnected,
+  accounts,
   threads,
   owner,
   focus,
@@ -107,8 +110,8 @@ function WorkspaceMock({
 }: {
   orgName: string;
   orgLogoUrl: string | undefined;
-  postAs: readonly ProfileSummary[];
-  linkedInConnected: boolean;
+  /** The LinkedIn accounts connected so far; the header posts as all of them. */
+  accounts: readonly ProfileSummary[];
   threads: readonly SidebarThread[];
   owner: { name: string; avatarUrl?: string };
   focus: Focus;
@@ -257,9 +260,9 @@ function WorkspaceMock({
         <div className="relative mx-xxl mt-m mb-m flex h-8 shrink-0 items-center gap-s after:absolute after:inset-x-0 after:-bottom-m after:border-b after:border-imagine-border">
           <div className="relative -ml-1.5 flex h-7 items-center rounded-control pr-s pl-1.5">
             <FocusRing id={ringId} active={focus === "linkedin"} />
-            {linkedInConnected && postAs.length > 0 ? (
+            {accounts.length > 0 ? (
               <AvatarGroup className="-space-x-1.5 *:data-[slot=avatar]:ring-imagine-surface">
-                {postAs.slice(0, FACES).map((profile) => (
+                {accounts.slice(0, FACES).map((profile) => (
                   <Avatar
                     key={profile.id}
                     size="sm"
@@ -285,9 +288,7 @@ function WorkspaceMock({
             )}
             <span className="ml-s flex items-baseline gap-xs text-sm whitespace-nowrap">
               <span className="text-imagine-foreground-muted">Posting as</span>
-              <span className="font-medium">
-                {linkedInConnected ? postingAs(postAs) : "no one"}
-              </span>
+              <span className="font-medium">{postingAs(accounts)}</span>
             </span>
             <Icon
               name="chevron-down"
@@ -347,7 +348,7 @@ interface PreviewPaneProps {
  */
 export function PreviewPane({ threads, owner }: PreviewPaneProps) {
   const pathname = usePathname();
-  const { orgName, orgLogoUrl, postAs, linkedInConnected } = useOnboarding();
+  const { orgName, orgLogoUrl, accounts } = useOnboarding();
 
   return (
     <aside
@@ -358,8 +359,7 @@ export function PreviewPane({ threads, owner }: PreviewPaneProps) {
         <WorkspaceMock
           orgName={orgName}
           orgLogoUrl={orgLogoUrl}
-          postAs={postAs}
-          linkedInConnected={linkedInConnected}
+          accounts={accounts}
           threads={threads}
           owner={owner}
           focus={focusFor(pathname)}
