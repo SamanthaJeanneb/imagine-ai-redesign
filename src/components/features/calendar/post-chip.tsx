@@ -48,8 +48,10 @@ export interface PostChipData {
   /** Short profile label, e.g. initials or first name. */
   profile: string;
   status: PostChipStatus;
-  /** The post's label, e.g. "Case study". Shown under the name. */
+  /** The post's primary label, e.g. "Case study". Shown under the name. */
   label?: string;
+  /** Every label on the post. The first is also `label`, for the chip. */
+  labels?: readonly string[];
   /** When present, hovering the chip previews the post as it will appear. */
   preview?: LinkedInPostContent;
   /** Captured LinkedIn people and comments, available after publishing. */

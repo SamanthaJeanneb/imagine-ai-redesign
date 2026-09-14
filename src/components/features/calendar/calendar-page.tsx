@@ -169,7 +169,6 @@ export function CalendarPage({
   eventsByDay = {},
   today,
   mediaLibrary,
-  labelOptions,
   newPostProfile,
 }: CalendarPageProps) {
   const router = useRouter();
@@ -426,7 +425,6 @@ export function CalendarPage({
         key={editorValue.post.id}
         value={editorValue}
         {...(mediaLibrary === undefined ? {} : { mediaLibrary })}
-        {...(labelOptions === undefined ? {} : { labelOptions })}
         onClose={() => {
           setEditingPostId(null);
           setActiveEditorId("calendar");

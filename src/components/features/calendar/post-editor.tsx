@@ -10,16 +10,10 @@ import {
 } from "@/components/features/calendar/post-chip";
 import type { AssetTileData } from "@/components/features/files/asset-tile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 export interface PostEditorValue {
@@ -37,12 +31,45 @@ interface PostEditorProps {
   onDelete?: (postId: string) => void;
   /** Assets the editor can attach to the post. */
   mediaLibrary?: readonly AssetTileData[];
-  /** The labels this workspace files posts under. */
-  labelOptions?: readonly string[];
 }
 
-/** Radix selects cannot hold an empty value, so "none" needs a name. */
-const NO_LABEL = "__none__";
+function labelsOf(post: PostChipData): readonly string[] {
+  if (post.labels !== undefined) return post.labels;
+  return post.label === undefined ? [] : [post.label];
+}
+
+function withLabels(
+  labels: readonly string[],
+): Pick<PostChipData, "label" | "labels"> {
+  const [first, ...rest] = labels;
+  if (first === undefined) return { label: undefined, labels: [] };
+  return { labels: [first, ...rest], label: first };
+}
+
+function LabelPill({
+  name,
+  onRemove,
+}: {
+  name: string;
+  onRemove: (name: string) => void;
+}) {
+  return (
+    <Badge variant="soft">
+      {name}
+      <Button
+        type="button"
+        size="icon-xs"
+        variant="ghost"
+        aria-label={`Remove ${name}`}
+        onClick={() => {
+          onRemove(name);
+        }}
+      >
+        <Icon name="xmark" />
+      </Button>
+    </Badge>
+  );
+}
 
 const STATUS_LABEL: Record<PostChipStatus, string> = {
   draft: "Draft",
@@ -86,24 +113,34 @@ export function PostEditor({
   onClose,
   onDelete,
   mediaLibrary,
-  labelOptions = [],
 }: PostEditorProps) {
   const [draft, setDraft] = useState(value);
+  const [labelInput, setLabelInput] = useState("");
   const preview = draft.post.preview;
   const author = preview?.author;
   const body = preview?.body ?? draft.post.title;
-  // A post can carry a label the workspace has since renamed; keep it listed.
-  const label = draft.post.label;
-  const labels =
-    label === undefined || labelOptions.includes(label)
-      ? labelOptions
-      : [...labelOptions, label];
+  const labels = labelsOf(draft.post);
 
   function updatePost(patch: Partial<PostChipData>) {
     setDraft((current) => ({
       ...current,
       post: { ...current.post, ...patch },
     }));
+  }
+
+  function addLabel() {
+    const next = labelInput.trim();
+    if (next === "") return;
+    const exists = labels.some(
+      (item) =>
+        item.localeCompare(next, undefined, { sensitivity: "accent" }) === 0,
+    );
+    if (!exists) updatePost(withLabels([...labels, next]));
+    setLabelInput("");
+  }
+
+  function removeLabel(name: string) {
+    updatePost(withLabels(labels.filter((item) => item !== name)));
   }
 
   return (
@@ -233,27 +270,38 @@ export function PostEditor({
                 </Button>
               ))}
             </div>
-            <Select
-              value={draft.post.label ?? NO_LABEL}
-              onValueChange={(next) => {
-                updatePost(
-                  next === NO_LABEL ? { label: undefined } : { label: next },
-                );
-              }}
-            >
-              <SelectTrigger aria-label="Post label" className="w-full">
-                <SelectValue placeholder="Add label" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NO_LABEL}>No label</SelectItem>
-                {labels.map((item) => (
-                  <SelectItem key={item} value={item}>
-                    {item}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </fieldset>
+
+          <div className="flex flex-col gap-xs">
+            <label
+              htmlFor="post-label"
+              className="type-small text-imagine-foreground-muted"
+            >
+              Label
+            </label>
+            {labels.length > 0 ? (
+              <div className="flex flex-wrap gap-xs">
+                {labels.map((item) => (
+                  <LabelPill key={item} name={item} onRemove={removeLabel} />
+                ))}
+              </div>
+            ) : null}
+            <Input
+              id="post-label"
+              value={labelInput}
+              placeholder="Type a label and press Enter"
+              onChange={(event) => {
+                setLabelInput(event.target.value);
+              }}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter" || event.nativeEvent.isComposing) {
+                  return;
+                }
+                event.preventDefault();
+                addLabel();
+              }}
+            />
+          </div>
 
           <label className="flex flex-col gap-xs">
             <span className="type-small text-imagine-foreground-muted">
