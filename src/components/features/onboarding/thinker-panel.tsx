@@ -9,10 +9,19 @@ import {
   useTransform,
   type MotionValue,
 } from "motion/react";
+import localFont from "next/font/local";
 import Image from "next/image";
 import type { CSSProperties, PointerEvent, ReactNode } from "react";
 
 import { ambient, spring } from "@/styles/motion";
+
+/** The display serif for the panel's line, and nothing else. */
+const cardinalFruit = localFont({
+  src: "../../../fonts/cardinal-fruit-regular.woff2",
+  weight: "400",
+  style: "normal",
+  display: "swap",
+});
 
 /** Pixels the front-most layer travels at the panel's edge. */
 const PARALLAX = 18;
@@ -136,7 +145,15 @@ export function ThinkerPanel({ corner, className }: ThinkerPanelProps) {
       )}
     >
       <div className="relative z-10 flex items-start justify-between gap-l p-xl pb-0">
-        <h2 className="mx-auto max-w-80 pt-s text-center type-display text-balance text-imagine-foreground">
+        <h2
+          className={cn(
+            cardinalFruit.className,
+            // The serif ships in one weight, so undo the display style's bold
+            // rather than let the browser synthesize it; sized up a step to
+            // match the sans' presence.
+            "mx-auto max-w-80 pt-s text-center type-display font-normal text-balance text-imagine-foreground md:text-[2.125rem] md:leading-[1.15]",
+          )}
+        >
           Turn what you know into your next post.
         </h2>
         {corner ? <div className="absolute top-l right-l">{corner}</div> : null}
