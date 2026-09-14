@@ -116,6 +116,7 @@ function TabsTrigger({
       {selected ? (
         <motion.span
           layoutId={context.indicatorId}
+          layoutDependency={context.value}
           aria-hidden="true"
           transition={spring.snappy}
           className={cn(

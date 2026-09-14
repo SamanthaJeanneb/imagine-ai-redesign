@@ -57,7 +57,7 @@ export function Timeline({ entries, onAction, className }: TimelineProps) {
         {entries.map((entry, index) => (
           <motion.li
             key={entry.id}
-            layout
+            layout="position"
             initial={{ opacity: 0, y: reduceMotion ? 0 : 6 }}
             animate={{
               opacity: 1,

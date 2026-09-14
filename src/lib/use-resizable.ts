@@ -15,7 +15,7 @@ interface ResizableOptions {
   max: number;
   /** `end` for a panel on the left (handle on its right); `start` otherwise. */
   edge: ResizeEdge;
-  /** How the panel otherwise moves: opening, collapsing. */
+  /** How the panel otherwise moves: opening, collapsing. Must not overshoot. */
   transition?: Transition;
 }
 
@@ -48,7 +48,7 @@ export function useResizable({
   min,
   max,
   edge,
-  transition = spring.soft,
+  transition = spring.settle,
 }: ResizableOptions): {
   width: number;
   dragging: boolean;

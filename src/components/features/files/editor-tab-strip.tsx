@@ -82,7 +82,7 @@ export function EditorTabStrip({
                   return (
                     <motion.div
                       key={tab.id}
-                      layout
+                      layout="position"
                       initial={{ opacity: 0, y: 4 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 2 }}
@@ -92,6 +92,7 @@ export function EditorTabStrip({
                       {active ? (
                         <motion.span
                           layoutId={indicatorId}
+                          layoutDependency={activeId}
                           aria-hidden="true"
                           transition={spring.snappy}
                           className="absolute inset-x-0 top-0 -bottom-px rounded-t-control border-x border-t border-imagine-border bg-imagine-surface"

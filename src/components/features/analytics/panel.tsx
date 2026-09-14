@@ -42,7 +42,7 @@ export function Panel({
             animate: { opacity: 1 },
             transition: fade.base,
           }
-        : { layoutId, transition: spring.soft })}
+        : { layoutId, layoutDependency: title, transition: spring.soft })}
       className={cn(
         "@container/panel flex min-w-0 flex-col gap-l border border-imagine-border bg-imagine-surface p-l",
         className,

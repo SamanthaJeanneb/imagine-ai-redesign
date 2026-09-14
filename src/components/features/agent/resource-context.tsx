@@ -27,7 +27,7 @@ export function ResourceContext({
 
   return (
     <motion.div
-      layout
+      layout="position"
       initial={{ opacity: 0, transform: "translateY(6px) scale(0.96)" }}
       animate={{ opacity: 1, transform: "translateY(0px) scale(1)" }}
       exit={{ opacity: 0, transform: "translateY(4px) scale(0.96)" }}

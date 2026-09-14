@@ -106,6 +106,68 @@ function initials(name: string): string {
 }
 
 /**
+ * LinkedIn's actor row: 48px photo, 14px name, then the 12px headline and
+ * timestamp stacked with no extra gap. No Premium badge.
+ */
+export function LinkedInActor({
+  author,
+  timestamp,
+  edited = false,
+  you = false,
+}: {
+  author: PostAuthor;
+  timestamp?: string;
+  edited?: boolean;
+  you?: boolean;
+}) {
+  return (
+    <header className="flex items-start gap-s">
+      <Avatar
+        className="size-12"
+        shape={author.kind === "company" ? "square" : "circle"}
+      >
+        {author.avatarUrl ? (
+          <AvatarImage src={author.avatarUrl} alt={author.name} />
+        ) : null}
+        <AvatarFallback>{initials(author.name)}</AvatarFallback>
+      </Avatar>
+      <div className="min-w-0 flex-1">
+        <p className="flex min-w-0 items-baseline gap-xs type-small font-semibold">
+          <span className="truncate">{author.name}</span>
+          {you ? (
+            <span className="shrink-0 font-normal type-caption text-imagine-foreground-muted">
+              · You
+            </span>
+          ) : null}
+        </p>
+        <p className="truncate type-caption text-imagine-foreground-muted">
+          {author.headline}
+        </p>
+        {timestamp === undefined ? null : (
+          <p className="flex items-center gap-xxs type-caption text-imagine-foreground-muted">
+            {timestamp}
+            {edited ? (
+              <>
+                <span aria-hidden="true">·</span>
+                <span>Edited</span>
+              </>
+            ) : null}
+            <span aria-hidden="true">·</span>
+            <Icon name="users" size="s" aria-label="Anyone" />
+          </p>
+        )}
+      </div>
+      <Icon
+        name="ellipsis"
+        size="m"
+        aria-hidden="true"
+        className="text-imagine-foreground-muted"
+      />
+    </header>
+  );
+}
+
+/**
  * The part of the body that shows before "…more". Cuts at the fold length,
  * on a word, or after the third line, whichever comes first.
  */
@@ -170,6 +232,7 @@ export function LinkedInPost({
     // stretched by the card's own size animation.
     <motion.article
       layout
+      layoutDependency={`${expanded}:${editing}`}
       transition={fade.base}
       data-slot="linkedin-post"
       className={cn(
@@ -178,47 +241,14 @@ export function LinkedInPost({
         className,
       )}
     >
-      <header className="flex items-start gap-s px-l pt-l">
-        <Avatar
-          size="lg"
-          shape={author.kind === "company" ? "square" : "circle"}
-        >
-          {author.avatarUrl ? (
-            <AvatarImage src={author.avatarUrl} alt={author.name} />
-          ) : null}
-          <AvatarFallback>{initials(author.name)}</AvatarFallback>
-        </Avatar>
-        <div className="flex min-w-0 flex-1 flex-col">
-          <span className="flex min-w-0 items-center gap-xs type-body">
-            <span className="truncate font-semibold">{author.name}</span>
-            {you ? (
-              <span className="shrink-0 type-caption text-imagine-foreground-muted">
-                · You
-              </span>
-            ) : null}
-          </span>
-          <span className="truncate type-caption text-imagine-foreground-muted">
-            {author.headline}
-          </span>
-          <span className="inline-flex items-center gap-xxs type-caption text-imagine-foreground-muted">
-            {timestamp}
-            {edited ? (
-              <>
-                <span aria-hidden="true">·</span>
-                <span>Edited</span>
-              </>
-            ) : null}
-            <span aria-hidden="true">·</span>
-            <Icon name="users" size="s" aria-label="Anyone" />
-          </span>
-        </div>
-        <Icon
-          name="ellipsis"
-          size="m"
-          aria-hidden="true"
-          className="mt-xxs text-imagine-foreground-muted"
+      <div className="px-l pt-l">
+        <LinkedInActor
+          author={author}
+          timestamp={timestamp}
+          edited={edited}
+          you={you}
         />
-      </header>
+      </div>
 
       <div className="px-l pt-s">
         {editing ? (
@@ -337,8 +367,8 @@ export function LinkedInPost({
 
 /**
  * A draft in the thread: the post plus the actions under it. The body can be
- * edited in place. It starts unfolded, so the whole post reads, with a way to
- * see it the way the feed will cut it behind "…more".
+ * edited in place. It starts unfolded, so the whole post reads. Preview folds
+ * it the way the feed will, behind "…more".
  */
 export function LinkedInPostDraft({
   footer,
@@ -368,7 +398,7 @@ export function LinkedInPostDraft({
               }}
               className="ml-auto text-imagine-foreground-muted"
             >
-              {expanded ? "Collapse" : "Show full post"}
+              {expanded ? "Preview" : "Show full post"}
             </Button>
           ) : null}
         </div>

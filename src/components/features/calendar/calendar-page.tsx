@@ -21,7 +21,6 @@ import {
   type PostChipData,
   type PostOpenOptions,
   type PostChipStatus,
-  postChipStyle,
 } from "@/components/features/calendar/post-chip";
 import {
   PostEditor,
@@ -71,14 +70,6 @@ const POST_SEARCH_ICON = {
   published: "circle-check",
   failed: "triangle-exclamation",
 } as const satisfies Record<PostChipStatus, IconName>;
-
-const STATUS_KEY: readonly { status: PostChipStatus; label: string }[] = [
-  { status: "scheduled", label: "Scheduled" },
-  { status: "in_review", label: "In review" },
-  { status: "published", label: "Published" },
-  { status: "draft", label: "Draft" },
-  { status: "failed", label: "Failed" },
-];
 
 /**
  * A month as a list: only days that have something, plus today. Used when
@@ -148,35 +139,6 @@ function MonthAgenda({
           </section>
         );
       })}
-    </div>
-  );
-}
-
-/** Color is status, so the page says which color is which. */
-function Legend() {
-  return (
-    <div className="flex flex-wrap items-center gap-x-l gap-y-xs">
-      {STATUS_KEY.map((item) => (
-        <span
-          key={item.status}
-          style={postChipStyle(item.status)}
-          className="flex items-center gap-xs type-small text-imagine-foreground-muted"
-        >
-          <span
-            aria-hidden="true"
-            className="size-2 rounded-full bg-[var(--chip-color)]"
-          />
-          {item.label}
-        </span>
-      ))}
-      <span aria-hidden="true" className="h-4 w-px bg-imagine-border" />
-      <span className="flex items-center gap-xs type-small text-imagine-foreground-muted">
-        <span
-          aria-hidden="true"
-          className="size-2 rounded-full bg-imagine-tag-5"
-        />
-        Event
-      </span>
     </div>
   );
 }
@@ -376,70 +338,26 @@ export function CalendarPage({
   });
 
   const calendarContent = (
-    <div className="@container/page flex min-h-0 flex-1 flex-col gap-xl">
-      <CalendarToolbar
-        rangeLabel={range.rangeLabel}
-        view={view}
-        onViewChange={setView}
-        onPrevious={() => {
-          setAnchor(shiftAnchor(view, anchor, -1));
-        }}
-        onNext={() => {
-          setAnchor(shiftAnchor(view, anchor, 1));
-        }}
-        onToday={() => {
-          setAnchor(today);
-        }}
-        search={search}
-        onSearchChange={setSearch}
-        searchResults={searchResults}
-        onSearchSelect={openHit}
-      />
-
-      {isMobile && (view === "month" || view === "week") ? (
-        <MonthAgenda
-          days={range.days}
-          onOpenPost={openPost}
-          onOpenEvent={draftFromEvent}
-          {...(selected === undefined ? {} : { selectedPostId: selected })}
+    <div className="@container/page flex min-h-0 flex-1 flex-col gap-s pt-l">
+      <div className="shrink-0 space-y-s px-l md:px-xl">
+        <CalendarToolbar
+          rangeLabel={range.rangeLabel}
+          view={view}
+          onViewChange={setView}
+          onPrevious={() => {
+            setAnchor(shiftAnchor(view, anchor, -1));
+          }}
+          onNext={() => {
+            setAnchor(shiftAnchor(view, anchor, 1));
+          }}
+          onToday={() => {
+            setAnchor(today);
+          }}
+          search={search}
+          onSearchChange={setSearch}
+          searchResults={searchResults}
+          onSearchSelect={openHit}
         />
-      ) : view === "month" ? (
-        <div className="min-h-0 min-w-0 flex-1">
-          {/* The month takes the height between the toolbar and the legend
-              and fits itself to it: every week visible, chips sized to the
-              rows. Only a cell narrower than a word's worth scrolls sideways. */}
-          <CalendarGrid
-            days={range.days}
-            fit
-            // The page arrives by morphing out of the composer preview, which
-            // opens on the month.
-            layoutId={PREVIEW_LAYOUT_ID.calendar}
-            onOpenPost={openPost}
-            onOpenEvent={draftFromEvent}
-            {...(newPostProfile === undefined
-              ? {}
-              : { onCreatePost: createPost })}
-            {...(selected === undefined ? {} : { selectedPostId: selected })}
-            className="h-full"
-          />
-        </div>
-      ) : (
-        <div className="min-h-0 min-w-0 flex-1">
-          <CalendarTimeGrid
-            days={range.days}
-            onOpenPost={openPost}
-            onOpenEvent={draftFromEvent}
-            {...(newPostProfile === undefined
-              ? {}
-              : { onCreatePost: createPost })}
-            {...(selected === undefined ? {} : { selectedPostId: selected })}
-            className="h-full"
-          />
-        </div>
-      )}
-
-      <div className="flex shrink-0 flex-col gap-s sm:flex-row sm:items-center sm:justify-between sm:gap-l">
-        <Legend />
         <AnimatePresence initial={false} mode="popLayout">
           {note === null ? null : (
             <motion.p
@@ -455,6 +373,50 @@ export function CalendarPage({
           )}
         </AnimatePresence>
       </div>
+
+      {isMobile && (view === "month" || view === "week") ? (
+        <div className="min-h-0 flex-1 px-l pb-l">
+          <MonthAgenda
+            days={range.days}
+            onOpenPost={openPost}
+            onOpenEvent={draftFromEvent}
+            {...(selected === undefined ? {} : { selectedPostId: selected })}
+          />
+        </div>
+      ) : view === "month" ? (
+        <div className="min-h-0 min-w-0 flex-1">
+          {/* The month takes the height below the toolbar and fits itself to
+              it: every week visible, chips sized to the rows. Only a cell
+              narrower than a word's worth scrolls sideways. */}
+          <CalendarGrid
+            days={range.days}
+            fit
+            // The page arrives by morphing out of the composer preview, which
+            // opens on the month.
+            layoutId={PREVIEW_LAYOUT_ID.calendar}
+            onOpenPost={openPost}
+            onOpenEvent={draftFromEvent}
+            {...(newPostProfile === undefined
+              ? {}
+              : { onCreatePost: createPost })}
+            {...(selected === undefined ? {} : { selectedPostId: selected })}
+            className="h-full p-0"
+          />
+        </div>
+      ) : (
+        <div className="min-h-0 min-w-0 flex-1">
+          <CalendarTimeGrid
+            days={range.days}
+            onOpenPost={openPost}
+            onOpenEvent={draftFromEvent}
+            {...(newPostProfile === undefined
+              ? {}
+              : { onCreatePost: createPost })}
+            {...(selected === undefined ? {} : { selectedPostId: selected })}
+            className="h-full p-0"
+          />
+        </div>
+      )}
     </div>
   );
 

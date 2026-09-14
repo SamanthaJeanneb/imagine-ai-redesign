@@ -2261,7 +2261,7 @@ export function PostDraftDemo() {
 export function ScheduledGraphicDemo() {
   return (
     <div className="flex flex-wrap gap-xl">
-      <Demo label="With quick actions" className="w-full max-w-md">
+      <Demo label="Scheduled" className="w-full max-w-md">
         <ScheduledGraphic
           dayNumber={9}
           monthLabel="Sep"
@@ -2270,14 +2270,6 @@ export function ScheduledGraphicDemo() {
           profileName="Sarah Chen"
           weekdayIndex={1}
           occupied={[3]}
-          chips={[
-            { intent: "move", label: "Move" },
-            { intent: "time", label: "Change time" },
-            { intent: "open-calendar", label: "Open in calendar" },
-          ]}
-          onChip={(chip) => {
-            toast(chip.label);
-          }}
         />
       </Demo>
       <Demo label="Busy week" className="w-full max-w-md">

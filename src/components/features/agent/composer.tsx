@@ -89,6 +89,8 @@ export function Composer({
     <motion.div
       layout={animateLayout}
       layoutId={animateLayout ? layoutId : undefined}
+      // Morph hero ↔ dock, not every time a sidebar resizes around us.
+      layoutDependency={variant}
       transition={spring.soft}
       data-slot="composer"
       data-variant={variant}
@@ -170,7 +172,7 @@ export function Composer({
               return (
                 <motion.div
                   key={option.key}
-                  layout
+                  layout="position"
                   initial={{ opacity: 0, scale: 0.96 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.96 }}

@@ -164,16 +164,9 @@ function WorkspaceMock({
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={fade.fast}
-                  className="flex min-w-0 flex-1 items-center gap-xs"
+                  className="min-w-0 flex-1 truncate type-small font-semibold"
                 >
-                  <span className="truncate type-small font-semibold">
-                    {orgName}
-                  </span>
-                  <Icon
-                    name="chevron-down"
-                    size="s"
-                    className="text-imagine-foreground-faint"
-                  />
+                  {orgName}
                 </motion.span>
               ) : (
                 <motion.span

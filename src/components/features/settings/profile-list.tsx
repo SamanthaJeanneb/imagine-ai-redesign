@@ -107,6 +107,7 @@ export function ProfileList({
                 {selected ? (
                   <motion.span
                     layoutId={indicatorId}
+                    layoutDependency={profile.id}
                     aria-hidden="true"
                     transition={spring.snappy}
                     className="absolute inset-y-s left-0 w-0.5 rounded-full bg-imagine-secondary"

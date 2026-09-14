@@ -25,7 +25,7 @@ export function ChartContext({
 }: ChartContextProps) {
   return (
     <motion.div
-      layout
+      layout="position"
       initial={{ opacity: 0, scale: 0.92, y: 6 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={spring.snappy}

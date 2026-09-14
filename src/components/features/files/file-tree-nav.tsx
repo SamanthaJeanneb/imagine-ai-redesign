@@ -121,6 +121,7 @@ function Row({
       {selected ? (
         <motion.span
           layoutId={indicatorId}
+          layoutDependency={label}
           aria-hidden="true"
           transition={spring.snappy}
           className="absolute inset-0 rounded-control bg-imagine-foreground/8"

@@ -146,6 +146,13 @@ export function Sidebar({
   const [helpOpen, setHelpOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const helpId = useId();
+  // Width follows `collapsed` immediately; the icon-only chrome waits until
+  // the clip finishes so labels stay on one line and slide out of view.
+  const [iconsOnly, setIconsOnly] = useState(collapsed);
+  if (!collapsed && iconsOnly) {
+    setIconsOnly(false);
+  }
+  const targetWidth = collapsed ? RAIL_COLLAPSED : resize.width;
 
   const helpTrigger = (
     <button
@@ -158,15 +165,17 @@ export function Sidebar({
       className={cn(
         "flex h-8 shrink-0 items-center gap-xs rounded-control text-left text-imagine-foreground-muted transition-colors outline-none select-none hover:bg-imagine-foreground/5 hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40",
         helpOpen && "text-imagine-foreground",
-        collapsed ? "w-8 justify-center" : "pr-s pl-xs",
+        iconsOnly ? "w-8 justify-center" : "pr-s pl-xs",
       )}
     >
       <span className="flex size-6 shrink-0 items-center justify-center">
         <Icon name="circle-info" size="s" active={helpOpen} />
       </span>
-      {collapsed ? null : (
+      {iconsOnly ? null : (
         <>
-          <span className="flex-1 type-small font-medium">Help center</span>
+          <span className="flex-1 whitespace-nowrap type-small font-medium">
+            Help center
+          </span>
           <motion.span
             aria-hidden="true"
             animate={{ rotate: helpOpen ? 180 : 0 }}
@@ -201,13 +210,13 @@ export function Sidebar({
           // line shows first and the rest emerge above it as the height grows.
           className={cn(
             "flex shrink-0 flex-col justify-end overflow-hidden",
-            collapsed && "items-center",
+            iconsOnly && "items-center",
           )}
         >
           <div
             className={cn(
               "flex flex-col gap-px pt-s",
-              collapsed && "items-center",
+              iconsOnly && "items-center",
             )}
           >
             {/* The menu's own top edge. It rides up with the items and is the
@@ -217,7 +226,7 @@ export function Sidebar({
               variants={HELP_ITEM}
               className={cn(
                 "mb-s h-px shrink-0 self-stretch bg-imagine-foreground/12",
-                collapsed ? "-mx-m" : "-mx-s",
+                iconsOnly ? "-mx-m" : "-mx-s",
               )}
             />
             {HELP_ITEMS.map((item) => {
@@ -232,19 +241,21 @@ export function Sidebar({
                   }}
                   className={cn(
                     "flex h-7 items-center gap-xs rounded-control text-left text-imagine-foreground-muted transition-colors outline-none select-none hover:bg-imagine-foreground/5 hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40",
-                    collapsed ? "w-8 justify-center" : "pr-s pl-xs",
+                    iconsOnly ? "w-8 justify-center" : "pr-s pl-xs",
                   )}
                 >
                   <span className="flex size-6 shrink-0 items-center justify-center">
                     <Icon name={item.icon} size="s" />
                   </span>
-                  {collapsed ? null : (
-                    <span className="type-small">{item.label}</span>
+                  {iconsOnly ? null : (
+                    <span className="whitespace-nowrap type-small">
+                      {item.label}
+                    </span>
                   )}
                 </motion.button>
               );
 
-              if (!collapsed) return row;
+              if (!iconsOnly) return row;
               return (
                 <Tooltip key={item.key}>
                   <TooltipTrigger asChild>{row}</TooltipTrigger>
@@ -261,12 +272,15 @@ export function Sidebar({
   return (
     <motion.aside
       initial={false}
-      animate={{ width: collapsed ? RAIL_COLLAPSED : resize.width }}
+      animate={{ width: targetWidth }}
       transition={resize.transition}
-      data-collapsed={collapsed || undefined}
+      onAnimationComplete={() => {
+        if (resize.dragging) return;
+        setIconsOnly(collapsed);
+      }}
+      data-collapsed={iconsOnly || undefined}
       className={cn(
-        "relative flex h-full shrink-0 flex-col overflow-x-hidden bg-imagine-background text-imagine-foreground",
-        collapsed ? "items-center px-m py-m" : "px-s py-m",
+        "relative h-full shrink-0 overflow-x-hidden bg-imagine-background text-imagine-foreground",
         className,
       )}
     >
@@ -278,12 +292,19 @@ export function Sidebar({
           label="Resize sidebar"
         />
       )}
-      <div className={cn("flex flex-col gap-m", collapsed && "items-center")}>
+      <div
+        style={{ width: iconsOnly ? RAIL_COLLAPSED : resize.width }}
+        className={cn(
+          "flex h-full min-h-0 shrink-0 flex-col",
+          iconsOnly ? "items-center px-m py-m" : "px-s py-m",
+        )}
+      >
+        <div className={cn("flex flex-col gap-m", iconsOnly && "items-center")}>
         {/* Organization */}
         <div
           className={cn(
             "flex h-8 items-center gap-s",
-            collapsed ? "justify-center" : "px-xs",
+            iconsOnly ? "justify-center" : "px-xs",
           )}
         >
           {orgLogoUrl ? (
@@ -300,30 +321,23 @@ export function Sidebar({
             </span>
           )}
           <AnimatePresence initial={false} mode="popLayout">
-            {collapsed ? null : (
+            {iconsOnly ? null : (
               <motion.span
                 key="org"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={fade.fast}
-                className="flex min-w-0 flex-1 items-center gap-xs"
+                className="min-w-0 flex-1 truncate type-small font-semibold"
               >
-                <span className="truncate type-small font-semibold">
-                  {orgName}
-                </span>
-                <Icon
-                  name="chevron-down"
-                  size="s"
-                  className="text-imagine-foreground-faint"
-                />
+                {orgName}
               </motion.span>
             )}
           </AnimatePresence>
           {/* Only while expanded. Collapsed, the rail is icons alone and the
               page carries the control; see `SidebarExpandButton`. */}
           <AnimatePresence initial={false} mode="popLayout">
-            {onCollapsedChange && !collapsed ? (
+            {onCollapsedChange && !iconsOnly ? (
               <motion.span
                 key="collapse"
                 initial={{ opacity: 0 }}
@@ -353,7 +367,7 @@ export function Sidebar({
           </AnimatePresence>
         </div>
 
-        {collapsed ? (
+        {iconsOnly ? (
           <Tooltip>
             <TooltipTrigger asChild>
               <button
@@ -376,7 +390,9 @@ export function Sidebar({
             <span className="flex size-6 shrink-0 items-center justify-center">
               <Icon name="pen-to-square" size="s" />
             </span>
-            <span className="type-small font-medium">New chat</span>
+            <span className="whitespace-nowrap type-small font-medium">
+              New chat
+            </span>
           </button>
         )}
       </div>
@@ -384,7 +400,7 @@ export function Sidebar({
       {/* Primary navigation */}
       <nav
         aria-label="Workspace"
-        className={cn("mt-l flex flex-col gap-px", collapsed && "items-center")}
+        className={cn("mt-l flex flex-col gap-px", iconsOnly && "items-center")}
       >
         {SIDEBAR_NAV.map((item) => {
           const selected = item.key === active;
@@ -396,7 +412,7 @@ export function Sidebar({
               onClick={() => onNavigate?.(item.key)}
               className={cn(
                 "group/nav relative flex h-8 items-center gap-xs rounded-control text-left transition-colors outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/40",
-                collapsed ? "w-8 justify-center" : "pr-s pl-xs",
+                iconsOnly ? "w-8 justify-center" : "pr-s pl-xs",
                 selected
                   ? "text-imagine-foreground"
                   : "text-imagine-foreground-muted hover:bg-imagine-foreground/5 hover:text-imagine-foreground",
@@ -405,6 +421,7 @@ export function Sidebar({
               {selected ? (
                 <motion.span
                   layoutId={indicatorId}
+                  layoutDependency={item.key}
                   aria-hidden="true"
                   transition={spring.snappy}
                   className="absolute inset-0 rounded-control bg-imagine-foreground/8"
@@ -419,10 +436,10 @@ export function Sidebar({
                   }
                 />
               </span>
-              {collapsed ? null : (
+              {iconsOnly ? null : (
                 <span
                   className={cn(
-                    "relative z-10 type-small",
+                    "relative z-10 whitespace-nowrap type-small",
                     selected ? "font-semibold" : "font-medium",
                   )}
                 >
@@ -432,7 +449,7 @@ export function Sidebar({
             </button>
           );
 
-          if (!collapsed) return button;
+          if (!iconsOnly) return button;
           return (
             <Tooltip key={item.key}>
               <TooltipTrigger asChild>{button}</TooltipTrigger>
@@ -444,7 +461,7 @@ export function Sidebar({
 
       {/* Recent chats. Collapsed keeps the spacer so the Help center stays pinned. */}
       <AnimatePresence initial={false} mode="popLayout">
-        {collapsed ? (
+        {iconsOnly ? (
           <motion.div
             key="spacer"
             className="flex-1"
@@ -463,7 +480,7 @@ export function Sidebar({
             className="group/chats mt-l flex min-h-0 flex-1 flex-col"
           >
             <div className="flex h-7 shrink-0 items-center px-xs">
-              <span className="type-micro font-medium text-imagine-foreground-muted">
+              <span className="whitespace-nowrap type-micro font-medium text-imagine-foreground-muted">
                 Chats
               </span>
               <Tooltip>
@@ -507,6 +524,7 @@ export function Sidebar({
                       {selected ? (
                         <motion.span
                           layoutId={threadIndicatorId}
+                          layoutDependency={thread.id}
                           aria-hidden="true"
                           transition={spring.snappy}
                           className="absolute inset-0 rounded-control bg-imagine-foreground/8"
@@ -549,10 +567,10 @@ export function Sidebar({
         aria-hidden="true"
         className={cn(
           "mt-s mb-s h-px shrink-0 self-stretch bg-imagine-foreground/12",
-          collapsed ? "-mx-m" : "-mx-s",
+          iconsOnly ? "-mx-m" : "-mx-s",
         )}
       />
-      {collapsed ? (
+      {iconsOnly ? (
         <Tooltip>
           <TooltipTrigger asChild>{helpTrigger}</TooltipTrigger>
           <TooltipContent side="right">Help center</TooltipContent>
@@ -569,6 +587,7 @@ export function Sidebar({
           onOpenThread?.(id);
         }}
       />
+      </div>
     </motion.aside>
   );
 }

@@ -34,7 +34,9 @@ export function ChartCard({
   return (
     <motion.button
       type="button"
-      {...(layoutId === undefined ? {} : { layoutId })}
+      {...(layoutId === undefined
+        ? {}
+        : { layoutId, layoutDependency: chart.id })}
       whileTap={press.whileTap}
       whileHover={hoverLift.whileHover}
       transition={press.transition}

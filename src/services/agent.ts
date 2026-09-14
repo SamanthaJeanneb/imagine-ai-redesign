@@ -1,5 +1,4 @@
 import type { MessagePart } from "@/components/features/agent/agent-message";
-import type { ScheduledChip } from "@/components/features/agent/scheduled-graphic";
 import type {
   TimelineAction,
   TimelineEntry,
@@ -59,12 +58,6 @@ const ACTIVITY_KIND: Record<string, string> = {
   comment_drafted: "Reply drafted",
   persona_updated: "Persona updated",
 };
-
-const SCHEDULED_CHIPS: readonly ScheduledChip[] = [
-  { intent: "move", label: "Move it" },
-  { intent: "edit", label: "Edit the post" },
-  { intent: "unschedule", label: "Unschedule" },
-];
 
 /**
  * Timeline actions. `prompt` is what the user is taken to have said when they
@@ -189,7 +182,6 @@ function toScheduledPart(
     profileName: client.name,
     weekdayIndex: index,
     occupied,
-    chips: SCHEDULED_CHIPS,
   };
 }
 

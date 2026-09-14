@@ -11,6 +11,7 @@ import type {
   PostChipData,
   PostEngagementPerson,
 } from "@/components/features/calendar/post-chip";
+import { LinkedInActor } from "@/components/features/agent/linkedin-post-draft";
 import {
   LinkedInReaction,
   LinkedInReactionCluster,
@@ -120,39 +121,7 @@ export function LinkedInPostEditor({
 
   return (
     <div className="mx-auto w-full max-w-[680px]">
-      <header className="flex items-start gap-s">
-        <Avatar
-          size="lg"
-          shape={preview.author.kind === "company" ? "square" : "circle"}
-        >
-          {preview.author.avatarUrl ? (
-            <AvatarImage
-              src={preview.author.avatarUrl}
-              alt={preview.author.name}
-            />
-          ) : null}
-          <AvatarFallback>{initials(preview.author.name)}</AvatarFallback>
-        </Avatar>
-        <div className="min-w-0 flex-1">
-          <p className="truncate type-body font-semibold">
-            {preview.author.name}
-          </p>
-          <p className="truncate type-caption text-imagine-foreground-muted">
-            {preview.author.headline}
-          </p>
-          <p className="flex items-center gap-xxs type-caption text-imagine-foreground-muted">
-            {post.time}
-            <span aria-hidden="true">·</span>
-            <Icon name="users" size="s" aria-label="Anyone" />
-          </p>
-        </div>
-        <Icon
-          name="ellipsis"
-          size="m"
-          className="text-imagine-foreground-muted"
-          aria-hidden="true"
-        />
-      </header>
+      <LinkedInActor author={preview.author} timestamp={post.time} />
 
       <textarea
         value={body}

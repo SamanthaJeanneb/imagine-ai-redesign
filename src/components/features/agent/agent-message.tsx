@@ -13,10 +13,7 @@ import {
   LinkedInPostDraft,
   type PostAuthor,
 } from "@/components/features/agent/linkedin-post-draft";
-import {
-  type ScheduledChip,
-  ScheduledGraphic,
-} from "@/components/features/agent/scheduled-graphic";
+import { ScheduledGraphic } from "@/components/features/agent/scheduled-graphic";
 import {
   ChartBlock,
   type ChartDatum,
@@ -27,7 +24,6 @@ import { AssetGrid } from "@/components/features/files/asset-grid";
 import { type AssetTileData } from "@/components/features/files/asset-tile";
 import { ThinkingIndicator } from "@/components/motion/thinking-indicator";
 import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/ui/icon";
 import { fade, stagger } from "@/styles/motion";
 
 /**
@@ -62,7 +58,6 @@ export type MessagePart =
       profileName: string;
       weekdayIndex: number;
       occupied?: readonly number[];
-      chips: readonly ScheduledChip[];
     }
   | { type: "asset_picker"; prompt: string; assets: readonly AssetTileData[] }
   | ({ type: "comment_draft"; commentId?: string } & CommentDraftContent);
@@ -86,7 +81,7 @@ type DraftPartData = Extract<MessagePart, { type: "post_draft" }>;
 
 /**
  * A draft in the thread. Edit opens the body in place; Done keeps the
- * change in this session. Schedule and another angle still go to the agent.
+ * change in this session. Schedule still goes to the agent.
  */
 function DraftPart({
   part,
@@ -103,6 +98,7 @@ function DraftPart({
       author={part.author}
       body={body}
       media={part.media}
+      you
       editing={editing}
       onBodyChange={setBody}
       footer={
@@ -126,16 +122,6 @@ function DraftPart({
           >
             {editing ? "Done" : "Edit"}
           </Button>
-          {editing ? null : (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => onIntent?.("regenerate", part.postId)}
-            >
-              <Icon name="arrows-rotate" size="s" data-icon="inline-start" />
-              Try another angle
-            </Button>
-          )}
         </>
       }
     />
@@ -183,8 +169,6 @@ function Part({
           profileName={part.profileName}
           weekdayIndex={part.weekdayIndex}
           occupied={part.occupied}
-          chips={part.chips}
-          onChip={(chip) => onIntent?.(chip.intent, part.postId)}
         />
       );
     case "asset_picker":
