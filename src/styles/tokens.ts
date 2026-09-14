@@ -80,7 +80,9 @@ export const colors = {
     "tag-1": "#d4707c",
     "tag-2": "#afd173",
     "tag-3": "#20a3cd",
-    "tag-4": "#f4d38e",
+    // Gold rather than straw: at the 16% wash a paler yellow reads as cream,
+    // and a planned post needs to look yellow next to rose and blue.
+    "tag-4": "#f0bd2e",
     "tag-5": "#825e8a",
   },
   dark: {
@@ -105,7 +107,7 @@ export const colors = {
     "tag-1": "#e0838d",
     "tag-2": "#afd173",
     "tag-3": "#3bb3d8",
-    "tag-4": "#f4d38e",
+    "tag-4": "#f2c440",
     "tag-5": "#a582ac",
   },
 } as const satisfies Record<Theme, Record<ColorToken, string>>;
