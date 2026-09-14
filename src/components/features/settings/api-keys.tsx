@@ -24,6 +24,9 @@ import {
 } from "@/components/ui/tooltip";
 import { fade, pop } from "@/styles/motion";
 
+/** In-app analytics API reference. */
+export const API_DOCS_HREF = "/docs/api";
+
 interface ApiKeySectionProps {
   /** The full secret, or `null` before one has been created. */
   secret: string | null;
@@ -129,6 +132,8 @@ export function ApiKeySection({
               {" See the "}
               <a
                 href={docsHref}
+                target="_blank"
+                rel="noreferrer"
                 className="text-imagine-foreground underline underline-offset-4 hover:text-imagine-secondary"
               >
                 API documentation

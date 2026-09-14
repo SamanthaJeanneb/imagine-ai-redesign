@@ -93,7 +93,10 @@ import { OrganizationForm } from "@/components/features/onboarding/organization-
 import { SignInForm } from "@/components/features/onboarding/sign-in-form";
 import { StepHeading } from "@/components/features/onboarding/step-heading";
 import { Stepper } from "@/components/features/onboarding/stepper";
-import { ApiKeySection } from "@/components/features/settings/api-keys";
+import {
+  API_DOCS_HREF,
+  ApiKeySection,
+} from "@/components/features/settings/api-keys";
 import {
   IntegrationGrid,
   IntegrationRows,
@@ -2765,7 +2768,7 @@ export function AccountDemo() {
       <Demo label="API key">
         <ApiKeySection
           secret={secret}
-          docsHref="#"
+          docsHref={API_DOCS_HREF}
           onCreate={() => {
             setSecret(randomSecret());
             toast("Key created");

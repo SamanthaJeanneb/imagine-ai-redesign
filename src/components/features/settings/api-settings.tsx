@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { ApiKeySection } from "@/components/features/settings/api-keys";
+import {
+  API_DOCS_HREF,
+  ApiKeySection,
+} from "@/components/features/settings/api-keys";
 import type { ApiKeyData } from "@/services/settings";
 
 const KEY_PREFIX = "imga_";
@@ -33,6 +36,7 @@ export function ApiSettings({ secret: initialSecret }: ApiKeyData) {
     <div className="w-full max-w-2xl">
       <ApiKeySection
         secret={secret}
+        docsHref={API_DOCS_HREF}
         onCreate={() => {
           setSecret(issueKey());
           toast.success("API key created");
