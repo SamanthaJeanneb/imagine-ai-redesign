@@ -4,15 +4,15 @@ import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
+import { CloudBackground } from "@/components/features/onboarding/cloud-background";
 import { SignInForm } from "@/components/features/onboarding/sign-in-form";
-import { SilkBackground } from "@/components/features/onboarding/silk-background";
 import { ThinkerPanel } from "@/components/features/onboarding/thinker-panel";
 import { Wordmark } from "@/components/ui/brand-mark";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { fade, spring } from "@/styles/motion";
 
 /**
- * Sign in, second take: one floating card over a living rose backdrop. The
+ * Sign in, second take: one floating card over a rose sky of drifting clouds. The
  * form at left, the thinker among clouds at right. Any of the three ways in
  * starts onboarding; the mock does not check anything.
  */
@@ -29,7 +29,7 @@ export default function SignIn2Page() {
   return (
     <div className="relative flex min-h-svh w-full min-w-0 flex-1 items-center justify-center overflow-x-clip bg-imagine-background p-l md:p-xl">
       <div aria-hidden="true" className="absolute inset-0">
-        <SilkBackground />
+        <CloudBackground />
       </div>
 
       <motion.div
