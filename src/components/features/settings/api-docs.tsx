@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cn } from "cn";
 
 import { Badge } from "@/components/ui/badge";
 
@@ -268,9 +269,54 @@ const linkClass = "text-imagine-secondary underline-offset-4 hover:underline";
 
 function CodeBlock({ code }: { code: string }) {
   return (
-    <pre className="overflow-x-auto rounded-panel bg-imagine-surface-raised p-m type-small leading-relaxed">
+    <pre className="overflow-x-auto rounded-panel border border-imagine-border bg-imagine-surface-raised p-m type-small leading-relaxed">
       <code className="font-mono">{code}</code>
     </pre>
+  );
+}
+
+function DocsTable({
+  columns,
+  rows,
+}: {
+  columns: readonly string[];
+  rows: readonly (readonly string[])[];
+}) {
+  return (
+    <div className="overflow-x-auto rounded-panel border border-imagine-border">
+      <table className="w-full text-left type-small">
+        <thead>
+          <tr className="border-b border-imagine-border bg-imagine-surface-raised type-caption text-imagine-foreground-muted">
+            {columns.map((column) => (
+              <th key={column} className="px-m py-s font-medium">
+                {column}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr
+              key={row[0]}
+              className="border-b border-imagine-border last:border-b-0"
+            >
+              {row.map((cell, index) => (
+                <td
+                  key={`${row[0]}-${String(index)}`}
+                  className={cn(
+                    "px-m py-s text-imagine-foreground-muted",
+                    index === 0 && "font-mono text-xs text-imagine-foreground",
+                    index === 1 && "whitespace-nowrap",
+                  )}
+                >
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -284,33 +330,10 @@ function ParamsTable({ params }: { params: readonly Param[] }) {
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left type-small">
-        <thead>
-          <tr className="border-b border-imagine-border type-caption text-imagine-foreground-muted">
-            <th className="py-xs pr-m font-medium">Parameter</th>
-            <th className="py-xs pr-m font-medium">Type</th>
-            <th className="py-xs font-medium">Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          {params.map((param) => (
-            <tr
-              key={param.name}
-              className="border-b border-imagine-border/60 last:border-b-0"
-            >
-              <td className="py-s pr-m font-mono text-xs">{param.name}</td>
-              <td className="whitespace-nowrap py-s pr-m text-imagine-foreground-muted">
-                {param.type}
-              </td>
-              <td className="py-s text-imagine-foreground-muted">
-                {param.description}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <DocsTable
+      columns={["Parameter", "Type", "Description"]}
+      rows={params.map((param) => [param.name, param.type, param.description])}
+    />
   );
 }
 
@@ -357,7 +380,7 @@ function EndpointSection({ endpoint }: { endpoint: Endpoint }) {
  */
 export function ApiDocs() {
   return (
-    <div className="flex min-h-svh flex-col bg-imagine-background">
+    <div className="flex min-h-svh flex-col bg-imagine-surface">
       <header className="border-b border-imagine-border">
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between px-l py-m">
           <Link
@@ -480,31 +503,14 @@ export function ApiDocs() {
   }
 }`}
           />
-          <div className="overflow-x-auto">
-            <table className="w-full text-left type-small">
-              <thead>
-                <tr className="border-b border-imagine-border type-caption text-imagine-foreground-muted">
-                  <th className="py-xs pr-m font-medium">Code</th>
-                  <th className="py-xs pr-m font-medium">Status</th>
-                  <th className="py-xs font-medium">Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ERROR_ROWS.map((row) => (
-                  <tr
-                    key={row.code}
-                    className="border-b border-imagine-border/60 last:border-b-0"
-                  >
-                    <td className="py-s pr-m font-mono text-xs">{row.code}</td>
-                    <td className="py-s pr-m">{row.status}</td>
-                    <td className="py-s text-imagine-foreground-muted">
-                      {row.description}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DocsTable
+            columns={["Code", "Status", "Description"]}
+            rows={ERROR_ROWS.map((row) => [
+              row.code,
+              row.status,
+              row.description,
+            ])}
+          />
         </section>
 
         <p className="border-t border-imagine-border pt-l type-small text-imagine-foreground-muted">

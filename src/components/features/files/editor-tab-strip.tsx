@@ -95,12 +95,12 @@ export function EditorTabStrip({
                           layoutDependency={activeId}
                           aria-hidden="true"
                           transition={spring.snappy}
-                          className="absolute inset-x-0 top-0 -bottom-px rounded-t-control border-x border-t border-imagine-border bg-imagine-surface"
+                          className="pointer-events-none absolute inset-x-0 top-0 -bottom-px rounded-t-control border-x border-t border-imagine-border bg-imagine-surface"
                         />
                       ) : (
                         <span
                           aria-hidden="true"
-                          className="absolute inset-x-0 top-0 bottom-px rounded-t-control transition-colors group-hover/tab:bg-imagine-surface-raised"
+                          className="pointer-events-none absolute inset-x-0 top-0 bottom-px rounded-t-control transition-colors group-hover/tab:bg-imagine-surface-raised"
                         />
                       )}
                       <div
@@ -118,7 +118,7 @@ export function EditorTabStrip({
                           onClick={() => {
                             onActivate(tab.id);
                           }}
-                          className="flex min-w-0 items-center gap-xs type-small font-medium whitespace-nowrap outline-none focus-visible:underline"
+                          className="flex min-h-8 min-w-0 flex-1 items-center gap-xs type-small font-medium whitespace-nowrap outline-none focus-visible:underline"
                         >
                           {tab.icon === undefined ? null : (
                             <Icon name={tab.icon} size="s" aria-hidden="true" />
