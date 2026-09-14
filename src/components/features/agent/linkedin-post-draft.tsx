@@ -51,6 +51,11 @@ interface LinkedInPostProps extends LinkedInPostContent {
   /** The viewer wrote it: "· You" after the name, as LinkedIn marks your own. */
   you?: boolean;
   /**
+   * Sits at the trailing end of the actor row, where LinkedIn puts its menu:
+   * the calendar's hover preview puts the post's status pill here.
+   */
+  marker?: React.ReactNode;
+  /**
    * Whether the whole body shows. LinkedIn folds a long post behind "…more";
    * pressing it unfolds. Uncontrolled and folded when omitted.
    */
@@ -114,11 +119,13 @@ export function LinkedInActor({
   timestamp,
   edited = false,
   you = false,
+  marker,
 }: {
   author: PostAuthor;
   timestamp?: string;
   edited?: boolean;
   you?: boolean;
+  marker?: React.ReactNode;
 }) {
   return (
     <header className="flex items-start gap-s">
@@ -135,7 +142,7 @@ export function LinkedInActor({
         <p className="flex min-w-0 items-baseline gap-xs type-small font-semibold">
           <span className="truncate">{author.name}</span>
           {you ? (
-            <span className="shrink-0 font-normal type-caption text-imagine-foreground-muted">
+            <span className="shrink-0 type-caption font-normal text-imagine-foreground-muted">
               · You
             </span>
           ) : null}
@@ -157,12 +164,14 @@ export function LinkedInActor({
           </p>
         )}
       </div>
-      <Icon
-        name="ellipsis"
-        size="m"
-        aria-hidden="true"
-        className="text-imagine-foreground-muted"
-      />
+      {marker ?? (
+        <Icon
+          name="ellipsis"
+          size="m"
+          aria-hidden="true"
+          className="text-imagine-foreground-muted"
+        />
+      )}
     </header>
   );
 }
@@ -210,6 +219,7 @@ export function LinkedInPost({
   timestamp = "Now",
   edited = false,
   you = false,
+  marker,
   expanded: expandedProp,
   onExpandedChange,
   editing = false,
@@ -232,7 +242,7 @@ export function LinkedInPost({
     // stretched by the card's own size animation.
     <motion.article
       layout
-      layoutDependency={`${expanded}:${editing}`}
+      layoutDependency={`${String(expanded)}:${String(editing)}`}
       transition={fade.base}
       data-slot="linkedin-post"
       className={cn(
@@ -247,6 +257,7 @@ export function LinkedInPost({
           timestamp={timestamp}
           edited={edited}
           you={you}
+          marker={marker}
         />
       </div>
 

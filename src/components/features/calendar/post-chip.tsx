@@ -124,6 +124,19 @@ const STATUS_COLOR = {
 } as const satisfies Record<PostChipStatus, ChipColor>;
 
 /**
+ * What each status is called where it is spelled out: the hover preview's
+ * pill and anything else that names a post's state. A draft is "Planned":
+ * it has a slot on the calendar, it just is not written yet.
+ */
+export const POST_STATUS_LABEL: Record<PostChipStatus, string> = {
+  draft: "Planned",
+  in_review: "In Review",
+  scheduled: "Scheduled",
+  published: "Published",
+  failed: "Failed",
+};
+
+/**
  * Exposes the chip's colors as `--chip-color` and `--chip-contrast` for
  * `chip-wash`, `chip-solid`, the rail, and anything else that echoes a post.
  */
@@ -137,6 +150,34 @@ export function postChipStyle(status: PostChipStatus): CSSProperties {
     "--chip-contrast": contrast,
   };
   return style;
+}
+
+/**
+ * The post's status as a pill: its name on a wash of the status color, so it
+ * matches the chip that opened the preview. Sits in the LinkedIn card's
+ * actor row, where the feed's menu would be.
+ */
+export function PostStatusPill({
+  status,
+  className,
+}: {
+  status: PostChipStatus;
+  className?: string;
+}) {
+  return (
+    <span
+      data-slot="post-status-pill"
+      data-status={status}
+      style={postChipStyle(status)}
+      className={cn(
+        "inline-flex h-6 shrink-0 items-center rounded-full chip-wash px-s type-caption font-medium whitespace-nowrap text-imagine-foreground",
+        status === "draft" && "border border-dashed border-[var(--chip-color)]",
+        className,
+      )}
+    >
+      {POST_STATUS_LABEL[status]}
+    </span>
+  );
 }
 
 const LINE_CLAMP: Record<PostChipLines, string> = {
@@ -289,6 +330,7 @@ export function PostChip({
         <LinkedInPost
           {...post.preview}
           timestamp={post.time}
+          marker={<PostStatusPill status={post.status} />}
           className="shadow-none"
         />
       </HoverCardContent>
