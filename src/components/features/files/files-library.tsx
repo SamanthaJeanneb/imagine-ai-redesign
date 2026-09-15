@@ -1263,6 +1263,9 @@ export function FilesLibrary({
                     </p>
                     <SkillsList
                       skills={skills}
+                      {...(documentId === undefined
+                        ? {}
+                        : { openSkillId: documentId })}
                       onToggle={(id, enabled) => {
                         setSkills((current) =>
                           current.map((skill) =>

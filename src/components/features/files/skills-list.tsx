@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "cn";
-import { useId } from "react";
 
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Switch } from "@/components/ui/switch";
@@ -33,52 +32,53 @@ interface SkillRowProps {
 }
 
 /**
- * Switch first, since on/off is the thing you scan for. The name labels it,
- * and the file sits under both as the way into the instructions.
+ * The highlighted row opens the skill's file. The switch sits on top of that
+ * hit target so it still turns the skill on and off on its own.
  */
 function SkillRow({ skill, open, onToggle, onOpenFile }: SkillRowProps) {
-  const switchId = useId();
-
   return (
-    <div className="grid grid-cols-[auto_1fr] items-center gap-x-m gap-y-xxs rounded-control px-s py-s transition-colors hover:bg-imagine-surface-raised">
+    <div
+      className={cn(
+        "relative grid grid-cols-[auto_1fr] items-center gap-x-m gap-y-xxs rounded-control px-s py-s transition-colors",
+        open
+          ? "bg-imagine-surface-raised"
+          : "hover:bg-imagine-surface-raised",
+      )}
+    >
+      {onOpenFile === undefined ? null : (
+        <button
+          type="button"
+          aria-label={`Open ${skill.name}`}
+          aria-current={open ? "true" : undefined}
+          onClick={() => {
+            onOpenFile(skill.id);
+          }}
+          className="absolute inset-0 rounded-control outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+        />
+      )}
       <Switch
-        id={switchId}
         checked={skill.enabled}
+        aria-label={skill.name}
         onCheckedChange={(next) => {
           onToggle?.(skill.id, next);
         }}
+        className="relative z-10"
       />
-      <label
-        htmlFor={switchId}
-        className="min-w-0 cursor-pointer truncate type-small font-medium"
-      >
-        {skill.name}
-      </label>
-      <div className="col-start-2 flex flex-col items-start gap-xxs">
+      <div className="col-start-2 flex min-w-0 flex-col items-start gap-xxs">
+        <span className="truncate type-small font-medium">{skill.name}</span>
         <span className="type-small text-imagine-foreground-muted">
           {skill.description}
         </span>
-        {onOpenFile ? (
-          <button
-            type="button"
-            aria-current={open ? "true" : undefined}
-            onClick={() => {
-              onOpenFile(skill.id);
-            }}
-            className={cn(
-              "-mx-xxs rounded-xs px-xxs font-mono text-xs transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
-              open
-                ? "text-imagine-foreground underline underline-offset-3"
-                : "text-imagine-foreground-faint hover:text-imagine-foreground hover:underline hover:underline-offset-3",
-            )}
-          >
-            {skill.fileName}
-          </button>
-        ) : (
-          <span className="font-mono text-xs text-imagine-foreground-faint">
-            {skill.fileName}
-          </span>
-        )}
+        <span
+          className={cn(
+            "font-mono text-xs",
+            open
+              ? "text-imagine-foreground underline underline-offset-3"
+              : "text-imagine-foreground-faint",
+          )}
+        >
+          {skill.fileName}
+        </span>
       </div>
     </div>
   );
@@ -86,7 +86,7 @@ function SkillRow({ skill, open, onToggle, onOpenFile }: SkillRowProps) {
 
 /**
  * The Skills tab: what the agent knows how to do, each switchable. Every skill
- * is really a markdown file, so each row links to it.
+ * is really a markdown file, so each row opens it.
  */
 export function SkillsList({
   skills,
