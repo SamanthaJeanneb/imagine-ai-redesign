@@ -16,7 +16,7 @@ interface MarkdownEditorProps {
   meta: DocumentMeta;
   /** Current markdown source. */
   value: string;
-  /** Last saved source, used to know when Revert and Save are live. */
+  /** Last saved source, used to know when Cancel and Save are live. */
   savedValue: string;
   onValueChange: (value: string) => void;
   onSave: () => void;
@@ -78,7 +78,7 @@ function parseBlocks(source: string): Block[] {
 /**
  * The document view that opens in a tab beside the thread. Reads as a page:
  * title, then headings as small caps labels. Click into the body to edit the
- * source; Save and Revert only light up when there are changes.
+ * source. Cancel appears once there are unsaved changes; Save lights up then too.
  */
 export function MarkdownEditor({
   meta,
@@ -119,17 +119,18 @@ export function MarkdownEditor({
               </motion.span>
             ) : null}
           </AnimatePresence>
-          <Button
-            size="sm"
-            variant="ghost"
-            disabled={!dirty}
-            onClick={() => {
-              onValueChange(savedValue);
-              setEditing(false);
-            }}
-          >
-            Revert
-          </Button>
+          {dirty ? (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                onValueChange(savedValue);
+                setEditing(false);
+              }}
+            >
+              Cancel
+            </Button>
+          ) : null}
           <Button
             size="sm"
             disabled={!dirty}

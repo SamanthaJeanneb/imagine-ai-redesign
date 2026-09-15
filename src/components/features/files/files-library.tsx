@@ -885,7 +885,7 @@ export function FilesLibrary({
       ? (place.folderId ?? place.sectionId)
       : undefined);
 
-  // Where the open document lives, for the editor's header.
+  // Where the open document lives, for the editor's breadcrumb.
   const openDocumentHome =
     openDocument === undefined ? undefined : home.get(openDocument.id);
   const openDocumentSection =
@@ -897,14 +897,6 @@ export function FilesLibrary({
     openDocumentSection === undefined
       ? undefined
       : findFolder(openDocumentSection.nodes, openDocumentHome.folderId);
-  const openDocumentPlace =
-    openDocument === undefined
-      ? undefined
-      : openDocumentSection === undefined
-        ? "Skill"
-        : [openDocumentSection.title, openDocumentFolder?.name]
-            .filter((part) => part !== undefined)
-            .join(" / ");
 
   const bodyKey =
     tab === "skills"
@@ -1420,14 +1412,64 @@ export function FilesLibrary({
                 {/* Where the document lives, and the way out. Stays put while
                   the page below scrolls. */}
                 <div className="flex shrink-0 items-center gap-s px-l pt-s md:px-xxl md:pt-xl">
-                  <Icon
-                    name="file-lines"
-                    size="s"
-                    className="shrink-0 text-imagine-foreground-muted"
-                  />
-                  <span className="min-w-0 flex-1 truncate type-small text-imagine-foreground-muted">
-                    {openDocumentPlace}
-                  </span>
+                  <Breadcrumb
+                    aria-label="Document location"
+                    className="min-w-0 flex-1"
+                  >
+                    {openDocumentHome === undefined ? (
+                      <BreadcrumbItem>
+                        <BreadcrumbPage>Skills</BreadcrumbPage>
+                      </BreadcrumbItem>
+                    ) : (
+                      <>
+                        <BreadcrumbItem>
+                          <BreadcrumbLink
+                            onClick={() => {
+                              setTab("files");
+                              goTo({ kind: "root" });
+                            }}
+                          >
+                            Files
+                          </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        {openDocumentSection === undefined ? null : (
+                          <>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                              {openDocumentFolder === undefined ? (
+                                <BreadcrumbPage>
+                                  {openDocumentSection.title}
+                                </BreadcrumbPage>
+                              ) : (
+                                <BreadcrumbLink
+                                  onClick={() => {
+                                    setTab("files");
+                                    goTo({
+                                      kind: "library",
+                                      sectionId: openDocumentSection.id,
+                                    });
+                                  }}
+                                >
+                                  {openDocumentSection.title}
+                                </BreadcrumbLink>
+                              )}
+                            </BreadcrumbItem>
+                          </>
+                        )}
+                        {openDocumentFolder === undefined ||
+                        openDocumentSection === undefined ? null : (
+                          <>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                              <BreadcrumbPage>
+                                {openDocumentFolder.name}
+                              </BreadcrumbPage>
+                            </BreadcrumbItem>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </Breadcrumb>
                   <Button
                     size="sm"
                     variant="ghost"
