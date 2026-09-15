@@ -1394,7 +1394,7 @@ export function FilesWorkspacePageDemo() {
 
 const DOCUMENT_ACTIONS = [
   { id: "open", label: "Open", icon: "file-lines" as const },
-  { id: "send", label: "Send to chat", icon: "imagine" as const },
+  { id: "send", label: "Send to agent", icon: "imagine" as const },
   { id: "rename", label: "Rename", icon: "pen" as const },
   {
     id: "trash",

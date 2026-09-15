@@ -15,7 +15,7 @@ interface FilesLibraryRouteProps {
   documents: readonly OpenDocument[];
 }
 
-/** Wires "Send to chat" into the centered new-chat experience. */
+/** Wires "Send to agent" into the centered new-chat experience. */
 export function FilesLibraryRoute(props: FilesLibraryRouteProps) {
   const chat = useChat();
   const router = useRouter();

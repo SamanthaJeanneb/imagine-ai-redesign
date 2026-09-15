@@ -131,13 +131,13 @@ const SORT_SHORT: Record<Sort, string> = {
 
 const DOCUMENT_ACTIONS: readonly LibraryCardAction[] = [
   { id: "open", label: "Open", icon: "file-lines" },
-  { id: "send", label: "Send to chat", icon: "imagine" },
+  { id: "send", label: "Send to agent", icon: "imagine" },
   { id: "rename", label: "Rename", icon: "pen" },
   { id: "delete", label: "Delete", icon: "trash", destructive: true },
 ];
 
 const MEDIA_ACTIONS: readonly LibraryCardAction[] = [
-  { id: "send", label: "Send to chat", icon: "imagine" },
+  { id: "send", label: "Send to agent", icon: "imagine" },
   { id: "delete", label: "Delete", icon: "trash", destructive: true },
 ];
 
@@ -1367,7 +1367,7 @@ export function FilesLibrary({
                     }}
                   >
                     <Icon name="imagine" size="s" data-icon="inline-start" />
-                    Send to chat
+                    Send to agent
                   </Button>
                   <Button
                     size="icon-sm"
@@ -1499,7 +1499,7 @@ export function FilesLibrary({
                   }}
                 >
                   <Icon name="imagine" size="s" data-icon="inline-start" />
-                  Send to chat
+                  Send to agent
                 </Button>
               </DialogFooter>
             </>
