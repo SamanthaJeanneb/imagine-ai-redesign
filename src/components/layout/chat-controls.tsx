@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { useState } from "react";
 
 import type { ChatPanelMode } from "@/components/layout/chat-context-panel";
+import { searchThreads } from "@/components/layout/chat-search";
 import type { SidebarThread } from "@/components/layout/sidebar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -13,7 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { SearchBox, type SearchBoxResult } from "@/components/ui/search-box";
+import { SearchBox } from "@/components/ui/search-box";
 import {
   Tooltip,
   TooltipContent,
@@ -85,34 +86,6 @@ function historyThreads(
   return threads;
 }
 
-function wordsIn(query: string): readonly string[] {
-  return query.trim().toLowerCase().split(/\s+/).filter(Boolean);
-}
-
-function threadMatches(
-  thread: SidebarThread,
-  words: readonly string[],
-): boolean {
-  if (words.length === 0) return true;
-  const hay = `${thread.title} ${thread.preview ?? ""}`.toLowerCase();
-  return words.every((word) => hay.includes(word));
-}
-
-function toSearchResults(
-  threads: readonly SidebarThread[],
-  query: string,
-): SearchBoxResult[] {
-  const words = wordsIn(query);
-  return threads
-    .filter((thread) => threadMatches(thread, words))
-    .map((thread) => ({
-      id: thread.id,
-      icon: "message",
-      title: thread.title,
-      ...(thread.preview === undefined ? {} : { detail: thread.preview }),
-    }));
-}
-
 function ChatHistoryMenu({
   title,
   threads,
@@ -165,7 +138,7 @@ function ChatHistoryMenu({
           <SearchBox
             value={query}
             onValueChange={setQuery}
-            results={toSearchResults(visible, query)}
+            results={searchThreads(visible, query)}
             onSelect={select}
             placeholder="Search chats"
             emptyLabel={`No chats match “${query.trim()}”`}

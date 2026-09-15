@@ -537,7 +537,7 @@ export function Sidebar({
                     align="start"
                     side="right"
                     sideOffset={8}
-                    className="w-80 p-s"
+                    className="w-80 overflow-visible p-s"
                   >
                     <SearchBox
                       value={search}
