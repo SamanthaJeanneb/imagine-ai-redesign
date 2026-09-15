@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import { useOnboarding } from "@/app/(auth)/onboarding/onboarding-provider";
+import { useOnboarding } from "@/components/features/onboarding/onboarding-provider";
 import { OrganizationForm } from "@/components/features/onboarding/organization-form";
 import { StepHeading } from "@/components/features/onboarding/step-heading";
 

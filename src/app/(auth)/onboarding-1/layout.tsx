@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { OnboardingProvider } from "@/app/(auth)/onboarding/onboarding-provider";
+import { OnboardingProvider } from "@/components/features/onboarding/onboarding-provider";
 import { OnboardingRail } from "@/app/(auth)/onboarding-1/onboarding-rail";
 import { Wordmark } from "@/components/ui/brand-mark";
 

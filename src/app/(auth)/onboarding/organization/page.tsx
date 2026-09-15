@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useRef } from "react";
 
-import { useOnboarding } from "@/app/(auth)/onboarding/onboarding-provider";
+import { useOnboarding } from "@/components/features/onboarding/onboarding-provider";
 import { StepFrame } from "@/app/(auth)/onboarding/step-frame";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";

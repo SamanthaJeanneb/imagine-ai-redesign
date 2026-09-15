@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
-import { useOnboarding } from "@/app/(auth)/onboarding/onboarding-provider";
+import { useOnboarding } from "@/components/features/onboarding/onboarding-provider";
 import { StepFrame } from "@/app/(auth)/onboarding/step-frame";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";

@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 
-import { useOnboarding } from "@/app/(auth)/onboarding/onboarding-provider";
+import { useOnboarding } from "@/components/features/onboarding/onboarding-provider";
 import {
   WorkspaceMock,
   type Focus,
