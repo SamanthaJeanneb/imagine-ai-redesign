@@ -105,7 +105,7 @@ function DocumentLocation({ openDocument }: { openDocument: OpenDocument }) {
 export function FilesLibraryEditor() {
   const { documentById, send } = useFilesLibrary();
   const { isMobile } = useFilesBrowse();
-  const { documentId, drafts, close } = useFilesEditor();
+  const { documentId, drafts, close, sheetHost } = useFilesEditor();
   const reduceMotion = useReducedMotion();
   // Wide by default: it is a page, not a side panel.
   const resize = useResizable({
@@ -119,7 +119,10 @@ export function FilesLibraryEditor() {
     documentId === undefined ? undefined : documentById.get(documentId);
 
   return (
+    // Not modal: the sheet covers the browser, but the tree beside it stays
+    // live so the reader can switch documents without putting this one away.
     <Dialog
+      modal={false}
       open={openDocument !== undefined}
       onOpenChange={(next) => {
         if (!next) close();
@@ -128,10 +131,21 @@ export function FilesLibraryEditor() {
       <DialogContent
         data-slot="files-editor"
         aria-describedby={undefined}
-        overlayClassName="bg-imagine-foreground/10 supports-backdrop-filter:backdrop-blur-none"
+        container={sheetHost}
+        overlayClassName="absolute z-20 bg-imagine-foreground/10 supports-backdrop-filter:backdrop-blur-none"
+        // Only the dimmed browser behind the sheet puts it away. A press on
+        // the tree is a press on another document, and swaps this one out.
+        onInteractOutside={(event) => {
+          const target = event.target;
+          if (target instanceof Node && sheetHost?.contains(target) === true) {
+            close();
+            return;
+          }
+          event.preventDefault();
+        }}
         style={isMobile ? undefined : { width: resize.width }}
         className={cn(
-          "inset-y-0 right-0 left-auto flex h-full w-full max-w-full translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden rounded-none bg-imagine-surface p-0 text-imagine-foreground shadow-raised duration-200 sm:max-w-full",
+          "absolute inset-y-0 right-0 left-auto z-20 flex h-full w-full max-w-full translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden rounded-none bg-imagine-surface p-0 text-imagine-foreground shadow-raised duration-200 sm:max-w-full",
           "max-md:inset-x-0 max-md:inset-y-auto max-md:bottom-0 max-md:h-[calc(100%-var(--spacing-l))] max-md:rounded-t-surface",
           "md:rounded-l-surface",
           // The sheet's own entrance replaces the dialog's zoom.

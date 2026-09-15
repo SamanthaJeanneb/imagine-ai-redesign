@@ -20,6 +20,13 @@ import {
 const OVERLAY_SURFACE =
   "pointer-events-none top-0 left-0 flex h-dvh w-full max-w-full translate-x-0 translate-y-0 gap-0 rounded-none bg-transparent p-0 text-inherit shadow-none data-open:zoom-in-100 data-closed:zoom-out-100 sm:max-w-full";
 
+/**
+ * The same, for an overlay that belongs to the page surface rather than the
+ * viewport, so the rail beside it stays visible and reachable.
+ */
+const INSET_OVERLAY_SURFACE =
+  "pointer-events-none absolute top-0 left-0 z-40 flex h-full w-full max-w-full translate-x-0 translate-y-0 gap-0 rounded-none bg-transparent p-0 text-inherit shadow-none data-open:zoom-in-100 data-closed:zoom-out-100 sm:max-w-full";
+
 interface WorkspaceChromeState {
   /** A phone: the rail is a sheet and the chat fills the surface. */
   isMobile: boolean;
@@ -34,6 +41,9 @@ interface WorkspaceChromeState {
   /** Where a page's own sidebar goes, beside the page. */
   asideHost: HTMLElement | null;
   setAsideHost: (host: HTMLElement | null) => void;
+  /** The page surface, which an overlay covers instead of the whole viewport. */
+  surfaceHost: HTMLElement | null;
+  setSurfaceHost: (host: HTMLElement | null) => void;
 }
 
 const WorkspaceChromeContext = createContext<WorkspaceChromeState | null>(null);
@@ -63,6 +73,7 @@ export function WorkspaceChromeProvider({ children }: { children: ReactNode }) {
   // A ref callback into state, so the page can portal into the slot once it
   // exists.
   const [asideHost, setAsideHost] = useState<HTMLElement | null>(null);
+  const [surfaceHost, setSurfaceHost] = useState<HTMLElement | null>(null);
   const [railBefore, setRailBefore] = useState(false);
 
   // Frame and route changes reset what they made room for. Adjusted during
@@ -115,6 +126,8 @@ export function WorkspaceChromeProvider({ children }: { children: ReactNode }) {
         setChatOverlayOpen,
         asideHost,
         setAsideHost,
+        surfaceHost,
+        setSurfaceHost,
       }}
     >
       {children}
@@ -166,6 +179,22 @@ export function WorkspacePageAsideSlot() {
  * panel itself takes the pointer back, so a press anywhere else reaches the
  * scrim under it and closes.
  */
+/** The page surface an inset overlay covers, leaving the rail beside it. */
+export function WorkspaceSurface({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  const { setSurfaceHost } = useWorkspaceChrome();
+  return (
+    <div ref={setSurfaceHost} className={className}>
+      {children}
+    </div>
+  );
+}
+
 export function WorkspaceScrim({
   open,
   onOpenChange,
@@ -178,11 +207,28 @@ export function WorkspaceScrim({
   label: string;
   children: ReactNode;
 }) {
+  const { surfaceHost } = useWorkspaceChrome();
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    // Not modal: the overlay belongs to the page surface, so the rail beside
+    // it stays reachable, as it is when the column sits in the flow.
+    <Dialog modal={false} open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        overlayClassName="bg-imagine-foreground/10 supports-backdrop-filter:backdrop-blur-none"
-        className={cn(OVERLAY_SURFACE, "justify-end")}
+        container={surfaceHost}
+        overlayClassName="absolute z-40 bg-imagine-foreground/10 supports-backdrop-filter:backdrop-blur-none"
+        className={cn(INSET_OVERLAY_SURFACE, "justify-end")}
+        // A press on the dimmed page puts the column away; one on the rail is
+        // a press on the rail, which has its own answer.
+        onInteractOutside={(event) => {
+          const target = event.target;
+          if (
+            target instanceof Node &&
+            surfaceHost?.contains(target) === true
+          ) {
+            onOpenChange(false);
+            return;
+          }
+          event.preventDefault();
+        }}
         aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">{label}</DialogTitle>

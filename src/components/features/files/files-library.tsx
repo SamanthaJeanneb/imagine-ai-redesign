@@ -14,6 +14,7 @@ import { FilesLibraryProvider } from "@/components/features/files/files-library-
 import {
   FilesBrowseProvider,
   FilesEditorProvider,
+  FilesLibraryBrowserArea,
 } from "@/components/features/files/files-library-state";
 import type { DraggableResource } from "@/components/features/files/resource-drag";
 import type { Skill } from "@/components/features/files/skills-list";
@@ -69,11 +70,10 @@ export function FilesLibrary({
                 only needed by a screen reader. */}
             <h1 className="sr-only">{title}</h1>
             <FilesLibraryNav />
-            {/* Browser, with the editor sheet layered over it. */}
-            <div className="relative flex min-h-0 min-w-0 flex-1">
+            <FilesLibraryBrowserArea>
               <FilesLibraryBrowser />
               <FilesLibraryEditor />
-            </div>
+            </FilesLibraryBrowserArea>
             <FilesLibraryDialogs />
             <FilesLibraryPreview />
           </div>

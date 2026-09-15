@@ -20,6 +20,7 @@ import {
   WorkspaceNavSheet,
   WorkspacePageAsideSlot,
   WorkspaceScrim,
+  WorkspaceSurface,
 } from "@/components/layout/workspace-chrome";
 import { WorkspaceEditorProvider } from "@/components/layout/workspace-editor";
 import {
@@ -141,7 +142,7 @@ function WorkspaceFrame({
             {...(orgLogoUrl === undefined ? {} : { orgLogoUrl })}
           />
         </WorkspaceNavSheet>
-        <div className="relative flex min-w-0 flex-1 flex-col rounded-none bg-imagine-surface shadow-raised md:rounded-l-surface">
+        <WorkspaceSurface className="relative flex min-w-0 flex-1 flex-col rounded-none bg-imagine-surface shadow-raised md:rounded-l-surface">
           {/* One tree in both arrangements: flipping `docked` only moves the
               header and the side column with grid placement, so the page and
               the aside slot are never unmounted. */}
@@ -192,7 +193,7 @@ function WorkspaceFrame({
           >
             {filesPanel}
           </WorkspaceScrim>
-        </div>
+        </WorkspaceSurface>
       </div>
     </LayoutGroup>
   );

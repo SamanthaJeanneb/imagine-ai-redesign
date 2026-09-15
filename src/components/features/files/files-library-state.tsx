@@ -24,6 +24,12 @@ export interface FilesEditorState {
   /** The image or video in the preview dialog. */
   previewId: string | undefined;
   drafts: ReturnType<typeof useDocumentDrafts>;
+  /**
+   * The area the sheet covers. It layers over the browser only, so the tree
+   * beside it stays live to switch documents.
+   */
+  sheetHost: HTMLElement | null;
+  setSheetHost: (host: HTMLElement | null) => void;
   show: (id: string) => void;
   close: () => void;
   preview: (id: string) => void;
@@ -41,6 +47,9 @@ export function FilesEditorProvider({ children }: { children: ReactNode }) {
   const [documentId, setDocumentId] = useState<string>();
   const [previewId, setPreviewId] = useState<string>();
   const drafts = useDocumentDrafts();
+  // A ref callback into state, so the sheet can portal into the area once it
+  // exists.
+  const [sheetHost, setSheetHost] = useState<HTMLElement | null>(null);
 
   return (
     <FilesEditorContext
@@ -48,6 +57,8 @@ export function FilesEditorProvider({ children }: { children: ReactNode }) {
         documentId,
         previewId,
         drafts,
+        sheetHost,
+        setSheetHost,
         show: (id) => {
           setDocumentId(id);
         },
@@ -64,6 +75,16 @@ export function FilesEditorProvider({ children }: { children: ReactNode }) {
     >
       {children}
     </FilesEditorContext>
+  );
+}
+
+/** The browser, and the area the editor sheet is allowed to cover. */
+export function FilesLibraryBrowserArea({ children }: { children: ReactNode }) {
+  const { setSheetHost } = useFilesEditor();
+  return (
+    <div ref={setSheetHost} className="relative flex min-h-0 min-w-0 flex-1">
+      {children}
+    </div>
   );
 }
 

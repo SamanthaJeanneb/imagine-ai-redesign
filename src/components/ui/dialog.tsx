@@ -57,12 +57,19 @@ function DialogOverlay({
 function DialogContent({
   className,
   overlayClassName,
+  container,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   overlayClassName?: string;
+  /**
+   * Where to render. Defaults to `document.body`, which covers the viewport.
+   * Give a positioned element to keep a sheet inside one region of the page,
+   * and position it `absolute` through the two className props.
+   */
+  container?: HTMLElement | null;
 }) {
   return (
-    <DialogPortal>
+    <DialogPortal {...(container == null ? {} : { container })}>
       <DialogOverlay className={overlayClassName} />
       <DialogPrimitive.Content
         data-slot="dialog-content"
