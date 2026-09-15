@@ -10,7 +10,6 @@ import {
   AssetGridSmall,
 } from "@/components/features/files/asset-grid";
 import {
-  AssetTile,
   AssetTileButton,
   type AssetTileData,
 } from "@/components/features/files/asset-tile";
@@ -456,106 +455,5 @@ export function ChatFileTree({
         ))}
       </FileTree>
     </ChatFileTreeContext>
-  );
-}
-
-interface BrowseFileTreeProps {
-  sections: readonly FileSection[];
-  activeFileId?: string;
-  onOpenFile: (id: string) => void;
-  className?: string;
-}
-
-interface BrowseFileTreeApi extends Omit<
-  BrowseFileTreeProps,
-  "sections" | "className"
-> {
-  expanded: ReadonlySet<string>;
-  expand: (id: string) => void;
-}
-
-const BrowseFileTreeContext = createContext<BrowseFileTreeApi | null>(null);
-
-function useBrowseFileTree() {
-  const context = useContext(BrowseFileTreeContext);
-  if (context === null) throw new Error("Missing BrowseFileTree");
-  return context;
-}
-
-function BrowseNodes({ nodes }: { nodes: readonly FileNode[] }) {
-  const tree = useBrowseFileTree();
-  return (
-    <FileTreeList>
-      {nodes.map((node, index) => (
-        <FileTreeItem key={node.id} index={index}>
-          {node.type === "file" ? (
-            <FileTreeFile
-              name={node.name}
-              active={node.id === tree.activeFileId}
-              onOpen={() => {
-                tree.onOpenFile(node.id);
-              }}
-            />
-          ) : node.type === "folder" ? (
-            <FileTreeFolder name={node.name}>
-              <BrowseNodes nodes={node.children} />
-            </FileTreeFolder>
-          ) : (
-            <BrowseAssets node={node} />
-          )}
-        </FileTreeItem>
-      ))}
-    </FileTreeList>
-  );
-}
-
-function BrowseAssets({
-  node,
-}: {
-  node: Extract<FileNode, { type: "assets" }>;
-}) {
-  const tree = useBrowseFileTree();
-  const shown = tree.expanded.has(node.id)
-    ? node.assets
-    : node.assets.slice(0, TREE_ASSET_LIMIT);
-  const overflow = node.assets.length - shown.length;
-  return (
-    <FileTreeAssets name={node.name}>
-      <AssetGridSmall className="px-s">
-        {shown.map((asset) => (
-          <AssetGridItem key={asset.id} asset={asset}>
-            <AssetTile asset={asset} />
-          </AssetGridItem>
-        ))}
-        {overflow > 0 ? (
-          <AssetGridOverflow
-            count={overflow}
-            onPress={() => {
-              tree.expand(node.id);
-            }}
-          />
-        ) : null}
-      </AssetGridSmall>
-    </FileTreeAssets>
-  );
-}
-
-/** A read-only tree: files open, folders fold, assets are just shown. */
-export function BrowseFileTree({
-  sections,
-  className,
-  ...api
-}: BrowseFileTreeProps) {
-  const { expanded, expand } = useExpandedAssets();
-  return (
-    <BrowseFileTreeContext value={{ ...api, expanded, expand }}>
-      <FileTree className={className}>
-        {sections.map((section) => (
-          <FileTreeSection key={section.id} section={section}>
-            <BrowseNodes nodes={section.nodes} />
-          </FileTreeSection>
-        ))}
-      </FileTree>
-    </BrowseFileTreeContext>
   );
 }

@@ -132,9 +132,7 @@ import {
   LibraryCardMenuItem,
   LibraryCardRow,
 } from "@/components/features/files/library-card";
-import { FilesWorkspacePage } from "@/components/features/files/files-workspace-page";
 import {
-  BrowseFileTree,
   ChatFileTree,
   type FileSection,
 } from "@/components/features/files/file-tree";
@@ -1422,13 +1420,6 @@ export function FilesPanelDemo() {
           </FilesPanelFrame>
         </OnBackground>
       </Demo>
-      <Demo label="File tree" className="w-72">
-        <BrowseFileTree
-          sections={FILE_SECTIONS.slice(0, 2)}
-          activeFileId={activeFile}
-          onOpenFile={setActiveFile}
-        />
-      </Demo>
       <Demo
         label="Skills. The file under each one opens in an editor tab"
         className="w-full"
@@ -1486,22 +1477,6 @@ export function FilesPanelDemo() {
         </div>
       </Demo>
     </div>
-  );
-}
-
-export function FilesWorkspacePageDemo() {
-  return (
-    <Demo label="Full Files route, with a wider tree and preview">
-      <div className="flex h-[720px] min-w-0 bg-imagine-surface p-l">
-        <FilesWorkspacePage
-          title="Acme"
-          logoUrl={ACME_LOGO}
-          sections={FILE_SECTIONS}
-          skills={SKILLS}
-          documents={KIT_DOCUMENTS}
-        />
-      </div>
-    </Demo>
   );
 }
 

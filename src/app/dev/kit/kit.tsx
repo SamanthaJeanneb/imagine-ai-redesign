@@ -61,7 +61,6 @@ import {
   FilesLibraryDemo,
   FilesPanelDemo,
   FilesPartsDemo,
-  FilesWorkspacePageDemo,
   IntegrationsDemo,
   LoadingDemo,
   MessagesDemo,
@@ -410,10 +409,6 @@ export function Kit({ radiusScale = "default" }: KitProps) {
 
         <Section title="Files panel, file tree, skills">
           <FilesPanelDemo />
-        </Section>
-
-        <Section title="Files workspace">
-          <FilesWorkspacePageDemo />
         </Section>
 
         <Section title="Files page parts: new menu, tree, cards">
