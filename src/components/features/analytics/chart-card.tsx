@@ -3,6 +3,7 @@
 import { cn } from "cn";
 import { motion } from "motion/react";
 
+import { useLayoutLocked } from "@/components/motion/layout-lock";
 import { ChartBlock } from "@/components/features/analytics/chart-block";
 import type { PreviewChart } from "@/services/analytics";
 import { hoverLift, press } from "@/styles/motion";
@@ -31,10 +32,11 @@ export function ChartCard({
   layoutId,
   className,
 }: ChartCardProps) {
+  const layoutLocked = useLayoutLocked();
   return (
     <motion.button
       type="button"
-      {...(layoutId === undefined
+      {...(layoutId === undefined || layoutLocked
         ? {}
         : { layoutId, layoutDependency: chart.id })}
       whileTap={press.whileTap}

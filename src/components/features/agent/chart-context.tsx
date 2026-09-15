@@ -3,6 +3,7 @@
 import { cn } from "cn";
 import { motion } from "motion/react";
 
+import { useLayoutLocked } from "@/components/motion/layout-lock";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import type { PreviewChart } from "@/services/analytics";
@@ -23,9 +24,10 @@ export function ChartContext({
   onRemove,
   className,
 }: ChartContextProps) {
+  const layoutLocked = useLayoutLocked();
   return (
     <motion.div
-      layout="position"
+      layout={layoutLocked ? false : "position"}
       initial={{ opacity: 0, scale: 0.92, y: 6 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={spring.snappy}

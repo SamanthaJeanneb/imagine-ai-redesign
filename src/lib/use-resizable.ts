@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 
 import type { Transition } from "motion/react";
 
+import { lockLayout, unlockLayout } from "@/components/motion/layout-lock";
 import { spring } from "@/styles/motion";
 
 /** Which edge of the panel the handle sits on; drag direction follows. */
@@ -29,6 +30,7 @@ export interface ResizeHandleBinding {
   onPointerDown: (event: React.PointerEvent<HTMLElement>) => void;
   onPointerMove: (event: React.PointerEvent<HTMLElement>) => void;
   onPointerUp: (event: React.PointerEvent<HTMLElement>) => void;
+  onPointerCancel: (event: React.PointerEvent<HTMLElement>) => void;
   onKeyDown: (event: React.KeyboardEvent<HTMLElement>) => void;
   onDoubleClick: () => void;
 }
@@ -59,8 +61,22 @@ export function useResizable({
   const [width, setWidth] = useState(defaultWidth);
   const [dragging, setDragging] = useState(false);
   const drag = useRef<{ startX: number; startWidth: number } | null>(null);
+  const layoutHeld = useRef(false);
   const clamp = (value: number) =>
     Math.min(max, Math.max(min, Math.round(value)));
+
+  const release = (event: React.PointerEvent<HTMLElement>) => {
+    if (drag.current === null) return;
+    drag.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    if (layoutHeld.current) {
+      layoutHeld.current = false;
+      unlockLayout();
+    }
+    setDragging(false);
+  };
 
   const handle: ResizeHandleBinding = {
     role: "separator",
@@ -81,6 +97,10 @@ export function useResizable({
         // See above.
       }
       drag.current = { startX: event.clientX, startWidth: width };
+      if (!layoutHeld.current) {
+        layoutHeld.current = true;
+        lockLayout();
+      }
       setDragging(true);
     },
     onPointerMove: (event) => {
@@ -90,14 +110,8 @@ export function useResizable({
         clamp(drag.current.startWidth + (edge === "end" ? delta : -delta)),
       );
     },
-    onPointerUp: (event) => {
-      if (drag.current === null) return;
-      drag.current = null;
-      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-        event.currentTarget.releasePointerCapture(event.pointerId);
-      }
-      setDragging(false);
-    },
+    onPointerUp: release,
+    onPointerCancel: release,
     onKeyDown: (event) => {
       const grow = edge === "end" ? "ArrowRight" : "ArrowLeft";
       const shrink = edge === "end" ? "ArrowLeft" : "ArrowRight";

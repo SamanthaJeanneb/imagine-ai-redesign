@@ -14,6 +14,7 @@ import {
   type PostChipLines,
   type PostOpenOptions,
 } from "@/components/features/calendar/post-chip";
+import { useLayoutLocked } from "@/components/motion/layout-lock";
 import { formatDayShort } from "@/lib/format";
 import { useElementSize } from "@/lib/use-element-size";
 import { fade, stagger } from "@/styles/motion";
@@ -259,6 +260,7 @@ export function CalendarGrid({
   className,
 }: CalendarGridProps) {
   const reduceMotion = useReducedMotion();
+  const layoutLocked = useLayoutLocked();
   const [rowgroupRef, size] = useElementSize();
 
   const rows = Math.ceil(days.length / 7);
@@ -291,7 +293,7 @@ export function CalendarGrid({
       )}
     >
       <motion.div
-        {...(layoutId === undefined
+        {...(layoutId === undefined || layoutLocked
           ? {}
           : { layoutId, layoutDependency: density })}
         data-slot="calendar-grid"

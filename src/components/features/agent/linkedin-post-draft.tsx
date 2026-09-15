@@ -15,6 +15,7 @@ import {
   LinkedInReactionCluster,
   type LinkedInReactionType,
 } from "@/components/features/agent/linkedin-reaction";
+import { useLayoutLocked } from "@/components/motion/layout-lock";
 import { Icon, type IconName } from "@/components/ui/icon";
 import { fade } from "@/styles/motion";
 
@@ -120,8 +121,9 @@ function initials(name: string): string {
 }
 
 /**
- * LinkedIn's actor row: 48px photo, 14px name, then the 12px headline and
- * timestamp stacked with no extra gap. No Premium badge.
+ * LinkedIn's actor row: 48px photo, 16px name, then the 12px headline and
+ * timestamp stacked on the photo's height. Public posts use a globe, not a
+ * people icon. No Premium badge.
  */
 export function LinkedInActor({
   author,
@@ -139,7 +141,7 @@ export function LinkedInActor({
   return (
     <header className="flex items-start gap-s">
       <Avatar
-        className="size-12"
+        className="size-12 after:hidden"
         shape={author.kind === "company" ? "square" : "circle"}
       >
         {author.avatarUrl ? (
@@ -147,29 +149,34 @@ export function LinkedInActor({
         ) : null}
         <AvatarFallback>{initials(author.name)}</AvatarFallback>
       </Avatar>
-      <div className="min-w-0 flex-1">
-        <p className="flex min-w-0 items-baseline gap-xs type-small font-semibold">
-          <span className="truncate">{author.name}</span>
+      <div className="min-w-0 flex-1 leading-none">
+        <p className="truncate type-body leading-5 font-semibold">
+          {author.name}
           {you ? (
-            <span className="shrink-0 type-caption font-normal text-imagine-foreground-muted">
+            <span className="font-normal text-imagine-foreground-muted">
+              {" "}
               · You
             </span>
           ) : null}
         </p>
-        <p className="truncate type-caption text-imagine-foreground-muted">
+        <p className="mt-px truncate type-caption text-imagine-foreground-muted">
           {author.headline}
         </p>
         {timestamp === undefined ? null : (
-          <p className="flex items-center gap-xxs type-caption text-imagine-foreground-muted">
+          <p className="mt-px flex items-center gap-xs type-caption text-imagine-foreground-muted">
             {timestamp}
             {edited ? (
               <>
-                <span aria-hidden="true">·</span>
+                <span aria-hidden="true">•</span>
                 <span>Edited</span>
               </>
             ) : null}
-            <span aria-hidden="true">·</span>
-            <Icon name="users" size="s" aria-label="Anyone" />
+            <span aria-hidden="true">•</span>
+            <Icon
+              name="globe"
+              size="s"
+              className="[font-size:var(--imagine-text-caption-size)]"
+            />
           </p>
         )}
       </div>
@@ -268,6 +275,7 @@ export function LinkedInPost({
   className,
 }: LinkedInPostProps) {
   const [expandedState, setExpandedState] = useState(false);
+  const layoutLocked = useLayoutLocked();
   const expanded = expandedProp ?? expandedState;
   const setExpanded = (next: boolean) => {
     setExpandedState(next);
@@ -285,7 +293,7 @@ export function LinkedInPost({
       // Size layout interpolates width, which reflows wrapping copy. Chat
       // still uses it so the raised field can grow; the calendar editor
       // only eases sibling position so the body stays where LinkedIn put it.
-      layout={plainEditing ? "position" : true}
+      layout={layoutLocked ? false : plainEditing ? "position" : true}
       layoutDependency={`${String(expanded)}:${String(editing)}`}
       transition={fade.base}
       data-slot="linkedin-post"
@@ -341,7 +349,7 @@ export function LinkedInPost({
 
       {media.length > 0 ? (
         <motion.div
-          layout="position"
+          layout={layoutLocked ? false : "position"}
           transition={fade.base}
           className={cn(
             "mt-s grid gap-px overflow-hidden",
@@ -380,7 +388,7 @@ export function LinkedInPost({
       {/* One row: the actions, each with its count, then LinkedIn's overlapping
           reaction summary and its total. */}
       <motion.div
-        layout="position"
+        layout={layoutLocked ? false : "position"}
         transition={fade.base}
         className="flex items-center justify-between gap-m px-l py-m"
       >
@@ -417,7 +425,7 @@ export function LinkedInPost({
 
       {stats?.impressions === undefined ? null : (
         <motion.div
-          layout="position"
+          layout={layoutLocked ? false : "position"}
           transition={fade.base}
           className="flex items-center justify-between gap-m border-t border-imagine-border px-l py-s"
         >

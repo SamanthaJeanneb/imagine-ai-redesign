@@ -77,13 +77,18 @@ export function ChatColumn({
     <motion.aside
       data-slot="chat-column"
       initial={reduceMotion ? { opacity: 0 } : { width: 0, opacity: 0 }}
-      animate={{ width, opacity: 1 }}
+      animate={
+        resize.dragging
+          ? { opacity: 1 }
+          : { width, opacity: 1 }
+      }
       exit={
         reduceMotion
           ? { opacity: 0, transition: fade.fast }
           : { width: 0, opacity: 0, transition: fade.base }
       }
       transition={resize.transition}
+      style={resize.dragging || fullWidth ? { width } : undefined}
       className={cn(
         "relative flex min-h-0 shrink-0 justify-end overflow-hidden bg-imagine-surface",
         className,

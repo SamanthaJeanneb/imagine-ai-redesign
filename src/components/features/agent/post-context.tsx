@@ -8,6 +8,7 @@ import {
   type PostChipData,
   postChipStyle,
 } from "@/components/features/calendar/post-chip";
+import { useLayoutLocked } from "@/components/motion/layout-lock";
 import { Button } from "@/components/ui/button";
 import {
   HoverCard,
@@ -93,16 +94,17 @@ function PostContextChip({ post, onRemove }: PostContextChipProps) {
  * nothing when empty, and chips spring in and out as the set changes.
  */
 export function PostContext({ posts, onRemove, className }: PostContextProps) {
+  const layoutLocked = useLayoutLocked();
   return (
     <div
       data-slot="post-context"
       className={cn("flex flex-wrap gap-xs empty:hidden", className)}
     >
-      <AnimatePresence initial={false} mode="popLayout">
+      <AnimatePresence initial={false} mode={layoutLocked ? "sync" : "popLayout"}>
         {posts.map((post) => (
           <motion.div
             key={post.id}
-            layout="position"
+            layout={layoutLocked ? false : "position"}
             initial={{ opacity: 0, scale: 0.92, y: 6 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, transition: fade.fast }}

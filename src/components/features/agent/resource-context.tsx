@@ -4,6 +4,7 @@ import { cn } from "cn";
 import { motion } from "motion/react";
 
 import type { DraggableResource } from "@/components/features/files/resource-drag";
+import { useLayoutLocked } from "@/components/motion/layout-lock";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { spring } from "@/styles/motion";
@@ -21,13 +22,14 @@ export function ResourceContext({
   className,
 }: ResourceContextProps) {
   const isFile = resource.kind === "file";
+  const layoutLocked = useLayoutLocked();
   const title = isFile
     ? resource.file.title
     : (resource.asset.caption ?? "Untitled asset");
 
   return (
     <motion.div
-      layout="position"
+      layout={layoutLocked ? false : "position"}
       initial={{ opacity: 0, transform: "translateY(6px) scale(0.96)" }}
       animate={{ opacity: 1, transform: "translateY(0px) scale(1)" }}
       exit={{ opacity: 0, transform: "translateY(4px) scale(0.96)" }}

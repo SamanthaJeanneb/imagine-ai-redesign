@@ -3,6 +3,7 @@
 import { cn } from "cn";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
+import { useLayoutLocked } from "@/components/motion/layout-lock";
 import { Button } from "@/components/ui/button";
 import { fade, spring, stagger } from "@/styles/motion";
 
@@ -41,6 +42,7 @@ interface TimelineProps {
  */
 export function Timeline({ entries, onAction, className }: TimelineProps) {
   const reduceMotion = useReducedMotion();
+  const layoutLocked = useLayoutLocked();
 
   return (
     <ol
@@ -57,7 +59,7 @@ export function Timeline({ entries, onAction, className }: TimelineProps) {
         {entries.map((entry, index) => (
           <motion.li
             key={entry.id}
-            layout="position"
+            layout={layoutLocked ? false : "position"}
             initial={{ opacity: 0, y: reduceMotion ? 0 : 6 }}
             animate={{
               opacity: 1,

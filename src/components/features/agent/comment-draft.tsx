@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import type { PostAuthor } from "@/components/features/agent/linkedin-post-draft";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useLayoutLocked } from "@/components/motion/layout-lock";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Textarea } from "@/components/ui/textarea";
@@ -73,10 +74,11 @@ export function CommentDraft({
   const [editing, setEditing] = useState(false);
   const [body, setBody] = useState(initialBody);
   const [posted, setPosted] = useState(false);
+  const layoutLocked = useLayoutLocked();
 
   return (
     <motion.div
-      layout
+      layout={!layoutLocked}
       layoutDependency={`${editing}:${posted}`}
       transition={spring.settle}
       data-slot="comment-draft"

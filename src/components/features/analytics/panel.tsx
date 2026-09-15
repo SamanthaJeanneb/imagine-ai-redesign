@@ -4,6 +4,7 @@ import { cn } from "cn";
 import { motion } from "motion/react";
 import type { ReactNode } from "react";
 
+import { useLayoutLocked } from "@/components/motion/layout-lock";
 import { fade, spring } from "@/styles/motion";
 
 interface PanelProps {
@@ -33,16 +34,21 @@ export function Panel({
   layoutId,
   className,
 }: PanelProps) {
-  return (
-    <motion.section
-      data-slot="panel"
-      {...(layoutId === undefined
+  const layoutLocked = useLayoutLocked();
+  const shared =
+    layoutId !== undefined && !layoutLocked
+      ? { layoutId, layoutDependency: title, transition: spring.soft }
+      : layoutId === undefined
         ? {
             initial: { opacity: 0 },
             animate: { opacity: 1 },
             transition: fade.base,
           }
-        : { layoutId, layoutDependency: title, transition: spring.soft })}
+        : {};
+  return (
+    <motion.section
+      data-slot="panel"
+      {...shared}
       className={cn(
         "@container/panel flex min-w-0 flex-col gap-l border border-imagine-border bg-imagine-surface p-l",
         className,

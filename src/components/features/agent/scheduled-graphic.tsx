@@ -3,6 +3,7 @@
 import { cn } from "cn";
 import { motion } from "motion/react";
 
+import { useLayoutLocked } from "@/components/motion/layout-lock";
 import { Icon } from "@/components/ui/icon";
 import { fade, spring, stagger } from "@/styles/motion";
 
@@ -43,6 +44,7 @@ export function ScheduledGraphic({
   className,
 }: ScheduledGraphicProps) {
   const weekStart = dayNumber - weekdayIndex;
+  const layoutLocked = useLayoutLocked();
 
   return (
     <motion.div
@@ -95,7 +97,7 @@ export function ScheduledGraphic({
               className="relative"
             >
               <motion.span
-                layout
+                layout={!layoutLocked}
                 layoutDependency={isTarget}
                 transition={spring.snappy}
                 className={cn(

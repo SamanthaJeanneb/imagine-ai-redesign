@@ -9,6 +9,7 @@ import {
   readResourceDrag,
   type DraggableResource,
 } from "@/components/features/files/resource-drag";
+import { useLayoutLocked } from "@/components/motion/layout-lock";
 import { Button } from "@/components/ui/button";
 import { Icon, type IconName } from "@/components/ui/icon";
 import { spring } from "@/styles/motion";
@@ -118,6 +119,8 @@ export function Composer({
   className,
 }: ComposerProps) {
   const [focused, setFocused] = useState(false);
+  const layoutLocked = useLayoutLocked();
+  const layoutActive = animateLayout && !layoutLocked;
   const [dropActive, setDropActive] = useState(false);
   const [compactPlaceholder, setCompactPlaceholder] = useState(false);
   const dragDepth = useRef(0);
@@ -155,8 +158,8 @@ export function Composer({
 
   return (
     <motion.div
-      layout={animateLayout}
-      layoutId={animateLayout ? layoutId : undefined}
+      layout={layoutActive}
+      layoutId={layoutActive ? layoutId : undefined}
       // Morph hero ↔ dock, not every time a sidebar resizes around us.
       layoutDependency={variant}
       transition={spring.soft}
@@ -240,7 +243,7 @@ export function Composer({
               return (
                 <motion.div
                   key={option.key}
-                  layout="position"
+                  layout={layoutActive ? "position" : false}
                   initial={{ opacity: 0, scale: 0.96 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.96 }}
