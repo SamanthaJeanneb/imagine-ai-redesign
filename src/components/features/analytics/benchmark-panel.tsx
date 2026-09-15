@@ -26,8 +26,8 @@ import {
 import { Panel } from "@/components/features/analytics/panel";
 import { Badge } from "@/components/ui/badge";
 import { PersonAvatar } from "@/components/ui/person-avatar";
-import type { BenchmarkData, BenchmarkProfile } from "@/entities/competitor";
-import { formatCompact } from "@/lib/format";
+import { BENCHMARK_AXES } from "@/lib/benchmark";
+import type { BenchmarkView } from "@/entities/competitor";
 import {
   fade,
   pressRow,
@@ -37,41 +37,9 @@ import {
 } from "@/styles/motion";
 
 interface BenchmarkPanelProps {
-  data: BenchmarkData;
-  description?: string;
+  data: BenchmarkView;
   onAsk?: (prompt: string, intent?: string) => void;
   className?: string;
-}
-
-interface Axis {
-  key: keyof Pick<
-    BenchmarkProfile,
-    "postsPerWeek" | "avgReactions" | "avgComments" | "avgShares"
-  >;
-  label: string;
-  format: (value: number) => string;
-}
-
-const AXES: readonly Axis[] = [
-  {
-    key: "postsPerWeek",
-    label: "Cadence",
-    format: (value) => `${value.toFixed(1)}/wk`,
-  },
-  { key: "avgReactions", label: "Reactions", format: formatCompact },
-  { key: "avgComments", label: "Comments", format: formatCompact },
-  { key: "avgShares", label: "Shares", format: formatCompact },
-];
-
-function ProfileAvatar({ profile }: { profile: BenchmarkProfile }) {
-  return (
-    <PersonAvatar
-      name={profile.name}
-      avatarUrl={profile.avatarUrl}
-      shape={profile.isCompany ? "square" : "circle"}
-      size="sm"
-    />
-  );
 }
 
 /**
@@ -81,7 +49,6 @@ function ProfileAvatar({ profile }: { profile: BenchmarkProfile }) {
  */
 export function BenchmarkPanel({
   data,
-  description,
   onAsk,
   className,
 }: BenchmarkPanelProps) {
@@ -95,24 +62,11 @@ export function BenchmarkPanel({
   // Nobody to compare against: there are no two shapes to put on the axes,
   // so the frame stands empty rather than drawing half a radar.
   if (them === undefined) {
-    return (
-      <BenchmarkPanelSkeleton description={description} className={className} />
-    );
+    return <BenchmarkPanelSkeleton className={className} />;
   }
 
   const you = data.you;
-  const radar = AXES.map((axis) => {
-    const yours = you[axis.key];
-    const theirs = them[axis.key];
-    const max = Math.max(yours, theirs, Number.EPSILON);
-    return {
-      axis: axis.label,
-      you: Math.round((yours / max) * 100),
-      them: Math.round((theirs / max) * 100),
-      youRaw: axis.format(yours),
-      themRaw: axis.format(theirs),
-    };
-  });
+  const radar = data.radar[them.id] ?? [];
   const labelOf = new Map([
     ["you", you.name],
     ["them", them.name],
@@ -121,7 +75,6 @@ export function BenchmarkPanel({
   return (
     <Panel
       title="Benchmark"
-      description={description}
       actions={
         onAsk ? (
           <AskButton
@@ -228,11 +181,16 @@ export function BenchmarkPanel({
                 >
                   <td className="rounded-l-control py-xs pl-xs">
                     <span className="flex items-center gap-s">
-                      <ProfileAvatar profile={you} />
+                      <PersonAvatar
+                        name={you.name}
+                        avatarUrl={you.avatarUrl}
+                        shape={you.isCompany ? "square" : "circle"}
+                        size="sm"
+                      />
                       <span className="truncate font-medium">{you.name}</span>
                     </span>
                   </td>
-                  {AXES.map((axis) => (
+                  {BENCHMARK_AXES.map((axis) => (
                     <td
                       key={axis.key}
                       className="py-xs text-right font-medium tabular-nums last:rounded-r-control last:pr-xs"
@@ -259,13 +217,18 @@ export function BenchmarkPanel({
                     >
                       <td className="rounded-l-control py-xs pl-xs">
                         <span className="flex items-center gap-s">
-                          <ProfileAvatar profile={item} />
+                          <PersonAvatar
+                            name={item.name}
+                            avatarUrl={item.avatarUrl}
+                            shape={item.isCompany ? "square" : "circle"}
+                            size="sm"
+                          />
                           <span className="truncate font-medium">
                             {item.name}
                           </span>
                         </span>
                       </td>
-                      {AXES.map((axis) => (
+                      {BENCHMARK_AXES.map((axis) => (
                         <td
                           key={axis.key}
                           className="py-xs text-right font-medium tabular-nums last:rounded-r-control last:pr-xs"
@@ -323,15 +286,9 @@ export function BenchmarkPanel({
 }
 
 /** The panel's frame while the accounts you watch are still being read. */
-export function BenchmarkPanelSkeleton({
-  description,
-  className,
-}: {
-  description?: string;
-  className?: string;
-}) {
+export function BenchmarkPanelSkeleton({ className }: { className?: string }) {
   return (
-    <Panel title="Benchmark" description={description} className={className}>
+    <Panel title="Benchmark" className={className}>
       <div className="grid gap-l @3xl/panel:grid-cols-[16rem_minmax(0,1fr)]">
         <ChartSkeletonRadar height="h-56" />
         <ChartSkeletonRows height="h-56" />

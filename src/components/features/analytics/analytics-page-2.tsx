@@ -18,26 +18,16 @@ import { StatGroup, StatTile } from "@/components/features/analytics/stat-tile";
 import { TeamPerformance } from "@/components/features/analytics/team-performance";
 import {
   downloadCsv,
+  explorerCsvRows,
+  sectionsFor,
   snapshotFor,
 } from "@/components/features/analytics/analytics-data";
 import type { TimeRange } from "@/entities/analytics";
-import type {
-  AnalyticsPageData,
-  AnalyticsSections,
-} from "@/services/analytics";
+import type { AnalyticsPageData } from "@/services/analytics";
 import { fade } from "@/styles/motion";
 
 interface AnalyticsPage2Props {
   data: AnalyticsPageData;
-}
-
-function sectionsFor(
-  sections: readonly AnalyticsSections[],
-  profileId: string,
-): AnalyticsSections | undefined {
-  return (
-    sections.find((section) => section.profileId === profileId) ?? sections[0]
-  );
 }
 
 /**
@@ -78,25 +68,10 @@ export function AnalyticsPage2({ data }: AnalyticsPage2Props) {
           profileId={profileId}
           onProfileChange={setProfileId}
           onExport={() => {
-            const rows = [
-              [
-                "Date",
-                "Reach",
-                "Engagement rate",
-                "Followers",
-                "Posts",
-                "Pipeline",
-              ],
-              ...snapshot.explorer.points.map((point) => [
-                point.day,
-                point.reach,
-                point.rate,
-                point.followers,
-                point.posts,
-                point.pipeline,
-              ]),
-            ];
-            downloadCsv(rows, `imagine-analytics-${range}-${profileId}.csv`);
+            downloadCsv(
+              explorerCsvRows(snapshot.explorer.points),
+              `imagine-analytics-${range}-${profileId}.csv`,
+            );
           }}
         />
       </div>

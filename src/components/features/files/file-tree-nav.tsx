@@ -18,31 +18,22 @@ import {
 } from "@/components/features/files/file-drag";
 import type { FileSection } from "@/components/features/files/file-tree";
 import {
-  useFileMoveTargets,
+  fileDropBinding,
   type FileMoveDest,
   type FileMoveTargets,
 } from "@/components/features/files/file-move";
+import { useFilesLibrary } from "@/components/features/files/files-library-provider";
 import { Disclosure } from "@/components/motion/disclosure";
 import { Icon } from "@/components/ui/icon";
 import { PersonAvatar } from "@/components/ui/person-avatar";
 import type { FileNode } from "@/entities/files";
+import { buildFileTreeIndex } from "@/lib/file-tree-index";
 import { fade, pressRow, spring, stagger } from "@/styles/motion";
 
 /** Where the browser should go: a library, or a folder inside one. */
 export interface TreeLocation {
   sectionId: string;
   folderId?: string;
-}
-
-/** Every folder id on the way down to `id`, so the path can be held open. */
-function pathTo(nodes: readonly FileNode[], id: string): readonly string[] {
-  for (const node of nodes) {
-    if (node.id === id) return [id];
-    if (node.type !== "folder") continue;
-    const below = pathTo(node.children, id);
-    if (below.length > 0) return [node.id, ...below];
-  }
-  return [];
 }
 
 function SectionMark({ section }: { section: FileSection }) {
@@ -119,17 +110,11 @@ function TreeNav({
     new Map(),
   );
 
-  const selectedPath = new Set<string>();
-  if (selectedId !== undefined) {
-    for (const section of sections) {
-      const path = pathTo(section.nodes, selectedId);
-      if (path.length > 0 || section.id === selectedId) {
-        selectedPath.add(section.id);
-        for (const id of path) selectedPath.add(id);
-        break;
-      }
-    }
-  }
+  const selectedPath = new Set(
+    selectedId === undefined
+      ? []
+      : (buildFileTreeIndex(sections).pathById.get(selectedId) ?? []),
+  );
 
   const isOpen = (id: string) => overrides.get(id) ?? selectedPath.has(id);
   const toggle = (id: string) => {
@@ -485,20 +470,8 @@ function MoveDropTarget({
   children: ReactNode;
 }) {
   const { move } = useMove();
-  const key = destKey(dest);
   return (
-    <FileDropTarget
-      active={move.dropKey === key}
-      onDragOver={(event) => {
-        move.over(dest, key, event);
-      }}
-      onDragLeave={(event) => {
-        move.leave(key, event);
-      }}
-      onDrop={(event) => {
-        move.drop(dest, event);
-      }}
-    >
+    <FileDropTarget {...fileDropBinding(move, dest, destKey(dest))}>
       {children}
     </FileDropTarget>
   );
@@ -574,20 +547,17 @@ function MoveBranch({
 
 /**
  * The library's rail: `FileTreeNav`, plus every folder and file can be
- * dragged onto a library or folder to move it there.
+ * dragged onto a library or folder to move it there. The drag it takes part
+ * in is the library's, so a row lights up for something dragged off a card.
  */
 export function MovableFileTreeNav({
   sections,
   selectedId,
   onSelectLocation,
   onOpenFile,
-  onMoveFile,
   className,
-}: FileTreeNavProps & {
-  /** Drop a dragged item onto a library or folder to move it. */
-  onMoveFile: (id: string, dest: FileMoveDest) => void;
-}) {
-  const move = useFileMoveTargets(sections, onMoveFile);
+}: FileTreeNavProps) {
+  const { moveTargets: move } = useFilesLibrary();
 
   return (
     <MoveContext value={{ onSelectLocation, onOpenFile, move }}>

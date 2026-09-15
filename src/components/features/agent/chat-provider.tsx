@@ -12,13 +12,16 @@ import {
 import type { ComposerPreview } from "@/components/features/agent/composer";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
 import type { DraggableResource } from "@/components/features/files/resource-drag";
-import type { MessagePart } from "@/entities/agent";
 import type { CalendarDay, EventChipData } from "@/entities/calendar-event";
-import type {
-  AgentMessage,
-  ReplyIntent,
-  ScriptedReply,
-} from "@/services/agent";
+import type { AgentMessage, ScriptedReply } from "@/entities/agent";
+import {
+  replyFor,
+  toIntentPrompt,
+  toPostDraftPart,
+  toTurn,
+  type ChatSubject,
+  type ReplyIntent,
+} from "@/lib/agent-turns";
 import type { PreviewChart } from "@/services/analytics";
 
 /** A conversation started in the browser. It is never stored, so this is its id. */
@@ -37,7 +40,7 @@ export type ChatAttachment =
   | DraggableResource;
 
 /** Every kind carries an id and title; this is what the chat speaks about. */
-function subject(attachment: ChatAttachment): { id: string; title: string } {
+function subject(attachment: ChatAttachment): ChatSubject {
   switch (attachment.kind) {
     case "post":
       return attachment.post;
@@ -73,11 +76,6 @@ export interface ChatState {
   /** Just the attached posts, in attachment order. */
   attachedPosts: readonly PostChipData[];
   preview: ComposerPreview | null;
-  /**
-   * The preview last opened. The surface keeps showing it while it closes,
-   * and both previews stay mounted behind it, so reopening is instant.
-   */
-  lastPreview: ComposerPreview;
   /**
    * The preview that was just expanded into its page. Set on expand, cleared
    * when the page lands, so the page can skip its entrance and let the block
@@ -119,60 +117,6 @@ export interface ChatActions {
 
 const ChatContext = createContext<(ChatState & ChatActions) | null>(null);
 
-function postDraftPart(post: PostChipData): MessagePart {
-  return {
-    type: "post_draft",
-    postId: post.id,
-    author: post.preview?.author ?? {
-      name: post.profile,
-      headline: "LinkedIn",
-    },
-    body: post.preview?.body ?? post.title,
-    ...(post.preview?.media === undefined ? {} : { media: post.preview.media }),
-  };
-}
-
-/** The intents that have something to say on the user's behalf. */
-type PromptIntent =
-  | "schedule"
-  | "browse-files"
-  | "comment"
-  | "reply"
-  | "post-comment"
-  | "outreach";
-
-/** What pressing a button in a reply says on the user's behalf. */
-const INTENT_PROMPT = {
-  schedule: "Schedule it.",
-  "browse-files": "Let me pick from the files.",
-  comment: "Draft a reply to this comment.",
-  reply: "Draft a reply to this comment.",
-  "post-comment": "Post it.",
-  outreach: "Draft a comment on their latest post.",
-} as const satisfies Record<PromptIntent, string>;
-
-function isPromptIntent(value: string): value is PromptIntent {
-  return Object.hasOwn(INTENT_PROMPT, value);
-}
-
-/**
- * Which canned reply answers an intent. Mirrors `toReplyIntent` in
- * `services/agent`, kept here so the provider stays free of server imports.
- */
-type ScriptedIntent = "schedule" | "approve" | "comment" | "reply" | "outreach";
-
-const REPLY_FOR_INTENT = {
-  schedule: "schedule",
-  approve: "schedule",
-  comment: "comment",
-  reply: "comment",
-  outreach: "outreach",
-} as const satisfies Record<ScriptedIntent, ReplyIntent>;
-
-function isScriptedIntent(value: string): value is ScriptedIntent {
-  return Object.hasOwn(REPLY_FOR_INTENT, value);
-}
-
 /** How long the thinking state holds, then the gap between parts. */
 const THINK_MS = 1400;
 const PART_MS = 700;
@@ -211,14 +155,9 @@ export function ChatProvider({
   const [streaming, setStreaming] = useState<Streaming | null>(null);
   const [draft, setDraft] = useState("");
   const [attached, setAttached] = useState<readonly ChatAttachment[]>([]);
-  const [preview, setPreviewState] = useState<ComposerPreview | null>(null);
-  const [lastPreview, setLastPreview] = useState<ComposerPreview>("calendar");
+  const [preview, setPreview] = useState<ComposerPreview | null>(null);
   const [handoff, setHandoff] = useState<ComposerPreview | null>(null);
 
-  function setPreview(next: ComposerPreview | null) {
-    setPreviewState(next);
-    if (next !== null) setLastPreview(next);
-  }
   // Only ever read to mint the next pair of message ids, never rendered.
   const turns = useRef(0);
 
@@ -253,35 +192,17 @@ export function ChatProvider({
 
   function send(text: string, intent = "default") {
     turns.current += 1;
-    const turn = String(turns.current);
-    const messageId = `reply-${turn}`;
-    // What is attached rides along in the message, the way a person would say it.
-    const about = attached.map(subject);
-    const spoken =
-      about.length === 0
-        ? text
-        : `About ${about.map((item) => `"${item.title}"`).join(", ")}: ${text}`;
+    const turn = toTurn(turns.current, text, attached.map(subject));
 
     if (threadId === null && LANDING_PATHS.has(window.location.pathname)) {
       window.history.replaceState(null, "", `/agent/${NEW_THREAD_ID}`);
     }
     setThreadId((current) => current ?? NEW_THREAD_ID);
-    setMessages((current) => [
-      ...current,
-      {
-        id: `user-${turn}`,
-        role: "user",
-        parts: [{ type: "text", text: spoken }],
-      },
-      { id: messageId, role: "assistant", parts: [] },
-    ]);
+    setMessages((current) => [...current, ...turn.messages]);
     setStreaming({
-      messageId,
+      messageId: turn.replyId,
       revealed: 0,
-      reply:
-        replies[
-          isScriptedIntent(intent) ? REPLY_FOR_INTENT[intent] : "default"
-        ],
+      reply: replyFor(replies, intent),
     });
     setDraft("");
     setAttached([]);
@@ -312,7 +233,7 @@ export function ChatProvider({
   }
 
   function sendIntent(intent: string) {
-    send(isPromptIntent(intent) ? INTENT_PROMPT[intent] : "Go ahead.", intent);
+    send(toIntentPrompt(intent), intent);
   }
 
   function draftFromEvent(event: EventChipData) {
@@ -336,7 +257,7 @@ export function ChatProvider({
     setStreaming(null);
     setDraft("");
     setAttached([]);
-    setPreviewState(null);
+    setPreview(null);
   }
 
   function startPostChat(post: PostChipData) {
@@ -345,17 +266,17 @@ export function ChatProvider({
       {
         id: `post-${post.id}`,
         role: "assistant",
-        parts: [postDraftPart(post)],
+        parts: [toPostDraftPart(post)],
       },
     ]);
     setStreaming(null);
     setDraft("");
     setAttached([{ kind: "post", post }]);
-    setPreviewState(null);
+    setPreview(null);
   }
 
   function expand(next: ComposerPreview) {
-    setPreviewState(null);
+    setPreview(null);
     setHandoff(next);
   }
 
@@ -375,7 +296,6 @@ export function ChatProvider({
       item.kind === "post" ? [item.post] : [],
     ),
     preview,
-    lastPreview,
     handoff,
     previews,
     send,

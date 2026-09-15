@@ -1294,7 +1294,6 @@ export function ChatChromeDemo() {
                 <ChatControls
                   filesOpen={filesOpen}
                   onFilesOpenChange={setFilesOpen}
-                  className="ml-auto"
                 />
               </div>
               <p className="mt-auto max-w-sm type-small text-imagine-foreground-muted">

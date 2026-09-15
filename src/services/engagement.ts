@@ -1,8 +1,15 @@
 import {
+  explorerIndex,
+  icpScatterPoints,
+  rankTeamMembers,
+} from "@/lib/analytics-derive";
+import type { BenchmarkView } from "@/entities/competitor";
+import type { ExplorerView, IcpView } from "@/entities/engagement";
+import type { TeamView } from "@/entities/analytics";
+import {
   type BestTimeData,
   type Insight,
   RANGE_DAYS,
-  type TeamData,
   type TeamDatum,
   type TeamMember,
   type TimeRange,
@@ -10,7 +17,6 @@ import {
 } from "@/entities/analytics";
 import type { Client } from "@/entities/client";
 import {
-  type BenchmarkData,
   type BenchmarkProfile,
   type Competitor,
   transformTargetedAccountRow,
@@ -24,12 +30,10 @@ import {
 import {
   type EngagementProfile,
   type Engager,
-  type ExplorerData,
   type ExplorerMetric,
   type ExplorerPoint,
   type ExplorerPost,
   ICP_THRESHOLD,
-  type IcpData,
   type IcpPost,
   type IcpTag,
   type Interaction,
@@ -39,6 +43,7 @@ import {
   transformIcpTagRow,
 } from "@/entities/engagement";
 import type { Post } from "@/entities/post";
+import { benchmarkRadarByCompetitor } from "@/lib/benchmark";
 import {
   formatCompact,
   formatDayMonth,
@@ -210,7 +215,7 @@ function pickTicks(points: readonly ExplorerPoint[]): readonly string[] {
 export function getEngagementExplorer(
   range: TimeRange = "1m",
   profileId = "all",
-): ExplorerData {
+): ExplorerView {
   const clients = indexClients();
   const assets = indexAssetsByPath();
   const now = getNow();
@@ -334,6 +339,7 @@ export function getEngagementExplorer(
   return {
     points,
     posts,
+    ...explorerIndex(points, posts),
     xTicks: pickTicks(points),
     totals,
     pipeline: {
@@ -379,7 +385,7 @@ function topTopics(texts: readonly string[], limit = 3): readonly string[] {
 }
 
 /** Your profiles against the accounts they watch, over the last 90 days. */
-export function getBenchmark(profileId = "all"): BenchmarkData {
+export function getBenchmark(profileId = "all"): BenchmarkView {
   const clients = indexClients();
   const since = sinceIso(BENCH_DAYS);
   const weeks = BENCH_DAYS / 7;
@@ -445,13 +451,17 @@ export function getBenchmark(profileId = "all"): BenchmarkData {
     })
     .toSorted((a, b) => b.avgReactions - a.avgReactions);
 
-  return { you, competitors };
+  return {
+    you,
+    competitors,
+    radar: benchmarkRadarByCompetitor(you, competitors),
+  };
 }
 
 /* --------------------------------------------------------------------- ICP */
 
 /** Posts with everyone who engaged them and how well those people fit. */
-export function getIcpPosts(profileId = "all", limit = 8): IcpData {
+export function getIcpPosts(profileId = "all", limit = 8): IcpView {
   const clients = indexClients();
   const assets = indexAssetsByPath();
   const index = indexEngagement();
@@ -517,13 +527,16 @@ export function getIcpPosts(profileId = "all", limit = 8): IcpData {
       };
     });
 
-  return { posts };
+  return {
+    posts,
+    scatterPoints: icpScatterPoints(posts),
+  };
 }
 
 /* -------------------------------------------------------------------- team */
 
 /** Every profile against every post label, over the last 90 days. */
-export function getTeamPerformance(): TeamData {
+export function getTeamPerformance(): TeamView {
   const clients = indexClients();
   const posts = scopedPosts("all", sinceIso(BENCH_DAYS));
   const categories = [
@@ -589,6 +602,7 @@ export function getTeamPerformance(): TeamData {
 
   return {
     members,
+    ranked: rankTeamMembers(members),
     reach: categories.map((category) =>
       datum(category, (post) => post.analytics?.impressions ?? 0, Math.round),
     ),

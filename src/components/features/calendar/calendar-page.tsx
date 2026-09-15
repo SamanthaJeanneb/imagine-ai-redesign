@@ -27,10 +27,7 @@ import {
   type PostChipData,
   type PostOpenOptions,
 } from "@/components/features/calendar/post-chip";
-import {
-  PostEditor,
-  type PostEditorValue,
-} from "@/components/features/calendar/post-editor";
+import { PostEditor } from "@/components/features/calendar/post-editor";
 import {
   EditorTabStrip,
   type EditorTab,
@@ -50,6 +47,7 @@ import {
   shiftAnchor,
 } from "@/lib/calendar";
 import { formatDayShort, formatWeekdayLong } from "@/lib/format";
+import { useCalendarPosts } from "@/lib/use-calendar-posts";
 import { MOBILE_QUERY, useMediaQuery } from "@/lib/use-media-query";
 import type { NewPostProfile } from "@/services/posts";
 import { fade } from "@/styles/motion";
@@ -72,21 +70,26 @@ const POST_SEARCH_ICON = {
   failed: "triangle-exclamation",
 } as const satisfies Record<PostChipStatus, IconName>;
 
-/**
- * A month as a list: only days that have something, plus today. Used when
- * seven columns would be thinner than a chip.
- */
-function MonthAgenda({
-  days,
-  selectedPostId,
-  onOpenPost,
-  onOpenEvent,
-}: {
+/** What every view of the range needs to draw it and answer a click. */
+interface CalendarViewProps {
   days: readonly CalendarDay[];
   selectedPostId?: string;
   onOpenPost: (post: PostChipData, options?: PostOpenOptions) => void;
   onOpenEvent: (event: EventChipData) => void;
-}) {
+  /** Shows the plus an empty slot reveals on hover. */
+  onCreatePost?: (date: string, time?: string) => void;
+}
+
+/**
+ * A month as a list: only days that have something, plus today. Used when
+ * seven columns would be thinner than a chip.
+ */
+function CalendarMobileAgenda({
+  days,
+  selectedPostId,
+  onOpenPost,
+  onOpenEvent,
+}: CalendarViewProps) {
   const shown = days.filter(
     (day) =>
       !day.isOutside &&
@@ -97,40 +100,123 @@ function MonthAgenda({
 
   if (shown.length === 0) {
     return (
-      <p className="type-small text-imagine-foreground-muted">
-        {NOTHING_SCHEDULED}
-      </p>
+      <div className="min-h-0 flex-1 px-l pb-l">
+        <p className="type-small text-imagine-foreground-muted">
+          {NOTHING_SCHEDULED}
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-l overflow-y-auto">
-      {shown.map((day) => {
-        const events = day.events ?? [];
-        return (
-          <section key={day.date} className="flex flex-col gap-xs">
-            <div className="flex items-center gap-s">
-              <CalendarDayNumber day={day} />
-              <span className="type-small font-medium">
-                {formatWeekdayLong(day.date)}
-              </span>
-            </div>
-            <div className="flex flex-col gap-xs pl-8">
-              {events.map((event) => (
-                <EventChip key={event.id} event={event} onOpen={onOpenEvent} />
-              ))}
-              {day.posts.map((post) => (
-                <PostChip
-                  key={post.id}
-                  post={post}
-                  selected={post.id === selectedPostId}
-                  onOpen={onOpenPost}
-                />
-              ))}
-            </div>
-          </section>
-        );
-      })}
+    <div className="min-h-0 flex-1 px-l pb-l">
+      <div className="flex min-h-0 flex-1 flex-col gap-l overflow-y-auto">
+        {shown.map((day) => {
+          const events = day.events ?? [];
+          return (
+            <section key={day.date} className="flex flex-col gap-xs">
+              <div className="flex items-center gap-s">
+                <CalendarDayNumber day={day} />
+                <span className="type-small font-medium">
+                  {formatWeekdayLong(day.date)}
+                </span>
+              </div>
+              <div className="flex flex-col gap-xs pl-8">
+                {events.map((event) => (
+                  <EventChip
+                    key={event.id}
+                    event={event}
+                    onOpen={onOpenEvent}
+                  />
+                ))}
+                {day.posts.map((post) => (
+                  <PostChip
+                    key={post.id}
+                    post={post}
+                    selected={post.id === selectedPostId}
+                    onOpen={onOpenPost}
+                  />
+                ))}
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The month, fitted to the height below the toolbar: every week visible,
+ * chips sized to the rows. Only a cell narrower than a word's worth scrolls
+ * sideways. The grid carries the composer preview's layout id, since the page
+ * arrives by morphing out of the preview, which opens on the month.
+ */
+function CalendarMonthView({
+  days,
+  selectedPostId,
+  onOpenPost,
+  onOpenEvent,
+  onCreatePost,
+}: CalendarViewProps) {
+  return (
+    <div className="min-h-0 min-w-0 flex-1">
+      <CalendarMonthFit
+        days={days}
+        layoutId={PREVIEW_LAYOUT_ID.calendar}
+        onOpenPost={onOpenPost}
+        onOpenEvent={onOpenEvent}
+        {...(onCreatePost === undefined ? {} : { onCreatePost })}
+        {...(selectedPostId === undefined ? {} : { selectedPostId })}
+        className="h-full p-0"
+      />
+    </div>
+  );
+}
+
+/** The day range is the one day; it takes a column of its own. */
+function CalendarDayView({
+  days,
+  selectedPostId,
+  onOpenPost,
+  onOpenEvent,
+  onCreatePost,
+}: CalendarViewProps) {
+  return (
+    <div className="min-h-0 min-w-0 flex-1">
+      {days.map((day) => (
+        <CalendarDayGrid
+          key={day.date}
+          day={day}
+          onOpenPost={onOpenPost}
+          onOpenEvent={onOpenEvent}
+          {...(onCreatePost === undefined ? {} : { onCreatePost })}
+          {...(selectedPostId === undefined ? {} : { selectedPostId })}
+          className="h-full p-0"
+        />
+      ))}
+    </div>
+  );
+}
+
+/** A Monday week, hour by hour. */
+function CalendarWeekView({
+  days,
+  selectedPostId,
+  onOpenPost,
+  onOpenEvent,
+  onCreatePost,
+}: CalendarViewProps) {
+  return (
+    <div className="min-h-0 min-w-0 flex-1">
+      <CalendarWeekGrid
+        days={days}
+        onOpenPost={onOpenPost}
+        onOpenEvent={onOpenEvent}
+        {...(onCreatePost === undefined ? {} : { onCreatePost })}
+        {...(selectedPostId === undefined ? {} : { selectedPostId })}
+        className="h-full p-0"
+      />
     </div>
   );
 }
@@ -170,36 +256,9 @@ export function CalendarPage({
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [activeEditorId, setActiveEditorId] = useState("calendar");
   const [openPostIds, setOpenPostIds] = useState<readonly string[]>([]);
-  const [edits, setEdits] = useState<Record<string, PostEditorValue>>({});
-  const [deletedPostIds, setDeletedPostIds] = useState<readonly string[]>([]);
-  const [drafted, setDrafted] = useState<
-    readonly { post: PostChipData; date: string }[]
-  >([]);
-
-  // This mock editor keeps changes for the life of the calendar page,
-  // including moving a post to another day.
-  const visiblePostsByDay: Record<string, readonly PostChipData[]> = {};
-  const dated: readonly { post: PostChipData; date: string }[] = [
-    ...Object.entries(postsByDay).flatMap(([date, posts]) =>
-      posts.map((post) => ({ post, date })),
-    ),
-    ...drafted,
-  ];
-  for (const original of dated) {
-    if (deletedPostIds.includes(original.post.id)) continue;
-    const edit = edits[original.post.id];
-    const post = edit?.post ?? original.post;
-    const date = edit?.date ?? original.date;
-    visiblePostsByDay[date] = [...(visiblePostsByDay[date] ?? []), post];
-  }
+  const posts = useCalendarPosts(postsByDay);
 
   const selected = chat.attachedPosts.at(-1)?.id;
-
-  function dateFor(postId: string): string | undefined {
-    return Object.entries(visiblePostsByDay).find(([, posts]) =>
-      posts.some((post) => post.id === postId),
-    )?.[0];
-  }
 
   /** A calendar post opens for editing and becomes context for the chat. */
   function openPost(post: PostChipData, options?: PostOpenOptions) {
@@ -216,34 +275,21 @@ export function CalendarPage({
   /** The plus on an empty slot: a blank draft, opened ready to write. */
   function createPost(date: string, time = "09:00") {
     if (newPostProfile === undefined) return;
-    const post: PostChipData = {
-      id: `new_${String(Date.now())}`,
-      title: "Untitled post",
-      time,
-      profile: newPostProfile.profile,
-      status: "draft",
-      preview: { author: newPostProfile.author, body: "" },
-    };
-    setDrafted((current) => [...current, { post, date }]);
     setAnchor(date);
-    openPost(post);
-  }
-
-  function savePost(value: PostEditorValue) {
-    setEdits((current) => ({ ...current, [value.post.id]: value }));
+    openPost(posts.draft(newPostProfile, date, time));
   }
 
   const range = buildCalendarRange(
     view,
     anchor,
-    visiblePostsByDay,
+    posts.byDay,
     today,
     search,
     eventsByDay,
   );
   const query = search.trim();
   // The dropdown searches every post and event, not just the range on screen.
-  const hits = searchPosts(visiblePostsByDay, query);
+  const hits = searchPosts(posts.byDay, query);
   const eventHits = searchEvents(eventsByDay, query);
   const searchResults: SearchBoxResult[] = [
     ...hits.map(({ date, post }) => ({
@@ -274,44 +320,35 @@ export function CalendarPage({
     setAnchor(eventHit.date);
     chat.draftFromEvent(eventHit.event);
   }
-  const shown = countPosts(range.days);
-  const note = noteFor(
-    query,
-    shown,
-    // What the range holds without the search, so a count has something to
-    // measure against.
-    query === ""
-      ? shown
-      : countPosts(
-          buildCalendarRange(
-            view,
-            anchor,
-            visiblePostsByDay,
-            today,
-            "",
-            eventsByDay,
-          ).days,
-        ),
-  );
-  const visiblePosts = Object.values(visiblePostsByDay).flat();
-  function editorValueFor(postId: string | null): PostEditorValue | undefined {
-    if (postId === null) return undefined;
-    const post = visiblePosts.find((candidate) => candidate.id === postId);
-    const date = dateFor(postId);
-    if (post === undefined || date === undefined) return undefined;
-    return (
-      edits[post.id] ?? {
-        post,
-        date,
-        internalNotes: "",
-      }
-    );
-  }
-  const editorValue = editorValueFor(editingPostId);
+  // `range.total` is what the range holds without the search, so a count has
+  // something to measure against.
+  const note = noteFor(query, countPosts(range.days), range.total);
+  const editorValue =
+    editingPostId === null ? undefined : posts.editorValueFor(editingPostId);
   const openEditorValues = openPostIds.flatMap((id) => {
-    const value = editorValueFor(id);
+    const value = posts.editorValueFor(id);
     return value === undefined ? [] : [value];
   });
+
+  const viewProps: CalendarViewProps = {
+    days: range.days,
+    onOpenPost: openPost,
+    onOpenEvent: chat.draftFromEvent,
+    ...(newPostProfile === undefined ? {} : { onCreatePost: createPost }),
+    ...(selected === undefined ? {} : { selectedPostId: selected }),
+  };
+  // Which calendar is on screen follows the view and the width it has, not a
+  // choice a caller makes.
+  const calendarView =
+    isMobile && (view === "month" || view === "week") ? (
+      <CalendarMobileAgenda {...viewProps} />
+    ) : view === "month" ? (
+      <CalendarMonthView {...viewProps} />
+    ) : view === "day" ? (
+      <CalendarDayView {...viewProps} />
+    ) : (
+      <CalendarWeekView {...viewProps} />
+    );
 
   const calendarContent = (
     <div className="@container/page flex min-h-0 flex-1 flex-col gap-s pt-l">
@@ -355,65 +392,7 @@ export function CalendarPage({
         </AnimatePresence>
       </div>
 
-      {isMobile && (view === "month" || view === "week") ? (
-        <div className="min-h-0 flex-1 px-l pb-l">
-          <MonthAgenda
-            days={range.days}
-            onOpenPost={openPost}
-            onOpenEvent={chat.draftFromEvent}
-            {...(selected === undefined ? {} : { selectedPostId: selected })}
-          />
-        </div>
-      ) : view === "month" ? (
-        <div className="min-h-0 min-w-0 flex-1">
-          {/* The month takes the height below the toolbar and fits itself to
-              it: every week visible, chips sized to the rows. Only a cell
-              narrower than a word's worth scrolls sideways. */}
-          <CalendarMonthFit
-            days={range.days}
-            // The page arrives by morphing out of the composer preview, which
-            // opens on the month.
-            layoutId={PREVIEW_LAYOUT_ID.calendar}
-            onOpenPost={openPost}
-            onOpenEvent={chat.draftFromEvent}
-            {...(newPostProfile === undefined
-              ? {}
-              : { onCreatePost: createPost })}
-            {...(selected === undefined ? {} : { selectedPostId: selected })}
-            className="h-full p-0"
-          />
-        </div>
-      ) : view === "day" ? (
-        <div className="min-h-0 min-w-0 flex-1">
-          {/* The day range is the one day; it takes a column of its own. */}
-          {range.days.map((day) => (
-            <CalendarDayGrid
-              key={day.date}
-              day={day}
-              onOpenPost={openPost}
-              onOpenEvent={chat.draftFromEvent}
-              {...(newPostProfile === undefined
-                ? {}
-                : { onCreatePost: createPost })}
-              {...(selected === undefined ? {} : { selectedPostId: selected })}
-              className="h-full p-0"
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="min-h-0 min-w-0 flex-1">
-          <CalendarWeekGrid
-            days={range.days}
-            onOpenPost={openPost}
-            onOpenEvent={chat.draftFromEvent}
-            {...(newPostProfile === undefined
-              ? {}
-              : { onCreatePost: createPost })}
-            {...(selected === undefined ? {} : { selectedPostId: selected })}
-            className="h-full p-0"
-          />
-        </div>
-      )}
+      {calendarView}
     </div>
   );
 
@@ -426,14 +405,14 @@ export function CalendarPage({
           setEditingPostId(null);
           setActiveEditorId("calendar");
         }}
-        onChange={savePost}
+        onChange={posts.save}
         onOpenAgent={(value) => {
-          savePost(value);
+          posts.save(value);
           chat.startPostChat(value.post);
           router.push("/agent");
         }}
         onDelete={(postId) => {
-          setDeletedPostIds((current) => [...current, postId]);
+          posts.remove(postId);
           setOpenPostIds((current) =>
             current.filter((openId) => openId !== postId),
           );

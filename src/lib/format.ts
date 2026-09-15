@@ -2,6 +2,7 @@
  * Presentation formatting for mock data. Everything reads dates in UTC so the
  * same JSON renders identically in a test, on a server, and in a browser.
  */
+import type { PostChipData } from "@/entities/post";
 
 const MONTHS_SHORT = [
   "Jan",
@@ -189,4 +190,49 @@ export function toTitle(content: string, max = 72): string {
   const withoutPrefix = firstLine.replace(/^draft:\s*/i, "");
   if (withoutPrefix.length <= max) return withoutPrefix;
   return `${withoutPrefix.slice(0, max - 1).trimEnd()}…`;
+}
+
+/** The post as one run of text, so a clamp measures lines, not paragraphs. */
+export function toExcerpt(post: PostChipData): string {
+  const body = post.preview?.body ?? post.title;
+  return body
+    .replace(/^draft:\s*/i, "")
+    .split(/\s*\n+\s*/)
+    .filter((line) => line !== "")
+    .join(" ");
+}
+
+/**
+ * Where LinkedIn folds a post: about two lines of the feed before "…more",
+ * or three lines of the source with blank lines counted, whichever is first.
+ */
+const FOLD_CHARS = 140;
+const FOLD_LINES = 3;
+
+/**
+ * The part of the body that shows before "…more". Cuts at the fold length,
+ * on a word, or after the third line, whichever comes first.
+ */
+export function foldBody(body: string): { shown: string; folded: boolean } {
+  let lineLimit = -1;
+  let breaks = 0;
+  for (let i = 0; i < body.length; i++) {
+    if (body.charCodeAt(i) !== 10) continue;
+    breaks++;
+    if (breaks === FOLD_LINES) {
+      lineLimit = i;
+      break;
+    }
+  }
+  const limit = Math.min(
+    FOLD_CHARS,
+    lineLimit === -1 ? Number.POSITIVE_INFINITY : lineLimit,
+  );
+  if (body.length <= limit) return { shown: body, folded: false };
+  const cut = body.slice(0, limit);
+  const word = cut.lastIndexOf(" ");
+  return {
+    shown: (word > limit / 2 ? cut.slice(0, word) : cut).trimEnd(),
+    folded: true,
+  };
 }

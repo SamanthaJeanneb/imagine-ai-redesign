@@ -8,8 +8,9 @@ import {
   folderContains,
   insertAsset,
   insertNode,
-} from "@/components/features/files/file-tree-ops";
+} from "@/lib/file-tree-ops";
 import type { FileNode } from "@/entities/files";
+import { buildFileTreeIndex } from "@/lib/file-tree-index";
 
 const FILE_MOVE_TYPE = "application/x-imagine-file-move";
 
@@ -40,37 +41,6 @@ function isFileMove(types: readonly string[]): boolean {
   return movingId !== null || types.includes(FILE_MOVE_TYPE);
 }
 
-function itemHome(
-  sections: readonly FileSection[],
-  itemId: string,
-): FileMoveDest | undefined {
-  const walk = (
-    nodes: readonly FileNode[],
-    sectionId: string,
-    folderId?: string,
-  ): FileMoveDest | undefined => {
-    for (const node of nodes) {
-      if (node.id === itemId) {
-        return { sectionId, ...(folderId === undefined ? {} : { folderId }) };
-      }
-      if (node.type === "folder") {
-        const nested = walk(node.children, sectionId, node.id);
-        if (nested !== undefined) return nested;
-      } else if (node.type === "assets") {
-        if (node.assets.some((asset) => asset.id === itemId)) {
-          return { sectionId, ...(folderId === undefined ? {} : { folderId }) };
-        }
-      }
-    }
-    return undefined;
-  };
-  for (const section of sections) {
-    const found = walk(section.nodes, section.id);
-    if (found !== undefined) return found;
-  }
-  return undefined;
-}
-
 function samePlace(a: FileMoveDest, b: FileMoveDest): boolean {
   return a.sectionId === b.sectionId && a.folderId === b.folderId;
 }
@@ -89,7 +59,7 @@ export function moveLibraryItem(
   itemId: string,
   dest: FileMoveDest,
 ): { sections: FileSection[]; name: string; destName: string } | null {
-  const from = itemHome(sections, itemId);
+  const from = buildFileTreeIndex(sections).home.get(itemId);
   if (from === undefined || samePlace(from, dest)) return null;
   if (dest.folderId === itemId) return null;
 
@@ -172,6 +142,26 @@ export interface FileMoveTargets {
   ) => void;
   leave: (key: string, event: DragEvent<HTMLElement>) => void;
   drop: (dest: FileMoveDest, event: DragEvent<HTMLElement>) => void;
+}
+
+/** What one named drop target hands to whatever draws it. */
+export function fileDropBinding(
+  move: FileMoveTargets,
+  dest: FileMoveDest,
+  key: string,
+) {
+  return {
+    active: move.dropKey === key,
+    onDragOver: (event: DragEvent<HTMLElement>) => {
+      move.over(dest, key, event);
+    },
+    onDragLeave: (event: DragEvent<HTMLElement>) => {
+      move.leave(key, event);
+    },
+    onDrop: (event: DragEvent<HTMLElement>) => {
+      move.drop(dest, event);
+    },
+  };
 }
 
 /**

@@ -2,7 +2,7 @@
 
 import { cn } from "cn";
 import { AnimatePresence, LayoutGroup } from "motion/react";
-import { type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 import {
   ChatProvider,
@@ -35,6 +35,7 @@ import { WorkspaceSidebar } from "@/components/layout/workspace-sidebar";
 import { WorkspaceTopBar } from "@/components/layout/workspace-top-bar";
 import type { SidebarThread } from "@/entities/agent";
 import type { AccountUser } from "@/entities/workspace";
+import { useResizable } from "@/lib/use-resizable";
 import type { ReplyIntent, ScriptedReply } from "@/services/agent";
 import type { OpenDocument } from "@/services/files";
 
@@ -80,12 +81,7 @@ export function WorkspaceShell({
   return (
     <ChatProvider replies={replies} previews={previews}>
       <WorkspaceNavProvider threads={threads}>
-        <WorkspaceFilesProvider
-          orgName={orgName}
-          {...(orgLogoUrl === undefined ? {} : { orgLogoUrl })}
-          fileSections={fileSections}
-          skills={skills}
-        >
+        <WorkspaceFilesProvider>
           <WorkspaceChromeProvider>
             <WorkspaceEditorProvider documents={documents}>
               <WorkspaceFrame
@@ -93,6 +89,8 @@ export function WorkspaceShell({
                 {...(orgLogoUrl === undefined ? {} : { orgLogoUrl })}
                 user={user}
                 profiles={profiles}
+                fileSections={fileSections}
+                skills={skills}
               >
                 {children}
               </WorkspaceFrame>
@@ -109,18 +107,31 @@ function WorkspaceFrame({
   orgLogoUrl,
   user,
   profiles,
+  fileSections,
+  skills: initialSkills,
   children,
 }: {
   orgName: string;
   orgLogoUrl?: string;
   user: AccountUser;
   profiles: readonly ProfileSummary[];
+  fileSections: readonly FileSection[];
+  skills: readonly Skill[];
   children: ReactNode;
 }) {
   const { docked } = useWorkspaceNav();
   const { isMobile, isCompact, chatOverlayOpen, setChatOverlayOpen } =
     useWorkspaceChrome();
   const { panelOpen, setFilesPanelOpen } = useWorkspaceFiles();
+  const [skills, setSkills] = useState(initialSkills);
+  // Held here rather than in the panel, so a reopened panel is the width it
+  // was left at.
+  const filesResize = useResizable({
+    defaultWidth: 400,
+    min: 264,
+    max: 560,
+    edge: "start",
+  });
   // Too narrow to hold both, the chat comes over the page instead of beside
   // it, and the files panel follows it there.
   const chatOverlaid = docked && isCompact;
@@ -130,7 +141,21 @@ function WorkspaceFrame({
   const header = <WorkspaceTopBar user={user} profiles={profiles} />;
   const page = <WorkspacePage>{children}</WorkspacePage>;
   const filesPanel = panelOpen ? (
-    <WorkspaceFilesPanel key="files-panel" />
+    <WorkspaceFilesPanel
+      key="files-panel"
+      orgName={orgName}
+      {...(orgLogoUrl === undefined ? {} : { orgLogoUrl })}
+      fileSections={fileSections}
+      skills={skills}
+      onSkillEnabledChange={(id, enabled) => {
+        setSkills((current) =>
+          current.map((skill) =>
+            skill.id === id ? { ...skill, enabled } : skill,
+          ),
+        );
+      }}
+      resize={filesResize}
+    />
   ) : null;
 
   return (

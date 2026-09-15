@@ -16,7 +16,6 @@ import {
   type ReactNode,
 } from "react";
 
-import { searchThreads } from "@/components/layout/chat-search";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";
 import { Icon, type IconName } from "@/components/ui/icon";
@@ -33,6 +32,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { SidebarThread } from "@/entities/agent";
+import { searchThreads } from "@/lib/search-threads";
 import { useResizable } from "@/lib/use-resizable";
 import { fade, spring, stagger } from "@/styles/motion";
 

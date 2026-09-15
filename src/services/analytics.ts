@@ -9,12 +9,10 @@ import {
   type ProfileOption,
   RANGE_DAYS,
   type StatDelta,
-  type TeamData,
   type TimeRange,
   type TopPost,
 } from "@/entities/analytics";
-import type { BenchmarkData } from "@/entities/competitor";
-import type { ExplorerData, IcpData, Interaction } from "@/entities/engagement";
+import type { Interaction } from "@/entities/engagement";
 import type { Post } from "@/entities/post";
 import {
   deltaDirection,
@@ -33,6 +31,9 @@ import {
   getInteractions,
   getTeamPerformance,
 } from "@/services/engagement";
+import type { TeamView } from "@/entities/analytics";
+import type { BenchmarkView } from "@/entities/competitor";
+import type { ExplorerView, IcpView } from "@/entities/engagement";
 import {
   indexAssetsByPath,
   indexClients,
@@ -72,15 +73,15 @@ export interface AnalyticsSnapshot {
   profileId: string;
   overview: Omit<AnalyticsOverview, "profiles">;
   /** The engagement explorer for this range and profile. */
-  explorer: ExplorerData;
+  explorer: ExplorerView;
 }
 
 /** The panels that read a fixed 90-day window, cut by profile only. */
 export interface AnalyticsSections {
   profileId: string;
   insights: readonly Insight[];
-  benchmark: BenchmarkData;
-  icp: IcpData;
+  benchmark: BenchmarkView;
+  icp: IcpView;
   bestTimes: BestTimeData;
   interactions: readonly Interaction[];
 }
@@ -90,7 +91,7 @@ export interface AnalyticsPageData {
   snapshots: readonly AnalyticsSnapshot[];
   sections: readonly AnalyticsSections[];
   /** Org-wide; the team does not change with the profile filter. */
-  team: TeamData;
+  team: TeamView;
 }
 
 const IMPRESSION_SERIES: readonly ChartSeries[] = [

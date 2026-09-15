@@ -17,32 +17,21 @@ import { MAIN_LANDMARK_ID } from "@/lib/landmark";
  */
 export function WorkspacePageFrame({
   children,
-  overlay,
   className,
 }: {
   children: ReactNode;
-  /** File tabs and the editor, over the page. */
-  overlay?: ReactNode;
   className?: string;
 }) {
   return (
-    <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-      {/* The overlay's tab strip; this spacer keeps the thread from sliding
-          under it. */}
-      {overlay === undefined ? null : (
-        <div aria-hidden="true" className="h-9 shrink-0" />
+    <main
+      id={MAIN_LANDMARK_ID}
+      className={cn(
+        "@container/frame flex min-h-0 min-w-0 flex-1 flex-col overflow-x-clip overflow-y-auto",
+        className,
       )}
-      <main
-        id={MAIN_LANDMARK_ID}
-        className={cn(
-          "@container/frame flex min-h-0 min-w-0 flex-1 flex-col overflow-x-clip overflow-y-auto",
-          className,
-        )}
-      >
-        {children}
-      </main>
-      {overlay}
-    </div>
+    >
+      {children}
+    </main>
   );
 }
 
@@ -53,18 +42,9 @@ export function WorkspacePageFrame({
  * centered `max-w-page` column. The header above keeps its controls at the
  * frame's edges, as chrome does.
  */
-export function WorkspaceInsetPage({
-  children,
-  overlay,
-}: {
-  children: ReactNode;
-  overlay?: ReactNode;
-}) {
+export function WorkspaceInsetPage({ children }: { children: ReactNode }) {
   return (
-    <WorkspacePageFrame
-      {...(overlay === undefined ? {} : { overlay })}
-      className="px-page pt-l pb-l md:pt-xxl md:pb-xxl"
-    >
+    <WorkspacePageFrame className="px-page pt-l pb-l md:pt-xxl md:pb-xxl">
       {children}
     </WorkspacePageFrame>
   );

@@ -18,6 +18,7 @@ import { StatGroup, StatTile } from "@/components/features/analytics/stat-tile";
 import { TopPosts } from "@/components/features/analytics/top-posts";
 import {
   downloadCsv,
+  impressionsCsvRows,
   snapshotFor,
 } from "@/components/features/analytics/analytics-data";
 import type { TimeRange } from "@/entities/analytics";
@@ -77,16 +78,10 @@ export function AnalyticsPage({ data }: AnalyticsPageProps) {
           profileId={profileId}
           onProfileChange={setProfileId}
           onExport={() => {
-            const rows = [
-              ["Date", "Impressions"],
-              ...overview.impressions.data.map((datum) => [
-                datum.label,
-                typeof datum["impressions"] === "number"
-                  ? datum["impressions"]
-                  : 0,
-              ]),
-            ];
-            downloadCsv(rows, `imagine-analytics-${range}-${profileId}.csv`);
+            downloadCsv(
+              impressionsCsvRows(overview.impressions.data),
+              `imagine-analytics-${range}-${profileId}.csv`,
+            );
           }}
         />
       </div>

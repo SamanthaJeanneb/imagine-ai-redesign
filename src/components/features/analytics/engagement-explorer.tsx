@@ -2,28 +2,23 @@
 
 import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
-import { useId, useState } from "react";
 
 import { AskButton } from "@/components/features/analytics/ask-imagine";
 import { ChartSkeletonLine } from "@/components/features/analytics/chart-theme";
 import { EngagementChartScene } from "@/components/features/analytics/engagement-chart-scene";
 import {
-  METRIC,
-  MetricTabs,
-} from "@/components/features/analytics/engagement-metric-tabs";
+  EngagementExplorerProvider,
+  useEngagementExplorer,
+} from "@/components/features/analytics/engagement-explorer-provider";
+import { MetricTabs } from "@/components/features/analytics/engagement-metric-tabs";
 import { PostDetail } from "@/components/features/analytics/engagement-post-detail";
 import { Panel } from "@/components/features/analytics/panel";
-import type {
-  ExplorerData,
-  ExplorerMetric,
-  ExplorerPost,
-} from "@/entities/engagement";
+import type { ExplorerPost } from "@/entities/engagement";
+import type { ExplorerView } from "@/entities/engagement";
 import { spring } from "@/styles/motion";
 
 interface EngagementExplorerProps {
-  data: ExplorerData;
-  /** The window, e.g. "Last 30 days". */
-  description?: string;
+  data: ExplorerView;
   /** The post attached to the conversation, if any. */
   selectedPostId?: string;
   /** Pressing a post, on the chart or in the rail. */
@@ -34,6 +29,104 @@ interface EngagementExplorerProps {
   className?: string;
 }
 
+/** The metric switch, wired to the panel's own metric. */
+function ExplorerMetricTabs() {
+  const { metric, setMetric } = useEngagementExplorer();
+  return <MetricTabs value={metric} onValueChange={setMetric} />;
+}
+
+/** Asks about whichever metric is on screen. */
+function ExplorerAskButton({
+  onAsk,
+}: {
+  onAsk: (prompt: string, intent?: string) => void;
+}) {
+  const { spec } = useEngagementExplorer();
+  return (
+    <AskButton
+      prompt={`Walk me through ${spec.label.toLowerCase()} over this window and what drove it.`}
+      onAsk={onAsk}
+    />
+  );
+}
+
+/**
+ * The posts of the window beside the chart: the active one in full, then
+ * every post as a row. Hovering a row pins the chart to that post's day.
+ */
+function ExplorerPostRail() {
+  const { data, metric, spec, activePost, selectedPostId, pin, select } =
+    useEngagementExplorer();
+
+  return (
+    <aside
+      className="flex min-w-0 flex-col gap-l xl:border-l xl:border-imagine-border xl:pl-l"
+      onMouseLeave={() => {
+        pin(null);
+      }}
+    >
+      <AnimatePresence mode="wait" initial={false}>
+        {activePost ? (
+          <PostDetail
+            key={activePost.id}
+            post={activePost}
+            selected={activePost.id === selectedPostId}
+            onSelect={select}
+          />
+        ) : (
+          <p key="empty" className="type-small text-imagine-foreground-faint">
+            No posts in this window.
+          </p>
+        )}
+      </AnimatePresence>
+      {data.posts.length > 0 ? (
+        <ul className="-mx-xs flex max-h-40 flex-col overflow-y-auto border-t border-imagine-border pt-s">
+          {data.posts
+            .slice()
+            .reverse()
+            .map((post) => {
+              const active = post.id === activePost?.id;
+              return (
+                <li key={post.id}>
+                  <motion.button
+                    type="button"
+                    onMouseEnter={() => {
+                      pin(post);
+                    }}
+                    onFocus={() => {
+                      pin(post);
+                    }}
+                    onClick={() => select?.(post)}
+                    whileTap={{ scale: 0.985 }}
+                    transition={spring.snappy}
+                    className={cn(
+                      "flex w-full items-center gap-s rounded-control px-xs py-xxs text-left transition-colors",
+                      active
+                        ? "bg-imagine-surface-raised"
+                        : "hover:bg-imagine-surface-raised/60",
+                    )}
+                  >
+                    <span className="w-12 shrink-0 type-small text-imagine-foreground-faint tabular-nums">
+                      {post.label}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate type-small">
+                      {post.title}
+                    </span>
+                    <span className="shrink-0 type-small font-medium tabular-nums">
+                      {metric === "posts"
+                        ? String(post.comments)
+                        : spec.format(post[metric])}
+                    </span>
+                  </motion.button>
+                </li>
+              );
+            })}
+        </ul>
+      ) : null}
+    </aside>
+  );
+}
+
 /**
  * Engagement over the window and the posts behind it. One metric shows at a
  * time (the tabs). Hovering the chart scrubs through days and the detail rail
@@ -42,147 +135,37 @@ interface EngagementExplorerProps {
  */
 export function EngagementExplorer({
   data,
-  description,
   selectedPostId,
   onSelectPost,
   onAsk,
   layoutId,
   className,
 }: EngagementExplorerProps) {
-  const clipId = useId().replace(/:/g, "");
-  const [metric, setMetric] = useState<ExplorerMetric>("reach");
-  const [hoverLabel, setHoverLabel] = useState<string | null>(null);
-  const [pinned, setPinned] = useState<ExplorerPost | null>(null);
-
-  const spec = METRIC[metric];
-  const postsByLabel = new Map<string, ExplorerPost[]>();
-  for (const post of data.posts) {
-    const list = postsByLabel.get(post.label);
-    if (list) list.push(post);
-    else postsByLabel.set(post.label, [post]);
-  }
-  const labelIndex = new Map(
-    data.points.map((point, index) => [point.label, index]),
-  );
-
-  const scrubbed =
-    hoverLabel === null ? undefined : postsByLabel.get(hoverLabel)?.[0];
-  const activePost =
-    pinned ??
-    scrubbed ??
-    data.posts.find((post) => post.id === selectedPostId) ??
-    data.posts.at(-1);
-  const pinnedIndex =
-    pinned === null ? undefined : labelIndex.get(pinned.label);
-  const labelOf = new Map<string, string>([[metric, spec.label]]);
-
   return (
-    <Panel
-      title="Engagement"
-      description={description}
-      actions={
-        <>
-          <MetricTabs value={metric} onValueChange={setMetric} />
-          {onAsk ? (
-            <AskButton
-              prompt={`Walk me through ${spec.label.toLowerCase()} over ${(description ?? "this window").toLowerCase()} and what drove it.`}
-              onAsk={onAsk}
-            />
-          ) : null}
-        </>
-      }
-      layoutId={layoutId}
-      className={className}
+    <EngagementExplorerProvider
+      data={data}
+      {...(selectedPostId === undefined ? {} : { selectedPostId })}
+      {...(onSelectPost === undefined ? {} : { onSelectPost })}
     >
-      <div className="grid min-w-0 gap-l @2xl/panel:grid-cols-[minmax(0,1fr)_16rem]">
-        <div className="flex min-w-0 flex-col gap-m">
-          <EngagementChartScene
-            data={data}
-            metric={metric}
-            spec={spec}
-            clipId={clipId}
-            pinned={pinned}
-            pinnedIndex={pinnedIndex}
-            postsByLabel={postsByLabel}
-            labelOf={labelOf}
-            activePostId={activePost?.id}
-            selectedPostId={selectedPostId}
-            onHoverLabel={setHoverLabel}
-            onHoverPost={setPinned}
-            onSelectPost={onSelectPost}
-          />
+      <Panel
+        title="Engagement"
+        actions={
+          <>
+            <ExplorerMetricTabs />
+            {onAsk ? <ExplorerAskButton onAsk={onAsk} /> : null}
+          </>
+        }
+        layoutId={layoutId}
+        className={className}
+      >
+        <div className="grid min-w-0 gap-l @2xl/panel:grid-cols-[minmax(0,1fr)_16rem]">
+          <div className="flex min-w-0 flex-col gap-m">
+            <EngagementChartScene />
+          </div>
+          <ExplorerPostRail />
         </div>
-
-        <aside
-          className="flex min-w-0 flex-col gap-l xl:border-l xl:border-imagine-border xl:pl-l"
-          onMouseLeave={() => {
-            setPinned(null);
-          }}
-        >
-          <AnimatePresence mode="wait" initial={false}>
-            {activePost ? (
-              <PostDetail
-                key={activePost.id}
-                post={activePost}
-                selected={activePost.id === selectedPostId}
-                onSelect={onSelectPost}
-              />
-            ) : (
-              <p
-                key="empty"
-                className="type-small text-imagine-foreground-faint"
-              >
-                No posts in this window.
-              </p>
-            )}
-          </AnimatePresence>
-          {data.posts.length > 0 ? (
-            <ul className="-mx-xs flex max-h-40 flex-col overflow-y-auto border-t border-imagine-border pt-s">
-              {data.posts
-                .slice()
-                .reverse()
-                .map((post) => {
-                  const active = post.id === activePost?.id;
-                  return (
-                    <li key={post.id}>
-                      <motion.button
-                        type="button"
-                        onMouseEnter={() => {
-                          setPinned(post);
-                        }}
-                        onFocus={() => {
-                          setPinned(post);
-                        }}
-                        onClick={() => onSelectPost?.(post)}
-                        whileTap={{ scale: 0.985 }}
-                        transition={spring.snappy}
-                        className={cn(
-                          "flex w-full items-center gap-s rounded-control px-xs py-xxs text-left transition-colors",
-                          active
-                            ? "bg-imagine-surface-raised"
-                            : "hover:bg-imagine-surface-raised/60",
-                        )}
-                      >
-                        <span className="w-12 shrink-0 type-small text-imagine-foreground-faint tabular-nums">
-                          {post.label}
-                        </span>
-                        <span className="min-w-0 flex-1 truncate type-small">
-                          {post.title}
-                        </span>
-                        <span className="shrink-0 type-small font-medium tabular-nums">
-                          {metric === "posts"
-                            ? String(post.comments)
-                            : spec.format(post[metric])}
-                        </span>
-                      </motion.button>
-                    </li>
-                  );
-                })}
-            </ul>
-          ) : null}
-        </aside>
-      </div>
-    </Panel>
+      </Panel>
+    </EngagementExplorerProvider>
   );
 }
 
@@ -192,16 +175,13 @@ export function EngagementExplorer({
  * inert until there is a window for it to switch between.
  */
 export function EngagementExplorerSkeleton({
-  description,
   className,
 }: {
-  description?: string;
   className?: string;
 }) {
   return (
     <Panel
       title="Engagement"
-      description={description}
       actions={<MetricTabs value="reach" disabled />}
       className={className}
     >

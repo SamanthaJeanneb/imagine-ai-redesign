@@ -23,6 +23,8 @@ export interface CalendarRange {
   /** "Tue, 8 Sep", "8 to 14 Sep", or "September 2026". */
   rangeLabel: string;
   days: readonly CalendarDay[];
+  /** How many chips the range holds before the query narrowed it. */
+  total: number;
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -150,27 +152,26 @@ function weekLabel(start: string, end: string): string {
   return `${from} to ${formatDayMonth(end)}`;
 }
 
-/** The cells and the label for one view, around `anchor`. */
-export function buildCalendarRange(
-  view: CalendarView,
-  anchor: string,
-  posts: PostsByDay,
-  today: string,
-  query = "",
-  events: EventsByDay = {},
-): CalendarRange {
+interface RangeShape {
+  rangeLabel: string;
+  start: string;
+  count: number;
+  /** Set for a month, so the cells either side read as outside. */
+  month?: number;
+}
+
+/** Which cells a view covers around `anchor`, before any chip is read. */
+function rangeShape(view: CalendarView, anchor: string): RangeShape {
   if (view === "day") {
-    return {
-      rangeLabel: formatDayShort(anchor),
-      days: buildDays(anchor, 1, posts, today, { query, events }),
-    };
+    return { rangeLabel: formatDayShort(anchor), start: anchor, count: 1 };
   }
 
   if (view === "week") {
     const start = weekStart(anchor);
     return {
       rangeLabel: weekLabel(start, addDays(start, 6)),
-      days: buildDays(start, 7, posts, today, { query, events }),
+      start,
+      count: 7,
     };
   }
 
@@ -185,13 +186,33 @@ export function buildCalendarRange(
 
   return {
     rangeLabel: formatMonthYear(first),
-    days: buildDays(
-      addDays(first, -mondayOffset),
-      Math.ceil((mondayOffset + daysInMonth) / 7) * 7,
-      posts,
-      today,
-      { month, query, events },
-    ),
+    start: addDays(first, -mondayOffset),
+    count: Math.ceil((mondayOffset + daysInMonth) / 7) * 7,
+    month,
+  };
+}
+
+/** The cells and the label for one view, around `anchor`. */
+export function buildCalendarRange(
+  view: CalendarView,
+  anchor: string,
+  posts: PostsByDay,
+  today: string,
+  query = "",
+  events: EventsByDay = {},
+): CalendarRange {
+  const { rangeLabel, start, count, month } = rangeShape(view, anchor);
+
+  let total = 0;
+  for (let cell = 0; cell < count; cell += 1) {
+    const key = addDays(start, cell);
+    total += (posts[key]?.length ?? 0) + (events[key]?.length ?? 0);
+  }
+
+  return {
+    rangeLabel,
+    days: buildDays(start, count, posts, today, { month, query, events }),
+    total,
   };
 }
 
@@ -215,4 +236,40 @@ export function countPosts(days: readonly CalendarDay[]): number {
     total += day.posts.length + (day.events?.length ?? 0);
   }
   return total;
+}
+
+/** The working day the time grids always show, whatever is scheduled. */
+const FIRST_HOUR = 9;
+const LAST_HOUR = 18;
+
+/** "9:00" to 9. Chips carry their time as text, which is all a row needs. */
+export function toHour(time: string): number | null {
+  const hour = Number.parseInt(time, 10);
+  return Number.isNaN(hour) ? null : hour;
+}
+
+/** The working day, widened to hold anything scheduled outside it. */
+export function hoursFor(days: readonly CalendarDay[]): readonly number[] {
+  let first = FIRST_HOUR;
+  let last = LAST_HOUR;
+
+  for (const day of days) {
+    for (const post of day.posts) {
+      const hour = toHour(post.time);
+      if (hour === null) continue;
+      if (hour < first) first = hour;
+      if (hour > last) last = hour;
+    }
+    for (const event of day.events ?? []) {
+      if (event.allDay) continue;
+      const hour = toHour(event.time);
+      if (hour === null) continue;
+      if (hour < first) first = hour;
+      if (hour > last) last = hour;
+    }
+  }
+
+  const hours: number[] = [];
+  for (let hour = first; hour <= last; hour += 1) hours.push(hour);
+  return hours;
 }

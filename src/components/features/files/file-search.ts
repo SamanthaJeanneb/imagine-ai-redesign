@@ -3,7 +3,7 @@ import type { FileSection } from "@/components/features/files/file-tree";
 import type { Skill } from "@/components/features/files/skills-list";
 import type { IconName } from "@/components/ui/icon";
 import type { SearchBoxResult } from "@/components/ui/search-box";
-import type { FileNode } from "@/entities/files";
+import { buildFileTreeIndex, type FileTreeEntry } from "@/lib/file-tree-index";
 
 interface SearchHitBase {
   id: string;
@@ -33,63 +33,54 @@ function matches(text: string | undefined, needle: string): boolean {
   return text?.toLowerCase().includes(needle) ?? false;
 }
 
-function walk(
-  nodes: readonly FileNode[],
+function hits(
+  entry: FileTreeEntry,
   needle: string,
-  sectionId: string,
-  sectionTitle: string,
   includeFolders: boolean,
 ): FileSearchHit[] {
-  return nodes.flatMap((node) => {
-    if (node.type === "folder") {
-      const self: FileSearchHit[] =
-        includeFolders && matches(node.name, needle)
-          ? [
-              {
-                id: node.id,
-                icon: "folder",
-                title: node.name,
-                detail: sectionTitle,
-                kind: "folder",
-                sectionId,
-              },
-            ]
-          : [];
-      return [
-        ...self,
-        ...walk(node.children, needle, sectionId, sectionTitle, includeFolders),
-      ];
+  const { node, sectionId, sectionTitle } = entry;
+  if (node.type === "folder") {
+    if (!includeFolders || !matches(node.name, needle)) return [];
+    return [
+      {
+        id: node.id,
+        icon: "folder",
+        title: node.name,
+        detail: sectionTitle,
+        kind: "folder",
+        sectionId,
+      },
+    ];
+  }
+  if (node.type === "file") {
+    if (!matches(node.name, needle) && !matches(node.excerpt, needle)) {
+      return [];
     }
-    if (node.type === "file") {
-      if (!matches(node.name, needle) && !matches(node.excerpt, needle)) {
-        return [];
-      }
-      return [
-        {
-          id: node.id,
-          icon: "file-lines",
-          title: node.name,
-          detail: sectionTitle,
-          kind: "document",
-          sectionId,
-        },
-      ];
-    }
-    return node.assets.flatMap((asset) => {
-      const title = asset.caption ?? "Untitled image";
-      if (!matches(title, needle) && !matches(asset.kind, needle)) return [];
-      return [
-        {
-          id: asset.id,
-          icon: asset.kind === "video" ? "video" : "image",
-          title,
-          detail: sectionTitle,
-          kind: asset.kind,
-          sectionId,
-          asset,
-        },
-      ];
-    });
+    return [
+      {
+        id: node.id,
+        icon: "file-lines",
+        title: node.name,
+        detail: sectionTitle,
+        kind: "document",
+        sectionId,
+      },
+    ];
+  }
+  return node.assets.flatMap((asset) => {
+    const title = asset.caption ?? "Untitled image";
+    if (!matches(title, needle) && !matches(asset.kind, needle)) return [];
+    return [
+      {
+        id: asset.id,
+        icon: asset.kind === "video" ? "video" : "image",
+        title,
+        detail: sectionTitle,
+        kind: asset.kind,
+        sectionId,
+        asset,
+      },
+    ];
   });
 }
 
@@ -102,8 +93,8 @@ export function searchFiles(
   const needle = query.trim().toLowerCase();
   if (needle === "") return [];
   const includeFolders = options.includeFolders === true;
-  return sections.flatMap((section) =>
-    walk(section.nodes, needle, section.id, section.title, includeFolders),
+  return buildFileTreeIndex(sections).entries.flatMap((entry) =>
+    hits(entry, needle, includeFolders),
   );
 }
 

@@ -99,3 +99,21 @@ export interface SidebarThread {
   /** Message text, so search can match more than the title. */
   preview?: string;
 }
+
+export interface AgentMessage {
+  id: string;
+  role: "user" | "assistant";
+  parts: readonly MessagePart[];
+}
+
+export interface AgentThread {
+  id: string;
+  title: string;
+  messages: readonly AgentMessage[];
+}
+
+/** What the agent plays back when there is no real model to answer. */
+export interface ScriptedReply {
+  statuses: readonly string[];
+  parts: readonly MessagePart[];
+}

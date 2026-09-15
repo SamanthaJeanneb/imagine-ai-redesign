@@ -27,7 +27,7 @@ const EMPTY_COPY: Record<ComposerPreview, string> = {
 };
 
 /** `w-96`, as a number for the width animation. */
-const COLUMN_WIDTH = 384;
+export const CHAT_COLUMN_WIDTH = 384;
 
 interface ChatColumnContentProps {
   /** The page beside the chat. Its own preview chip is not offered. */
@@ -183,7 +183,7 @@ export function DockedChatColumn({
   ...content
 }: DockedChatColumnProps) {
   const resize = useResizable({
-    defaultWidth: COLUMN_WIDTH,
+    defaultWidth: CHAT_COLUMN_WIDTH,
     min: 320,
     max: 640,
     edge: "start",
@@ -208,45 +208,30 @@ export function DockedChatColumn({
 }
 
 interface OverlayChatColumnProps extends ChatColumnContentProps {
+  /** `CHAT_COLUMN_WIDTH` over a page too narrow to share, `"100%"` on a phone. */
+  width: number | string;
   onClose: () => void;
   className?: string;
 }
 
 /**
  * The same column sitting over the page instead of taking a column of its
- * own, on a frame too narrow to share. Fixed width, with a close control.
+ * own, on a frame too narrow to share. It does not resize, so it carries a
+ * close control instead of a handle.
  */
 export function OverlayChatColumn({
+  width,
   onClose,
   className,
   ...content
 }: OverlayChatColumnProps) {
   return (
     <ChatColumnAside
-      width={COLUMN_WIDTH}
+      width={width}
       transition={spring.settle}
       className={className}
     >
-      <ChatColumnBody {...content} width={COLUMN_WIDTH}>
-        <ChatColumnCloseButton onClick={onClose} />
-      </ChatColumnBody>
-    </ChatColumnAside>
-  );
-}
-
-/** The column filling a phone's surface, with a close control. */
-export function SheetChatColumn({
-  onClose,
-  className,
-  ...content
-}: OverlayChatColumnProps) {
-  return (
-    <ChatColumnAside
-      width="100%"
-      transition={spring.settle}
-      className={className}
-    >
-      <ChatColumnBody {...content} width="100%">
+      <ChatColumnBody {...content} width={width}>
         <ChatColumnCloseButton onClick={onClose} />
       </ChatColumnBody>
     </ChatColumnAside>

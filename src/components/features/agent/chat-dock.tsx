@@ -2,7 +2,7 @@
 
 import { cn } from "cn";
 import { useRouter } from "next/navigation";
-import { Activity, type ReactNode } from "react";
+import { Activity, useState, type ReactNode } from "react";
 
 import { ChartContext } from "@/components/features/agent/chart-context";
 import {
@@ -78,6 +78,7 @@ function ChatComposerProvider({ children }: ChatComposerProviderProps) {
   );
 }
 
+/** What the field asks for, once there is something attached to ask about. */
 function placeholderFor(
   attached: readonly ChatAttachment[],
 ): string | undefined {
@@ -96,18 +97,6 @@ function placeholderFor(
     default:
       return undefined;
   }
-}
-
-/** The field, with its placeholder following what is attached. */
-function ChatInput({ className }: { className?: string }) {
-  const chat = useChat();
-  const placeholder = placeholderFor(chat.attached);
-  return (
-    <ComposerInput
-      className={className}
-      {...(placeholder === undefined ? {} : { placeholder })}
-    />
-  );
 }
 
 /** Attach opens the files panel where the shell provides one. */
@@ -191,6 +180,9 @@ interface HeroChatDockProps {
 
 /** The landing's prompt box: larger type, no previews. */
 export function HeroChatDock({ className }: HeroChatDockProps) {
+  const chat = useChat();
+  const placeholder = placeholderFor(chat.attached);
+
   return (
     <ChatComposerProvider>
       <ComposerFrame
@@ -202,7 +194,10 @@ export function HeroChatDock({ className }: HeroChatDockProps) {
         <ChatAttachments className="px-s pt-s" />
         <ComposerInputRow className="p-xs pl-s">
           <ChatAttachButton size="icon" />
-          <ChatInput className="min-h-9 py-2 type-heading font-normal" />
+          <ComposerInput
+            className="min-h-9 py-2 type-heading font-normal"
+            {...(placeholder === undefined ? {} : { placeholder })}
+          />
           <ComposerSendButton size="icon" />
         </ComposerInputRow>
       </ComposerFrame>
@@ -234,10 +229,14 @@ export function ThreadChatDock({
 }: ThreadChatDockProps) {
   const router = useRouter();
   const chat = useChat();
+  // The surface keeps showing the preview while it closes, and both previews
+  // stay mounted behind it, so reopening is instant.
+  const [lastPreview, setLastPreview] = useState<ComposerPreview>("calendar");
+  const placeholder = placeholderFor(chat.attached);
   // Only ever one of the offered previews: a filtered-out one would still
   // hold its page's shared layout id while that page held it too.
-  const shown = previews.includes(chat.lastPreview)
-    ? chat.lastPreview
+  const shown = previews.includes(lastPreview)
+    ? lastPreview
     : (previews[0] ?? "calendar");
   const attachedPosts = chat.attachedPosts;
 
@@ -296,7 +295,10 @@ export function ThreadChatDock({
         <ComposerPreviewChips
           previews={previews}
           value={chat.preview}
-          onValueChange={chat.setPreview}
+          onValueChange={(next) => {
+            chat.setPreview(next);
+            if (next !== null) setLastPreview(next);
+          }}
         >
           {chat.preview === null ? null : (
             <ComposerExpandAction
@@ -312,7 +314,9 @@ export function ThreadChatDock({
         <ChatAttachments className="px-xs pt-xs" />
         <ComposerInputRow className="p-xs">
           <ChatAttachButton size="icon-sm" />
-          <ChatInput />
+          <ComposerInput
+            {...(placeholder === undefined ? {} : { placeholder })}
+          />
           <ComposerSendButton size="icon-sm" />
         </ComposerInputRow>
       </ComposerFrame>

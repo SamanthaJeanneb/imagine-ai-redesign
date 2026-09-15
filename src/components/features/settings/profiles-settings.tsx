@@ -43,6 +43,11 @@ import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import type { ProfileDetailData } from "@/entities/settings";
+import {
+  linkedInProfileKind,
+  nameFromLinkedInUrl,
+  normalizeLinkedInUrl,
+} from "@/lib/linkedin-url";
 import { wait } from "@/lib/wait";
 import { fade } from "@/styles/motion";
 
@@ -61,19 +66,31 @@ interface ProfilesSettingsProps {
   details: Record<string, ProfileDetailData>;
 }
 
-/** "linkedin.com/in/jane-doe" → "Jane Doe"; "/company/acme-labs" → "Acme Labs". */
-function nameFromLinkedInUrl(url: string): string {
-  const slug =
-    url
-      .replace(/\/+$/, "")
-      .split("/")
-      .filter((part) => part !== "")
-      .at(-1) ?? "";
-  const words = slug
-    .split(/[-_.]+/)
-    .filter((part) => part !== "" && !/^\d+$/.test(part))
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1));
-  return words.length === 0 ? "New profile" : words.join(" ");
+/** The facts every profile carries, whoever it is. */
+function ProfileFacts({
+  profile,
+  onReconnect,
+}: {
+  profile: ProfileDetailData;
+  onReconnect: () => void;
+}) {
+  return (
+    <ProfileDetailFacts>
+      <ProfileDetailConnection status={profile.status}>
+        {profile.status === "connected" ? null : (
+          <ProfileDetailReconnectButton onClick={onReconnect} />
+        )}
+      </ProfileDetailConnection>
+      <ProfileDetailFirstConnected
+        {...(profile.connectedAt === undefined
+          ? {}
+          : { connectedAt: profile.connectedAt })}
+      />
+      {profile.postsIndexed === undefined ? null : (
+        <ProfileDetailPostsIndexed count={profile.postsIndexed} />
+      )}
+    </ProfileDetailFacts>
+  );
 }
 
 interface AddProfileDialogProps {
@@ -282,7 +299,7 @@ export function ProfilesSettings({
                 Add profile
               </Button>
             </motion.div>
-          ) : selected.kind === "person" ? (
+          ) : (
             <ProfileDetail
               // One instance across selections: it cross-fades between
               // profiles itself. Only the empty state swaps in and out.
@@ -290,103 +307,52 @@ export function ProfilesSettings({
               profileId={selected.id}
               className={PANE}
             >
-              <ProfileDetailPersonHeader
-                name={selected.name}
-                headline={selected.headline}
-                {...(selected.avatarUrl === undefined
-                  ? {}
-                  : { avatarUrl: selected.avatarUrl })}
-              />
-              <ProfileDetailFacts>
-                <ProfileDetailConnection status={selected.status}>
-                  {selected.status === "connected" ? null : (
-                    <ProfileDetailReconnectButton onClick={reconnect} />
-                  )}
-                </ProfileDetailConnection>
-                <ProfileDetailFirstConnected
-                  {...(selected.connectedAt === undefined
-                    ? {}
-                    : { connectedAt: selected.connectedAt })}
-                />
-                {selected.postsIndexed === undefined ? null : (
-                  <ProfileDetailPostsIndexed count={selected.postsIndexed} />
-                )}
-              </ProfileDetailFacts>
-              <ProfileDetailCompany>
-                {selected.company ? (
-                  <ProfileDetailCompanyCard
-                    company={selected.company}
-                    onChange={() => {
-                      patch(selected.id, { company: undefined });
-                    }}
+              {selected.kind === "person" ? (
+                <>
+                  <ProfileDetailPersonHeader
+                    name={selected.name}
+                    headline={selected.headline}
+                    {...(selected.avatarUrl === undefined
+                      ? {}
+                      : { avatarUrl: selected.avatarUrl })}
                   />
-                ) : (
-                  <ProfileDetailLinkCompanyForm
-                    onLink={(url) => {
-                      const trimmed = url
-                        .replace(/^https?:\/\/(www\.)?/, "")
-                        .replace(/\/+$/, "");
-                      patch(selected.id, {
-                        company: {
-                          name: nameFromLinkedInUrl(trimmed),
-                          url: trimmed,
-                        },
-                      });
-                    }}
+                  <ProfileFacts profile={selected} onReconnect={reconnect} />
+                  {/* A company page is a company; only a person posts for one. */}
+                  <ProfileDetailCompany>
+                    {selected.company ? (
+                      <ProfileDetailCompanyCard
+                        company={selected.company}
+                        onChange={() => {
+                          patch(selected.id, { company: undefined });
+                        }}
+                      />
+                    ) : (
+                      <ProfileDetailLinkCompanyForm
+                        onLink={(url) => {
+                          const address = normalizeLinkedInUrl(url);
+                          patch(selected.id, {
+                            company: {
+                              name: nameFromLinkedInUrl(address),
+                              url: address,
+                            },
+                          });
+                        }}
+                      />
+                    )}
+                  </ProfileDetailCompany>
+                </>
+              ) : (
+                <>
+                  <ProfileDetailCompanyHeader
+                    name={selected.name}
+                    headline={selected.headline}
+                    {...(selected.avatarUrl === undefined
+                      ? {}
+                      : { avatarUrl: selected.avatarUrl })}
                   />
-                )}
-              </ProfileDetailCompany>
-              <ProfileDetailPersona>
-                {selected.persona ? (
-                  <ProfileDetailPersonaCard
-                    fileName={selected.persona.fileName}
-                    onView={viewPersona}
-                  />
-                ) : (
-                  <ProfileDetailPersonaEmpty />
-                )}
-              </ProfileDetailPersona>
-              <ProfileDetailFooter>
-                <ProfileDetailIndexPostsButton
-                  indexing={indexing}
-                  onClick={indexPosts}
-                />
-                <ProfileDetailRemoveButton
-                  name={selected.name}
-                  onRemove={remove}
-                />
-              </ProfileDetailFooter>
-            </ProfileDetail>
-          ) : (
-            <ProfileDetail
-              // Same instance as the person tree: switching kinds keeps the
-              // frame and cross-fades the contents.
-              key="detail"
-              profileId={selected.id}
-              className={PANE}
-            >
-              <ProfileDetailCompanyHeader
-                name={selected.name}
-                headline={selected.headline}
-                {...(selected.avatarUrl === undefined
-                  ? {}
-                  : { avatarUrl: selected.avatarUrl })}
-              />
-              <ProfileDetailFacts>
-                <ProfileDetailConnection status={selected.status}>
-                  {selected.status === "connected" ? null : (
-                    <ProfileDetailReconnectButton onClick={reconnect} />
-                  )}
-                </ProfileDetailConnection>
-                <ProfileDetailFirstConnected
-                  {...(selected.connectedAt === undefined
-                    ? {}
-                    : { connectedAt: selected.connectedAt })}
-                />
-                {selected.postsIndexed === undefined ? null : (
-                  <ProfileDetailPostsIndexed count={selected.postsIndexed} />
-                )}
-              </ProfileDetailFacts>
+                  <ProfileFacts profile={selected} onReconnect={reconnect} />
+                </>
+              )}
               <ProfileDetailPersona>
                 {selected.persona ? (
                   <ProfileDetailPersonaCard
@@ -415,10 +381,8 @@ export function ProfilesSettings({
         open={adding}
         onOpenChange={setAdding}
         onAdd={(url) => {
-          const address = url
-            .replace(/^https?:\/\/(www\.)?/, "")
-            .replace(/\/+$/, "");
-          const kind = address.includes("/company/") ? "company" : "person";
+          const address = normalizeLinkedInUrl(url);
+          const kind = linkedInProfileKind(address);
           const id = `new-${address}`;
           const name = nameFromLinkedInUrl(address);
           const summary: ProfileSummary = {

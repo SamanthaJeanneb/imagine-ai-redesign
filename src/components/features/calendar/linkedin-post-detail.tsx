@@ -24,6 +24,7 @@ import {
 import { DashedActionRow } from "@/components/ui/dashed-action";
 import { Icon } from "@/components/ui/icon";
 import { PersonAvatar } from "@/components/ui/person-avatar";
+import { assetsFromFiles, revokeBlobSrc } from "@/lib/assets";
 import { COUNT } from "@/lib/format";
 
 interface LinkedInPostEditorProps {
@@ -35,35 +36,6 @@ interface LinkedInPostEditorProps {
 
 /** LinkedIn's preview shows at most two images. */
 const MEDIA_LIMIT = 2;
-
-function mediaKind(file: File): AssetTileData["kind"] | null {
-  if (file.type.startsWith("image/")) return "image";
-  if (file.type.startsWith("video/")) return "video";
-  return null;
-}
-
-function assetsFromFiles(
-  files: readonly File[],
-  limit: number,
-): AssetTileData[] {
-  const assets: AssetTileData[] = [];
-  for (const file of files) {
-    if (assets.length >= limit) break;
-    const kind = mediaKind(file);
-    if (kind === null) continue;
-    assets.push({
-      id: `upload-${crypto.randomUUID()}`,
-      kind,
-      src: URL.createObjectURL(file),
-      caption: file.name,
-    });
-  }
-  return assets;
-}
-
-function revokeBlobSrc(src: string | undefined) {
-  if (src?.startsWith("blob:")) URL.revokeObjectURL(src);
-}
 
 export function LinkedInPostEditor({
   post,

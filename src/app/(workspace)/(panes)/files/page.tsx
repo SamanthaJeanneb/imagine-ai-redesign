@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { FilesLibraryRoute } from "@/app/(workspace)/files/files-library-route";
+import { FilesLibraryRoute } from "@/app/(workspace)/(panes)/files/files-library-route";
 import { getDocuments, getFileSections, getSkills } from "@/services/files";
 import { getWorkspace } from "@/services/workspace";
 

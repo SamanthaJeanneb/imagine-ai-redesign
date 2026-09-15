@@ -3,7 +3,8 @@
 import { cn } from "cn";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
-import { findFolder } from "@/components/features/files/file-tree-ops";
+import { fileDropBinding } from "@/components/features/files/file-move";
+import { findFolder } from "@/lib/file-tree-ops";
 import { useFilesLibrary } from "@/components/features/files/files-library-provider";
 import {
   useFilesBrowse,
@@ -79,6 +80,11 @@ function DocumentLocation({ openDocument }: { openDocument: OpenDocument }) {
                   browse.setTab("files");
                   browse.goTo({ kind: "library", sectionId: section.id });
                 }}
+                {...fileDropBinding(
+                  library.moveTargets,
+                  { sectionId: section.id },
+                  `crumb:${section.id}`,
+                )}
               />
             )}
           </BreadcrumbItem>

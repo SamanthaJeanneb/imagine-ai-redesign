@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useRef, useState } from "react";
-import type { DragEvent, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { toast } from "sonner";
 
 import type { AssetTileData } from "@/components/features/files/asset-tile";
@@ -9,6 +9,7 @@ import {
   moveLibraryItem,
   useFileMoveTargets,
   type FileMoveDest,
+  type FileMoveTargets,
 } from "@/components/features/files/file-move";
 import type { FileSection } from "@/components/features/files/file-tree";
 import {
@@ -19,7 +20,7 @@ import {
   mapNodes,
   removeAsset,
   type FolderNode,
-} from "@/components/features/files/file-tree-ops";
+} from "@/lib/file-tree-ops";
 import {
   useFilesBrowse,
   useFilesEditor,
@@ -33,9 +34,8 @@ import type {
 import type { DraggableResource } from "@/components/features/files/resource-drag";
 import type { Skill } from "@/components/features/files/skills-list";
 import type { FileNode } from "@/entities/files";
+import { buildFileTreeIndex } from "@/lib/file-tree-index";
 import type { OpenDocument } from "@/services/files";
-
-type MoveHandler = (event: DragEvent<HTMLElement>) => void;
 
 export interface FilesLibraryState {
   sections: readonly FileSection[];
@@ -47,17 +47,17 @@ export interface FilesLibraryState {
   home: ReadonlyMap<string, ItemHome>;
   currentSection: FileSection | undefined;
   currentFolder: FolderNode | undefined;
-  /** What the place is called: the folder, else the library, else the tab. */
+  /** What the place is called: the folder, else the library, else the title. */
   locationTitle: string;
   canCreate: boolean;
   dialog: DialogState;
   pendingDelete: BrowserItem | null;
-  draggingId: string | null;
-  dropTargetId: string | null;
+  /** What is in flight and which target is lit, shared by rail and browser. */
+  moveTargets: FileMoveTargets;
   /** Documents open over the browser, so the location underneath stays put. */
   open: (id: string) => void;
   press: (item: BrowserItem) => void;
-  /** A search hit: folders become the location, the rest open. */
+  /** A file search hit: folders become the location, the rest open. */
   openResult: (id: string) => void;
   send: (resource: DraggableResource) => void;
   sendItem: (item: BrowserItem) => void;
@@ -72,11 +72,6 @@ export interface FilesLibraryState {
   askRemove: (item: BrowserItem) => void;
   cancelRemove: () => void;
   confirmRemove: () => void;
-  startMove: (item: BrowserItem, event: DragEvent<HTMLElement>) => void;
-  endMove: () => void;
-  overMoveDest: (dest: FileMoveDest, key: string) => MoveHandler;
-  leaveMoveDest: (key: string) => MoveHandler;
-  dropMoveDest: (dest: FileMoveDest) => MoveHandler;
 }
 
 const FilesLibraryContext = createContext<FilesLibraryState | null>(null);
@@ -114,7 +109,7 @@ export function FilesLibraryProvider({
 }: FilesLibraryProviderProps) {
   const browse = useFilesBrowse();
   const editor = useFilesEditor();
-  const { place, tab } = browse;
+  const { place } = browse;
   const { documentId, previewId } = editor;
 
   const [sections, setSections] = useState(initialSections);
@@ -133,25 +128,7 @@ export function FilesLibraryProvider({
 
   const sectionById = new Map(sections.map((section) => [section.id, section]));
   const documentById = new Map(documents.map((doc) => [doc.id, doc]));
-  const home = new Map<string, ItemHome>();
-  const assetById = new Map<string, AssetTileData>();
-  const walk = (
-    nodes: readonly FileNode[],
-    sectionId: string,
-    folderId?: string,
-  ) => {
-    for (const node of nodes) {
-      home.set(node.id, { sectionId, ...(folderId ? { folderId } : {}) });
-      if (node.type === "folder") walk(node.children, sectionId, node.id);
-      else if (node.type === "assets") {
-        for (const asset of node.assets) {
-          home.set(asset.id, { sectionId, ...(folderId ? { folderId } : {}) });
-          assetById.set(asset.id, asset);
-        }
-      }
-    }
-  };
-  for (const section of sections) walk(section.nodes, section.id);
+  const { home, assetById } = buildFileTreeIndex(sections);
 
   const currentSection =
     place.kind === "library" ? sectionById.get(place.sectionId) : undefined;
@@ -163,14 +140,11 @@ export function FilesLibraryProvider({
       : undefined;
 
   const locationTitle =
-    tab === "skills"
-      ? "Skills"
-      : place.kind === "root"
-        ? "Files"
-        : (currentFolder?.name ?? currentSection?.title ?? title);
+    place.kind === "root"
+      ? "Files"
+      : (currentFolder?.name ?? currentSection?.title ?? title);
 
-  const canCreate =
-    tab === "files" && place.kind === "library" && currentSection !== undefined;
+  const canCreate = place.kind === "library" && currentSection !== undefined;
 
   /* --- Moving around -------------------------------------------------- */
 
@@ -210,7 +184,7 @@ export function FilesLibraryProvider({
 
   const openResult = (id: string) => {
     browse.setQuery("");
-    if (tab === "skills" || documentById.has(id)) {
+    if (documentById.has(id)) {
       open(id);
       return;
     }
@@ -381,8 +355,7 @@ export function FilesLibraryProvider({
         canCreate,
         dialog,
         pendingDelete,
-        draggingId: moveTargets.draggingId,
-        dropTargetId: moveTargets.dropKey,
+        moveTargets,
         open,
         press,
         openResult,
@@ -418,19 +391,6 @@ export function FilesLibraryProvider({
           if (pendingDelete === null) return;
           remove(pendingDelete);
           setPendingDelete(null);
-        },
-        startMove: (item, event) => {
-          moveTargets.start(item.id, event);
-        },
-        endMove: moveTargets.end,
-        overMoveDest: (dest, key) => (event) => {
-          moveTargets.over(dest, key, event);
-        },
-        leaveMoveDest: (key) => (event) => {
-          moveTargets.leave(key, event);
-        },
-        dropMoveDest: (dest) => (event) => {
-          moveTargets.drop(dest, event);
         },
       }}
     >

@@ -17,6 +17,7 @@ import {
   type PostOpenOptions,
 } from "@/components/features/calendar/post-chip";
 import type { CalendarDay, EventChipData } from "@/entities/calendar-event";
+import { hoursFor, toHour } from "@/lib/calendar";
 import {
   formatDayShort,
   formatWeekdayLong,
@@ -33,16 +34,6 @@ interface CalendarTimeGridBaseProps {
   className?: string;
 }
 
-/** The working day the grid always shows, whatever is scheduled. */
-const FIRST_HOUR = 9;
-const LAST_HOUR = 18;
-
-/** "9:00" to 9. Chips carry their time as text, which is all a row needs. */
-function toHour(time: string): number | null {
-  const hour = Number.parseInt(time, 10);
-  return Number.isNaN(hour) ? null : hour;
-}
-
 /*
  * The columns every row of a grid shares: the hour gutter, then a column per
  * day. A week keeps a floor under its seven, so a narrow page scrolls
@@ -51,32 +42,6 @@ function toHour(time: string): number | null {
 const DAY_COLUMNS = "grid-cols-[var(--spacing-xxxl)_minmax(0,1fr)]";
 const WEEK_COLUMNS =
   "min-w-[44rem] grid-cols-[var(--spacing-xxxl)_repeat(7,minmax(0,1fr))]";
-
-/** The working day, widened to hold anything scheduled outside it. */
-function hoursFor(days: readonly CalendarDay[]): readonly number[] {
-  let first = FIRST_HOUR;
-  let last = LAST_HOUR;
-
-  for (const day of days) {
-    for (const post of day.posts) {
-      const hour = toHour(post.time);
-      if (hour === null) continue;
-      if (hour < first) first = hour;
-      if (hour > last) last = hour;
-    }
-    for (const event of day.events ?? []) {
-      if (event.allDay) continue;
-      const hour = toHour(event.time);
-      if (hour === null) continue;
-      if (hour < first) first = hour;
-      if (hour > last) last = hour;
-    }
-  }
-
-  const hours: number[] = [];
-  for (let hour = first; hour <= last; hour += 1) hours.push(hour);
-  return hours;
-}
 
 /** The day's events with no time of their own, which sit above the hours. */
 function allDayEventsOf(day: CalendarDay): readonly EventChipData[] {

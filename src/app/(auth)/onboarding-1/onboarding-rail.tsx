@@ -4,7 +4,6 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { Stepper } from "@/components/features/onboarding/stepper";
 import { Wordmark } from "@/components/ui/brand-mark";
-import { getOwner } from "@/services/onboarding";
 
 /**
  * The setup rail. Signing in counts as the first step, so it is always done and
@@ -21,11 +20,10 @@ const STEPS: readonly { id: string; label: string; href?: string }[] = [
   { id: "linkedin", label: "Connect LinkedIn", href: "/onboarding-1/linkedin" },
 ];
 
-export function OnboardingRail() {
+export function OnboardingRail({ email }: { email: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const current = STEPS.findIndex((step) => step.href === pathname);
-  const { email } = getOwner();
 
   return (
     // Logo and steps at the top, signed-in line at the bottom. Width follows

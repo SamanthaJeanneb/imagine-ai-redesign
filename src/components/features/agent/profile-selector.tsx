@@ -115,6 +115,83 @@ function summary(
   return `${String(selected.length)} profiles`;
 }
 
+/** One profile in the list: who they are, and whether the agent works as them. */
+function ProfileRow({
+  profile,
+  checked,
+  onToggle,
+}: {
+  profile: ProfileSummary;
+  checked: boolean;
+  onToggle: () => void;
+}) {
+  const note =
+    profile.status === "connected" ? null : STATUS_NOTE[profile.status];
+
+  return (
+    <li>
+      <motion.button
+        type="button"
+        aria-pressed={checked}
+        onClick={onToggle}
+        whileTap={pressRow.whileTap}
+        transition={pressRow.transition}
+        // Who's in is told by the check and the weight of the name, not a
+        // wash behind the row; hover is a solid step.
+        className="flex w-full items-center gap-m rounded-control px-s py-xs text-left transition-colors outline-none hover:bg-imagine-surface-raised focus-visible:ring-2 focus-visible:ring-ring/40"
+      >
+        <ProfileAvatar profile={profile} size="default" />
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="flex items-center gap-s">
+            <span
+              className={cn(
+                "truncate type-small font-medium",
+                checked
+                  ? "text-imagine-foreground"
+                  : "text-imagine-foreground-muted",
+              )}
+            >
+              {profile.name}
+            </span>
+            {note === null ? null : (
+              <span className="shrink-0 text-xs font-medium text-warning">
+                {note}
+              </span>
+            )}
+          </span>
+          <span className="truncate text-xs text-imagine-foreground-muted">
+            {profile.headline}
+          </span>
+        </span>
+        <span
+          aria-hidden="true"
+          className={cn(
+            "flex size-4 shrink-0 items-center justify-center rounded-xs border transition-colors",
+            checked
+              ? "border-imagine-primary bg-imagine-primary text-imagine-primary-foreground"
+              : "border-imagine-foreground-faint",
+          )}
+        >
+          <AnimatePresence initial={false}>
+            {checked ? (
+              <motion.span
+                key="check"
+                initial={pop.initial}
+                animate={pop.animate}
+                exit={pop.exit}
+                transition={pop.transition}
+                className="flex"
+              >
+                <Icon name="check" size="s" active />
+              </motion.span>
+            ) : null}
+          </AnimatePresence>
+        </span>
+      </motion.button>
+    </li>
+  );
+}
+
 /** A hairline row above a run of rows in the list. */
 function Eyebrow({ children }: { children: string }) {
   return (
@@ -165,76 +242,6 @@ export function ProfileSelector({
       selectedSet.has(id)
         ? selectedIds.filter((current) => current !== id)
         : [...selectedIds, id],
-    );
-  }
-
-  function renderRow(profile: ProfileSummary) {
-    const checked = selectedSet.has(profile.id);
-    const note =
-      profile.status === "connected" ? null : STATUS_NOTE[profile.status];
-    return (
-      <li key={profile.id}>
-        <motion.button
-          type="button"
-          aria-pressed={checked}
-          onClick={() => {
-            toggle(profile.id);
-          }}
-          whileTap={pressRow.whileTap}
-          transition={pressRow.transition}
-          // Who's in is told by the check and the weight of the name, not a
-          // wash behind the row; hover is a solid step.
-          className="flex w-full items-center gap-m rounded-control px-s py-xs text-left transition-colors outline-none hover:bg-imagine-surface-raised focus-visible:ring-2 focus-visible:ring-ring/40"
-        >
-          <ProfileAvatar profile={profile} size="default" />
-          <span className="flex min-w-0 flex-1 flex-col">
-            <span className="flex items-center gap-s">
-              <span
-                className={cn(
-                  "truncate type-small font-medium",
-                  checked
-                    ? "text-imagine-foreground"
-                    : "text-imagine-foreground-muted",
-                )}
-              >
-                {profile.name}
-              </span>
-              {note === null ? null : (
-                <span className="shrink-0 text-xs font-medium text-warning">
-                  {note}
-                </span>
-              )}
-            </span>
-            <span className="truncate text-xs text-imagine-foreground-muted">
-              {profile.headline}
-            </span>
-          </span>
-          <span
-            aria-hidden="true"
-            className={cn(
-              "flex size-4 shrink-0 items-center justify-center rounded-xs border transition-colors",
-              checked
-                ? "border-imagine-primary bg-imagine-primary text-imagine-primary-foreground"
-                : "border-imagine-foreground-faint",
-            )}
-          >
-            <AnimatePresence initial={false}>
-              {checked ? (
-                <motion.span
-                  key="check"
-                  initial={pop.initial}
-                  animate={pop.animate}
-                  exit={pop.exit}
-                  transition={pop.transition}
-                  className="flex"
-                >
-                  <Icon name="check" size="s" active />
-                </motion.span>
-              ) : null}
-            </AnimatePresence>
-          </span>
-        </motion.button>
-      </li>
     );
   }
 
@@ -320,9 +327,27 @@ export function ProfileSelector({
                   {companies.length === 1 ? "Company page" : "Company pages"}
                 </Eyebrow>
               ) : null}
-              {companies.map(renderRow)}
+              {companies.map((profile) => (
+                <ProfileRow
+                  key={profile.id}
+                  profile={profile}
+                  checked={selectedSet.has(profile.id)}
+                  onToggle={() => {
+                    toggle(profile.id);
+                  }}
+                />
+              ))}
               {grouped ? <Eyebrow>People</Eyebrow> : null}
-              {people.map(renderRow)}
+              {people.map((profile) => (
+                <ProfileRow
+                  key={profile.id}
+                  profile={profile}
+                  checked={selectedSet.has(profile.id)}
+                  onToggle={() => {
+                    toggle(profile.id);
+                  }}
+                />
+              ))}
             </>
           )}
         </ul>

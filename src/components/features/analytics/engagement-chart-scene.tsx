@@ -25,12 +25,8 @@ import {
   ChartTooltipSeries,
   valueText,
 } from "@/components/features/analytics/chart-theme";
-import type { MetricSpec } from "@/components/features/analytics/engagement-metric-tabs";
-import type {
-  ExplorerData,
-  ExplorerMetric,
-  ExplorerPost,
-} from "@/entities/engagement";
+import { useEngagementExplorer } from "@/components/features/analytics/engagement-explorer-provider";
+import type { ExplorerPost } from "@/entities/engagement";
 import { formatCompact } from "@/lib/format";
 import { initials } from "@/lib/initials";
 import { fade, stagger } from "@/styles/motion";
@@ -157,51 +153,33 @@ function PostMarkers({
   );
 }
 
-interface EngagementChartSceneProps {
-  data: ExplorerData;
-  metric: ExplorerMetric;
-  spec: MetricSpec;
-  /** Namespaces the gradient and clip ids to this panel instance. */
-  clipId: string;
-  /** The post whose day the chart is held on, if any. */
-  pinned: ExplorerPost | null;
-  pinnedIndex: number | undefined;
-  postsByLabel: Map<string, ExplorerPost[]>;
-  labelOf: Map<string, string>;
-  activePostId: string | undefined;
-  selectedPostId?: string;
-  onHoverLabel: (label: string | null) => void;
-  onHoverPost: (post: ExplorerPost | null) => void;
-  onSelectPost?: (post: ExplorerPost) => void;
-}
-
 /**
  * The curve for the chosen metric with the posts of the window marked above
  * it. Scrubbing the plot reports the day under the cursor; the markers report
  * the post under it.
  */
-export function EngagementChartScene({
-  data,
-  metric,
-  spec,
-  clipId,
-  pinned,
-  pinnedIndex,
-  postsByLabel,
-  labelOf,
-  activePostId,
-  selectedPostId,
-  onHoverLabel,
-  onHoverPost,
-  onSelectPost,
-}: EngagementChartSceneProps) {
+export function EngagementChartScene() {
+  const {
+    data,
+    metric,
+    spec,
+    clipId,
+    pinned,
+    pinnedIndex,
+    activePost,
+    selectedPostId,
+    scrub,
+    pin,
+    select,
+  } = useEngagementExplorer();
   const reduceMotion = useReducedMotion();
+  const labelOf = new Map<string, string>([[metric, spec.label]]);
 
   return (
     <div
       className="h-72 w-full"
       onMouseLeave={() => {
-        onHoverLabel(null);
+        scrub(null);
       }}
     >
       <ResponsiveContainer width="100%" height="100%">
@@ -209,7 +187,7 @@ export function EngagementChartScene({
           data={data.points.map((point) => ({ ...point }))}
           margin={{ left: 0, right: 0, top: MARKER_TOP, bottom: 0 }}
           onMouseMove={(state) => {
-            onHoverLabel(
+            scrub(
               state.activeLabel === undefined
                 ? null
                 : valueText(state.activeLabel),
@@ -256,7 +234,7 @@ export function EngagementChartScene({
             active={pinned === null ? undefined : true}
             defaultIndex={pinnedIndex}
             content={(props) => {
-              const posts = postsByLabel.get(valueText(props.label)) ?? [];
+              const posts = data.postsByLabel.get(valueText(props.label)) ?? [];
               return (
                 <ChartTooltip
                   active={props.active}
@@ -293,11 +271,11 @@ export function EngagementChartScene({
           />
           <PostMarkers
             posts={data.posts}
-            activeId={activePostId}
+            activeId={activePost?.id}
             selectedId={selectedPostId}
             clipId={clipId}
-            onHover={onHoverPost}
-            onPick={(post) => onSelectPost?.(post)}
+            onHover={pin}
+            onPick={(post) => select?.(post)}
           />
         </AreaChart>
       </ResponsiveContainer>

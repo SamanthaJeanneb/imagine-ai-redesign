@@ -2,9 +2,9 @@
 
 import { useChat } from "@/components/features/agent/chat-provider";
 import {
+  CHAT_COLUMN_WIDTH,
   DockedChatColumn,
   OverlayChatColumn,
-  SheetChatColumn,
 } from "@/components/layout/chat-column";
 import { useWorkspaceChrome } from "@/components/layout/workspace-chrome";
 import { useWorkspaceNav } from "@/components/layout/workspace-nav";
@@ -32,7 +32,16 @@ export function WorkspaceChatColumn() {
     setChatOverlayOpen(false);
   };
 
-  if (isMobile) return <SheetChatColumn {...content} onClose={close} />;
-  if (isCompact) return <OverlayChatColumn {...content} onClose={close} />;
+  // The phone's surface is the column; a narrow page keeps its own width.
+  if (isMobile)
+    return <OverlayChatColumn {...content} width="100%" onClose={close} />;
+  if (isCompact)
+    return (
+      <OverlayChatColumn
+        {...content}
+        width={CHAT_COLUMN_WIDTH}
+        onClose={close}
+      />
+    );
   return <DockedChatColumn {...content} className="max-xl:hidden" />;
 }

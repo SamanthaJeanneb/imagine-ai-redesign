@@ -20,7 +20,7 @@ import { PersonAvatar } from "@/components/ui/person-avatar";
 import { Separator } from "@/components/ui/separator";
 import type { LinkedInPostContent, LinkedInPostStats } from "@/entities/post";
 import { fade } from "@/styles/motion";
-import { COUNT } from "@/lib/format";
+import { COUNT, foldBody } from "@/lib/format";
 
 /** The feed's overlapping trio when a post has reactions but no type breakdown. */
 const FEED_REACTIONS: readonly LinkedInReactionType[] = [
@@ -28,13 +28,6 @@ const FEED_REACTIONS: readonly LinkedInReactionType[] = [
   "celebrate",
   "love",
 ];
-
-/**
- * Where LinkedIn folds a post: about two lines of the feed before "…more",
- * or three lines of the source with blank lines counted, whichever is first.
- */
-const FOLD_CHARS = 140;
-const FOLD_LINES = 3;
 
 const ACTIONS: readonly {
   icon: IconName;
@@ -46,34 +39,6 @@ const ACTIONS: readonly {
   { icon: "arrows-rotate", label: "Repost", count: "reposts" },
   { icon: "paper-plane", label: "Send" },
 ];
-
-/**
- * The part of the body that shows before "…more". Cuts at the fold length,
- * on a word, or after the third line, whichever comes first.
- */
-function foldBody(body: string): { shown: string; folded: boolean } {
-  let lineLimit = -1;
-  let breaks = 0;
-  for (let i = 0; i < body.length; i++) {
-    if (body.charCodeAt(i) !== 10) continue;
-    breaks++;
-    if (breaks === FOLD_LINES) {
-      lineLimit = i;
-      break;
-    }
-  }
-  const limit = Math.min(
-    FOLD_CHARS,
-    lineLimit === -1 ? Number.POSITIVE_INFINITY : lineLimit,
-  );
-  if (body.length <= limit) return { shown: body, folded: false };
-  const cut = body.slice(0, limit);
-  const word = cut.lastIndexOf(" ");
-  return {
-    shown: (word > limit / 2 ? cut.slice(0, word) : cut).trimEnd(),
-    folded: true,
-  };
-}
 
 /* -------------------------------------------------------------------------- */
 /* Provider                                                                   */

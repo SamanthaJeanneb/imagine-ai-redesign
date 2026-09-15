@@ -1,6 +1,7 @@
 import type { AssetTileData } from "@/components/features/files/asset-tile";
 import type { LibraryCardKind } from "@/components/features/files/library-card";
 import type { FileNode } from "@/entities/files";
+import type { FileTreeLocation } from "@/lib/file-tree-index";
 
 /** What the browser is looking at. */
 export type Place =
@@ -25,10 +26,7 @@ export type Filter = "all" | "documents" | "images";
 export type Sort = "name-asc" | "name-desc";
 
 /** Which library and folder something sits in. */
-export interface ItemHome {
-  sectionId: string;
-  folderId?: string;
-}
+export type ItemHome = FileTreeLocation;
 
 /** Enough to put a deleted item back where it was. */
 export interface RemovedItem extends ItemHome {

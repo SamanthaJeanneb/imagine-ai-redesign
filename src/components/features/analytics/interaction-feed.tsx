@@ -22,7 +22,6 @@ type InteractionAction = "reply" | "outreach";
 
 interface InteractionFeedProps {
   items: readonly Interaction[];
-  description?: string;
   /** Draft a reply to their comment, or a comment on their latest post. */
   onAct?: (item: Interaction, action: InteractionAction) => void;
   onAsk?: (prompt: string, intent?: string) => void;
@@ -68,13 +67,142 @@ function RowAction({
 }
 
 /**
+ * A row's frame: who it was and what they did it to, then whatever the kind
+ * of interaction has to show under it. `actions` sits outside the text column
+ * so it stays pinned to the row's right edge.
+ */
+function InteractionRow({
+  item,
+  actions,
+  children,
+}: {
+  item: Interaction;
+  actions?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <StaggerItem
+      className={cn(
+        "group/row flex items-start gap-m rounded-control px-xs py-s transition-colors hover:bg-imagine-surface-raised/60",
+      )}
+    >
+      <Avatar className="mt-xxs">
+        {item.avatarUrl ? (
+          <AvatarImage src={item.avatarUrl} alt={item.name} />
+        ) : null}
+        <AvatarFallback>{initials(item.name)}</AvatarFallback>
+      </Avatar>
+      <div className="flex min-w-0 flex-1 flex-col gap-xxs">
+        <p className="type-small">
+          <span className="font-medium">{item.name}</span>{" "}
+          <span className="text-imagine-foreground-muted">
+            {VERB[item.kind]}
+          </span>{" "}
+          <span className="font-medium">“{item.postTitle}”</span>
+          {item.icp ? (
+            <Badge variant="accent" className="ml-s h-5 align-middle">
+              {item.category}
+            </Badge>
+          ) : null}
+        </p>
+        <p className="truncate type-micro tracking-normal text-imagine-foreground-faint normal-case">
+          {item.headline} · {item.when}
+        </p>
+        {children}
+      </div>
+      {actions ? (
+        <div className="flex shrink-0 items-center gap-xxs text-imagine-foreground-faint transition-colors group-hover/row:text-imagine-foreground-muted">
+          {actions}
+        </div>
+      ) : null}
+    </StaggerItem>
+  );
+}
+
+interface InteractionRowProps {
+  item: Interaction;
+  onAct?: (item: Interaction, action: InteractionAction) => void;
+}
+
+/** What they said, and the two ways to answer it. */
+function CommentInteractionRow({ item, onAct }: InteractionRowProps) {
+  return (
+    <InteractionRow
+      item={item}
+      actions={
+        onAct ? (
+          <>
+            <RowAction
+              label="Draft a reply"
+              icon="comment"
+              emphasis={item.icp}
+              onClick={() => {
+                onAct(item, "reply");
+              }}
+            />
+            <RowAction
+              label="Comment on their post"
+              icon="pen"
+              onClick={() => {
+                onAct(item, "outreach");
+              }}
+            />
+          </>
+        ) : null
+      }
+    >
+      <blockquote className="mt-xxs line-clamp-2 border-l-2 border-imagine-border pl-s type-small text-imagine-foreground-muted">
+        {item.excerpt}
+      </blockquote>
+    </InteractionRow>
+  );
+}
+
+/** A reaction carries no words, so the only way on is their own post. */
+function ReactionInteractionRow({ item, onAct }: InteractionRowProps) {
+  return (
+    <InteractionRow
+      item={item}
+      actions={
+        onAct ? (
+          <RowAction
+            label="Comment on their post"
+            icon="pen"
+            emphasis={item.icp}
+            onClick={() => {
+              onAct(item, "outreach");
+            }}
+          />
+        ) : null
+      }
+    >
+      <p className="type-small text-imagine-foreground-muted">
+        <Icon
+          name="thumbs-up"
+          size="s"
+          className="mr-xs text-imagine-foreground-faint"
+        />
+        {item.excerpt}
+      </p>
+    </InteractionRow>
+  );
+}
+
+const ROW_BY_KIND: Record<
+  Interaction["kind"],
+  (props: InteractionRowProps) => React.ReactNode
+> = {
+  comment: CommentInteractionRow,
+  reaction: ReactionInteractionRow,
+};
+
+/**
  * Who interacted with your posts, newest first. Every row is a way into the
  * agent: draft a reply to what they said, or go and comment on their post.
  * ICP matches are marked so the ones worth the time stand out.
  */
 export function InteractionFeed({
   items,
-  description,
   onAct,
   onAsk,
   className,
@@ -82,7 +210,6 @@ export function InteractionFeed({
   return (
     <Panel
       title="Interactions"
-      description={description}
       actions={
         onAsk ? (
           <AskIconButton
@@ -94,89 +221,19 @@ export function InteractionFeed({
       className={className}
     >
       <Stagger kind="list" className="-mx-xs flex flex-col">
-        {items.map((item) => (
-          <StaggerItem
-            key={item.id}
-            className={cn(
-              "group/row flex items-start gap-m rounded-control px-xs py-s transition-colors hover:bg-imagine-surface-raised/60",
-            )}
-          >
-            <Avatar className="mt-xxs">
-              {item.avatarUrl ? (
-                <AvatarImage src={item.avatarUrl} alt={item.name} />
-              ) : null}
-              <AvatarFallback>{initials(item.name)}</AvatarFallback>
-            </Avatar>
-            <div className="flex min-w-0 flex-1 flex-col gap-xxs">
-              <p className="type-small">
-                <span className="font-medium">{item.name}</span>{" "}
-                <span className="text-imagine-foreground-muted">
-                  {VERB[item.kind]}
-                </span>{" "}
-                <span className="font-medium">“{item.postTitle}”</span>
-                {item.icp ? (
-                  <Badge variant="accent" className="ml-s h-5 align-middle">
-                    {item.category}
-                  </Badge>
-                ) : null}
-              </p>
-              <p className="truncate type-micro tracking-normal text-imagine-foreground-faint normal-case">
-                {item.headline} · {item.when}
-              </p>
-              {item.kind === "comment" ? (
-                <blockquote className="mt-xxs line-clamp-2 border-l-2 border-imagine-border pl-s type-small text-imagine-foreground-muted">
-                  {item.excerpt}
-                </blockquote>
-              ) : (
-                <p className="type-small text-imagine-foreground-muted">
-                  <Icon
-                    name="thumbs-up"
-                    size="s"
-                    className="mr-xs text-imagine-foreground-faint"
-                  />
-                  {item.excerpt}
-                </p>
-              )}
-            </div>
-            {onAct ? (
-              <div className="flex shrink-0 items-center gap-xxs text-imagine-foreground-faint transition-colors group-hover/row:text-imagine-foreground-muted">
-                {item.kind === "comment" ? (
-                  <RowAction
-                    label="Draft a reply"
-                    icon="comment"
-                    emphasis={item.icp}
-                    onClick={() => {
-                      onAct(item, "reply");
-                    }}
-                  />
-                ) : null}
-                <RowAction
-                  label="Comment on their post"
-                  icon="pen"
-                  emphasis={item.icp && item.kind === "reaction"}
-                  onClick={() => {
-                    onAct(item, "outreach");
-                  }}
-                />
-              </div>
-            ) : null}
-          </StaggerItem>
-        ))}
+        {items.map((item) => {
+          const Row = ROW_BY_KIND[item.kind];
+          return <Row key={item.id} item={item} onAct={onAct} />;
+        })}
       </Stagger>
     </Panel>
   );
 }
 
 /** The feed's frame while this week's interactions are still coming in. */
-export function InteractionFeedSkeleton({
-  description,
-  className,
-}: {
-  description?: string;
-  className?: string;
-}) {
+export function InteractionFeedSkeleton({ className }: { className?: string }) {
   return (
-    <Panel title="Interactions" description={description} className={className}>
+    <Panel title="Interactions" className={className}>
       <ChartSkeletonRows height="h-64" />
     </Panel>
   );

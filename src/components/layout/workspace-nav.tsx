@@ -9,13 +9,14 @@ import {
 } from "@/components/features/agent/chat-provider";
 import type { ComposerPreview } from "@/components/features/agent/composer";
 import type { SidebarNavKey } from "@/components/layout/sidebar";
+import type { SidebarThread } from "@/entities/agent";
+import { withEphemeralThread } from "@/lib/threads";
 import {
   chatColumnFor,
   navKeyFor,
   threadIdFor,
   titleFrom,
-} from "@/components/layout/workspace-routes";
-import type { SidebarThread } from "@/entities/agent";
+} from "@/lib/workspace-routes";
 
 interface WorkspaceNavState {
   /** The page the route is on, for the rail and the page frame. */
@@ -67,10 +68,11 @@ export function WorkspaceNavProvider({
     chat.threadId === NEW_THREAD_ID
       ? (titleFrom(chat.messages) ?? "New chat")
       : undefined;
-  const visibleThreads: readonly SidebarThread[] =
-    newThreadTitle === undefined
-      ? threads
-      : [{ id: NEW_THREAD_ID, title: newThreadTitle }, ...threads];
+  const visibleThreads = withEphemeralThread(
+    threads,
+    NEW_THREAD_ID,
+    newThreadTitle,
+  );
   const activeThreadId =
     activeKey === "agent" && newThreadTitle !== undefined
       ? NEW_THREAD_ID

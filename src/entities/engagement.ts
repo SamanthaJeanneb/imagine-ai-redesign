@@ -218,3 +218,25 @@ export function transformEngagementReactionRow(
     at: row.created_at,
   };
 }
+
+/** The explorer with the joins the chart and its rail read off already made. */
+export interface ExplorerView extends ExplorerData {
+  /** The posts that went out under each axis label. */
+  postsByLabel: ReadonlyMap<string, readonly ExplorerPost[]>;
+  /** Where each axis label sits in `points`, so a post can pin the tooltip. */
+  labelIndex: ReadonlyMap<string, number>;
+}
+
+/** One post as a bubble: reach against ICP share, sized by the crowd. */
+export interface IcpScatterPoint {
+  id: string;
+  title: string;
+  reach: number;
+  icpShare: number;
+  engagerCount: number;
+}
+
+/** The ICP cut with the scatter already shaped. */
+export interface IcpView extends IcpData {
+  scatterPoints: readonly IcpScatterPoint[];
+}

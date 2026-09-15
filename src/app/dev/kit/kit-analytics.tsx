@@ -1,5 +1,14 @@
 "use client";
 
+import type { TeamView } from "@/entities/analytics";
+import type { BenchmarkView } from "@/entities/competitor";
+import type { ExplorerView, IcpView } from "@/entities/engagement";
+import {
+  explorerIndex,
+  icpScatterPoints,
+  rankTeamMembers,
+} from "@/lib/analytics-derive";
+import { benchmarkRadarByCompetitor } from "@/lib/benchmark";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -54,7 +63,6 @@ import type {
 import type { BenchmarkData } from "@/entities/competitor";
 import type {
   Engager,
-  ExplorerData,
   ExplorerPoint,
   ExplorerPost,
   IcpData,
@@ -201,7 +209,7 @@ function dayAt(offset: number): string {
  * days after it, so the curve has the shape real LinkedIn reach has: a spike
  * on the day, a long tail, and a quiet floor between posts.
  */
-export function kitExplorer(scale = 1): ExplorerData {
+export function kitExplorer(scale = 1): ExplorerView {
   const points: ExplorerPoint[] = [];
   for (let offset = 0; offset < 30; offset += 1) {
     const day = dayAt(offset);
@@ -270,6 +278,7 @@ export function kitExplorer(scale = 1): ExplorerData {
   return {
     points,
     posts,
+    ...explorerIndex(points, posts),
     xTicks: points
       .filter((_, index) => index % 5 === 0)
       .map((point) => point.label),
@@ -293,7 +302,7 @@ const KIT_EXPLORER = kitExplorer();
 /* Benchmark                                                                   */
 /* -------------------------------------------------------------------------- */
 
-export const KIT_BENCHMARK: BenchmarkData = {
+const KIT_BENCHMARK_BASE: BenchmarkData = {
   you: {
     id: "you",
     name: "Acme",
@@ -344,6 +353,14 @@ export const KIT_BENCHMARK: BenchmarkData = {
       topics: ["Research", "Interviews", "Product"],
     },
   ],
+};
+
+export const KIT_BENCHMARK: BenchmarkView = {
+  ...KIT_BENCHMARK_BASE,
+  radar: benchmarkRadarByCompetitor(
+    KIT_BENCHMARK_BASE.you,
+    KIT_BENCHMARK_BASE.competitors,
+  ),
 };
 
 /* -------------------------------------------------------------------------- */
@@ -450,7 +467,7 @@ function icpPost(
   };
 }
 
-export const KIT_ICP: IcpData = {
+const KIT_ICP_BASE: IcpData = {
   posts: [
     icpPost(
       "kx4",
@@ -489,11 +506,16 @@ export const KIT_ICP: IcpData = {
   ],
 };
 
+export const KIT_ICP: IcpView = {
+  ...KIT_ICP_BASE,
+  scatterPoints: icpScatterPoints(KIT_ICP_BASE.posts),
+};
+
 /* -------------------------------------------------------------------------- */
 /* Team                                                                        */
 /* -------------------------------------------------------------------------- */
 
-export const KIT_TEAM: TeamData = {
+const KIT_TEAM_BASE: TeamData = {
   members: [
     {
       id: "c2",
@@ -600,6 +622,11 @@ export const KIT_TEAM: TeamData = {
       "Mia Torres": 0,
     },
   ],
+};
+
+export const KIT_TEAM: TeamView = {
+  ...KIT_TEAM_BASE,
+  ranked: rankTeamMembers(KIT_TEAM_BASE.members),
 };
 
 /* -------------------------------------------------------------------------- */

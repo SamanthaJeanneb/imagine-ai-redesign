@@ -86,12 +86,11 @@ function ChartPart({ part }: { part: ChartPartData }) {
 
 /**
  * What a draft's card and the row under it share. The provider sits above
- * both, so the row can turn the body into a field it does not itself render.
+ * both, so the row can open the body as a field it does not itself render.
  */
 interface DraftContextValue {
   editing: boolean;
   setEditing: (editing: boolean) => void;
-  setBody: (body: string) => void;
 }
 
 const DraftContext = createContext<DraftContextValue | null>(null);
@@ -104,18 +103,22 @@ function useDraft(): DraftContextValue {
   return draft;
 }
 
-/** The card, with the body swapped for a field while it is being edited. */
-function DraftCard() {
-  const { editing, setBody } = useDraft();
-
+/**
+ * The card frame both draft trees fill. One frame across the two, because it
+ * animates its own size between them: remounting it would cut where it
+ * morphs.
+ */
+function DraftCard({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
-    <LinkedInPostCard className={editing ? "ring-2 ring-ring/30" : undefined}>
+    <LinkedInPostCard className={className}>
       <LinkedInPostActor you />
-      {editing ? (
-        <LinkedInPostField onBodyChange={setBody} />
-      ) : (
-        <LinkedInPostBody />
-      )}
+      {children}
       <LinkedInPostMedia />
       <LinkedInPostActions />
     </LinkedInPostCard>
@@ -138,7 +141,7 @@ function DraftPart({
   const [body, setBody] = useState(part.body);
 
   return (
-    <DraftContext.Provider value={{ editing, setEditing, setBody }}>
+    <DraftContext.Provider value={{ editing, setEditing }}>
       <LinkedInPostProvider
         author={part.author}
         body={body}
@@ -146,7 +149,15 @@ function DraftPart({
         defaultExpanded
       >
         <LinkedInPostDraft>
-          <DraftCard />
+          {editing ? (
+            <DraftCard className="ring-2 ring-ring/30">
+              <LinkedInPostField onBodyChange={setBody} />
+            </DraftCard>
+          ) : (
+            <DraftCard>
+              <LinkedInPostBody />
+            </DraftCard>
+          )}
           {children}
         </LinkedInPostDraft>
       </LinkedInPostProvider>
@@ -154,10 +165,50 @@ function DraftPart({
   );
 }
 
+/** Schedule sends the draft on; Edit opens the body in place. */
+function DraftActions({
+  onSchedule,
+  onEdit,
+}: {
+  onSchedule: () => void;
+  onEdit: () => void;
+}) {
+  return (
+    <LinkedInPostDraftActions>
+      <Button size="sm" onClick={onSchedule}>
+        Schedule
+      </Button>
+      <Button size="sm" variant="soft" aria-pressed={false} onClick={onEdit}>
+        Edit
+      </Button>
+      <LinkedInPostFoldButton />
+    </LinkedInPostDraftActions>
+  );
+}
+
+/** The row while the body is open: Done keeps the change in this session. */
+function EditingDraftActions({
+  onSchedule,
+  onDone,
+}: {
+  onSchedule: () => void;
+  onDone: () => void;
+}) {
+  return (
+    <LinkedInPostDraftActions>
+      <Button size="sm" onClick={onSchedule}>
+        Schedule
+      </Button>
+      <Button size="sm" variant="soft" aria-pressed onClick={onDone}>
+        Done
+      </Button>
+    </LinkedInPostDraftActions>
+  );
+}
+
 /**
- * Edit opens the body in place; Done keeps the change in this session.
- * Schedule still goes to the agent, and the row leaves with it so the
- * confirmation that follows stands alone.
+ * Schedule goes to the agent, and the row leaves with it so the confirmation
+ * that follows stands alone.
  */
 function DraftPartActions({
   onIntent,
@@ -168,30 +219,26 @@ function DraftPartActions({
   const [scheduled, setScheduled] = useState(false);
   if (scheduled) return null;
 
-  return (
-    <LinkedInPostDraftActions>
-      <Button
-        size="sm"
-        onClick={() => {
-          setEditing(false);
-          setScheduled(true);
-          onIntent?.("schedule");
-        }}
-      >
-        Schedule
-      </Button>
-      <Button
-        size="sm"
-        variant="soft"
-        aria-pressed={editing}
-        onClick={() => {
-          setEditing(!editing);
-        }}
-      >
-        {editing ? "Done" : "Edit"}
-      </Button>
-      {editing ? null : <LinkedInPostFoldButton />}
-    </LinkedInPostDraftActions>
+  function schedule() {
+    setEditing(false);
+    setScheduled(true);
+    onIntent?.("schedule");
+  }
+
+  return editing ? (
+    <EditingDraftActions
+      onSchedule={schedule}
+      onDone={() => {
+        setEditing(false);
+      }}
+    />
+  ) : (
+    <DraftActions
+      onSchedule={schedule}
+      onEdit={() => {
+        setEditing(true);
+      }}
+    />
   );
 }
 

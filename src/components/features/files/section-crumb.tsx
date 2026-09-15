@@ -1,7 +1,8 @@
 "use client";
 
+import type { DragEvent } from "react";
+
 import type { FileSection } from "@/components/features/files/file-tree";
-import { useFilesLibrary } from "@/components/features/files/files-library-provider";
 import { BreadcrumbLink } from "@/components/ui/breadcrumb";
 
 /**
@@ -10,24 +11,27 @@ import { BreadcrumbLink } from "@/components/ui/breadcrumb";
  */
 export function SectionCrumbLink({
   section,
+  active,
   onSelect,
+  onDragOver,
+  onDragLeave,
+  onDrop,
 }: {
   section: FileSection;
+  /** Something movable is over the crumb. */
+  active: boolean;
   onSelect: () => void;
+  onDragOver: (event: DragEvent<HTMLElement>) => void;
+  onDragLeave: (event: DragEvent<HTMLElement>) => void;
+  onDrop: (event: DragEvent<HTMLElement>) => void;
 }) {
-  const library = useFilesLibrary();
-  const dest = { sectionId: section.id };
-  const key = `crumb:${section.id}`;
-
   return (
     <BreadcrumbLink
       onClick={onSelect}
-      onDragOver={library.overMoveDest(dest, key)}
-      onDragLeave={library.leaveMoveDest(key)}
-      onDrop={library.dropMoveDest(dest)}
-      className={
-        library.dropTargetId === key ? "text-imagine-secondary" : undefined
-      }
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+      className={active ? "text-imagine-secondary" : undefined}
     >
       {section.title}
     </BreadcrumbLink>

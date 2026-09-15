@@ -8,26 +8,28 @@ import {
   useWorkspaceEditor,
   WorkspaceEditorLayer,
 } from "@/components/layout/workspace-editor";
-import { useWorkspaceNav } from "@/components/layout/workspace-nav";
-import {
-  WorkspaceInsetPage,
-  WorkspacePageFrame,
-} from "@/components/layout/workspace-page-frame";
 
-/** The route's page, in the frame that route asks for. */
+/**
+ * What sits around whichever frame the route composes: the slot a page's own
+ * sidebar portals into, and the file tabs and editor over the page. The
+ * editor is positioned against this box rather than the frame, so the tab
+ * strip covers the page whatever inset the route asked for.
+ */
 export function WorkspacePage({ children }: { children: ReactNode }) {
-  const { activeKey } = useWorkspaceNav();
   const { documentsOpen } = useWorkspaceEditor();
   const { asideHost } = useWorkspaceChrome();
-  const overlay = documentsOpen ? { overlay: <WorkspaceEditorLayer /> } : {};
-  const page = (
-    <PageAsideHostProvider host={asideHost}>{children}</PageAsideHostProvider>
-  );
 
-  // Pane-based workspaces, files and the calendar, frame themselves.
-  return activeKey === "files" || activeKey === "calendar" ? (
-    <WorkspacePageFrame {...overlay}>{page}</WorkspacePageFrame>
-  ) : (
-    <WorkspaceInsetPage {...overlay}>{page}</WorkspaceInsetPage>
+  return (
+    <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      {/* The overlay's tab strip; this spacer keeps the page from sliding
+          under it. */}
+      {documentsOpen ? (
+        <>
+          <div aria-hidden="true" className="h-9 shrink-0" />
+          <WorkspaceEditorLayer />
+        </>
+      ) : null}
+      <PageAsideHostProvider host={asideHost}>{children}</PageAsideHostProvider>
+    </div>
   );
 }

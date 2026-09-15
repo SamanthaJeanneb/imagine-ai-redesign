@@ -13,6 +13,7 @@ import {
 import { Icon } from "@/components/ui/icon";
 import { PersonAvatar } from "@/components/ui/person-avatar";
 import type { PostChipData, PostChipStatus } from "@/entities/post";
+import { toExcerpt } from "@/lib/format";
 
 /** Re-exported for the components that already reach for it here. */
 export type { PostChipData };
@@ -122,16 +123,6 @@ const LINE_CLAMP: Record<PostChipLines, string> = {
   3: "line-clamp-3",
   4: "line-clamp-4",
 };
-
-/** The post as one run of text, so the clamp measures lines, not paragraphs. */
-function toExcerpt(post: PostChipData): string {
-  const body = post.preview?.body ?? post.title;
-  return body
-    .replace(/^draft:\s*/i, "")
-    .split(/\s*\n+\s*/)
-    .filter((line) => line !== "")
-    .join(" ");
-}
 
 /** The muted text treatment: dimmed on a solid chip, muted on a wash. */
 function mutedClass(selected: boolean): string {

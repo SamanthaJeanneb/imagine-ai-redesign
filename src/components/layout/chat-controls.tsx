@@ -4,7 +4,6 @@ import { cn } from "cn";
 import { motion } from "motion/react";
 import { useState, type ReactNode } from "react";
 
-import { searchThreads } from "@/components/layout/chat-search";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import {
@@ -19,12 +18,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { SidebarThread } from "@/entities/agent";
+import { searchThreads } from "@/lib/search-threads";
+import { withEphemeralThread } from "@/lib/threads";
 import { pressRow } from "@/styles/motion";
 
 interface ChatControlsProps {
   filesOpen: boolean;
   onFilesOpenChange: (open: boolean) => void;
-  className?: string;
 }
 
 /**
@@ -34,10 +34,9 @@ interface ChatControlsProps {
 export function ChatControls({
   filesOpen,
   onFilesOpenChange,
-  className,
 }: ChatControlsProps) {
   return (
-    <div className={cn("flex items-center gap-xs", className)}>
+    <div className="flex items-center gap-xs">
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
@@ -69,20 +68,6 @@ export function ChatControls({
   );
 }
 
-function historyThreads(
-  threads: readonly SidebarThread[],
-  currentThreadId: string | null,
-  currentTitle: string,
-): readonly SidebarThread[] {
-  const currentIsStored = threads.some(
-    (thread) => thread.id === currentThreadId,
-  );
-  if (currentThreadId !== null && !currentIsStored) {
-    return [{ id: currentThreadId, title: currentTitle }, ...threads];
-  }
-  return threads;
-}
-
 /**
  * The arrow beside the open conversation's name: the rest of the history, in
  * a popover with a search. Render it inside `ChatTitle`.
@@ -100,7 +85,7 @@ export function ChatHistoryMenu({
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const visible = historyThreads(threads, currentThreadId, title);
+  const visible = withEphemeralThread(threads, currentThreadId, title);
 
   function close() {
     setOpen(false);

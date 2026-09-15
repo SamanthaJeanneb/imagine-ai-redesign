@@ -1,4 +1,10 @@
 import type {
+  AgentMessage,
+  AgentThread,
+  ScriptedReply,
+} from "@/entities/agent";
+import { toReplyIntent, type ReplyIntent } from "@/lib/agent-turns";
+import type {
   MessagePart,
   SidebarThread,
   TimelineAction,
@@ -13,6 +19,7 @@ import {
 import type { Post } from "@/entities/post";
 import type { MessagePartRow, MessageRow } from "@/entities/rows";
 import {
+  formatFullDate,
   formatMonthShort,
   formatRelative,
   formatTime,
@@ -21,7 +28,8 @@ import {
   weekdayIndex,
 } from "@/lib/format";
 import { getDb, getNow } from "@/mocks/db";
-import { getClientImpressions } from "@/services/analytics";
+import { getClientImpressions, getLandingRail } from "@/services/analytics";
+import { getUpcomingWeeks, getUpNext } from "@/services/calendar";
 import {
   getClientAssets,
   getPosts,
@@ -31,24 +39,6 @@ import {
   toAuthor,
   toPostContent,
 } from "@/services/posts";
-
-export interface AgentMessage {
-  id: string;
-  role: "user" | "assistant";
-  parts: readonly MessagePart[];
-}
-
-export interface AgentThread {
-  id: string;
-  title: string;
-  messages: readonly AgentMessage[];
-}
-
-/** What the agent plays back when there is no real model to answer. */
-export interface ScriptedReply {
-  statuses: readonly string[];
-  parts: readonly MessagePart[];
-}
 
 /** `activity_type` read as a headline. Unknown types fall back to the raw value. */
 const ACTIVITY_KIND: Record<string, TimelineKind> = {
@@ -125,6 +115,23 @@ export function getThreads(): readonly SidebarThread[] {
         ...(preview === undefined ? {} : { preview }),
       };
     });
+}
+
+/**
+ * Everything the agent landing puts on the page. The greeting is the page's
+ * own, so the split and centered landings differ only in that.
+ */
+export function getAgentLandingProps() {
+  const rail = getLandingRail();
+
+  return {
+    dateLabel: formatFullDate(getNow()),
+    timeline: getTimeline(),
+    days: getUpcomingWeeks(),
+    stats: rail.stats,
+    chart: rail.chart,
+    upNext: getUpNext(),
+  };
 }
 
 /** The landing timeline: what the agent did while the user was away. */
@@ -343,33 +350,6 @@ export function getThread(threadId: string): AgentThread | null {
   return { id: thread.id, title: thread.title ?? "Untitled", messages };
 }
 
-/** Which canned reply answers an intent. Anything unlisted drafts a post. */
-const REPLY_FOR_INTENT: Record<string, string> = {
-  schedule: "schedule",
-  approve: "schedule",
-  comment: "comment",
-  reply: "comment",
-  outreach: "outreach",
-};
-
-/** Every reply intent the mock can answer. */
-export const REPLY_INTENTS = [
-  "default",
-  "schedule",
-  "comment",
-  "outreach",
-] as const;
-
-export type ReplyIntent = (typeof REPLY_INTENTS)[number];
-
-/** Narrow any intent to the reply that answers it. */
-export function toReplyIntent(intent: string): ReplyIntent {
-  const wanted = REPLY_FOR_INTENT[intent];
-  return wanted === "schedule" || wanted === "comment" || wanted === "outreach"
-    ? wanted
-    : "default";
-}
-
 /**
  * The reply a send plays back. `schedule` and `approve` confirm a slot, the
  * comment intents draft a comment, everything else drafts a post.
@@ -398,3 +378,16 @@ export function getScriptedReplies(): Record<ReplyIntent, ScriptedReply> {
     outreach: getScriptedReply("outreach"),
   };
 }
+
+export {
+  REPLY_INTENTS,
+  replyFor,
+  toIntentPrompt,
+  toPostDraftPart,
+  toReplyIntent,
+  toTurn,
+  type AgentTurn,
+  type ChatSubject,
+  type ReplyIntent,
+} from "@/lib/agent-turns";
+export type { AgentMessage, AgentThread, ScriptedReply };

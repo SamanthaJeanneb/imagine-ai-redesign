@@ -133,3 +133,9 @@ export interface TeamData {
   /** Mean engagement rate (percent), by category, one key per member. */
   rate: readonly TeamDatum[];
 }
+
+/** The team with its leaderboard order settled for each metric. */
+export interface TeamView extends TeamData {
+  /** Members best first. The position in the array is the rank. */
+  ranked: Record<"reach" | "rate", readonly TeamMember[]>;
+}

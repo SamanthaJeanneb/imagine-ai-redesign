@@ -1,12 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-
-import { useChat } from "@/components/features/agent/chat-provider";
 import { Sidebar } from "@/components/layout/sidebar";
 import { useWorkspaceChrome } from "@/components/layout/workspace-chrome";
-import { useWorkspaceFiles } from "@/components/layout/workspace-files";
 import { useWorkspaceNav } from "@/components/layout/workspace-nav";
+import { useWorkspaceNavigation } from "@/components/layout/use-workspace-navigation";
 
 /** The workspace rail: the org, the nav, and the conversations under it. */
 export function WorkspaceSidebar({
@@ -16,13 +13,9 @@ export function WorkspaceSidebar({
   orgName: string;
   orgLogoUrl?: string;
 }) {
-  const router = useRouter();
-  const chat = useChat();
-  const { navActive, activeThreadId, visibleThreads, openThread } =
-    useWorkspaceNav();
-  const { isMobile, collapsed, setCollapsed, setMobileNavOpen } =
-    useWorkspaceChrome();
-  const { setFilesPanelOpen } = useWorkspaceFiles();
+  const { navActive, activeThreadId, visibleThreads } = useWorkspaceNav();
+  const { isMobile, collapsed, setCollapsed } = useWorkspaceChrome();
+  const { goToSection, startNewChat, showThread } = useWorkspaceNavigation();
 
   return (
     <Sidebar
@@ -33,25 +26,9 @@ export function WorkspaceSidebar({
       threads={visibleThreads}
       collapsed={isMobile ? false : collapsed}
       onCollapsedChange={isMobile ? undefined : setCollapsed}
-      onNavigate={(key) => {
-        // A preview left open would follow the chat into its column.
-        chat.setPreview(null);
-        setFilesPanelOpen(false);
-        setMobileNavOpen(false);
-        router.push(`/${key}`);
-      }}
-      onNewPost={() => {
-        // Opens as a conversation at once, so the rail lists it as
-        // "New chat" and the header carries the name.
-        chat.startNew();
-        setFilesPanelOpen(false);
-        setMobileNavOpen(false);
-        router.push("/new-chat");
-      }}
-      onOpenThread={(id) => {
-        setMobileNavOpen(false);
-        openThread(id);
-      }}
+      onNavigate={goToSection}
+      onNewPost={startNewChat}
+      onOpenThread={showThread}
     />
   );
 }

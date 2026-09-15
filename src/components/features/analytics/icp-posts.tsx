@@ -45,18 +45,17 @@ import {
   type Engager,
   ICP_THRESHOLD,
   type IcpCategory,
-  type IcpData,
   type IcpPost,
 } from "@/entities/engagement";
 import { formatCompact } from "@/lib/format";
+import type { IcpView } from "@/entities/engagement";
 import { spring } from "@/styles/motion";
 
 /** What the user wants to do about an engager. */
 type EngageAction = "reply" | "outreach";
 
 interface IcpPostsProps {
-  data: IcpData;
-  description?: string;
+  data: IcpView;
   /** Draft a reply to their comment, or a comment on their post. */
   onEngage?: (engager: Engager, post: IcpPost, action: EngageAction) => void;
   onAsk?: (prompt: string, intent?: string) => void;
@@ -336,13 +335,7 @@ function PostRow({
  * Each row carries the engagers: hover a face for who they are; open the row
  * for everyone. Every person is a way into the agent.
  */
-export function IcpPosts({
-  data,
-  description,
-  onEngage,
-  onAsk,
-  className,
-}: IcpPostsProps) {
+export function IcpPosts({ data, onEngage, onAsk, className }: IcpPostsProps) {
   const reduceMotion = useReducedMotion();
   const [activeId, setActiveId] = useState<string | null>(null);
   const shape = bubble(activeId ?? undefined);
@@ -352,17 +345,9 @@ export function IcpPosts({
     ["engagerCount", "Engagers"],
   ]);
 
-  const points = data.posts.map((post) => ({
-    id: post.id,
-    title: post.title,
-    reach: post.reach,
-    icpShare: post.icpShare,
-    engagerCount: post.engagers.length,
-  }));
   return (
     <Panel
       title="Posts and who they reached"
-      description={description}
       actions={
         onAsk ? (
           <AskButton
@@ -444,7 +429,7 @@ export function IcpPosts({
                   }}
                 />
                 <Scatter
-                  data={points}
+                  data={[...data.scatterPoints]}
                   shape={shape}
                   isAnimationActive={!reduceMotion}
                   {...CHART_ANIMATION}
@@ -478,19 +463,9 @@ export function IcpPosts({
 }
 
 /** The panel's frame while the engagers are still being scored against the ICP. */
-export function IcpPostsSkeleton({
-  description,
-  className,
-}: {
-  description?: string;
-  className?: string;
-}) {
+export function IcpPostsSkeleton({ className }: { className?: string }) {
   return (
-    <Panel
-      title="Posts and who they reached"
-      description={description}
-      className={className}
-    >
+    <Panel title="Posts and who they reached" className={className}>
       <div className="grid gap-l @3xl/panel:grid-cols-[18rem_minmax(0,1fr)]">
         <ChartSkeletonLine height="h-52" />
         <ChartSkeletonRows height="h-52" />

@@ -33,15 +33,14 @@ import { Panel } from "@/components/features/analytics/panel";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { PersonAvatar } from "@/components/ui/person-avatar";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import type { TeamData } from "@/entities/analytics";
 import { formatCompact } from "@/lib/format";
+import type { TeamView } from "@/entities/analytics";
 import { fade, swapUp } from "@/styles/motion";
 
 type TeamMetric = "reach" | "rate";
 
 interface TeamPerformanceProps {
-  data: TeamData;
-  description?: string;
+  data: TeamView;
   onAsk?: (prompt: string, intent?: string) => void;
   className?: string;
 }
@@ -125,7 +124,6 @@ function memberBar(opacity: number, dimmed: boolean) {
  */
 export function TeamPerformance({
   data,
-  description,
   onAsk,
   className,
 }: TeamPerformanceProps) {
@@ -134,8 +132,7 @@ export function TeamPerformance({
   const [hoverId, setHoverId] = useState<string | null>(null);
   const spec = METRIC[metric];
 
-  const ranked = data.members.toSorted((a, b) => b[metric] - a[metric]);
-  const rankOf = new Map(ranked.map((member, index) => [member.id, index]));
+  const ranked = data.ranked[metric];
   const labelOf = new Map(
     data.members.map((member) => [member.id, member.name]),
   );
@@ -144,7 +141,6 @@ export function TeamPerformance({
   return (
     <Panel
       title="Team"
-      description={description}
       actions={
         <>
           <MetricTabs value={metric} onValueChange={setMetric} />
@@ -202,14 +198,14 @@ export function TeamPerformance({
                     </ChartTooltip>
                   }
                 />
-                {ranked.map((member) => (
+                {ranked.map((member, rank) => (
                   <Bar
                     key={member.id}
                     dataKey={member.id}
                     name={member.name}
                     maxBarSize={22}
                     shape={memberBar(
-                      opacityFor(rankOf.get(member.id) ?? 0),
+                      opacityFor(rank),
                       hoverId !== null && hoverId !== member.id,
                     )}
                     isAnimationActive={!reduceMotion}
@@ -280,17 +276,10 @@ export function TeamPerformance({
  * header and the metric switch stand, the chart and the leaderboard do not.
  * The switch is inert until there are numbers for it to switch between.
  */
-export function TeamPerformanceSkeleton({
-  description,
-  className,
-}: {
-  description?: string;
-  className?: string;
-}) {
+export function TeamPerformanceSkeleton({ className }: { className?: string }) {
   return (
     <Panel
       title="Team"
-      description={description}
       actions={<MetricTabs value="reach" disabled />}
       className={className}
     >

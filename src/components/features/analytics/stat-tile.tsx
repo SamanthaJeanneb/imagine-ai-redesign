@@ -83,19 +83,14 @@ export function StatTile({
   );
 }
 
-interface StatGroupProps extends React.ComponentProps<typeof Stagger> {
-  columns?: 2 | 4;
-}
-
 /**
  * One hairline frame around a set of tiles, with a hairline between each. The
- * tiles stagger in.
+ * tiles stagger in: two across on a narrow page, four on a wide one.
  */
 export function StatGroup({
-  columns = 4,
   className,
   ...props
-}: StatGroupProps) {
+}: React.ComponentProps<typeof Stagger>) {
   return (
     <Stagger
       kind="grid"
@@ -103,9 +98,7 @@ export function StatGroup({
       className={cn(
         "grid border border-imagine-border bg-imagine-surface",
         "[&>[data-slot=stat-tile]]:border-imagine-border [&>[data-slot=stat-tile]]:p-l",
-        columns === 4
-          ? "grid-cols-2 sm:grid-cols-4 [&>[data-slot=stat-tile]:nth-child(even)]:border-l sm:[&>[data-slot=stat-tile]:nth-child(n+2)]:border-l [&>[data-slot=stat-tile]:nth-child(n+3)]:border-t sm:[&>[data-slot=stat-tile]:nth-child(n+3)]:border-t-0"
-          : "grid-cols-2 [&>[data-slot=stat-tile]:nth-child(even)]:border-l [&>[data-slot=stat-tile]:nth-child(n+3)]:border-t",
+        "grid-cols-2 sm:grid-cols-4 [&>[data-slot=stat-tile]:nth-child(even)]:border-l sm:[&>[data-slot=stat-tile]:nth-child(n+2)]:border-l [&>[data-slot=stat-tile]:nth-child(n+3)]:border-t sm:[&>[data-slot=stat-tile]:nth-child(n+3)]:border-t-0",
         className,
       )}
       {...props}

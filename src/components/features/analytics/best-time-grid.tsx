@@ -32,7 +32,6 @@ import { fade, pressRow, spring } from "@/styles/motion";
 
 interface BestTimeGridProps {
   data: BestTimeData;
-  description?: string;
   /** A slot was chosen: hand it to the agent to schedule into. */
   onPick?: (slot: TimeSlot) => void;
   onAsk?: (prompt: string, intent?: string) => void;
@@ -173,7 +172,6 @@ function SlotTooltipRows() {
  */
 export function BestTimeGrid({
   data,
-  description,
   onPick,
   onAsk,
   className,
@@ -206,7 +204,6 @@ export function BestTimeGrid({
   return (
     <Panel
       title="Best time to post"
-      description={description}
       actions={
         onAsk ? (
           <AskIconButton
@@ -335,19 +332,9 @@ export function BestTimeGrid({
 }
 
 /** The grid's frame while the window's slots are still being scored. */
-export function BestTimeGridSkeleton({
-  description,
-  className,
-}: {
-  description?: string;
-  className?: string;
-}) {
+export function BestTimeGridSkeleton({ className }: { className?: string }) {
   return (
-    <Panel
-      title="Best time to post"
-      description={description}
-      className={className}
-    >
+    <Panel title="Best time to post" className={className}>
       <ChartSkeletonGrid height="h-52" />
     </Panel>
   );

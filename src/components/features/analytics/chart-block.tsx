@@ -44,6 +44,14 @@ import {
   valueText,
 } from "@/components/features/analytics/chart-theme";
 import type { ChartDatum, ChartKind, ChartSeries } from "@/entities/analytics";
+import {
+  EMPTY_STATS,
+  formatTick,
+  type SeriesStats,
+  seriesStats,
+  splitScaleFor,
+  tickInterval,
+} from "@/lib/chart-format";
 import { fade } from "@/styles/motion";
 
 type ChartMark = "bar" | "line" | "step";
@@ -67,15 +75,6 @@ interface ChartAnnotation {
 
 /** Pink fills for the agent and landing; neutral for the analytics page. */
 type ChartTone = "accent" | "neutral";
-
-interface SeriesStats {
-  total: number;
-  max: number;
-  mean: number;
-  last: number;
-}
-
-const EMPTY_STATS: SeriesStats = { total: 0, max: 0, mean: 0, last: 0 };
 
 /**
  * What every part of a chart reads: the data, the series, and which series
@@ -264,46 +263,10 @@ function composedColors(
 /** Room to the right of the plot for the mean rule's label. Pixels. */
 const MEAN_GUTTER = 44;
 
-/** 1240 → 1.2k, 51000 → 51k, 1200000 → 1.2M. */
-/**
- * An axis tick or bar label. Distinct from `formatCompact` in `lib/format`,
- * which is for stat readouts: this one carries a sign, reaches into millions,
- * and leaves a value under a thousand exactly as it is so a tick does not
- * round away from its gridline.
- */
-function formatTick(value: number): string {
-  const abs = Math.abs(value);
-  if (abs >= 1_000_000) return trim(value / 1_000_000) + "M";
-  if (abs >= 1_000) return trim(value / 1_000) + "k";
-  return String(value);
-}
-
-function trim(value: number): string {
-  const rounded = Math.round(value * 10) / 10;
-  return rounded % 1 === 0 ? String(rounded) : rounded.toFixed(1);
-}
-
-/** Text for a value Recharts hands back untyped. Anything else renders empty. */
 /** Bar value labels: compact, carrying the series unit when it has one. */
 function labelFormatter(unit = "") {
   return (value: unknown): string =>
     (typeof value === "number" ? formatTick(value) : valueText(value)) + unit;
-}
-
-function seriesStats(data: readonly ChartDatum[], key: string): SeriesStats {
-  let total = 0;
-  let max = 0;
-  let count = 0;
-  let last = 0;
-  for (const datum of data) {
-    const value = datum[key];
-    if (typeof value !== "number") continue;
-    total += value;
-    count += 1;
-    last = value;
-    if (value > max) max = value;
-  }
-  return { total, max, mean: count > 0 ? total / count : 0, last };
 }
 
 /**
@@ -557,6 +520,8 @@ function usePlot() {
     primaryStats:
       primary === undefined ? undefined : chart.statsOf(primary.key),
     visible: chart.series.filter((item) => !chart.hidden.has(item.key)),
+    /** In series order, for `splitScaleFor`. */
+    maxima: chart.series.map((item) => chart.statsOf(item.key).max),
     labelOf: new Map(chart.series.map((item) => [item.key, item.label])),
     unitOf: new Map(chart.series.map((item) => [item.key, item.unit ?? ""])),
     /* Recharts mutates the rows it is handed. */
@@ -565,11 +530,6 @@ function usePlot() {
     highlightColor:
       chart.tone === "accent" ? COLOR.foreground : COLOR.secondary,
   };
-}
-
-/** Every category gets a tick while they fit; past that Recharts thins them evenly, keeping the first. */
-function tickInterval(count: number): 0 | "equidistantPreserveStart" {
-  return count <= 7 ? 0 : "equidistantPreserveStart";
 }
 
 function plotTooltip(
@@ -734,18 +694,6 @@ export function BarChartPreview({ highlightIndex, className }: BarPlotProps) {
   );
 }
 
-/**
- * Whether the secondary series get their own scale: when the primary dwarfs
- * them, one axis would flatten them to the baseline.
- */
-function splitScaleFor(plot: ReturnType<typeof usePlot>): boolean {
-  const restMax = Math.max(
-    0,
-    ...plot.series.slice(1).map((item) => plot.statsOf(item.key).max),
-  );
-  return restMax > 0 && (plot.primaryStats?.max ?? 0) > restMax * 4;
-}
-
 function areaFor(
   plot: ReturnType<typeof usePlot>,
   item: ChartSeries,
@@ -777,7 +725,7 @@ export function AreaChartBlock({ className }: PlotProps) {
   const plot = usePlot();
   // `useId` puts colons in the id; `url(#…)` fragments are happier without.
   const blockId = useId().replace(/:/g, "");
-  const splitScale = splitScaleFor(plot);
+  const splitScale = splitScaleFor(plot.maxima);
   const showMean = plot.primaryStats !== undefined && plot.data.length > 2;
 
   return (
@@ -850,7 +798,7 @@ export function AreaChartBlock({ className }: PlotProps) {
 function AreaChartPreview({ className }: PlotProps) {
   const plot = usePlot();
   const blockId = useId().replace(/:/g, "");
-  const splitScale = splitScaleFor(plot);
+  const splitScale = splitScaleFor(plot.maxima);
 
   return (
     <div className={cn("h-16 w-full", className)}>

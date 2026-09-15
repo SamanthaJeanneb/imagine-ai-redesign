@@ -3,6 +3,7 @@
  * set. Follows `targeted_accounts` and `targeted_posts`.
  */
 import type { TargetedAccountRow, TargetedPostRow } from "@/entities/rows";
+import type { BenchmarkRadarRow } from "@/lib/benchmark";
 
 export interface TargetedAccount {
   id: string;
@@ -74,4 +75,10 @@ export function transformTargetedPostRow(row: TargetedPostRow): TargetedPost {
     comments: row.engagement_comments ?? 0,
     shares: row.engagement_shares ?? 0,
   };
+}
+
+/** The benchmark with a radar already worked out against each account. */
+export interface BenchmarkView extends BenchmarkData {
+  /** Keyed by competitor id: your shape and theirs on the same spokes. */
+  radar: Record<string, readonly BenchmarkRadarRow[]>;
 }

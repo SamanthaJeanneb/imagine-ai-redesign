@@ -3,8 +3,14 @@
 import { motion } from "motion/react";
 
 import { useChat } from "@/components/features/agent/chat-provider";
-import { ChatFileTree } from "@/components/features/files/file-tree";
-import { SkillsList } from "@/components/features/files/skills-list";
+import {
+  ChatFileTree,
+  type FileSection,
+} from "@/components/features/files/file-tree";
+import {
+  SkillsList,
+  type Skill,
+} from "@/components/features/files/skills-list";
 import {
   FilesPanelCloseButton,
   FilesPanelDragHint,
@@ -18,20 +24,27 @@ import {
 import { useWorkspaceEditor } from "@/components/layout/workspace-editor";
 import { useWorkspaceFiles } from "@/components/layout/workspace-files";
 import { ResizeHandle } from "@/components/ui/resize-handle";
+import type { useResizable } from "@/lib/use-resizable";
 
 /** The files column beside the thread, with the workspace's skills behind it. */
-export function WorkspaceFilesPanel() {
-  const {
-    orgName,
-    orgLogoUrl,
-    fileSections,
-    setFilesPanelOpen,
-    skills,
-    setSkillEnabled,
-    activeFileId,
-    setActiveFileId,
-    resize,
-  } = useWorkspaceFiles();
+export function WorkspaceFilesPanel({
+  orgName,
+  orgLogoUrl,
+  fileSections,
+  skills,
+  onSkillEnabledChange,
+  resize,
+}: {
+  orgName: string;
+  orgLogoUrl?: string;
+  fileSections: readonly FileSection[];
+  skills: readonly Skill[];
+  onSkillEnabledChange: (id: string, enabled: boolean) => void;
+  /** Owned above, so a reopened panel is the width it was. */
+  resize: ReturnType<typeof useResizable>;
+}) {
+  const { setFilesPanelOpen, activeFileId, setActiveFileId } =
+    useWorkspaceFiles();
   const { activeDocumentId, openDocument } = useWorkspaceEditor();
   const chat = useChat();
   const attachedAssetId = chat.attached
@@ -97,7 +110,7 @@ export function WorkspaceFilesPanel() {
               {...(activeDocumentId === undefined
                 ? {}
                 : { openSkillId: activeDocumentId })}
-              onToggle={setSkillEnabled}
+              onToggle={onSkillEnabledChange}
               onOpenFile={openDocument}
             />
           </FilesPanelSkills>

@@ -45,7 +45,6 @@ export function WorkspaceTopBar({
   /** The LinkedIn identities the agent can work across. */
   profiles: readonly ProfileSummary[];
 }) {
-  const router = useRouter();
   const chat = useChat();
   const { visibleThreads, chatOpen, chatTitle, docked, openThread } =
     useWorkspaceNav();
@@ -55,10 +54,8 @@ export function WorkspaceTopBar({
     setCollapsed,
     mobileNavOpen,
     setMobileNavOpen,
-    chatOverlayOpen,
     setChatOverlayOpen,
   } = useWorkspaceChrome();
-  const { filesPanelOpen, setFilesPanelOpen } = useWorkspaceFiles();
   // Everyone still connected, to start. Disconnected profiles need connecting
   // before the agent can post as them, so they wait to be chosen on purpose.
   const [selectedProfileIds, setSelectedProfileIds] = useState<
@@ -127,38 +124,62 @@ export function WorkspaceTopBar({
       </AnimatePresence>
       <AnimatePresence initial={false} mode="wait">
         {chatOpen ? (
-          <WorkspaceHeaderEnd key="chat">
-            <ChatControls
-              filesOpen={filesPanelOpen}
-              onFilesOpenChange={setFilesPanelOpen}
-            />
-          </WorkspaceHeaderEnd>
+          <ThreadHeaderEnd key="chat" />
         ) : (
-          <WorkspaceHeaderEnd key="account" className="items-center gap-xxs">
-            {docked ? (
-              <ChatOverlayToggle
-                open={chatOverlayOpen}
-                onOpenChange={(open) => {
-                  setChatOverlayOpen(open);
-                  if (open) setMobileNavOpen(false);
-                }}
-              />
-            ) : null}
-            <AccountControls
-              user={user}
-              onOpenSettings={() => {
-                router.push("/settings");
-              }}
-              onSignOut={() => {
-                // The mock has no session to end; leaving lands on sign-in.
-                router.push("/sign-in");
-              }}
-            >
-              {compactProfiles ? null : <AccountName />}
-            </AccountControls>
-          </WorkspaceHeaderEnd>
+          <AccountHeaderEnd key="account" user={user} />
         )}
       </AnimatePresence>
     </WorkspaceHeaderBar>
+  );
+}
+
+/** The open thread's end of the header: what the thread can reach. */
+function ThreadHeaderEnd() {
+  const { filesPanelOpen, setFilesPanelOpen } = useWorkspaceFiles();
+
+  return (
+    <WorkspaceHeaderEnd>
+      <ChatControls
+        filesOpen={filesPanelOpen}
+        onFilesOpenChange={setFilesPanelOpen}
+      />
+    </WorkspaceHeaderEnd>
+  );
+}
+
+/**
+ * The page's end of the header: the account, and beside the calendar and
+ * analytics the way to bring the chat over a frame too narrow to share.
+ */
+function AccountHeaderEnd({ user }: { user: AccountUser }) {
+  const router = useRouter();
+  const { isMobile, chatOverlayOpen, setChatOverlayOpen, setMobileNavOpen } =
+    useWorkspaceChrome();
+  const { chatOpen, docked } = useWorkspaceNav();
+
+  return (
+    <WorkspaceHeaderEnd className="items-center gap-xxs">
+      {docked ? (
+        <ChatOverlayToggle
+          open={chatOverlayOpen}
+          onOpenChange={(open) => {
+            setChatOverlayOpen(open);
+            if (open) setMobileNavOpen(false);
+          }}
+        />
+      ) : null}
+      <AccountControls
+        user={user}
+        onOpenSettings={() => {
+          router.push("/settings");
+        }}
+        onSignOut={() => {
+          // The mock has no session to end; leaving lands on sign-in.
+          router.push("/sign-in");
+        }}
+      >
+        {chatOpen || isMobile ? null : <AccountName />}
+      </AccountControls>
+    </WorkspaceHeaderEnd>
   );
 }
