@@ -29,19 +29,12 @@ import { Disclosure } from "@/components/motion/disclosure";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import { fade, pressRow, spring, stagger } from "@/styles/motion";
+import { initials } from "@/lib/initials";
 
 /** Where the browser should go: a library, or a folder inside one. */
 export interface TreeLocation {
   sectionId: string;
   folderId?: string;
-}
-
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
 }
 
 /** Every folder id on the way down to `id`, so the path can be held open. */

@@ -28,13 +28,14 @@ import {
   ChartTooltipLabel,
   ChartTooltipSeries,
 } from "@/components/features/analytics/chart-theme";
-import { initials, Panel } from "@/components/features/analytics/panel";
+import { Panel } from "@/components/features/analytics/panel";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { formatCompact } from "@/lib/format";
+import { initials } from "@/lib/initials";
 import { fade, spring, stagger } from "@/styles/motion";
 
 export type ExplorerMetric = "reach" | "rate" | "followers" | "posts";

@@ -33,6 +33,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { fade } from "@/styles/motion";
+import { initials } from "@/lib/initials";
 
 /** `organization_members.role`, narrowed to what settings can assign. */
 export type MemberRole = "admin" | "member";
@@ -62,14 +63,6 @@ export const ROLE_LABEL: Record<MemberRole, string> = {
 };
 
 const ASSIGNABLE_ROLES: readonly MemberRole[] = ["admin", "member"];
-
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-}
 
 /**
  * Settings, Members: who can work in the organization. One row per member with

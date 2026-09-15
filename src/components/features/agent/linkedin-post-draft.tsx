@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Icon, type IconName } from "@/components/ui/icon";
 import { fade } from "@/styles/motion";
+import { initials } from "@/lib/initials";
 
 export interface PostAuthor {
   name: string;
@@ -70,14 +71,6 @@ const ACTIONS: readonly {
 ];
 
 const COUNT = new Intl.NumberFormat("en-US");
-
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-}
 
 /**
  * The part of the body that shows before "…more". Cuts at the fold length,

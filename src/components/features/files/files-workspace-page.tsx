@@ -27,6 +27,7 @@ import {
   type Skill,
   SkillsList,
 } from "@/components/features/files/skills-list";
+import { findFolder } from "@/components/features/files/file-tree-ops";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import { SearchBox } from "@/components/ui/search-box";
@@ -41,6 +42,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { OpenDocument } from "@/services/files";
 import { fade, pressRow } from "@/styles/motion";
+import { initials } from "@/lib/initials";
 
 interface FilesWorkspacePageProps {
   title: string;
@@ -71,31 +73,10 @@ function countLibrary(nodes: readonly FileNode[]): {
   return { documents, assets };
 }
 
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-}
-
 function flattenContent(nodes: readonly FileNode[]): readonly FileNode[] {
   return nodes.flatMap((node) =>
     node.type === "folder" ? flattenContent(node.children) : [node],
   );
-}
-
-function findFolder(
-  nodes: readonly FileNode[],
-  id: string,
-): Extract<FileNode, { type: "folder" }> | undefined {
-  for (const node of nodes) {
-    if (node.type !== "folder") continue;
-    if (node.id === id) return node;
-    const nested = findFolder(node.children, id);
-    if (nested !== undefined) return nested;
-  }
-  return undefined;
 }
 
 function firstDocument(nodes: readonly FileNode[]) {

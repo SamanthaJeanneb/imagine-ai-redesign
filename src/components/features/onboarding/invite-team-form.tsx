@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { contactInitials } from "@/lib/initials";
 
 export type MemberRole = "admin" | "member";
 
@@ -39,15 +40,6 @@ const ROLE_LABEL: Record<MemberRole, string> = {
   admin: "Admin",
   member: "Member",
 };
-
-function initials(value: string): string {
-  return value
-    .split(/[\s@.]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-}
 
 interface RoleSelectProps {
   value: MemberRole;
@@ -150,7 +142,7 @@ export function TeamMemberRow({
         {member.avatarUrl ? (
           <AvatarImage src={member.avatarUrl} alt={label} />
         ) : null}
-        <AvatarFallback>{initials(label)}</AvatarFallback>
+        <AvatarFallback>{contactInitials(label)}</AvatarFallback>
       </Avatar>
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate type-small font-medium">{label}</span>

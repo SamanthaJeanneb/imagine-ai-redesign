@@ -24,6 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { fade, pressRow, spring, stagger } from "@/styles/motion";
+import { initials } from "@/lib/initials";
 
 export type FileNode =
   | {
@@ -51,14 +52,6 @@ export interface FileSection {
 
 /** Asset tiles a tree row shows before folding the rest into "+N". */
 const TREE_ASSET_LIMIT = 2;
-
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-}
 
 /** Trails its row, so names start on a straight edge at every depth. */
 function Chevron({ open }: { open: boolean }) {

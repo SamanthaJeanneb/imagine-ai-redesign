@@ -20,6 +20,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { initials } from "@/lib/initials";
 
 export interface PostEditorValue {
   post: PostChipData;
@@ -123,14 +124,6 @@ const EDITABLE_STATUSES: readonly {
   { status: "in_review", label: "Review" },
   { status: "scheduled", label: "Ready" },
 ];
-
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-}
 
 function titleFromBody(body: string): string {
   const firstLine = body.split("\n", 1)[0] ?? "";

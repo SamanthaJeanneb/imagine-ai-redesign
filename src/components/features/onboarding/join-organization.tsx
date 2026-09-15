@@ -11,6 +11,7 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar";
 import { fade } from "@/styles/motion";
+import { initials } from "@/lib/initials";
 
 export interface JoinMember {
   id: string;
@@ -19,14 +20,6 @@ export interface JoinMember {
 }
 
 const SHOWN_MEMBERS = 4;
-
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-}
 
 function firstName(name: string): string {
   return name.split(" ")[0] ?? name;

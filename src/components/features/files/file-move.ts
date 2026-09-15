@@ -1,10 +1,17 @@
 import type { DragEvent } from "react";
 
-import type { AssetTileData } from "@/components/features/files/asset-tile";
 import type {
   FileNode,
   FileSection,
 } from "@/components/features/files/file-tree";
+import {
+  extractAsset,
+  extractNode,
+  findFolder,
+  folderContains,
+  insertAsset,
+  insertNode,
+} from "@/components/features/files/file-tree-ops";
 
 export const FILE_MOVE_TYPE = "application/x-imagine-file-move";
 
@@ -12,8 +19,6 @@ export interface FileMoveDest {
   sectionId: string;
   folderId?: string;
 }
-
-type FolderNode = Extract<FileNode, { type: "folder" }>;
 
 /** Browsers hide custom MIME types during dragover; this is the live payload. */
 let movingId: string | null = null;
@@ -35,117 +40,6 @@ export function fileMoveId(): string | null {
 
 export function isFileMove(types: readonly string[]): boolean {
   return movingId !== null || types.includes(FILE_MOVE_TYPE);
-}
-
-export function findFolder(
-  nodes: readonly FileNode[],
-  id: string,
-): FolderNode | undefined {
-  for (const node of nodes) {
-    if (node.type !== "folder") continue;
-    if (node.id === id) return node;
-    const nested = findFolder(node.children, id);
-    if (nested !== undefined) return nested;
-  }
-  return undefined;
-}
-
-function folderContains(folder: FolderNode, id: string): boolean {
-  for (const child of folder.children) {
-    if (child.id === id) return true;
-    if (child.type === "folder" && folderContains(child, id)) return true;
-  }
-  return false;
-}
-
-function mapNodes(
-  nodes: readonly FileNode[],
-  fn: (node: FileNode) => FileNode | null,
-): FileNode[] {
-  return nodes.flatMap((node) => {
-    const next = fn(
-      node.type === "folder"
-        ? { ...node, children: mapNodes(node.children, fn) }
-        : node,
-    );
-    return next === null ? [] : [next];
-  });
-}
-
-function insertNode(
-  nodes: readonly FileNode[],
-  folderId: string | undefined,
-  node: FileNode,
-): FileNode[] {
-  if (folderId === undefined) return [...nodes, node];
-  return mapNodes(nodes, (current) =>
-    current.type === "folder" && current.id === folderId
-      ? { ...current, children: [...current.children, node] }
-      : current,
-  );
-}
-
-function insertAsset(
-  nodes: readonly FileNode[],
-  folderId: string | undefined,
-  asset: AssetTileData,
-): FileNode[] {
-  const target =
-    folderId === undefined
-      ? nodes
-      : (findFolder(nodes, folderId)?.children ?? []);
-  const group = target.find((node) => node.type === "assets");
-  if (group === undefined) {
-    return insertNode(nodes, folderId, {
-      id: `assets:${folderId ?? "root"}:${asset.id}`,
-      type: "assets",
-      name: "Images",
-      assets: [asset],
-    });
-  }
-  return mapNodes(nodes, (current) =>
-    current.type === "assets" && current.id === group.id
-      ? { ...current, assets: [...current.assets, asset] }
-      : current,
-  );
-}
-
-function extractNode(
-  nodes: readonly FileNode[],
-  id: string,
-): { nodes: FileNode[]; taken?: FileNode } {
-  let taken: FileNode | undefined;
-  const next = nodes.flatMap((node) => {
-    if (node.id === id) {
-      taken = node;
-      return [];
-    }
-    if (node.type === "folder") {
-      const nested = extractNode(node.children, id);
-      if (nested.taken !== undefined) {
-        taken = nested.taken;
-        return [{ ...node, children: nested.nodes }];
-      }
-    }
-    return [node];
-  });
-  return taken === undefined ? { nodes: next } : { nodes: next, taken };
-}
-
-function extractAsset(
-  nodes: readonly FileNode[],
-  assetId: string,
-): { nodes: FileNode[]; taken?: AssetTileData } {
-  let taken: AssetTileData | undefined;
-  const next = mapNodes(nodes, (current) => {
-    if (current.type !== "assets") return current;
-    const asset = current.assets.find((entry) => entry.id === assetId);
-    if (asset === undefined) return current;
-    taken = asset;
-    const assets = current.assets.filter((entry) => entry.id !== assetId);
-    return assets.length === 0 ? null : { ...current, assets };
-  });
-  return taken === undefined ? { nodes: next } : { nodes: next, taken };
 }
 
 function itemHome(

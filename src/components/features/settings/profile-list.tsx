@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { SearchField } from "@/components/ui/search-field";
 import { formatDayMonthYear } from "@/lib/format";
+import { initials } from "@/lib/initials";
 import { pressRow, spring } from "@/styles/motion";
 
 export type ConnectionStatus = "connected" | "disconnected";
@@ -38,14 +39,6 @@ interface ProfileListProps {
   onSelect: (id: string) => void;
   onAdd?: () => void;
   className?: string;
-}
-
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
 }
 
 /**

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Textarea } from "@/components/ui/textarea";
 import { spring } from "@/styles/motion";
+import { initials } from "@/lib/initials";
 
 /** What the agent is replying to: their comment on your post, or their own post. */
 export interface CommentTarget {
@@ -32,14 +33,6 @@ interface CommentDraftProps extends CommentDraftContent {
   /** Post it; the id is whatever the caller needs to act on. */
   onPost?: (body: string) => void;
   className?: string;
-}
-
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
 }
 
 function Person({

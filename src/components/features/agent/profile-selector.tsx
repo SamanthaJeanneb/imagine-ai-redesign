@@ -25,6 +25,7 @@ import {
 import { SearchField } from "@/components/ui/search-field";
 import { fade, pop, pressRow, spring } from "@/styles/motion";
 import { spacing } from "@/styles/tokens";
+import { initials } from "@/lib/initials";
 
 interface ProfileSelectorProps {
   profiles: readonly ProfileSummary[];
@@ -84,14 +85,6 @@ const PREFIX = {
 const STATUS_NOTE: Record<Exclude<ConnectionStatus, "connected">, string> = {
   disconnected: "Not connected",
 };
-
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-}
 
 function ProfileAvatar({
   profile,

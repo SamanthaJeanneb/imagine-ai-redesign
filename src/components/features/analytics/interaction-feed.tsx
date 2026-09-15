@@ -4,7 +4,7 @@ import { cn } from "cn";
 
 import { AskIconButton } from "@/components/features/analytics/ask-imagine";
 import { ChartSkeletonRows } from "@/components/features/analytics/chart-theme";
-import { initials, Panel } from "@/components/features/analytics/panel";
+import { Panel } from "@/components/features/analytics/panel";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { initials } from "@/lib/initials";
 import type { IcpCategory } from "@/entities/engagement";
 
 /** Someone did something to one of your posts. */

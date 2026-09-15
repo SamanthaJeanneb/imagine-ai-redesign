@@ -30,6 +30,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { initials } from "@/lib/initials";
 
 export interface AccountUser {
   name: string;
@@ -74,14 +75,6 @@ const subscribe = () => () => undefined;
 
 function toThemeValue(value: string | undefined): ThemeValue {
   return THEMES.find((theme) => theme.value === value)?.value ?? "system";
-}
-
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
 }
 
 /**

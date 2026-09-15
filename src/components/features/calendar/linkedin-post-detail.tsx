@@ -27,6 +27,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DashedActionRow } from "@/components/ui/dashed-action";
 import { Icon } from "@/components/ui/icon";
+import { initials } from "@/lib/initials";
 
 interface LinkedInPostEditorProps {
   post: PostChipData;
@@ -69,14 +70,6 @@ function revokeBlobSrc(src: string | undefined) {
 }
 
 const COUNT = new Intl.NumberFormat("en-US");
-
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-}
 
 function PersonAvatar({
   person,

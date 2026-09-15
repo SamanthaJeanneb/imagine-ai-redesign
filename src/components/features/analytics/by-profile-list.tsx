@@ -6,6 +6,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { pressRow, spring } from "@/styles/motion";
+import { initials } from "@/lib/initials";
 
 export interface ProfileMetric {
   id: string;
@@ -25,14 +26,6 @@ interface ByProfileListProps {
   onOpen?: (item: ProfileMetric) => void;
   selectedId?: string;
   className?: string;
-}
-
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
 }
 
 /**

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Spinner } from "@/components/ui/spinner";
 import { fade, spring } from "@/styles/motion";
+import { initials } from "@/lib/initials";
 
 export type AccountSlotStatus = "idle" | "connecting" | "connected";
 
@@ -42,15 +43,6 @@ interface ConnectAccountsProps {
   /** What every connected account grants the agent. */
   permissions: readonly string[];
   className?: string;
-}
-
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
 }
 
 /** The second line, by where the sign-in is. */

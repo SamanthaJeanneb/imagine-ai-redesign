@@ -27,7 +27,7 @@ import {
   ChartTooltip,
   ChartTooltipSeries,
 } from "@/components/features/analytics/chart-theme";
-import { initials, Panel } from "@/components/features/analytics/panel";
+import { Panel } from "@/components/features/analytics/panel";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
 import { Disclosure } from "@/components/motion/disclosure";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
@@ -42,6 +42,7 @@ import {
 import { Icon } from "@/components/ui/icon";
 import { type IcpCategory, ICP_THRESHOLD } from "@/entities/engagement";
 import { formatCompact } from "@/lib/format";
+import { initials } from "@/lib/initials";
 import { spring } from "@/styles/motion";
 
 /** Someone who reacted to or commented on a post, with their ICP read. */

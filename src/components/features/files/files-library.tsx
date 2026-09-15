@@ -24,6 +24,14 @@ import type {
   FileSection,
 } from "@/components/features/files/file-tree";
 import {
+  findFolder,
+  insertAsset,
+  insertNode,
+  leaves,
+  mapNodes,
+  removeAsset,
+} from "@/components/features/files/file-tree-ops";
+import {
   beginFileMove,
   canMoveLibraryItem,
   endFileMove,
@@ -128,8 +136,6 @@ type Tab = "files" | "skills";
 type Filter = "all" | "documents" | "images";
 type Sort = "name-asc" | "name-desc";
 
-type FolderNode = Extract<FileNode, { type: "folder" }>;
-
 /** One thing the browser can show, whatever it came from. */
 interface BrowserItem {
   id: string;
@@ -172,88 +178,6 @@ const SORT_SHORT: Record<Sort, string> = {
 /* ------------------------------------------------------------------------ */
 /* Tree helpers                                                             */
 /* ------------------------------------------------------------------------ */
-
-/** Leaves only; folders are walked into. */
-function leaves(nodes: readonly FileNode[]): readonly FileNode[] {
-  return nodes.flatMap((node) =>
-    node.type === "folder" ? leaves(node.children) : [node],
-  );
-}
-
-function findFolder(
-  nodes: readonly FileNode[],
-  id: string,
-): FolderNode | undefined {
-  for (const node of nodes) {
-    if (node.type !== "folder") continue;
-    if (node.id === id) return node;
-    const nested = findFolder(node.children, id);
-    if (nested !== undefined) return nested;
-  }
-  return undefined;
-}
-
-/** Rewrite every node depth-first; return null to drop one. */
-function mapNodes(
-  nodes: readonly FileNode[],
-  fn: (node: FileNode) => FileNode | null,
-): FileNode[] {
-  return nodes.flatMap((node) => {
-    const next = fn(
-      node.type === "folder"
-        ? { ...node, children: mapNodes(node.children, fn) }
-        : node,
-    );
-    return next === null ? [] : [next];
-  });
-}
-
-function insertNode(
-  nodes: readonly FileNode[],
-  folderId: string | undefined,
-  node: FileNode,
-): FileNode[] {
-  if (folderId === undefined) return [...nodes, node];
-  return mapNodes(nodes, (current) =>
-    current.type === "folder" && current.id === folderId
-      ? { ...current, children: [...current.children, node] }
-      : current,
-  );
-}
-
-/** Put an asset back into the location's asset group, making one if needed. */
-function insertAsset(
-  nodes: readonly FileNode[],
-  folderId: string | undefined,
-  asset: AssetTileData,
-): FileNode[] {
-  const target =
-    folderId === undefined
-      ? nodes
-      : (findFolder(nodes, folderId)?.children ?? []);
-  const group = target.find((node) => node.type === "assets");
-  if (group === undefined) {
-    return insertNode(nodes, folderId, {
-      id: `assets:${folderId ?? "root"}:${asset.id}`,
-      type: "assets",
-      name: "Images",
-      assets: [asset],
-    });
-  }
-  return mapNodes(nodes, (current) =>
-    current.type === "assets" && current.id === group.id
-      ? { ...current, assets: [...current.assets, asset] }
-      : current,
-  );
-}
-
-function removeAsset(nodes: readonly FileNode[], assetId: string): FileNode[] {
-  return mapNodes(nodes, (current) => {
-    if (current.type !== "assets") return current;
-    const assets = current.assets.filter((asset) => asset.id !== assetId);
-    return assets.length === 0 ? null : { ...current, assets };
-  });
-}
 
 function slug(name: string): string {
   return name

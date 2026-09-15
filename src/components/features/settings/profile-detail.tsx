@@ -26,6 +26,7 @@ import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { formatDayMonthYear } from "@/lib/format";
+import { initials } from "@/lib/initials";
 import { fade, swapUp } from "@/styles/motion";
 
 export interface ProfileDetailData {
@@ -41,14 +42,6 @@ export interface ProfileDetailData {
   postsIndexed?: number;
   company?: { name: string; logoUrl?: string; url: string };
   persona?: { fileName: string };
-}
-
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
 }
 
 /** A white row on the panel's grey: company and persona. */

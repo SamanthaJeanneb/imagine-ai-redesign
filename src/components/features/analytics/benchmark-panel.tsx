@@ -23,10 +23,11 @@ import {
   ChartTooltipLabel,
   ChartTooltipSeries,
 } from "@/components/features/analytics/chart-theme";
-import { initials, Panel } from "@/components/features/analytics/panel";
+import { Panel } from "@/components/features/analytics/panel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { formatCompact } from "@/lib/format";
+import { initials } from "@/lib/initials";
 import {
   fade,
   pressRow,

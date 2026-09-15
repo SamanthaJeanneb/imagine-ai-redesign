@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import { fade, spring } from "@/styles/motion";
+import { initials } from "@/lib/initials";
 
 /** Which part of the mock the current step fills in; `none` for the meeting. */
 type Focus = "organization" | "team" | "linkedin" | "none";
@@ -26,15 +27,6 @@ function focusFor(pathname: string): Focus {
   }
   if (pathname.endsWith("/meeting")) return "none";
   return "organization";
-}
-
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
 }
 
 /** How many faces the header shows before it counts the rest, as the app does. */
