@@ -302,7 +302,7 @@ function DocsTable({
             >
               {row.map((cell, index) => (
                 <td
-                  key={`${row[0]}-${String(index)}`}
+                  key={`${String(row[0])}-${String(index)}`}
                   className={cn(
                     "px-m py-s text-imagine-foreground-muted",
                     index === 0 && "font-mono text-xs text-imagine-foreground",

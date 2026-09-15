@@ -2,7 +2,7 @@
 
 import { cn } from "cn";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useId, useMemo, useState } from "react";
+import { useId, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -23,8 +23,10 @@ import {
   CHART_CURSOR_LINE,
   CHART_GRID,
   CHART_TICK,
-  ChartSkeleton,
+  ChartSkeletonLine,
   ChartTooltip,
+  ChartTooltipLabel,
+  ChartTooltipSeries,
 } from "@/components/features/analytics/chart-theme";
 import { initials, Panel } from "@/components/features/analytics/panel";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
@@ -327,18 +329,14 @@ export function EngagementExplorer({
   const [pinned, setPinned] = useState<ExplorerPost | null>(null);
 
   const spec = METRIC[metric];
-  const postsByLabel = useMemo(() => {
-    const map = new Map<string, ExplorerPost[]>();
-    for (const post of data.posts) {
-      const list = map.get(post.label);
-      if (list) list.push(post);
-      else map.set(post.label, [post]);
-    }
-    return map;
-  }, [data.posts]);
-  const labelIndex = useMemo(
-    () => new Map(data.points.map((point, index) => [point.label, index])),
-    [data.points],
+  const postsByLabel = new Map<string, ExplorerPost[]>();
+  for (const post of data.posts) {
+    const list = postsByLabel.get(post.label);
+    if (list) list.push(post);
+    else postsByLabel.set(post.label, [post]);
+  }
+  const labelIndex = new Map(
+    data.points.map((point, index) => [point.label, index]),
   );
 
   const scrubbed =
@@ -350,10 +348,7 @@ export function EngagementExplorer({
     data.posts.at(-1);
   const pinnedIndex =
     pinned === null ? undefined : labelIndex.get(pinned.label);
-  const labelOf = useMemo(
-    () => new Map<string, string>([[metric, spec.label]]),
-    [metric, spec.label],
-  );
+  const labelOf = new Map<string, string>([[metric, spec.label]]);
 
   const tabs = (
     <ToggleGroup
@@ -382,7 +377,7 @@ export function EngagementExplorer({
         actions={tabs}
         className={className}
       >
-        <ChartSkeleton kind="line" height="h-72" />
+        <ChartSkeletonLine height="h-72" />
       </Panel>
     );
   }
@@ -479,18 +474,20 @@ export function EngagementExplorer({
                         active={props.active}
                         payload={props.payload}
                         label={props.label}
-                        labelOf={labelOf}
-                        format={(value) => spec.format(value)}
-                        header={
-                          posts.length > 0 ? (
-                            <p className="mb-s max-w-56 border-b border-imagine-border pb-s type-small font-medium">
-                              {posts.length === 1
-                                ? posts[0]?.title
-                                : `${String(posts.length)} posts`}
-                            </p>
-                          ) : undefined
-                        }
-                      />
+                      >
+                        {posts.length > 0 ? (
+                          <p className="mb-s max-w-56 border-b border-imagine-border pb-s type-small font-medium">
+                            {posts.length === 1
+                              ? posts[0]?.title
+                              : `${String(posts.length)} posts`}
+                          </p>
+                        ) : null}
+                        <ChartTooltipLabel />
+                        <ChartTooltipSeries
+                          labelOf={labelOf}
+                          format={(value) => spec.format(value)}
+                        />
+                      </ChartTooltip>
                     );
                   }}
                 />

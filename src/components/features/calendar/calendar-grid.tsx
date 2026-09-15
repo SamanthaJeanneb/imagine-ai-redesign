@@ -2,21 +2,26 @@
 
 import { cn } from "cn";
 import { motion, useReducedMotion } from "motion/react";
+import type { ReactNode } from "react";
 
 import { AddPostButton } from "@/components/features/calendar/add-post-button";
 import {
   EventChip,
   type EventChipData,
+  EventChipDense,
+  EventChipLine,
 } from "@/components/features/calendar/event-chip";
 import {
   PostChip,
   type PostChipData,
+  PostChipDense,
+  PostChipLine,
   type PostChipLines,
   type PostOpenOptions,
 } from "@/components/features/calendar/post-chip";
 import { useLayoutLocked } from "@/components/motion/layout-lock";
 import { formatDayShort } from "@/lib/format";
-import { useElementSize } from "@/lib/use-element-size";
+import { type ElementSize, useElementSize } from "@/lib/use-element-size";
 import { fade, stagger } from "@/styles/motion";
 import { spacing, typeScale } from "@/styles/tokens";
 
@@ -31,62 +36,16 @@ export interface CalendarDay {
   events?: readonly EventChipData[];
 }
 
-export type CalendarDensity = "strip" | "preview" | "page";
-
-interface CalendarGridProps {
+interface CalendarGridBaseProps {
   /** Rows of seven days, starting Monday. */
   days: readonly CalendarDay[];
-  density?: CalendarDensity;
-  /** Chips shown before the rest become "+N more". Defaults by density. */
-  maxChips?: number;
-  /** Rows share the height available instead of taking a minimum. */
-  fill?: boolean;
-  /**
-   * The grid is given its height and makes the month fit it: rows share the
-   * height, and each cell shows as many chips as its row has room for, the
-   * rest as "+N more". Chips slim down as the rows do, from a card with an
-   * excerpt to a single line, so a laptop sees the whole month at once and
-   * a large monitor sees more of each post.
-   */
-  fit?: boolean;
   selectedPostId?: string;
   onOpenPost?: (post: PostChipData, options?: PostOpenOptions) => void;
   onOpenEvent?: (event: EventChipData) => void;
-  onSelectDay?: (day: CalendarDay) => void;
-  /** Shows the plus a cell reveals on hover. */
-  onCreatePost?: (date: string) => void;
-  /** Shared layout id with the composer preview. */
-  layoutId?: string;
   className?: string;
 }
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
-
-// The strip sits under the timeline at its natural height, so its floor is
-// only what the day number and one full chip need; a busier day grows the row.
-const CELL_HEIGHT: Record<CalendarDensity, string> = {
-  strip: "min-h-32",
-  preview: "min-h-20",
-  page: "min-h-40",
-};
-
-// A fitted row's floor: the day number and one line chip. Below this the rows
-// scroll inside the frame rather than losing the chips.
-const FIT_CELL_HEIGHT = "min-h-14";
-
-const DEFAULT_MAX_CHIPS: Record<CalendarDensity, number> = {
-  strip: 1,
-  preview: 1,
-  page: 3,
-};
-
-// How much of each post a cell shows. The page and the strip have the room
-// for a real excerpt; the preview shows enough to know which post it is.
-const CHIP_LINES: Record<CalendarDensity, PostChipLines> = {
-  strip: 3,
-  preview: 2,
-  page: 3,
-};
 
 /**
  * How a chip is drawn: a card with the name, label, excerpt, and time; a dense
@@ -94,23 +53,45 @@ const CHIP_LINES: Record<CalendarDensity, PostChipLines> = {
  */
 type ChipVariant = "card" | "dense" | "line";
 
+/** The chip variants a cell draws its events and posts with. */
+interface ChipVariants {
+  post: ChipVariant;
+  event: ChipVariant;
+}
+
+const CARDS: ChipVariants = { post: "card", event: "card" };
+const DENSE: ChipVariants = { post: "dense", event: "dense" };
+const LINES: ChipVariants = { post: "line", event: "line" };
+
 /** Cells narrower than this show line chips: a card's text would wrap to a word a line. */
 const LINE_CELL_WIDTH = 96;
 
-/** How much of the post each variant shows: the dense card keeps two lines. */
-function linesFor(
-  variant: ChipVariant,
-  density: CalendarDensity,
-): PostChipLines {
-  const lines = CHIP_LINES[density];
+/**
+ * How much of the post each variant shows, given the room a full card has:
+ * the dense card keeps two lines, the line chip one.
+ */
+function linesFor(variant: ChipVariant, full: PostChipLines): PostChipLines {
   switch (variant) {
     case "card":
-      return lines;
+      return full;
     case "dense":
-      return lines > 2 ? 2 : lines;
+      return full > 2 ? 2 : full;
     case "line":
       return 1;
   }
+}
+
+/** Hairlines sit between the cells, so take them off before sharing out. */
+function cellWidthOf(size: ElementSize | undefined): number | undefined {
+  return size === undefined ? undefined : (size.width - 6) / 7;
+}
+
+/**
+ * The chips for a row that grows with its content: full cards, unless the
+ * cells are too narrow for a card's text, then lines.
+ */
+function variantsForWidth(cellWidth: number | undefined): ChipVariants {
+  return cellWidth !== undefined && cellWidth < LINE_CELL_WIDTH ? LINES : CARDS;
 }
 
 /*
@@ -157,41 +138,28 @@ const MORE_HEIGHT = LINE + CELL_GAP;
 /** Richest first. */
 const VARIANTS: readonly ChipVariant[] = ["card", "dense", "line"];
 
-interface ChipVariants {
-  post: ChipVariant;
-  event: ChipVariant;
-}
-
 /**
- * The richest post chip a row of this height can hold along with an event,
- * since a working day usually has both; the event gives way first, since it
- * is the quieter of the two. A tall cell keeps the card, a laptop's month
- * gets the dense card, a short row gets lines.
+ * The chips for a fitted row: the richest post chip a row of this height can
+ * hold along with an event, since a working day usually has both; the event
+ * gives way first, since it is the quieter of the two. A tall cell keeps the
+ * card, a laptop's month gets the dense card, a short row gets lines. Cells
+ * too narrow for a card's text get lines whatever their height.
  */
-function variantsFor(
-  density: CalendarDensity,
+function variantsForRow(
   cellWidth: number | undefined,
   rowHeight: number | undefined,
+  full: PostChipLines,
 ): ChipVariants {
-  if (
-    density !== "preview" &&
-    cellWidth !== undefined &&
-    cellWidth < LINE_CELL_WIDTH
-  ) {
-    return { post: "line", event: "line" };
-  }
-  if (rowHeight === undefined) {
-    const variant = density === "preview" ? "dense" : "card";
-    return { post: variant, event: variant };
-  }
+  if (cellWidth !== undefined && cellWidth < LINE_CELL_WIDTH) return LINES;
+  if (rowHeight === undefined) return CARDS;
   const room = rowHeight - CELL_OVERHEAD - 2 * CELL_GAP;
   for (const [index, post] of VARIANTS.entries()) {
-    const height = postChipHeight(post, linesFor(post, density));
+    const height = postChipHeight(post, linesFor(post, full));
     for (const event of VARIANTS.slice(index)) {
       if (height + eventChipHeight(event) <= room) return { post, event };
     }
   }
-  return { post: "line", event: "line" };
+  return LINES;
 }
 
 interface CellPlan {
@@ -201,23 +169,31 @@ interface CellPlan {
 }
 
 /**
- * What a cell shows: its events, then its posts, in order, until the row runs
- * out of room, keeping a line back for "+N more" when anything is left over.
+ * What a cell that grows with its content shows: every event, then the first
+ * `chipLimit` posts, the rest as "+N more".
  */
-function planCell(
+function planCell(day: CalendarDay, chipLimit: number): CellPlan {
+  const events = day.events ?? [];
+  const shown = day.posts.slice(0, chipLimit);
+  return { events, posts: shown, hidden: day.posts.length - shown.length };
+}
+
+/**
+ * What a fitted cell shows: its events, then its posts, in order, until the
+ * row runs out of room, keeping a line back for "+N more" when anything is
+ * left over. Before the row has been measured, the cell plans as if it could
+ * grow.
+ */
+function planFittedCell(
   day: CalendarDay,
   variants: ChipVariants,
   lines: number,
   chipLimit: number,
   rowHeight: number | undefined,
 ): CellPlan {
+  if (rowHeight === undefined) return planCell(day, chipLimit);
   const events = day.events ?? [];
   const posts = day.posts;
-
-  if (rowHeight === undefined) {
-    const shown = posts.slice(0, chipLimit);
-    return { events, posts: shown, hidden: posts.length - shown.length };
-  }
 
   const heights = [
     ...events.map(() => eventChipHeight(variants.event)),
@@ -240,186 +216,453 @@ function planCell(
   };
 }
 
-/**
- * A seven-column grid used four ways: the landing's two-week strip, the
- * composer preview, and the calendar page's month. Cells are separated by
- * hairlines inside one rounded frame; today is a filled number, not a box.
+/*
+ * The parts. Every calendar below is a seven-column grid: cells separated by
+ * hairlines inside one rounded frame, today a filled number rather than a
+ * box. Each variant assembles these into its own tree.
  */
-export function CalendarGrid({
+
+/** The weekday headings across the top, initials where the frame is narrow. */
+function CalendarWeekdays() {
+  return (
+    <div role="row" className="grid grid-cols-7">
+      {WEEKDAYS.map((weekday) => (
+        <span
+          key={weekday}
+          role="columnheader"
+          aria-label={weekday}
+          className="min-w-0 truncate px-xxs py-xs text-center type-micro text-imagine-foreground-muted"
+        >
+          <span aria-hidden="true" className="@min-[22rem]/cal:hidden">
+            {weekday.slice(0, 1)}
+          </span>
+          <span aria-hidden="true" className="hidden @min-[22rem]/cal:inline">
+            {weekday}
+          </span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The rounded frame, with the weekday row along the top. Carries the shared
+ * layout id when it morphs to or from the composer preview; the `variant`
+ * names which calendar this is, so the morph re-measures when it changes.
+ */
+function CalendarFrame({
+  variant,
+  chips,
+  layoutId,
+  className,
+  children,
+}: {
+  variant: string;
+  /** The post chip the cells are drawing, for anything that styles by it. */
+  chips: ChipVariant;
+  layoutId?: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  const layoutLocked = useLayoutLocked();
+  return (
+    <motion.div
+      {...(layoutId === undefined || layoutLocked
+        ? {}
+        : { layoutId, layoutDependency: variant })}
+      data-slot="calendar-grid"
+      data-variant={variant}
+      data-chips={chips}
+      role="grid"
+      className={cn(
+        "@container/cal flex w-full min-w-0 flex-col overflow-hidden rounded-panel bg-imagine-surface-raised shadow-raised",
+        className,
+      )}
+    >
+      <CalendarWeekdays />
+      {children}
+    </motion.div>
+  );
+}
+
+/** The rows of cells. Takes a ref so a calendar can measure its cells. */
+function CalendarRows({
+  ref,
+  className,
+  children,
+}: {
+  ref?: (node: HTMLElement | null) => void;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      ref={ref}
+      role="rowgroup"
+      className={cn(
+        "grid min-w-0 grid-cols-7 gap-px bg-imagine-border",
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+/**
+ * One day: the day number, then whatever the calendar puts in it. The cell is
+ * the `chip` container, so chips slim down in a narrow one. Fades in on a
+ * diagonal wave by row + column rather than by index, so a six-week month
+ * sweeps in over about half a second instead of nearly a second.
+ */
+function CalendarCell({
+  day,
+  index,
+  className,
+  onSelectDay,
+  onCreatePost,
+  children,
+}: {
+  day: CalendarDay;
+  /** Position in the grid, for the entrance wave. */
+  index: number;
+  className?: string;
+  onSelectDay?: (day: CalendarDay) => void;
+  /** Shows the plus a cell reveals on hover. */
+  onCreatePost?: (date: string) => void;
+  children: ReactNode;
+}) {
+  const reduceMotion = useReducedMotion();
+  const wave = Math.floor(index / 7) + (index % 7);
+  return (
+    <motion.div
+      role="gridcell"
+      aria-selected={day.isToday ? true : undefined}
+      initial={reduceMotion ? false : { opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ ...fade.slow, delay: wave * stagger.calendar }}
+      onClick={
+        onSelectDay
+          ? () => {
+              onSelectDay(day);
+            }
+          : undefined
+      }
+      className={cn(
+        "group/cell @container/chip relative flex flex-col gap-xs bg-imagine-surface p-xs",
+        day.isOutside && "bg-imagine-surface/60",
+        onSelectDay &&
+          "cursor-pointer transition-colors hover:bg-imagine-surface-raised/50",
+        className,
+      )}
+    >
+      {onCreatePost === undefined ? null : (
+        <AddPostButton
+          when={formatDayShort(day.date)}
+          onClick={() => {
+            onCreatePost(day.date);
+          }}
+        />
+      )}
+      <span
+        className={cn(
+          "flex size-5 items-center justify-center rounded-full type-small tabular-nums",
+          day.isToday
+            ? "bg-imagine-primary font-semibold text-imagine-primary-foreground"
+            : day.isOutside
+              ? "text-imagine-foreground-faint"
+              : "text-imagine-foreground-muted",
+        )}
+      >
+        {day.dayNumber}
+      </span>
+      {children}
+    </motion.div>
+  );
+}
+
+/** The chip components, by the variant a cell has measured room for. */
+const EVENT_CHIP: Record<ChipVariant, typeof EventChip> = {
+  card: EventChip,
+  dense: EventChipDense,
+  line: EventChipLine,
+};
+const POST_CHIP: Record<ChipVariant, typeof PostChip> = {
+  card: PostChip,
+  dense: PostChipDense,
+  line: PostChipLine,
+};
+
+/**
+ * A cell's chips: its events, then its posts, then "+N more" for whatever the
+ * plan left out. Which chip is drawn follows the room the cell has measured,
+ * not a choice its caller makes.
+ */
+function CalendarCellChips({
+  plan,
+  variants,
+  lines,
+  selectedPostId,
+  onOpenPost,
+  onOpenEvent,
+}: {
+  plan: CellPlan;
+  variants: ChipVariants;
+  lines: PostChipLines;
+  selectedPostId?: string;
+  onOpenPost?: (post: PostChipData, options?: PostOpenOptions) => void;
+  onOpenEvent?: (event: EventChipData) => void;
+}) {
+  const Event = EVENT_CHIP[variants.event];
+  const Post = POST_CHIP[variants.post];
+  return (
+    <>
+      {plan.events.map((event) => (
+        <Event key={event.id} event={event} onOpen={onOpenEvent} />
+      ))}
+      {plan.posts.map((post) => (
+        <Post
+          key={post.id}
+          post={post}
+          lines={lines}
+          selected={post.id === selectedPostId}
+          onOpen={onOpenPost}
+        />
+      ))}
+      {plan.hidden > 0 ? (
+        <span className="px-xs type-caption text-imagine-foreground-muted">
+          +{plan.hidden} more
+        </span>
+      ) : null}
+    </>
+  );
+}
+
+/*
+ * The calendars. The frame sits in a padded, sideways-scrolling gutter so its
+ * drop shadow is not clipped: any overflow on the frame (or a parent) clips
+ * both axes, which is why the gutter lives here rather than on the page.
+ */
+
+/**
+ * The landing's two-week strip. It sits under the timeline at its natural
+ * height: a cell's floor is only what the day number and one full chip need,
+ * and a busier day grows its row. Each day shows one post, the rest as
+ * "+N more"; the chips slim to a line before the cells get narrower than a
+ * word.
+ */
+export function CalendarStrip({
   days,
-  density = "page",
-  maxChips,
-  fit = false,
-  fill = fit || density === "strip",
+  selectedPostId,
+  onOpenPost,
+  onOpenEvent,
+  className,
+}: CalendarGridBaseProps) {
+  const [rowsRef, size] = useElementSize();
+  const variants = variantsForWidth(cellWidthOf(size));
+  const lines = linesFor(variants.post, 3);
+
+  return (
+    <div className={cn("min-w-0 overflow-x-auto p-m", className)}>
+      <CalendarFrame
+        variant="strip"
+        chips={variants.post}
+        className="md:min-w-[36rem]"
+      >
+        <CalendarRows ref={rowsRef}>
+          {days.map((day, index) => (
+            <CalendarCell
+              key={day.date}
+              day={day}
+              index={index}
+              className="min-h-32"
+            >
+              <CalendarCellChips
+                plan={planCell(day, 1)}
+                variants={variants}
+                lines={lines}
+                selectedPostId={selectedPostId}
+                onOpenPost={onOpenPost}
+                onOpenEvent={onOpenEvent}
+              />
+            </CalendarCell>
+          ))}
+        </CalendarRows>
+      </CalendarFrame>
+    </div>
+  );
+}
+
+/**
+ * The composer's preview: short cells, too short for the time and profile
+ * lines, so every chip is the dense card whatever the cell's size, showing
+ * enough to know which post it is. No gutter: the composer frames it. Carries
+ * the shared layout id so expanding it morphs into the calendar page.
+ */
+export function CalendarPreview({
+  days,
+  layoutId,
+  selectedPostId,
+  onOpenPost,
+  onOpenEvent,
+  className,
+}: CalendarGridBaseProps & {
+  /** Shared layout id with the calendar page's month. */
+  layoutId?: string;
+}) {
+  return (
+    <div className={cn("min-w-0", className)}>
+      <CalendarFrame variant="preview" chips="dense" layoutId={layoutId}>
+        <CalendarRows>
+          {days.map((day, index) => (
+            <CalendarCell
+              key={day.date}
+              day={day}
+              index={index}
+              className="min-h-20"
+            >
+              <CalendarCellChips
+                plan={planCell(day, 1)}
+                variants={DENSE}
+                lines={2}
+                selectedPostId={selectedPostId}
+                onOpenPost={onOpenPost}
+                onOpenEvent={onOpenEvent}
+              />
+            </CalendarCell>
+          ))}
+        </CalendarRows>
+      </CalendarFrame>
+    </div>
+  );
+}
+
+/**
+ * A month at its natural height, the way the centered landing shows the
+ * weeks ahead: tall cells with full cards, three posts before "+N more", and
+ * the page scrolls to reach the rest. The chips slim to a line before the
+ * cells get narrower than a word.
+ */
+export function CalendarMonth({
+  days,
   selectedPostId,
   onOpenPost,
   onOpenEvent,
   onSelectDay,
-  onCreatePost,
-  layoutId,
   className,
-}: CalendarGridProps) {
-  const reduceMotion = useReducedMotion();
-  const layoutLocked = useLayoutLocked();
-  const [rowgroupRef, size] = useElementSize();
+}: CalendarGridBaseProps & {
+  onSelectDay?: (day: CalendarDay) => void;
+}) {
+  const [rowsRef, size] = useElementSize();
+  const variants = variantsForWidth(cellWidthOf(size));
+  const lines = linesFor(variants.post, 3);
 
+  return (
+    <div className={cn("min-w-0 overflow-x-auto p-m", className)}>
+      <CalendarFrame
+        variant="month"
+        chips={variants.post}
+        className="md:min-w-[36rem]"
+      >
+        <CalendarRows ref={rowsRef}>
+          {days.map((day, index) => (
+            <CalendarCell
+              key={day.date}
+              day={day}
+              index={index}
+              className="min-h-40"
+              onSelectDay={onSelectDay}
+            >
+              <CalendarCellChips
+                plan={planCell(day, 3)}
+                variants={variants}
+                lines={lines}
+                selectedPostId={selectedPostId}
+                onOpenPost={onOpenPost}
+                onOpenEvent={onOpenEvent}
+              />
+            </CalendarCell>
+          ))}
+        </CalendarRows>
+      </CalendarFrame>
+    </div>
+  );
+}
+
+/**
+ * The calendar page's month. It is given its height and makes the month fit
+ * it: rows share the height, and each cell shows as many chips as its row has
+ * room for, the rest as "+N more". Chips slim down as the rows do, from a
+ * card with an excerpt to a single line, so a laptop sees the whole month at
+ * once and a large monitor sees more of each post. A cell's floor is the day
+ * number and one line chip; below that the rows scroll inside the frame
+ * rather than losing the chips. Carries the shared layout id, so the page
+ * arrives by morphing out of the composer preview.
+ */
+export function CalendarMonthFit({
+  days,
+  layoutId,
+  selectedPostId,
+  onOpenPost,
+  onOpenEvent,
+  onCreatePost,
+  className,
+}: CalendarGridBaseProps & {
+  /** Shared layout id with the composer preview. */
+  layoutId?: string;
+  /** Shows the plus a cell reveals on hover. */
+  onCreatePost?: (date: string) => void;
+}) {
+  const [rowsRef, size] = useElementSize();
   const rows = Math.ceil(days.length / 7);
-  // Hairlines sit between the cells, so take them off before sharing out.
-  const cellWidth = size === undefined ? undefined : (size.width - 6) / 7;
   const rowHeight =
-    fit && size !== undefined && rows > 0
+    size !== undefined && rows > 0
       ? (size.height - (rows - 1)) / rows
       : undefined;
-
-  // Preview cells are too short for the time and profile line, so they get
-  // the dense card whatever their size; the strip and the page start from
-  // the full card and slim down only as room runs out.
-  const variants = variantsFor(density, cellWidth, rowHeight);
-  const lines = linesFor(variants.post, density);
-  const chipLimit = maxChips ?? DEFAULT_MAX_CHIPS[density];
-
-  // Padding around the raised card so its drop shadow is not clipped. Any
-  // overflow on this frame (or a parent) clips both axes, which is why the
-  // gutter lives here rather than on the page.
-  const preview = density === "preview";
+  const variants = variantsForRow(cellWidthOf(size), rowHeight, 3);
+  const lines = linesFor(variants.post, 3);
 
   return (
     <div
       className={cn(
-        "min-w-0",
-        !preview && "overflow-x-auto p-m",
-        fill && "flex min-h-0 flex-1 flex-col",
+        "flex min-h-0 min-w-0 flex-1 flex-col overflow-x-auto p-m",
         className,
       )}
     >
-      <motion.div
-        {...(layoutId === undefined || layoutLocked
-          ? {}
-          : { layoutId, layoutDependency: density })}
-        data-slot="calendar-grid"
-        data-density={density}
-        data-chips={variants.post}
-        role="grid"
-        className={cn(
-          "@container/cal flex w-full min-w-0 flex-col overflow-hidden rounded-panel bg-imagine-surface-raised shadow-raised",
-          fill && "min-h-0 flex-1",
-          !preview && "md:min-w-[36rem]",
-        )}
+      <CalendarFrame
+        variant="month-fit"
+        chips={variants.post}
+        layoutId={layoutId}
+        className="min-h-0 flex-1 md:min-w-[36rem]"
       >
-        <div role="row" className="grid grid-cols-7">
-          {WEEKDAYS.map((weekday) => (
-            <span
-              key={weekday}
-              role="columnheader"
-              aria-label={weekday}
-              className="min-w-0 truncate px-xxs py-xs text-center type-micro text-imagine-foreground-muted"
-            >
-              <span aria-hidden="true" className="@min-[22rem]/cal:hidden">
-                {weekday.slice(0, 1)}
-              </span>
-              <span
-                aria-hidden="true"
-                className="hidden @min-[22rem]/cal:inline"
-              >
-                {weekday}
-              </span>
-            </span>
-          ))}
-        </div>
-        <div
-          ref={rowgroupRef}
-          role="rowgroup"
-          className={cn(
-            "grid min-w-0 grid-cols-7 gap-px bg-imagine-border",
-            // A month of full chips can run past the page: the rows scroll
-            // inside the frame rather than the frame growing off the screen.
-            fill && "min-h-0 flex-1 auto-rows-fr overflow-y-auto",
-          )}
+        {/* A month of full chips can run past the page: the rows scroll
+            inside the frame rather than the frame growing off the screen. */}
+        <CalendarRows
+          ref={rowsRef}
+          className="min-h-0 flex-1 auto-rows-fr overflow-y-auto"
         >
-          {days.map((day, index) => {
-            const plan = planCell(day, variants, lines, chipLimit, rowHeight);
-            // Stagger diagonally by row + column rather than by index, so a
-            // six-week month sweeps in over about half a second instead of
-            // nearly a second.
-            const wave = Math.floor(index / 7) + (index % 7);
-            return (
-              <motion.div
-                key={day.date}
-                role="gridcell"
-                aria-selected={day.isToday ? true : undefined}
-                initial={reduceMotion ? false : { opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ ...fade.slow, delay: wave * stagger.calendar }}
-                onClick={
-                  onSelectDay
-                    ? () => {
-                        onSelectDay(day);
-                      }
-                    : undefined
-                }
-                className={cn(
-                  // The `chip` container: chips slim down in a narrow cell.
-                  "group/cell @container/chip relative flex flex-col gap-xs bg-imagine-surface p-xs",
-                  // A fitted cell clips rather than pushes its row taller; the
-                  // plan above keeps its chips inside, this is the backstop.
-                  fit
-                    ? cn(FIT_CELL_HEIGHT, "overflow-hidden")
-                    : CELL_HEIGHT[density],
-                  day.isOutside && "bg-imagine-surface/60",
-                  onSelectDay &&
-                    "cursor-pointer transition-colors hover:bg-imagine-surface-raised/50",
-                )}
-              >
-                {onCreatePost === undefined ? null : (
-                  <AddPostButton
-                    when={formatDayShort(day.date)}
-                    onClick={() => {
-                      onCreatePost(day.date);
-                    }}
-                  />
-                )}
-                <span
-                  className={cn(
-                    "flex size-5 items-center justify-center rounded-full type-small tabular-nums",
-                    day.isToday
-                      ? "bg-imagine-primary font-semibold text-imagine-primary-foreground"
-                      : day.isOutside
-                        ? "text-imagine-foreground-faint"
-                        : "text-imagine-foreground-muted",
-                  )}
-                >
-                  {day.dayNumber}
-                </span>
-                {plan.events.map((event) => (
-                  <EventChip
-                    key={event.id}
-                    event={event}
-                    dense={variants.event === "dense"}
-                    line={variants.event === "line"}
-                    onOpen={onOpenEvent}
-                  />
-                ))}
-                {plan.posts.map((post) => (
-                  <PostChip
-                    key={post.id}
-                    post={post}
-                    dense={variants.post === "dense"}
-                    line={variants.post === "line"}
-                    lines={lines}
-                    selected={post.id === selectedPostId}
-                    onOpen={onOpenPost}
-                  />
-                ))}
-                {plan.hidden > 0 ? (
-                  <span className="px-xs type-caption text-imagine-foreground-muted">
-                    +{plan.hidden} more
-                  </span>
-                ) : null}
-              </motion.div>
-            );
-          })}
-        </div>
-      </motion.div>
+          {days.map((day, index) => (
+            <CalendarCell
+              key={day.date}
+              day={day}
+              index={index}
+              // A fitted cell clips rather than pushes its row taller; the
+              // plan keeps its chips inside, this is the backstop.
+              className="min-h-14 overflow-hidden"
+              onCreatePost={onCreatePost}
+            >
+              <CalendarCellChips
+                plan={planFittedCell(day, variants, lines, 3, rowHeight)}
+                variants={variants}
+                lines={lines}
+                selectedPostId={selectedPostId}
+                onOpenPost={onOpenPost}
+                onOpenEvent={onOpenEvent}
+              />
+            </CalendarCell>
+          ))}
+        </CalendarRows>
+      </CalendarFrame>
     </div>
   );
 }

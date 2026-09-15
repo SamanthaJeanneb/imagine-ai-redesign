@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "cn";
-import type { ReactNode } from "react";
+import { createContext, type ReactNode, useContext } from "react";
 import type { TooltipContentProps } from "recharts";
 
 import { Skeleton } from "@/components/ui/skeleton";
@@ -69,26 +69,40 @@ function asDatum(value: unknown): Record<string, unknown> | undefined {
     : undefined;
 }
 
+type TooltipPayload = NonNullable<TooltipContentProps["payload"]>;
+
+/** What the tooltip's parts read: the hovered entries and where they came from. */
+interface TooltipContextValue {
+  /** Hovered series that have a value, in payload order. */
+  entries: TooltipPayload;
+  /** The axis label under the cursor. Empty when the chart has none. */
+  label: string;
+  /** The row the first entry came from, for facts that are not series. */
+  datum: Record<string, unknown> | undefined;
+}
+
+const TooltipContext = createContext<TooltipContextValue | null>(null);
+
+function useTooltip(): TooltipContextValue {
+  const tooltip = useContext(TooltipContext);
+  if (tooltip === null) {
+    throw new Error("Tooltip parts render inside <ChartTooltip>.");
+  }
+  return tooltip;
+}
+
+/**
+ * The row under the cursor. For charts whose payload keys are coordinates
+ * rather than facts (a heatmap), whose rows are built from the datum itself.
+ */
+export function useChartTooltipDatum(): Record<string, unknown> | undefined {
+  return useTooltip().datum;
+}
+
 interface ChartTooltipProps extends Partial<
   Pick<TooltipContentProps, "active" | "payload" | "label">
 > {
-  /** Series key → display name. Missing keys print the key. */
-  labelOf?: ReadonlyMap<string, string>;
-  /** Per-series number formatting. Default: locale digits. */
-  format?: TooltipValueFormatter;
-  /** Override the label line, e.g. "Tue 2 Sep" from a short axis tick. */
-  labelFormatter?: (label: string) => string;
-  /** Something above the rows: a post title, an avatar. */
-  header?: ReactNode;
-  /** Hide the label line entirely (single-point charts). */
-  hideLabel?: boolean;
-  /**
-   * Replace the per-series rows with rows read from the hovered datum. For
-   * charts whose payload keys are coordinates rather than facts (a heatmap).
-   */
-  rows?: (
-    datum: Record<string, unknown>,
-  ) => readonly { label: string; value: string }[];
+  children: ReactNode;
 }
 
 /** Text for a value Recharts hands back untyped. Anything else renders empty. */
@@ -101,99 +115,115 @@ function text(value: unknown): string {
 /**
  * The tooltip, drawn with classes rather than Recharts' `contentStyle`. Pass
  * as `content` on `<Tooltip>`; Recharts supplies `active`, `payload`, `label`.
+ * What it says is its children: a `ChartTooltipLabel`, a `ChartTooltipSeries`,
+ * a heading of the caller's own, or rows read from the datum.
  */
 export function ChartTooltip({
   active,
   payload,
   label,
-  labelOf,
-  format,
-  labelFormatter,
-  header,
-  hideLabel = false,
-  rows: rowsOf,
+  children,
 }: ChartTooltipProps) {
   if (!active || payload === undefined || payload.length === 0) return null;
-  const rows = payload.filter((item) => item.value !== undefined);
-  if (rows.length === 0) return null;
-  const labelText = text(label);
-  const datum = asDatum(rows[0]?.payload);
-
-  if (rowsOf !== undefined) {
-    if (datum === undefined) return null;
-    return (
+  const entries = payload.filter((item) => item.value !== undefined);
+  if (entries.length === 0) return null;
+  return (
+    <TooltipContext.Provider
+      value={{
+        entries,
+        label: text(label),
+        datum: asDatum(entries[0]?.payload),
+      }}
+    >
       <div
         data-slot="chart-tooltip"
         className="min-w-32 rounded-control border border-imagine-border bg-imagine-surface px-m py-s shadow-floating"
       >
-        {header}
-        <dl className="flex flex-col gap-xxs">
-          {rowsOf(datum).map((row) => (
-            <div
-              key={row.label}
-              className="flex items-center justify-between gap-l type-small"
-            >
-              <dt className="text-imagine-foreground-muted">{row.label}</dt>
-              <dd className="font-medium text-imagine-foreground tabular-nums">
-                {row.value}
-              </dd>
-            </div>
-          ))}
-        </dl>
+        {children}
       </div>
-    );
-  }
+    </TooltipContext.Provider>
+  );
+}
 
+/** The axis label line. Charts without a meaningful axis label leave it out. */
+export function ChartTooltipLabel() {
+  const { label } = useTooltip();
+  if (label === "") return null;
   return (
-    <div
-      data-slot="chart-tooltip"
-      className="min-w-32 rounded-control border border-imagine-border bg-imagine-surface px-m py-s shadow-floating"
-    >
-      {header}
-      {!hideLabel && labelText !== "" ? (
-        <p className="mb-xs type-small text-imagine-foreground-muted">
-          {labelFormatter ? labelFormatter(labelText) : labelText}
-        </p>
-      ) : null}
-      <dl className="flex flex-col gap-xxs">
-        {rows.map((item) => {
-          const key = text(item.dataKey ?? item.name);
-          const value =
-            typeof item.value === "number"
-              ? format
-                ? format(item.value, key, asDatum(item.payload))
-                : item.value.toLocaleString()
-              : text(item.value);
-          return (
-            <div
-              key={key}
-              className="flex items-center justify-between gap-l type-small"
-            >
-              <dt className="flex items-center gap-xs text-imagine-foreground-muted">
-                <svg aria-hidden="true" viewBox="0 0 8 8" className="size-2">
-                  <rect width="8" height="8" fill={item.color ?? item.fill} />
-                </svg>
-                {labelOf?.get(key) ?? text(item.name)}
-              </dt>
-              <dd className="font-medium text-imagine-foreground tabular-nums">
-                {value}
-              </dd>
-            </div>
-          );
-        })}
-      </dl>
+    <p className="mb-xs type-small text-imagine-foreground-muted">{label}</p>
+  );
+}
+
+/** The rows of a tooltip. */
+export function ChartTooltipList({ children }: { children: ReactNode }) {
+  return <dl className="flex flex-col gap-xxs">{children}</dl>;
+}
+
+/** One fact: a name and a formatted value. */
+export function ChartTooltipRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-l type-small">
+      <dt className="text-imagine-foreground-muted">{label}</dt>
+      <dd className="font-medium text-imagine-foreground tabular-nums">
+        {value}
+      </dd>
     </div>
   );
 }
 
-export type ChartSkeletonKind = "bars" | "line" | "grid" | "radar" | "rows";
+interface ChartTooltipSeriesProps {
+  /** Series key → display name. Missing keys print the key. */
+  labelOf?: ReadonlyMap<string, string>;
+  /** Per-series number formatting. Default: locale digits. */
+  format?: TooltipValueFormatter;
+}
+
+/** One row per hovered series: swatch, name, value. */
+export function ChartTooltipSeries({
+  labelOf,
+  format,
+}: ChartTooltipSeriesProps) {
+  const { entries } = useTooltip();
+  return (
+    <ChartTooltipList>
+      {entries.map((item) => {
+        const key = text(item.dataKey ?? item.name);
+        const value =
+          typeof item.value === "number"
+            ? format
+              ? format(item.value, key, asDatum(item.payload))
+              : item.value.toLocaleString()
+            : text(item.value);
+        return (
+          <div
+            key={key}
+            className="flex items-center justify-between gap-l type-small"
+          >
+            <dt className="flex items-center gap-xs text-imagine-foreground-muted">
+              <svg aria-hidden="true" viewBox="0 0 8 8" className="size-2">
+                <rect width="8" height="8" fill={item.color ?? item.fill} />
+              </svg>
+              {labelOf?.get(key) ?? text(item.name)}
+            </dt>
+            <dd className="font-medium text-imagine-foreground tabular-nums">
+              {value}
+            </dd>
+          </div>
+        );
+      })}
+    </ChartTooltipList>
+  );
+}
 
 interface ChartSkeletonProps {
-  kind?: ChartSkeletonKind;
   /** Height utility for the plot area, e.g. `h-48`. Default matches a chart block. */
   height?: string;
-  /** Draw the one-line header above the plot. Default on. */
-  header?: boolean;
   className?: string;
 }
 
@@ -213,89 +243,136 @@ const HEIGHT_CLASS: Record<number, string> = {
 };
 
 /**
- * Loading state shaped like the chart that will replace it, so the swap does
- * not move the layout. The shimmer comes from `Skeleton`.
+ * The one-line header a chart block would have: title left, number right.
+ * Rendered above a skeleton plot by callers whose real chart has a header.
  */
-export function ChartSkeleton({
-  kind = "bars",
+export function ChartSkeletonHeader({ className }: { className?: string }) {
+  return (
+    <div className={cn("flex items-baseline justify-between", className)}>
+      <Skeleton className="h-4 w-36" />
+      <Skeleton className="h-4 w-12" />
+    </div>
+  );
+}
+
+/**
+ * The plot row every skeleton shares. Shaped like the chart that will replace
+ * it, so the swap does not move the layout; the shimmer comes from `Skeleton`.
+ */
+function SkeletonPlot({
   height = "h-48",
-  header = true,
   className,
-}: ChartSkeletonProps) {
+  children,
+}: ChartSkeletonProps & { children: ReactNode }) {
   return (
     <div
       data-slot="chart-skeleton"
       aria-busy="true"
       aria-label="Loading chart"
-      className={cn("flex flex-col gap-l", className)}
+      className={cn("flex w-full gap-m", height, className)}
     >
-      {header ? (
-        <div className="flex items-baseline justify-between">
-          <Skeleton className="h-4 w-36" />
-          <Skeleton className="h-4 w-12" />
-        </div>
-      ) : null}
-      <div className={cn("flex w-full gap-m", height)}>
-        {kind === "rows" ? null : (
-          <div className="flex w-8 shrink-0 flex-col justify-between py-1">
-            {[0, 1, 2, 3, 4].map((tick) => (
-              <Skeleton key={tick} className="h-2.5 w-6" />
-            ))}
-          </div>
-        )}
-        {kind === "bars" ? (
-          <div className="flex flex-1 items-end gap-[6%] border-b border-imagine-border pb-px">
-            {BAR_HEIGHTS.map((fraction, index) => (
-              <Skeleton
-                key={index}
-                className={cn(
-                  "flex-1 rounded-none",
-                  HEIGHT_CLASS[fraction] ?? "h-1/2",
-                )}
-              />
-            ))}
-          </div>
-        ) : kind === "line" ? (
-          <div className="relative flex-1 border-b border-imagine-border">
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 100 40"
-              preserveAspectRatio="none"
-              className="absolute inset-0 size-full text-imagine-border"
-            >
-              <path
-                d="M0 32 C 10 30, 15 22, 25 24 S 40 14, 50 16 S 65 8, 75 12 S 90 4, 100 6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                vectorEffect="non-scaling-stroke"
-              />
-            </svg>
-            <Skeleton className="absolute inset-x-0 bottom-0 h-1/3 rounded-none opacity-60" />
-          </div>
-        ) : kind === "grid" ? (
-          <div className="grid flex-1 grid-cols-12 grid-rows-7 gap-px">
-            {Array.from({ length: 84 }, (_, index) => (
-              <Skeleton key={index} className="size-full rounded-none" />
-            ))}
-          </div>
-        ) : kind === "radar" ? (
-          <div className="flex flex-1 items-center justify-center">
-            <Skeleton className="aspect-square h-full max-h-full rounded-full" />
-          </div>
-        ) : (
-          <div className="flex flex-1 flex-col justify-between">
-            {[0, 1, 2, 3, 4].map((row) => (
-              <div key={row} className="flex items-center gap-m">
-                <Skeleton className="size-6 rounded-full" />
-                <Skeleton className="h-3 w-24" />
-                <Skeleton className="h-2 flex-1 rounded-none" />
-                <Skeleton className="h-3 w-10" />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      {children}
     </div>
+  );
+}
+
+/** Five tick marks down the left, where a y axis will be. */
+function SkeletonAxis() {
+  return (
+    <div className="flex w-8 shrink-0 flex-col justify-between py-1">
+      {[0, 1, 2, 3, 4].map((tick) => (
+        <Skeleton key={tick} className="h-2.5 w-6" />
+      ))}
+    </div>
+  );
+}
+
+/** Loading state for a bar chart. */
+export function ChartSkeletonBars(props: ChartSkeletonProps) {
+  return (
+    <SkeletonPlot {...props}>
+      <SkeletonAxis />
+      <div className="flex flex-1 items-end gap-[6%] border-b border-imagine-border pb-px">
+        {BAR_HEIGHTS.map((fraction, index) => (
+          <Skeleton
+            key={index}
+            className={cn(
+              "flex-1 rounded-none",
+              HEIGHT_CLASS[fraction] ?? "h-1/2",
+            )}
+          />
+        ))}
+      </div>
+    </SkeletonPlot>
+  );
+}
+
+/** Loading state for a line or area chart. */
+export function ChartSkeletonLine(props: ChartSkeletonProps) {
+  return (
+    <SkeletonPlot {...props}>
+      <SkeletonAxis />
+      <div className="relative flex-1 border-b border-imagine-border">
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 100 40"
+          preserveAspectRatio="none"
+          className="absolute inset-0 size-full text-imagine-border"
+        >
+          <path
+            d="M0 32 C 10 30, 15 22, 25 24 S 40 14, 50 16 S 65 8, 75 12 S 90 4, 100 6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+        <Skeleton className="absolute inset-x-0 bottom-0 h-1/3 rounded-none opacity-60" />
+      </div>
+    </SkeletonPlot>
+  );
+}
+
+/** Loading state for a heatmap. */
+export function ChartSkeletonGrid(props: ChartSkeletonProps) {
+  return (
+    <SkeletonPlot {...props}>
+      <SkeletonAxis />
+      <div className="grid flex-1 grid-cols-12 grid-rows-7 gap-px">
+        {Array.from({ length: 84 }, (_, index) => (
+          <Skeleton key={index} className="size-full rounded-none" />
+        ))}
+      </div>
+    </SkeletonPlot>
+  );
+}
+
+/** Loading state for a radar chart. */
+export function ChartSkeletonRadar(props: ChartSkeletonProps) {
+  return (
+    <SkeletonPlot {...props}>
+      <SkeletonAxis />
+      <div className="flex flex-1 items-center justify-center">
+        <Skeleton className="aspect-square h-full max-h-full rounded-full" />
+      </div>
+    </SkeletonPlot>
+  );
+}
+
+/** Loading state for a list of rows: avatar, name, bar, number. No axis. */
+export function ChartSkeletonRows(props: ChartSkeletonProps) {
+  return (
+    <SkeletonPlot {...props}>
+      <div className="flex flex-1 flex-col justify-between">
+        {[0, 1, 2, 3, 4].map((row) => (
+          <div key={row} className="flex items-center gap-m">
+            <Skeleton className="size-6 rounded-full" />
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-2 flex-1 rounded-none" />
+            <Skeleton className="h-3 w-10" />
+          </div>
+        ))}
+      </div>
+    </SkeletonPlot>
   );
 }

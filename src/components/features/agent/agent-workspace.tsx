@@ -2,13 +2,14 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useEffectEvent, useState } from "react";
+import { useEffect, useEffectEvent, useState, type ReactNode } from "react";
 
 import {
   LANDING_COLUMN,
   LandingBelow,
   LandingIntro,
   LandingRail,
+  LandingRailStacked,
   type LandingStat,
 } from "@/components/features/agent/agent-landing";
 import {
@@ -17,10 +18,20 @@ import {
   MonthCalendar,
 } from "@/components/features/agent/agent-landing-2";
 import { AgentThread } from "@/components/features/agent/agent-thread";
-import { ChatDock } from "@/components/features/agent/chat-dock";
+import {
+  HeroChatDock,
+  ThreadChatDock,
+} from "@/components/features/agent/chat-dock";
 import { ChatEmptyMark } from "@/components/features/agent/chat-empty-mark";
-import { useChat } from "@/components/features/agent/chat-provider";
-import type { TimelineEntry } from "@/components/features/agent/timeline";
+import {
+  useChat,
+  type ChatActions,
+  type ChatState,
+} from "@/components/features/agent/chat-provider";
+import type {
+  TimelineAction,
+  TimelineEntry,
+} from "@/components/features/agent/timeline";
 import type {
   ChartDatum,
   ChartSeries,
@@ -46,61 +57,95 @@ export interface LandingData {
   month?: { label: string; days: readonly CalendarDay[] };
 }
 
-/**
- * `split` is `/agent`: greeting and timeline on the left, stats on the right.
- * `centered` is `/landing-2`: one column with the agent's mark, the composer,
- * three activity cards, and the month.
- */
-export type LandingLayout = "split" | "centered";
+/* -------------------------------------------------------------------------- */
+/* Shared parts                                                                */
+/* -------------------------------------------------------------------------- */
 
-interface AgentWorkspaceProps {
-  /** Present on `/agent`, where the composer starts as the hero. */
-  landing?: LandingData;
-  landingLayout?: LandingLayout;
-  /** Present on `/agent/[threadId]`, where a stored thread is already open. */
-  thread?: { id: string; messages: readonly AgentMessage[] };
+/** The page's row: the column, and beside it the host for a page sidebar. */
+function AgentWorkspaceFrame({
+  children,
+  aside,
+}: {
+  children: ReactNode;
+  /** The rail is a sidebar in the shell's row, beside the page rather than
+      inside its scroll, so it runs the full height under the header and
+      resizes like the other panels. */
+  aside?: ReactNode;
+}) {
+  return (
+    <div className="flex min-h-full min-w-0 flex-1">
+      <div className="flex min-h-full min-w-0 flex-1 flex-col">{children}</div>
+      <PageAside>{aside}</PageAside>
+    </div>
+  );
+}
+
+/** The conversation, or the agent's mark while it is still empty. */
+function ThreadBody({
+  messages,
+  chat,
+}: {
+  messages: readonly AgentMessage[];
+  chat: ChatState & ChatActions;
+}) {
+  if (messages.length === 0) return <ChatEmptyMark />;
+  return (
+    <AgentThread
+      messages={messages}
+      thinking={chat.thinking}
+      {...(chat.thinkingStatuses === undefined
+        ? {}
+        : { thinkingStatuses: chat.thinkingStatuses })}
+      onIntent={chat.sendIntent}
+    />
+  );
+}
+
+/** The composer at the foot of a thread, in the message column. */
+function ThreadComposer() {
+  const reduceMotion = useReducedMotion();
+  return (
+    <ThreadChatDock
+      animateLayout={!reduceMotion}
+      className="sticky bottom-l z-10 mx-auto mt-xl w-full max-w-3xl min-w-0"
+    />
+  );
 }
 
 /**
- * `/agent`, in both of its modes. The landing and the thread are one component
- * so the composer is one element: on send it stays mounted and slides from the
- * hero position down into the dock while everything around it gives way.
- *
- * The conversation itself lives in `ChatProvider`, above the page, so leaving
- * for the calendar or analytics keeps it and coming back finds it here.
+ * A landing piece that leaves when the conversation starts. `popLayout` takes
+ * it out of flow at once, so the composer has a single, settled position to
+ * spring to; that needs a motion element as the presence child, which is why
+ * the wrapper is here rather than inside the landing pieces.
  */
-export function AgentWorkspace({
-  landing,
-  landingLayout = "split",
-  thread,
-}: AgentWorkspaceProps) {
-  const router = useRouter();
-  const reduceMotion = useReducedMotion();
-  const chat = useChat();
-  const isCompact = useMediaQuery(COMPACT_QUERY);
-  const [handled, setHandled] = useState<readonly string[]>([]);
+function LandingPiece({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <motion.div exit={blurOut} transition={fade.base} className={className}>
+      {children}
+    </motion.div>
+  );
+}
 
-  // A stored thread becomes the open conversation. Until the provider has it,
-  // render what the page brought, so the switch has no blank frame. Keyed on
-  // the id alone: `open` changes with the open thread, and following it would
-  // reopen this one the moment "New chat" closed it.
-  const storedThreadId = thread?.id;
-  const openStored = useEffectEvent(() => {
-    if (thread !== undefined) chat.open(thread.id, thread.messages);
-  });
-  useEffect(() => {
-    if (storedThreadId !== undefined) openStored();
-  }, [storedThreadId]);
-  const synced = thread === undefined || chat.threadId === thread.id;
-  const messages = synced ? chat.messages : thread.messages;
+/**
+ * What both landings share: whether the landing is still showing, which
+ * activity cards are still pending, and how the calendar under the composer
+ * feeds the next message.
+ */
+function useLanding(landing: LandingData) {
+  const chat = useChat();
+  const [handled, setHandled] = useState<readonly string[]>([]);
 
   // "New chat" opens a conversation before anything is said; until the first
   // message it is still the landing, even if a file or other context is
   // already attached. Opening a post from the editor is the exception: that
   // starts a thread with the post in it, so the landing gives way.
-  const onLanding =
-    landing !== undefined &&
-    (chat.threadId === null || chat.messages.length === 0);
+  const onLanding = chat.threadId === null || chat.messages.length === 0;
 
   // No navigation on the first send: the composer has to survive the morph.
   // The URL catches up instead, so the rail reads as a thread and a reload of
@@ -110,15 +155,14 @@ export function AgentWorkspace({
   const settledThreadId =
     chat.threadId !== null && chat.messages.length > 0 ? chat.threadId : null;
   useEffect(() => {
-    if (landing === undefined || settledThreadId === null) return;
+    if (settledThreadId === null) return;
     window.history.replaceState(null, "", `/agent/${settledThreadId}`);
-  }, [landing, settledThreadId]);
+  }, [settledThreadId]);
 
-  const centered = landingLayout === "centered";
   const selectedPostId = chat.attached
     .flatMap((item) => (item.kind === "post" ? [item.post.id] : []))
     .at(-1);
-  const pending = (landing?.timeline ?? []).filter(
+  const pending = landing.timeline.filter(
     (entry) => !handled.includes(entry.id),
   );
 
@@ -134,150 +178,215 @@ export function AgentWorkspace({
     );
   }
 
-  /**
-   * One element in both modes, so the send is a single spring from the hero
-   * position down to the dock. The dock floats over the thread rather than
-   * sitting on a bar, which is what keeps the move to one animation.
-   */
-  const composer = (
-    <ChatDock
-      variant={onLanding ? "hero" : "dock"}
-      animateLayout={!reduceMotion}
-      // Split: the landing's column, so it lines up with the calendar under
-      // it. Centered: narrower than the cards and the month, so it reads as
-      // the prompt and not another block. Thread: the message column.
-      className={
-        onLanding
-          ? centered
-            ? "mx-auto w-full max-w-2xl min-w-0"
-            : LANDING_COLUMN
-          : "sticky bottom-l z-10 mx-auto mt-xl w-full max-w-3xl min-w-0"
-      }
-    />
-  );
+  function handleActivity(entry: TimelineEntry, action: TimelineAction) {
+    setHandled((current) => [...current, entry.id]);
+    chat.send(action.prompt ?? entry.title, action.intent);
+  }
+
+  return {
+    chat,
+    onLanding,
+    pending,
+    selectedPostId,
+    attachPost,
+    draftFromEvent,
+    handleActivity,
+  };
+}
+
+/* -------------------------------------------------------------------------- */
+/* Pages                                                                       */
+/* -------------------------------------------------------------------------- */
+
+interface AgentThreadWorkspaceProps {
+  /** The stored thread `/agent/[threadId]` opened. */
+  thread: { id: string; messages: readonly AgentMessage[] };
+}
+
+/**
+ * `/agent/[threadId]`: a stored conversation. The conversation itself lives
+ * in `ChatProvider`, above the page, so leaving for the calendar or analytics
+ * keeps it and coming back finds it here.
+ */
+export function AgentThreadWorkspace({ thread }: AgentThreadWorkspaceProps) {
+  const chat = useChat();
+
+  // The stored thread becomes the open conversation. Until the provider has
+  // it, render what the page brought, so the switch has no blank frame. Keyed
+  // on the id alone: `open` changes with the open thread, and following it
+  // would reopen this one the moment "New chat" closed it.
+  const openStored = useEffectEvent(() => {
+    chat.open(thread.id, thread.messages);
+  });
+  useEffect(() => {
+    openStored();
+  }, [thread.id]);
+  const messages =
+    chat.threadId === thread.id ? chat.messages : thread.messages;
 
   return (
-    <div className="flex min-h-full min-w-0 flex-1">
-      <div className="flex min-h-full min-w-0 flex-1 flex-col">
-        {/* `popLayout` takes the leaving landing out of flow at once, so the
-            composer has a single, settled position to spring to. Its children
-            have to be motion elements for that, which is why the wrappers are
-            here rather than inside the landing pieces. */}
-        <AnimatePresence initial={false} mode="popLayout">
-          {onLanding ? (
-            <motion.div key="intro" exit={blurOut} transition={fade.base}>
-              {centered ? (
-                <CenteredIntro
-                  greeting={landing.greeting}
-                  dateLabel={landing.dateLabel}
-                />
-              ) : (
-                <LandingIntro
-                  greeting={landing.greeting}
-                  dateLabel={landing.dateLabel}
-                />
-              )}
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
+    <AgentWorkspaceFrame>
+      <ThreadBody messages={messages} chat={chat} />
+      <ThreadComposer />
+    </AgentWorkspaceFrame>
+  );
+}
 
-        {onLanding ? null : messages.length === 0 ? (
-          <ChatEmptyMark />
-        ) : (
-          <AgentThread
-            messages={messages}
-            thinking={chat.thinking}
-            {...(chat.thinkingStatuses === undefined
-              ? {}
-              : { thinkingStatuses: chat.thinkingStatuses })}
-            onIntent={chat.sendIntent}
-          />
-        )}
+interface LandingWorkspaceProps {
+  landing: LandingData;
+}
 
-        {composer}
+/**
+ * `/agent`: greeting and timeline on the left, the overview rail on the
+ * right. The landing and the thread it becomes are one component so the
+ * composer's box is one `layoutId`: on send the hero's frame springs down
+ * into the dock while everything around it gives way.
+ */
+export function SplitLandingWorkspace({ landing }: LandingWorkspaceProps) {
+  const router = useRouter();
+  const reduceMotion = useReducedMotion();
+  const isCompact = useMediaQuery(COMPACT_QUERY);
+  const {
+    chat,
+    onLanding,
+    pending,
+    selectedPostId,
+    attachPost,
+    draftFromEvent,
+    handleActivity,
+  } = useLanding(landing);
 
-        <AnimatePresence initial={false} mode="popLayout">
-          {onLanding ? (
-            <motion.div
-              key="below"
-              exit={blurOut}
-              transition={fade.base}
-              // Natural height in both modes: the calendar takes the room it
-              // needs and the page scrolls, rather than the strip squeezing
-              // into what a laptop leaves under the composer.
-              className="flex min-w-0 shrink-0 flex-col"
-            >
-              {centered ? (
-                <div className="mx-auto flex w-full max-w-4xl min-w-0 flex-col gap-xxl pt-xxl pb-l md:gap-xxxl md:pt-xxxl">
-                  <ActivityCards
-                    entries={pending}
-                    onAction={(entry, action) => {
-                      setHandled((current) => [...current, entry.id]);
-                      chat.send(action.prompt ?? entry.title, action.intent);
-                    }}
-                  />
-                  <MonthCalendar
-                    label={landing.month?.label ?? "Next two weeks"}
-                    days={landing.month?.days ?? landing.days}
-                    onOpenPost={attachPost}
-                    onOpenEvent={draftFromEvent}
-                    onOpenCalendar={() => {
-                      router.push("/calendar");
-                    }}
-                    {...(selectedPostId === undefined
-                      ? {}
-                      : { selectedPostId })}
-                  />
-                </div>
-              ) : (
-                <LandingBelow
-                  entries={pending}
-                  days={landing.days}
-                  onAction={(entry, action) => {
-                    setHandled((current) => [...current, entry.id]);
-                    chat.send(action.prompt ?? entry.title, action.intent);
-                  }}
-                  onOpenPost={attachPost}
-                  onOpenEvent={draftFromEvent}
-                  {...(selectedPostId === undefined ? {} : { selectedPostId })}
-                />
-              )}
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
-        {onLanding && !centered ? (
-          <div className="w-full min-w-0 shrink-0 xl:hidden">
-            <LandingRail
-              stacked
-              stats={landing.stats}
-              chart={landing.chart}
-              upNext={landing.upNext}
-              onOpenCalendar={() => {
-                router.push("/calendar");
-              }}
-            />
-          </div>
-        ) : null}
-      </div>
+  const openCalendar = () => {
+    router.push("/calendar");
+  };
+  const overview = {
+    stats: landing.stats,
+    chart: landing.chart,
+    upNext: landing.upNext,
+    onOpenCalendar: openCalendar,
+  };
 
-      {/* The rail is a sidebar in the shell's row, beside the page rather
-          than inside its scroll, so it runs the full height under the header
-          and resizes like the other panels. */}
-      <PageAside>
+  return (
+    <AgentWorkspaceFrame
+      aside={
         <AnimatePresence initial={false}>
-          {onLanding && !centered && !isCompact ? (
-            <LandingRail
-              key="rail"
-              stats={landing.stats}
-              chart={landing.chart}
-              upNext={landing.upNext}
-              onOpenCalendar={() => {
-                router.push("/calendar");
-              }}
-            />
+          {onLanding && !isCompact ? (
+            <LandingRail key="rail" {...overview} />
           ) : null}
         </AnimatePresence>
-      </PageAside>
-    </div>
+      }
+    >
+      <AnimatePresence initial={false} mode="popLayout">
+        {onLanding ? (
+          <LandingPiece key="intro">
+            <LandingIntro
+              greeting={landing.greeting}
+              dateLabel={landing.dateLabel}
+            />
+          </LandingPiece>
+        ) : null}
+      </AnimatePresence>
+
+      {onLanding ? null : <ThreadBody messages={chat.messages} chat={chat} />}
+
+      {onLanding ? (
+        // The landing's column, so it lines up with the calendar under it.
+        <HeroChatDock
+          animateLayout={!reduceMotion}
+          className={LANDING_COLUMN}
+        />
+      ) : (
+        <ThreadComposer />
+      )}
+
+      <AnimatePresence initial={false} mode="popLayout">
+        {onLanding ? (
+          // Natural height: the calendar takes the room it needs and the
+          // page scrolls, rather than the strip squeezing into what a laptop
+          // leaves under the composer.
+          <LandingPiece key="below" className="flex min-w-0 shrink-0 flex-col">
+            <LandingBelow
+              entries={pending}
+              days={landing.days}
+              onAction={handleActivity}
+              onOpenPost={attachPost}
+              onOpenEvent={draftFromEvent}
+              {...(selectedPostId === undefined ? {} : { selectedPostId })}
+            />
+          </LandingPiece>
+        ) : null}
+      </AnimatePresence>
+      {onLanding ? (
+        <div className="w-full min-w-0 shrink-0 xl:hidden">
+          <LandingRailStacked {...overview} />
+        </div>
+      ) : null}
+    </AgentWorkspaceFrame>
+  );
+}
+
+/**
+ * `/landing-2`: one column with the agent's mark, the composer, three
+ * activity cards, and the month. Becomes the thread the same way.
+ */
+export function CenteredLandingWorkspace({ landing }: LandingWorkspaceProps) {
+  const router = useRouter();
+  const reduceMotion = useReducedMotion();
+  const {
+    chat,
+    onLanding,
+    pending,
+    selectedPostId,
+    attachPost,
+    draftFromEvent,
+    handleActivity,
+  } = useLanding(landing);
+
+  return (
+    <AgentWorkspaceFrame>
+      <AnimatePresence initial={false} mode="popLayout">
+        {onLanding ? (
+          <LandingPiece key="intro">
+            <CenteredIntro
+              greeting={landing.greeting}
+              dateLabel={landing.dateLabel}
+            />
+          </LandingPiece>
+        ) : null}
+      </AnimatePresence>
+
+      {onLanding ? null : <ThreadBody messages={chat.messages} chat={chat} />}
+
+      {onLanding ? (
+        // Narrower than the cards and the month, so it reads as the prompt
+        // and not another block.
+        <HeroChatDock
+          animateLayout={!reduceMotion}
+          className="mx-auto w-full max-w-2xl min-w-0"
+        />
+      ) : (
+        <ThreadComposer />
+      )}
+
+      <AnimatePresence initial={false} mode="popLayout">
+        {onLanding ? (
+          <LandingPiece key="below" className="flex min-w-0 shrink-0 flex-col">
+            <div className="mx-auto flex w-full max-w-4xl min-w-0 flex-col gap-xxl pt-xxl pb-l md:gap-xxxl md:pt-xxxl">
+              <ActivityCards entries={pending} onAction={handleActivity} />
+              <MonthCalendar
+                label={landing.month?.label ?? "Next two weeks"}
+                days={landing.month?.days ?? landing.days}
+                onOpenPost={attachPost}
+                onOpenEvent={draftFromEvent}
+                onOpenCalendar={() => {
+                  router.push("/calendar");
+                }}
+                {...(selectedPostId === undefined ? {} : { selectedPostId })}
+              />
+            </div>
+          </LandingPiece>
+        ) : null}
+      </AnimatePresence>
+    </AgentWorkspaceFrame>
   );
 }

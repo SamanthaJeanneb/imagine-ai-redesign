@@ -21,14 +21,12 @@ interface EditorTabStripProps {
   activeId: string;
   onActivate: (id: string) => void;
   onClose?: (id: string) => void;
-  /** The page that sits behind the tabs. Shares the raised sheet. */
-  children?: ReactNode;
   /**
-   * Whether the strip puts a page inset above its content. Documents rely on
-   * it for their title; a page that frames itself, like the calendar, turns
-   * it off so the two insets do not stack.
+   * The page that sits behind the tabs. Shares the raised sheet. Wrap it in
+   * `EditorSheetInset` when it needs the page inset above it; a page that
+   * frames itself, like the calendar, renders it bare.
    */
-  inset?: boolean;
+  children?: ReactNode;
   className?: string;
 }
 
@@ -45,7 +43,6 @@ export function EditorTabStrip({
   onActivate,
   onClose,
   children,
-  inset = true,
   className,
 }: EditorTabStripProps) {
   const indicatorId = useId();
@@ -166,21 +163,33 @@ export function EditorTabStrip({
         >
           <motion.div
             key={activeId}
-            initial={{
-              opacity: 0,
-              x: activeId === "calendar" ? -6 : 8,
-            }}
+            initial={{ opacity: 0, x: 8 }}
             animate={{ opacity: 1, x: 0 }}
             transition={fade.fast}
-            className={cn(
-              "flex min-h-0 flex-1 flex-col",
-              inset && tabs.length > 0 && "pt-xl",
-            )}
+            className="flex min-h-0 flex-1 flex-col"
           >
             {children}
           </motion.div>
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * The page inset above a document in the sheet, so its title clears the
+ * tabs. Documents want it; a page that frames itself does not.
+ */
+export function EditorSheetInset({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex min-h-0 flex-1 flex-col pt-xl", className)}>
+      {children}
     </div>
   );
 }

@@ -2,16 +2,20 @@
 
 import { cn } from "cn";
 import { motion } from "motion/react";
+import type { ReactNode } from "react";
 
 import { useLayoutLocked } from "@/components/motion/layout-lock";
-import { ChartBlock } from "@/components/features/analytics/chart-block";
+import {
+  CHART_PLOT_BY_KIND,
+  CHART_PREVIEW_BY_KIND,
+  ChartHeader,
+  ChartProvider,
+} from "@/components/features/analytics/chart-block";
 import type { PreviewChart } from "@/services/analytics";
 import { hoverLift, press } from "@/styles/motion";
 
 interface ChartCardProps {
   chart: PreviewChart;
-  /** `dense` for the composer preview: a short plot, no axes. */
-  dense?: boolean;
   selected?: boolean;
   onOpen?: (chart: PreviewChart) => void;
   /** Shared with the same chart on its page, so expanding morphs into it. */
@@ -20,18 +24,18 @@ interface ChartCardProps {
 }
 
 /**
- * A chart the reader can pick up. Pressing it attaches the chart to the
+ * The pressable frame both cards share. Pressing it attaches the chart to the
  * composer the way a calendar chip attaches a post, so the next message is
  * about these numbers; the selected card fills and lifts.
  */
-export function ChartCard({
+function CardButton({
   chart,
-  dense = false,
   selected = false,
   onOpen,
   layoutId,
   className,
-}: ChartCardProps) {
+  children,
+}: ChartCardProps & { children: ReactNode }) {
   const layoutLocked = useLayoutLocked();
   return (
     <motion.button
@@ -52,24 +56,51 @@ export function ChartCard({
         selected
           ? "border-imagine-secondary bg-imagine-secondary-soft shadow-raised"
           : "border-imagine-border bg-imagine-surface shadow-control hover:bg-imagine-surface-raised",
-        dense ? "p-s" : "p-l",
         className,
       )}
     >
-      <ChartBlock
-        kind={chart.kind}
-        data={chart.data}
-        series={chart.series}
-        title={chart.title}
-        description={chart.description}
-        tone="accent"
-        dense={dense}
-        plain
-        /* The card is the frame, and the summary rides along when it is
-           attached, so the block's own total would only crowd the header. */
-        headline={false}
-        className="w-full"
-      />
+      {children}
     </motion.button>
+  );
+}
+
+/**
+ * A chart the reader can pick up, at full size, on the analytics page. The
+ * card is the frame, and the summary rides along when the chart is attached,
+ * so the header carries the title alone.
+ */
+export function ChartCard({ chart, className, ...props }: ChartCardProps) {
+  const Plot = CHART_PLOT_BY_KIND[chart.kind];
+  return (
+    <CardButton chart={chart} className={cn("p-l", className)} {...props}>
+      <ChartProvider data={chart.data} series={chart.series} tone="accent">
+        <div className="flex w-full flex-col gap-l">
+          <ChartHeader title={chart.title} description={chart.description} />
+          <Plot />
+        </div>
+      </ChartProvider>
+    </CardButton>
+  );
+}
+
+/**
+ * The same chart as a short strip for the composer's preview: one header
+ * line and a plot with a baseline only, so three fit side by side.
+ */
+export function ChartPreviewCard({
+  chart,
+  className,
+  ...props
+}: ChartCardProps) {
+  const Preview = CHART_PREVIEW_BY_KIND[chart.kind];
+  return (
+    <CardButton chart={chart} className={cn("p-s", className)} {...props}>
+      <ChartProvider data={chart.data} series={chart.series} tone="accent">
+        <div className="flex w-full flex-col gap-s">
+          <ChartHeader title={chart.title} description={chart.description} />
+          <Preview />
+        </div>
+      </ChartProvider>
+    </CardButton>
   );
 }

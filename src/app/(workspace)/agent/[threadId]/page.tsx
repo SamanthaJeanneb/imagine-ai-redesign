@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { AgentWorkspace } from "@/components/features/agent/agent-workspace";
+import { AgentThreadWorkspace } from "@/components/features/agent/agent-workspace";
 import { getThread } from "@/services/agent";
 
 export default async function ThreadPage({
@@ -16,6 +16,8 @@ export default async function ThreadPage({
   if (thread === null) redirect("/agent");
 
   return (
-    <AgentWorkspace thread={{ id: thread.id, messages: thread.messages }} />
+    <AgentThreadWorkspace
+      thread={{ id: thread.id, messages: thread.messages }}
+    />
   );
 }

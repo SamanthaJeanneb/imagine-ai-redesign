@@ -79,7 +79,7 @@ export function CommentDraft({
   return (
     <motion.div
       layout={!layoutLocked}
-      layoutDependency={`${editing}:${posted}`}
+      layoutDependency={`${String(editing)}:${String(posted)}`}
       transition={spring.settle}
       data-slot="comment-draft"
       className={cn(

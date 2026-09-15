@@ -3,7 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
-import { ConnectLinkedIn } from "@/components/features/onboarding/connect-linkedin";
+import {
+  ConnectLinkedIn,
+  ConnectLinkedInActions,
+} from "@/components/features/onboarding/connect-linkedin";
+import { Button } from "@/components/ui/button";
 
 const PERMISSIONS = [
   "Publish posts you approve, on the schedule you set",
@@ -31,9 +35,16 @@ export function LinkedInStep({ accountName, accountNote }: LinkedInStepProps) {
       accountName={accountName}
       accountNote={accountNote}
       permissions={PERMISSIONS}
-      pending={pending}
-      onConnect={finish}
-      onSkip={finish}
-    />
+    >
+      <ConnectLinkedInActions pending={pending} onConnect={finish}>
+        <Button
+          variant="link"
+          className="text-imagine-foreground-muted"
+          onClick={finish}
+        >
+          Skip and do this later
+        </Button>
+      </ConnectLinkedInActions>
+    </ConnectLinkedIn>
   );
 }

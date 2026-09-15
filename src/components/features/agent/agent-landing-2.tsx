@@ -9,7 +9,7 @@ import type {
 } from "@/components/features/agent/timeline";
 import {
   type CalendarDay,
-  CalendarGrid,
+  CalendarMonth,
 } from "@/components/features/calendar/calendar-grid";
 import type { EventChipData } from "@/components/features/calendar/event-chip";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
@@ -178,9 +178,8 @@ export function MonthCalendar({
       </div>
       {/* The month shrinks with the column, its chips slimming to a line
           before its cells get narrower than a word. */}
-      <CalendarGrid
+      <CalendarMonth
         days={days}
-        density="page"
         onOpenPost={onOpenPost}
         onOpenEvent={onOpenEvent}
         {...(selectedPostId === undefined ? {} : { selectedPostId })}

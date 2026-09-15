@@ -2,7 +2,7 @@
 
 import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 
 import type {
   ConnectionStatus,
@@ -32,11 +32,30 @@ interface ProfileSelectorProps {
   onSelectedIdsChange: (ids: readonly string[]) => void;
   /** Which edge of the trigger the list hangs from. `end` for a right-aligned home. */
   align?: "start" | "end";
-  /** Faces and the chevron only, for a header that has something else to say. */
-  compact?: boolean;
-  /** The "Posting as" lead-in. Off when the header is tight and the name is enough. */
-  prefix?: boolean;
+  /**
+   * What follows the faces on the trigger: `ProfileSelectorLabel`, or nothing
+   * for a header that has something else to say.
+   */
+  children?: ReactNode;
   className?: string;
+}
+
+interface ProfileSelectorContextValue {
+  /** "Sarah Chen and 2 more", for the trigger's sentence. */
+  summary: string;
+}
+
+const ProfileSelectorContext =
+  createContext<ProfileSelectorContextValue | null>(null);
+
+function useProfileSelector(): ProfileSelectorContextValue {
+  const context = useContext(ProfileSelectorContext);
+  if (context === null) {
+    throw new Error(
+      "ProfileSelector parts must render inside <ProfileSelector>.",
+    );
+  }
+  return context;
 }
 
 /** How many faces the trigger shows before it counts the rest. */
@@ -136,8 +155,7 @@ export function ProfileSelector({
   selectedIds,
   onSelectedIdsChange,
   align = "start",
-  compact = false,
-  prefix = true,
+  children,
   className,
 }: ProfileSelectorProps) {
   const [open, setOpen] = useState(false);
@@ -277,30 +295,11 @@ export function ProfileSelector({
               <Icon name="user" size="s" />
             </span>
           )}
-          <AnimatePresence initial={false}>
-            {compact ? null : (
-              <motion.span
-                key="label"
-                {...LABEL}
-                className="flex items-baseline overflow-hidden whitespace-nowrap"
-              >
-                <AnimatePresence initial={false}>
-                  {prefix ? (
-                    <motion.span
-                      key="prefix"
-                      {...PREFIX}
-                      className="overflow-hidden font-normal text-imagine-foreground-muted"
-                    >
-                      Posting as
-                    </motion.span>
-                  ) : null}
-                </AnimatePresence>
-                <span className="font-medium">
-                  {summary(profiles, selected)}
-                </span>
-              </motion.span>
-            )}
-          </AnimatePresence>
+          <ProfileSelectorContext.Provider
+            value={{ summary: summary(profiles, selected) }}
+          >
+            <AnimatePresence initial={false}>{children}</AnimatePresence>
+          </ProfileSelectorContext.Provider>
           <motion.span
             aria-hidden="true"
             animate={{ rotate: open ? 180 : 0 }}
@@ -377,5 +376,35 @@ export function ProfileSelector({
         </div>
       </PopoverContent>
     </Popover>
+  );
+}
+
+/**
+ * The sentence after the faces: an optional lead-in (`ProfileSelectorPrefix`)
+ * and who is selected. Omit it from `ProfileSelector` and the sentence folds
+ * into the faces.
+ */
+export function ProfileSelectorLabel({ children }: { children?: ReactNode }) {
+  const { summary } = useProfileSelector();
+  return (
+    <motion.span
+      {...LABEL}
+      className="flex items-baseline overflow-hidden whitespace-nowrap"
+    >
+      <AnimatePresence initial={false}>{children}</AnimatePresence>
+      <span className="font-medium">{summary}</span>
+    </motion.span>
+  );
+}
+
+/** "Posting as", ahead of the name. Omit it when the header is tight. */
+export function ProfileSelectorPrefix() {
+  return (
+    <motion.span
+      {...PREFIX}
+      className="overflow-hidden font-normal text-imagine-foreground-muted"
+    >
+      Posting as
+    </motion.span>
   );
 }

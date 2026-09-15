@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
-import { createContext, useContext, useMemo } from "react";
+import { createContext, useContext } from "react";
 
 import { stagger, staggerVariants } from "@/styles/motion";
 
@@ -20,10 +20,7 @@ interface StaggerProps extends React.ComponentProps<typeof motion.div> {
  */
 export function Stagger({ kind = "list", children, ...props }: StaggerProps) {
   const reduceMotion = useReducedMotion();
-  const variants = useMemo(
-    () => staggerVariants(reduceMotion ? 0 : stagger[kind]),
-    [kind, reduceMotion],
-  );
+  const variants = staggerVariants(reduceMotion ? 0 : stagger[kind]);
 
   return (
     <StaggerContext value={variants}>

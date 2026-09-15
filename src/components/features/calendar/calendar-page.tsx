@@ -8,10 +8,17 @@ import { PREVIEW_LAYOUT_ID } from "@/components/features/agent/chat-dock";
 import { useChat } from "@/components/features/agent/chat-provider";
 import {
   type CalendarDay,
-  CalendarGrid,
+  CalendarMonthFit,
 } from "@/components/features/calendar/calendar-grid";
 import { CalendarTimeGrid } from "@/components/features/calendar/calendar-time-grid";
-import { CalendarToolbar } from "@/components/features/calendar/calendar-toolbar";
+import {
+  CalendarRange,
+  CalendarRangeLabel,
+  CalendarRangeStepper,
+  CalendarSearch,
+  CalendarToolbar,
+  CalendarViewToggle,
+} from "@/components/features/calendar/calendar-toolbar";
 import {
   EventChip,
   type EventChipData,
@@ -56,8 +63,6 @@ interface CalendarPageProps {
   today: string;
   /** Assets the editor can attach to a post. */
   mediaLibrary?: readonly AssetTileData[];
-  /** The labels a post can be filed under. */
-  labelOptions?: readonly string[];
   /** Who a post drafted from an empty slot goes out as. Without it, the
    * calendar has nothing to create posts as, and the plus stays hidden. */
   newPostProfile?: NewPostProfile;
@@ -336,24 +341,29 @@ export function CalendarPage({
   const calendarContent = (
     <div className="@container/page flex min-h-0 flex-1 flex-col gap-s pt-l">
       <div className="shrink-0 space-y-s px-l md:px-xl">
-        <CalendarToolbar
-          rangeLabel={range.rangeLabel}
-          view={view}
-          onViewChange={setView}
-          onPrevious={() => {
-            setAnchor(shiftAnchor(view, anchor, -1));
-          }}
-          onNext={() => {
-            setAnchor(shiftAnchor(view, anchor, 1));
-          }}
-          onToday={() => {
-            setAnchor(today);
-          }}
-          search={search}
-          onSearchChange={setSearch}
-          searchResults={searchResults}
-          onSearchSelect={openHit}
-        />
+        <CalendarToolbar>
+          <CalendarRange>
+            <CalendarRangeStepper
+              onPrevious={() => {
+                setAnchor(shiftAnchor(view, anchor, -1));
+              }}
+              onNext={() => {
+                setAnchor(shiftAnchor(view, anchor, 1));
+              }}
+              onToday={() => {
+                setAnchor(today);
+              }}
+            />
+            <CalendarRangeLabel>{range.rangeLabel}</CalendarRangeLabel>
+          </CalendarRange>
+          <CalendarViewToggle value={view} onValueChange={setView} />
+          <CalendarSearch
+            value={search}
+            onValueChange={setSearch}
+            results={searchResults}
+            onSelect={openHit}
+          />
+        </CalendarToolbar>
         <AnimatePresence initial={false} mode="popLayout">
           {note === null ? null : (
             <motion.p
@@ -384,9 +394,8 @@ export function CalendarPage({
           {/* The month takes the height below the toolbar and fits itself to
               it: every week visible, chips sized to the rows. Only a cell
               narrower than a word's worth scrolls sideways. */}
-          <CalendarGrid
+          <CalendarMonthFit
             days={range.days}
-            fit
             // The page arrives by morphing out of the composer preview, which
             // opens on the month.
             layoutId={PREVIEW_LAYOUT_ID.calendar}
@@ -486,7 +495,6 @@ export function CalendarPage({
         setActiveEditorId(nextId);
         setEditingPostId(nextId === "calendar" ? null : nextId);
       }}
-      inset={false}
       className="min-h-0 flex-1"
     >
       {activeId === "calendar" ? calendarContent : editor}

@@ -2,7 +2,7 @@
 
 import { cn } from "cn";
 import { motion } from "motion/react";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import {
   LinkedInPost,
@@ -65,23 +65,16 @@ export interface PostOpenOptions {
   background?: boolean;
 }
 
-interface PostChipProps {
+interface PostChipBaseProps {
   post: PostChipData;
-  /**
-   * `dense` for short cells: the composer preview and the week view. Drops
-   * the label and time lines so the name and the post itself get the room.
-   */
-  dense?: boolean;
-  /**
-   * One line: the rail, the avatar, and the start of the post, truncated. For
-   * a cell with no height to spare; the hover card still shows the whole post.
-   */
-  line?: boolean;
-  /** How many lines of the post to show before it clips. */
-  lines?: PostChipLines;
   selected?: boolean;
   onOpen?: (post: PostChipData, options?: PostOpenOptions) => void;
   className?: string;
+}
+
+interface PostChipProps extends PostChipBaseProps {
+  /** How many lines of the post to show before it clips. */
+  lines?: PostChipLines;
 }
 
 interface ChipColor {
@@ -198,46 +191,49 @@ function toExcerpt(post: PostChipData): string {
     .join(" ");
 }
 
-/**
- * A post inside a calendar cell, laid out like a card: who it goes out from,
- * the label, as much of the post as the cell allows, and the time. Every chip
- * is flat: a pastel fill of its color and a solid rail of it at the left, the
- * way a calendar app draws an event, with the text in the foreground. The color
- * is the post's status, so a month reads as scheduled, in review, or
- * published at a glance. A check once published, a warning when it failed;
- * a planned post is yellow and nothing more. Selecting a chip fills it solid
- * and lifts it.
- */
-export function PostChip({
-  post,
-  dense = false,
-  line = false,
-  lines = dense ? 2 : 3,
-  selected = false,
-  onOpen,
-  className,
-}: PostChipProps) {
-  const inverted = selected || STATUS_COLOR[post.status].darkWash;
+/** Selected chips go solid, so their text takes the contrast color. */
+function isInverted(post: PostChipData, selected: boolean): boolean {
+  return selected || STATUS_COLOR[post.status].darkWash;
+}
+
+/** The muted text treatment: dimmed on a solid chip, muted on a wash. */
+function mutedClass(inverted: boolean): string {
+  return inverted ? "opacity-80" : "text-imagine-foreground-muted";
+}
+
+/** The author's picture, when the post knows who it goes out as. */
+function PostChipAvatar({ post }: { post: PostChipData }) {
   const author = post.preview?.author;
-  const muted = inverted ? "opacity-80" : "text-imagine-foreground-muted";
-  const avatar =
-    author?.avatarUrl === undefined ? null : (
-      <Avatar
-        shape={author.kind === "company" ? "square" : "circle"}
-        className="size-4"
-      >
-        <AvatarImage src={author.avatarUrl} alt="" />
-      </Avatar>
-    );
-  // In review has no glyph: its color says so.
-  const statusIcon =
-    post.status === "published" ? (
+  if (author?.avatarUrl === undefined) return null;
+  return (
+    <Avatar
+      shape={author.kind === "company" ? "square" : "circle"}
+      className="size-4"
+    >
+      <AvatarImage src={author.avatarUrl} alt="" />
+    </Avatar>
+  );
+}
+
+/** A check once published, a warning when it failed. In review has no glyph: its color says so. */
+function PostChipStatusIcon({
+  post,
+  inverted,
+}: {
+  post: PostChipData;
+  inverted: boolean;
+}) {
+  if (post.status === "published") {
+    return (
       <Icon
         name="check"
         size="s"
-        className={cn("shrink-0 @max-[6rem]/chip:hidden", muted)}
+        className={cn("shrink-0 @max-[6rem]/chip:hidden", mutedClass(inverted))}
       />
-    ) : post.status === "failed" ? (
+    );
+  }
+  if (post.status === "failed") {
+    return (
       <Icon
         name="triangle-exclamation"
         size="s"
@@ -246,7 +242,27 @@ export function PostChip({
           inverted ? "opacity-80" : "text-destructive",
         )}
       />
-    ) : null;
+    );
+  }
+  return null;
+}
+
+/**
+ * The chip's chrome, shared by every variant: a flat button with a pastel
+ * fill of its color and a solid rail of it at the left, the way a calendar
+ * app draws an event, with the text in the foreground. The color is the
+ * post's status, so a month reads as scheduled, in review, or published at a
+ * glance. Selecting a chip fills it solid and lifts it. When the post has a
+ * preview, hovering the chip shows it as it will appear on LinkedIn.
+ */
+function PostChipButton({
+  post,
+  selected = false,
+  onOpen,
+  className,
+  children,
+}: PostChipBaseProps & { children: ReactNode }) {
+  const inverted = isInverted(post, selected);
   const chip = (
     <motion.button
       type="button"
@@ -266,7 +282,6 @@ export function PostChip({
       style={postChipStyle(post.status)}
       className={cn(
         "relative flex w-full min-w-0 overflow-hidden rounded-control px-s pl-m text-left transition-[box-shadow,color] outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-imagine-surface",
-        line ? "items-center gap-xs py-xxs" : "flex-col gap-xxs py-xs",
         // In a narrow cell (the chat column's composer preview) the chip
         // keeps only the avatar and the excerpt, and pulls its padding in.
         // The cell is the `chip` container; see the calendar grids.
@@ -282,38 +297,7 @@ export function PostChip({
           className="absolute inset-y-0 left-0 w-1 bg-[var(--chip-color)]"
         />
       )}
-      {line ? (
-        <>
-          {avatar}
-          <span className="min-w-0 flex-1 truncate type-caption">
-            {toExcerpt(post)}
-          </span>
-          {statusIcon}
-        </>
-      ) : (
-        <>
-          <span className="flex min-w-0 items-center gap-xs">
-            {avatar}
-            <span className="min-w-0 flex-1 truncate type-caption font-semibold @max-[6rem]/chip:hidden">
-              {post.profile}
-            </span>
-            {statusIcon}
-          </span>
-          {dense || post.label === undefined ? null : (
-            <span className={cn("truncate type-caption italic", muted)}>
-              {post.label}
-            </span>
-          )}
-          <span className={cn("type-caption break-words", LINE_CLAMP[lines])}>
-            {toExcerpt(post)}
-          </span>
-          {dense ? null : (
-            <span className={cn("type-caption tabular-nums", muted)}>
-              {post.time}
-            </span>
-          )}
-        </>
-      )}
+      {children}
     </motion.button>
   );
 
@@ -334,5 +318,114 @@ export function PostChip({
         />
       </HoverCardContent>
     </HoverCard>
+  );
+}
+
+/** The card's first line: the avatar, who it goes out as, and the status glyph. */
+function PostChipHeader({
+  post,
+  inverted,
+}: {
+  post: PostChipData;
+  inverted: boolean;
+}) {
+  return (
+    <span className="flex min-w-0 items-center gap-xs">
+      <PostChipAvatar post={post} />
+      <span className="min-w-0 flex-1 truncate type-caption font-semibold @max-[6rem]/chip:hidden">
+        {post.profile}
+      </span>
+      <PostChipStatusIcon post={post} inverted={inverted} />
+    </span>
+  );
+}
+
+/**
+ * A post inside a calendar cell, laid out like a card: who it goes out from,
+ * the label, as much of the post as the cell allows, and the time.
+ */
+export function PostChip({
+  post,
+  lines = 3,
+  selected = false,
+  onOpen,
+  className,
+}: PostChipProps) {
+  const inverted = isInverted(post, selected);
+  const muted = mutedClass(inverted);
+  return (
+    <PostChipButton
+      post={post}
+      selected={selected}
+      onOpen={onOpen}
+      className={cn("flex-col gap-xxs py-xs", className)}
+    >
+      <PostChipHeader post={post} inverted={inverted} />
+      {post.label === undefined ? null : (
+        <span className={cn("truncate type-caption italic", muted)}>
+          {post.label}
+        </span>
+      )}
+      <span className={cn("type-caption break-words", LINE_CLAMP[lines])}>
+        {toExcerpt(post)}
+      </span>
+      <span className={cn("type-caption tabular-nums", muted)}>
+        {post.time}
+      </span>
+    </PostChipButton>
+  );
+}
+
+/**
+ * The card for short cells: the composer preview and the week view. Drops
+ * the label and time lines so the name and the post itself get the room.
+ */
+export function PostChipDense({
+  post,
+  lines = 2,
+  selected = false,
+  onOpen,
+  className,
+}: PostChipProps) {
+  const inverted = isInverted(post, selected);
+  return (
+    <PostChipButton
+      post={post}
+      selected={selected}
+      onOpen={onOpen}
+      className={cn("flex-col gap-xxs py-xs", className)}
+    >
+      <PostChipHeader post={post} inverted={inverted} />
+      <span className={cn("type-caption break-words", LINE_CLAMP[lines])}>
+        {toExcerpt(post)}
+      </span>
+    </PostChipButton>
+  );
+}
+
+/**
+ * One line: the rail, the avatar, and the start of the post, truncated. For
+ * a cell with no height to spare; the hover card still shows the whole post.
+ */
+export function PostChipLine({
+  post,
+  selected = false,
+  onOpen,
+  className,
+}: PostChipBaseProps) {
+  const inverted = isInverted(post, selected);
+  return (
+    <PostChipButton
+      post={post}
+      selected={selected}
+      onOpen={onOpen}
+      className={cn("items-center gap-xs py-xxs", className)}
+    >
+      <PostChipAvatar post={post} />
+      <span className="min-w-0 flex-1 truncate type-caption">
+        {toExcerpt(post)}
+      </span>
+      <PostChipStatusIcon post={post} inverted={inverted} />
+    </PostChipButton>
   );
 }

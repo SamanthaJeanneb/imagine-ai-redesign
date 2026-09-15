@@ -1,8 +1,9 @@
 "use client";
 
 // Imagine: the "add one more" affordance. A dashed outline where the next item
-// would sit, so the empty slot itself is the button. Used at the foot of a
-// tree ("New folder") and as the last tile of a grid.
+// would sit, so the empty slot itself is the button. `DashedActionRow` sits in
+// a list at control height ("New folder" at the foot of a tree);
+// `DashedActionTile` matches a card as the last tile of a grid.
 
 import { cn } from "cn";
 import { motion } from "motion/react";
@@ -17,14 +18,11 @@ interface DashedActionProps extends Omit<
 > {
   icon?: IconName;
   children: React.ReactNode;
-  /** `row` sits in a list at control height; `tile` matches a card in a grid. */
-  shape?: "row" | "tile";
 }
 
-export function DashedAction({
+function DashedActionBase({
   icon = "plus",
   children,
-  shape = "row",
   className,
   ...props
 }: DashedActionProps) {
@@ -32,14 +30,10 @@ export function DashedAction({
     <motion.button
       type="button"
       data-slot="dashed-action"
-      data-shape={shape}
       whileTap={pressRow.whileTap}
       transition={pressRow.transition}
       className={cn(
         "flex w-full items-center gap-s border border-dashed border-imagine-foreground-faint/60 text-left type-small font-medium text-imagine-foreground-muted transition-colors outline-none select-none hover:border-imagine-foreground-muted hover:bg-imagine-foreground/4 hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-50",
-        shape === "row"
-          ? "h-control-sm rounded-control px-s"
-          : "h-14 rounded-panel px-m",
         className,
       )}
       {...props}
@@ -49,5 +43,25 @@ export function DashedAction({
       </span>
       <span className="min-w-0 truncate">{children}</span>
     </motion.button>
+  );
+}
+
+export function DashedActionRow({ className, ...props }: DashedActionProps) {
+  return (
+    <DashedActionBase
+      data-shape="row"
+      className={cn("h-control-sm rounded-control px-s", className)}
+      {...props}
+    />
+  );
+}
+
+export function DashedActionTile({ className, ...props }: DashedActionProps) {
+  return (
+    <DashedActionBase
+      data-shape="tile"
+      className={cn("h-14 rounded-panel px-m", className)}
+      {...props}
+    />
   );
 }

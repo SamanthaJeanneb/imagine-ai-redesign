@@ -24,8 +24,12 @@ import {
   type TimeSlot,
 } from "@/components/features/analytics/best-time-grid";
 import {
-  ChartSkeleton,
-  type ChartSkeletonKind,
+  ChartSkeletonBars,
+  ChartSkeletonGrid,
+  ChartSkeletonHeader,
+  ChartSkeletonLine,
+  ChartSkeletonRadar,
+  ChartSkeletonRows,
 } from "@/components/features/analytics/chart-theme";
 import {
   EngagementExplorer,
@@ -806,23 +810,42 @@ function LoadingToggle({
   );
 }
 
+/** A skeleton in the frame a chart block would have, header included. */
+function SkeletonDemo({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Demo label={label}>
+      <div className="flex flex-col gap-l rounded-surface border border-imagine-border bg-imagine-surface p-l">
+        <ChartSkeletonHeader />
+        {children}
+      </div>
+    </Demo>
+  );
+}
+
 export function ChartFoundationDemo() {
-  const kinds: readonly ChartSkeletonKind[] = [
-    "bars",
-    "line",
-    "grid",
-    "radar",
-    "rows",
-  ];
   return (
     <div className="grid gap-xl lg:grid-cols-2 xl:grid-cols-3">
-      {kinds.map((kind) => (
-        <Demo key={kind} label={`Skeleton: ${kind}`}>
-          <div className="rounded-surface border border-imagine-border bg-imagine-surface p-l">
-            <ChartSkeleton kind={kind} />
-          </div>
-        </Demo>
-      ))}
+      <SkeletonDemo label="Skeleton: bars">
+        <ChartSkeletonBars />
+      </SkeletonDemo>
+      <SkeletonDemo label="Skeleton: line">
+        <ChartSkeletonLine />
+      </SkeletonDemo>
+      <SkeletonDemo label="Skeleton: grid">
+        <ChartSkeletonGrid />
+      </SkeletonDemo>
+      <SkeletonDemo label="Skeleton: radar">
+        <ChartSkeletonRadar />
+      </SkeletonDemo>
+      <SkeletonDemo label="Skeleton: rows">
+        <ChartSkeletonRows />
+      </SkeletonDemo>
     </div>
   );
 }
@@ -832,11 +855,7 @@ export function AskImagineDemo() {
   return (
     <div className="flex flex-col gap-m">
       <LoadingToggle loading={loading} onChange={setLoading} />
-      <AskImagine
-        insights={KIT_INSIGHTS}
-        onAsk={ask}
-        loading={loading}
-      />
+      <AskImagine insights={KIT_INSIGHTS} onAsk={ask} loading={loading} />
     </div>
   );
 }
@@ -865,11 +884,7 @@ export function BenchmarkDemo() {
   return (
     <div className="flex flex-col gap-m">
       <LoadingToggle loading={loading} onChange={setLoading} />
-      <BenchmarkPanel
-        data={KIT_BENCHMARK}
-        loading={loading}
-        onAsk={ask}
-      />
+      <BenchmarkPanel data={KIT_BENCHMARK} loading={loading} onAsk={ask} />
     </div>
   );
 }
@@ -897,11 +912,7 @@ export function TeamAndBestTimeDemo() {
     <div className="flex flex-col gap-m">
       <LoadingToggle loading={loading} onChange={setLoading} />
       <div className="@container grid min-w-0 gap-xl @5xl:grid-cols-2">
-        <TeamPerformance
-          data={KIT_TEAM}
-          loading={loading}
-          onAsk={ask}
-        />
+        <TeamPerformance data={KIT_TEAM} loading={loading} onAsk={ask} />
         <BestTimeGrid
           data={KIT_BEST_TIMES}
           loading={loading}

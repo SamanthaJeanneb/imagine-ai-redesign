@@ -2,7 +2,12 @@
 
 import { cn } from "cn";
 import { useTheme } from "next-themes";
-import { useSyncExternalStore } from "react";
+import {
+  createContext,
+  useContext,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -39,9 +44,22 @@ interface AccountControlsProps {
   onOpenSettings?: () => void;
   /** The Sign out row of the account menu. */
   onSignOut?: () => void;
-  /** Face and gear only, when the header has no room for the name. */
-  compact?: boolean;
+  /**
+   * What follows the face on the trigger: `AccountName`, or nothing when the
+   * header has no room for it.
+   */
+  children?: ReactNode;
   className?: string;
+}
+
+const AccountContext = createContext<AccountUser | null>(null);
+
+function useAccountUser(): AccountUser {
+  const user = useContext(AccountContext);
+  if (user === null) {
+    throw new Error("Account parts must render inside <AccountControls>.");
+  }
+  return user;
 }
 
 const THEMES = [
@@ -118,7 +136,7 @@ export function AccountControls({
   user,
   onOpenSettings,
   onSignOut,
-  compact = false,
+  children,
   className,
 }: AccountControlsProps) {
   const avatar = (
@@ -138,14 +156,9 @@ export function AccountControls({
             className="-my-xs flex h-8 min-w-0 items-center gap-s rounded-control py-xs pr-s pl-xs text-left transition-colors outline-none hover:bg-imagine-foreground/5 focus-visible:ring-2 focus-visible:ring-ring/40 data-[state=open]:bg-imagine-foreground/5"
           >
             {avatar}
-            <span
-              className={cn(
-                "max-w-36 truncate type-small font-medium",
-                compact ? "hidden" : "max-md:hidden",
-              )}
-            >
-              {user.name}
-            </span>
+            <AccountContext.Provider value={user}>
+              {children}
+            </AccountContext.Provider>
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-64 p-s">
@@ -203,5 +216,15 @@ export function AccountControls({
         <TooltipContent side="bottom">Settings</TooltipContent>
       </Tooltip>
     </div>
+  );
+}
+
+/** The signed-in name beside the face. Hidden on phones, where the face is enough. */
+export function AccountName() {
+  const user = useAccountUser();
+  return (
+    <span className="max-w-36 truncate type-small font-medium max-md:hidden">
+      {user.name}
+    </span>
   );
 }

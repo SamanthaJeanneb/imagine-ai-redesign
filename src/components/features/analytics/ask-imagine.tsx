@@ -161,39 +161,53 @@ interface AskButtonProps {
   prompt: string;
   intent?: string;
   onAsk: (prompt: string, intent?: string) => void;
-  /** Just the icon, for tight headers. */
-  compact?: boolean;
   className?: string;
 }
 
-/** A panel's own way in to the agent. Sits in the panel header. */
+const ASK_BUTTON_CLASS = "text-imagine-secondary hover:text-imagine-secondary";
+
+/** A panel's own way in to the agent: the icon and its name. Sits in the panel header. */
 export function AskButton({
   prompt,
   intent,
   onAsk,
-  compact = false,
   className,
 }: AskButtonProps) {
   return (
     <Button
       type="button"
-      size={compact ? "icon-sm" : "sm"}
+      size="sm"
       variant="ghost"
-      aria-label={compact ? "Ask Imagine" : undefined}
       onClick={() => {
         onAsk(prompt, intent);
       }}
-      className={cn(
-        "text-imagine-secondary hover:text-imagine-secondary",
-        className,
-      )}
+      className={cn(ASK_BUTTON_CLASS, className)}
     >
-      <Icon
-        name="imagine"
-        size="s"
-        data-icon={compact ? undefined : "inline-start"}
-      />
-      {compact ? null : "Ask Imagine"}
+      <Icon name="imagine" size="s" data-icon="inline-start" />
+      Ask Imagine
+    </Button>
+  );
+}
+
+/** The same way in as just the icon, for headers that are already full. */
+export function AskIconButton({
+  prompt,
+  intent,
+  onAsk,
+  className,
+}: AskButtonProps) {
+  return (
+    <Button
+      type="button"
+      size="icon-sm"
+      variant="ghost"
+      aria-label="Ask Imagine"
+      onClick={() => {
+        onAsk(prompt, intent);
+      }}
+      className={cn(ASK_BUTTON_CLASS, className)}
+    >
+      <Icon name="imagine" size="s" />
     </Button>
   );
 }

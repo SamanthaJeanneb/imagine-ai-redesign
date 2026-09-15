@@ -4,9 +4,13 @@ import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
-import { AssetGrid } from "@/components/features/files/asset-grid";
+import {
+  AssetGrid,
+  AssetGridItem,
+} from "@/components/features/files/asset-grid";
 import {
   AssetTile,
+  AssetTileButton,
   type AssetTileData,
 } from "@/components/features/files/asset-tile";
 import {
@@ -514,16 +518,22 @@ export function FilesWorkspacePage({
                       <h3 className="type-small font-medium text-imagine-foreground-muted">
                         Assets
                       </h3>
-                      <AssetGrid
-                        assets={assets}
-                        {...(selection?.kind === "asset"
-                          ? { selectedId: selection.asset.id }
-                          : {})}
-                        onSelect={(asset) => {
-                          setSelection({ kind: "asset", asset });
-                        }}
-                        className="grid-cols-2 @4xl:grid-cols-3"
-                      />
+                      <AssetGrid className="grid-cols-2 @4xl:grid-cols-3">
+                        {assets.map((asset) => (
+                          <AssetGridItem key={asset.id} asset={asset}>
+                            <AssetTileButton
+                              asset={asset}
+                              selected={
+                                selection?.kind === "asset" &&
+                                selection.asset.id === asset.id
+                              }
+                              onSelect={(next) => {
+                                setSelection({ kind: "asset", asset: next });
+                              }}
+                            />
+                          </AssetGridItem>
+                        ))}
+                      </AssetGrid>
                     </div>
                   ) : null}
 

@@ -2,8 +2,15 @@
 
 import { cn } from "cn";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
-import type { DragEvent } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type DragEvent,
+  type ReactNode,
+} from "react";
 import { toast } from "sonner";
 
 import type { AssetTileData } from "@/components/features/files/asset-tile";
@@ -28,13 +35,21 @@ import {
   type FileMoveDest,
 } from "@/components/features/files/file-move";
 import {
-  FileTreeNav,
+  MovableFileTreeNav,
   type TreeLocation,
 } from "@/components/features/files/file-tree-nav";
 import {
-  LibraryCard,
-  type LibraryCardAction,
+  LibraryCardDocument,
+  LibraryCardDraggable,
+  LibraryCardDropTarget,
+  LibraryCardFolder,
   type LibraryCardKind,
+  LibraryCardMedia,
+  LibraryCardMenu,
+  LibraryCardMenuDestructiveItem,
+  LibraryCardMenuItem,
+  LibraryCardMenuSeparator,
+  LibraryCardRow,
   type LibraryCardView,
 } from "@/components/features/files/library-card";
 import { MarkdownEditor } from "@/components/features/files/markdown-editor";
@@ -68,6 +83,7 @@ import { Button } from "@/components/ui/button";
 import { Chip, ChipGroup } from "@/components/ui/chip-group";
 import {
   Dialog,
+  DialogCloseButton,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -123,6 +139,8 @@ interface BrowserItem {
   src?: string;
 }
 
+type MediaItem = BrowserItem & { kind: "image" | "video" };
+
 /** Enough to put a deleted item back where it was. */
 interface RemovedItem {
   name: string;
@@ -150,23 +168,6 @@ const SORT_SHORT: Record<Sort, string> = {
   "name-asc": "Name",
   "name-desc": "Name",
 };
-
-const DOCUMENT_ACTIONS: readonly LibraryCardAction[] = [
-  { id: "open", label: "Open", icon: "file-lines" },
-  { id: "send", label: "Send to agent", icon: "imagine" },
-  { id: "rename", label: "Rename", icon: "pen" },
-  { id: "delete", label: "Delete", icon: "trash", destructive: true },
-];
-
-const MEDIA_ACTIONS: readonly LibraryCardAction[] = [
-  { id: "send", label: "Send to agent", icon: "imagine" },
-  { id: "delete", label: "Delete", icon: "trash", destructive: true },
-];
-
-const FOLDER_ACTIONS: readonly LibraryCardAction[] = [
-  { id: "rename", label: "Rename", icon: "pen" },
-  { id: "delete", label: "Delete", icon: "trash", destructive: true },
-];
 
 /* ------------------------------------------------------------------------ */
 /* Tree helpers                                                             */
@@ -428,8 +429,274 @@ function NameDialog({
             </Button>
           </DialogFooter>
         </form>
+        <DialogCloseButton />
       </DialogContent>
     </Dialog>
+  );
+}
+
+/* ------------------------------------------------------------------------ */
+/* Cards                                                                    */
+/* ------------------------------------------------------------------------ */
+
+type MoveHandler = (event: DragEvent<HTMLElement>) => void;
+
+/** What every card in the browser can do, supplied by the page. */
+interface BrowserApi {
+  view: LibraryCardView;
+  draggingId: string | null;
+  dropTargetId: string | null;
+  press: (item: BrowserItem) => void;
+  open: (item: BrowserItem) => void;
+  send: (item: BrowserItem) => void;
+  rename: (item: BrowserItem) => void;
+  remove: (item: BrowserItem) => void;
+  startMove: (item: BrowserItem, event: DragEvent<HTMLElement>) => void;
+  endMove: () => void;
+  overMoveDest: (dest: FileMoveDest, key: string) => MoveHandler;
+  leaveMoveDest: (key: string) => MoveHandler;
+  dropMoveDest: (dest: FileMoveDest) => MoveHandler;
+}
+
+const BrowserContext = createContext<BrowserApi | null>(null);
+
+function useBrowser(): BrowserApi {
+  const context = useContext(BrowserContext);
+  if (context === null) throw new Error("Cards belong inside FilesLibrary");
+  return context;
+}
+
+/** Picks the item up to move it somewhere else. */
+function MovableItem({
+  item,
+  children,
+}: {
+  item: BrowserItem;
+  children: ReactNode;
+}) {
+  const browser = useBrowser();
+  return (
+    <LibraryCardDraggable
+      dragging={browser.draggingId === item.id}
+      onDragStart={(event) => {
+        browser.startMove(item, event);
+      }}
+      onDragEnd={browser.endMove}
+    >
+      {children}
+    </LibraryCardDraggable>
+  );
+}
+
+/** Catches an item dropped on a library or folder card. */
+function ItemDropTarget({
+  item,
+  dest,
+  children,
+}: {
+  item: BrowserItem;
+  dest: FileMoveDest;
+  children: ReactNode;
+}) {
+  const browser = useBrowser();
+  return (
+    <LibraryCardDropTarget
+      active={browser.dropTargetId === item.id}
+      onDragOver={browser.overMoveDest(dest, item.id)}
+      onDragLeave={browser.leaveMoveDest(item.id)}
+      onDrop={browser.dropMoveDest(dest)}
+    >
+      {children}
+    </LibraryCardDropTarget>
+  );
+}
+
+function FolderMenu({ item }: { item: BrowserItem }) {
+  const browser = useBrowser();
+  return (
+    <LibraryCardMenu>
+      <LibraryCardMenuItem
+        icon="pen"
+        onSelect={() => {
+          browser.rename(item);
+        }}
+      >
+        Rename
+      </LibraryCardMenuItem>
+      <LibraryCardMenuSeparator />
+      <LibraryCardMenuDestructiveItem
+        icon="trash"
+        onSelect={() => {
+          browser.remove(item);
+        }}
+      >
+        Delete
+      </LibraryCardMenuDestructiveItem>
+    </LibraryCardMenu>
+  );
+}
+
+function DocumentMenu({ item }: { item: BrowserItem }) {
+  const browser = useBrowser();
+  return (
+    <LibraryCardMenu>
+      <LibraryCardMenuItem
+        icon="file-lines"
+        onSelect={() => {
+          browser.open(item);
+        }}
+      >
+        Open
+      </LibraryCardMenuItem>
+      <LibraryCardMenuItem
+        icon="imagine"
+        onSelect={() => {
+          browser.send(item);
+        }}
+      >
+        Send to agent
+      </LibraryCardMenuItem>
+      <LibraryCardMenuItem
+        icon="pen"
+        onSelect={() => {
+          browser.rename(item);
+        }}
+      >
+        Rename
+      </LibraryCardMenuItem>
+      <LibraryCardMenuSeparator />
+      <LibraryCardMenuDestructiveItem
+        icon="trash"
+        onSelect={() => {
+          browser.remove(item);
+        }}
+      >
+        Delete
+      </LibraryCardMenuDestructiveItem>
+    </LibraryCardMenu>
+  );
+}
+
+function MediaMenu({ item }: { item: BrowserItem }) {
+  const browser = useBrowser();
+  return (
+    <LibraryCardMenu>
+      <LibraryCardMenuItem
+        icon="imagine"
+        onSelect={() => {
+          browser.send(item);
+        }}
+      >
+        Send to agent
+      </LibraryCardMenuItem>
+      <LibraryCardMenuSeparator />
+      <LibraryCardMenuDestructiveItem
+        icon="trash"
+        onSelect={() => {
+          browser.remove(item);
+        }}
+      >
+        Delete
+      </LibraryCardMenuDestructiveItem>
+    </LibraryCardMenu>
+  );
+}
+
+/** A library at the root: things drop into it, but it stays put and has no menu. */
+function RootLibraryCard({ item }: { item: BrowserItem }) {
+  const browser = useBrowser();
+  const press = () => {
+    browser.press(item);
+  };
+  return (
+    <ItemDropTarget item={item} dest={{ sectionId: item.id }}>
+      {browser.view === "list" ? (
+        <LibraryCardRow kind="folder" name={item.name} onPress={press} />
+      ) : (
+        <LibraryCardFolder name={item.name} onPress={press} />
+      )}
+    </ItemDropTarget>
+  );
+}
+
+/** A folder inside a library: movable, and a place to drop things. */
+function FolderCard({
+  item,
+  sectionId,
+}: {
+  item: BrowserItem;
+  sectionId: string;
+}) {
+  const browser = useBrowser();
+  const press = () => {
+    browser.press(item);
+  };
+  const menu = <FolderMenu item={item} />;
+  return (
+    <MovableItem item={item}>
+      <ItemDropTarget item={item} dest={{ sectionId, folderId: item.id }}>
+        {browser.view === "list" ? (
+          <LibraryCardRow kind="folder" name={item.name} onPress={press}>
+            {menu}
+          </LibraryCardRow>
+        ) : (
+          <LibraryCardFolder name={item.name} onPress={press}>
+            {menu}
+          </LibraryCardFolder>
+        )}
+      </ItemDropTarget>
+    </MovableItem>
+  );
+}
+
+function DocumentCard({ item }: { item: BrowserItem }) {
+  const browser = useBrowser();
+  const press = () => {
+    browser.press(item);
+  };
+  const menu = <DocumentMenu item={item} />;
+  return (
+    <MovableItem item={item}>
+      {browser.view === "list" ? (
+        <LibraryCardRow kind="document" name={item.name} onPress={press}>
+          {menu}
+        </LibraryCardRow>
+      ) : (
+        <LibraryCardDocument
+          name={item.name}
+          {...(item.excerpt === undefined ? {} : { excerpt: item.excerpt })}
+          onPress={press}
+        >
+          {menu}
+        </LibraryCardDocument>
+      )}
+    </MovableItem>
+  );
+}
+
+function MediaCard({ item }: { item: MediaItem }) {
+  const browser = useBrowser();
+  const press = () => {
+    browser.press(item);
+  };
+  const menu = <MediaMenu item={item} />;
+  return (
+    <MovableItem item={item}>
+      {browser.view === "list" ? (
+        <LibraryCardRow kind={item.kind} name={item.name} onPress={press}>
+          {menu}
+        </LibraryCardRow>
+      ) : (
+        <LibraryCardMedia
+          kind={item.kind}
+          name={item.name}
+          {...(item.src === undefined ? {} : { src: item.src })}
+          onPress={press}
+        >
+          {menu}
+        </LibraryCardMedia>
+      )}
+    </MovableItem>
   );
 }
 
@@ -616,7 +883,7 @@ export function FilesLibrary({
   const folders = shown.filter((item) => item.kind === "folder");
   const docs = shown.filter((item) => item.kind === "document");
   const media = shown.filter(
-    (item) => item.kind === "image" || item.kind === "video",
+    (item): item is MediaItem => item.kind === "image" || item.kind === "video",
   );
 
   /* --- Search: results drop down under the field ---------------------- */
@@ -848,33 +1115,13 @@ export function FilesLibrary({
       moveTo(id, dest);
     };
 
-  const onCardAction = (item: BrowserItem, action: string) => {
-    switch (action) {
-      case "open":
-        open(item.id);
-        break;
-      case "send":
-        if (item.kind === "document") {
-          send({ kind: "file", file: { id: item.id, title: item.name } });
-        } else {
-          const asset = assetById.get(item.id);
-          if (asset !== undefined) send({ kind: "asset", asset });
-        }
-        break;
-      case "rename":
-        setDialog({ kind: "rename", id: item.id, name: item.name });
-        break;
-      case "delete":
-        setPendingDelete(item);
-        break;
+  const sendItem = (item: BrowserItem) => {
+    if (item.kind === "document") {
+      send({ kind: "file", file: { id: item.id, title: item.name } });
+      return;
     }
-  };
-
-  const actionsFor = (item: BrowserItem): readonly LibraryCardAction[] => {
-    if (item.kind === "folder") {
-      return place.kind === "root" ? [] : FOLDER_ACTIONS;
-    }
-    return item.kind === "document" ? DOCUMENT_ACTIONS : MEDIA_ACTIONS;
+    const asset = assetById.get(item.id);
+    if (asset !== undefined) send({ kind: "asset", asset });
   };
 
   const pressItem = (item: BrowserItem) => {
@@ -954,51 +1201,31 @@ export function FilesLibrary({
       ? "skills"
       : `${place.kind}:${currentSection?.id ?? ""}:${currentFolder?.id ?? ""}:${filter}:${view}`;
 
-  const renderCard = (item: BrowserItem) => {
-    const libraryRoot = place.kind === "root" && item.kind === "folder";
-    const dest: FileMoveDest | undefined = libraryRoot
-      ? { sectionId: item.id }
-      : place.kind === "library" && item.kind === "folder"
-        ? { sectionId: place.sectionId, folderId: item.id }
-        : undefined;
-    return (
-      <StaggerItem key={item.id}>
-        <LibraryCard
-          kind={item.kind}
-          name={item.name}
-          {...(item.excerpt === undefined ? {} : { excerpt: item.excerpt })}
-          {...(item.src === undefined ? {} : { src: item.src })}
-          view={view}
-          onPress={() => {
-            pressItem(item);
-          }}
-          actions={actionsFor(item)}
-          onAction={(action) => {
-            onCardAction(item, action);
-          }}
-          movable={!libraryRoot}
-          dragging={draggingId === item.id}
-          onMoveStart={(event) => {
-            beginFileMove(event, item.id);
-            setDraggingId(item.id);
-          }}
-          onMoveEnd={() => {
-            endFileMove();
-            setDraggingId(null);
-            setDropTargetId(null);
-          }}
-          droppable={dest !== undefined}
-          dropActive={dest !== undefined && dropTargetId === item.id}
-          {...(dest === undefined
-            ? {}
-            : {
-                onMoveOver: overMoveDest(dest, item.id),
-                onMoveLeave: leaveMoveDest(item.id),
-                onMoveDrop: dropMoveDest(dest),
-              })}
-        />
-      </StaggerItem>
-    );
+  const browser: BrowserApi = {
+    view,
+    draggingId,
+    dropTargetId,
+    press: pressItem,
+    open: (item) => {
+      open(item.id);
+    },
+    send: sendItem,
+    rename: (item) => {
+      setDialog({ kind: "rename", id: item.id, name: item.name });
+    },
+    remove: setPendingDelete,
+    startMove: (item, event) => {
+      beginFileMove(event, item.id);
+      setDraggingId(item.id);
+    },
+    endMove: () => {
+      endFileMove();
+      setDraggingId(null);
+      setDropTargetId(null);
+    },
+    overMoveDest,
+    leaveMoveDest,
+    dropMoveDest,
   };
 
   const gridClass =
@@ -1090,7 +1317,7 @@ export function FilesLibrary({
                 transition={fade.fast}
                 className="flex flex-col gap-s"
               >
-                <FileTreeNav
+                <MovableFileTreeNav
                   sections={sections}
                   {...(treeSelectedId === undefined
                     ? {}
@@ -1393,14 +1620,25 @@ export function FilesLibrary({
                       : {})}
                   />
                 ) : (
-                  <>
+                  <BrowserContext value={browser}>
                     {folders.length > 0 ? (
                       <div className="flex flex-col gap-s">
                         <GroupLabel>
                           {place.kind === "root" ? "Libraries" : "Folders"}
                         </GroupLabel>
                         <Stagger kind="grid" className={gridClass}>
-                          {folders.map(renderCard)}
+                          {folders.map((item) => (
+                            <StaggerItem key={item.id}>
+                              {place.kind === "root" ? (
+                                <RootLibraryCard item={item} />
+                              ) : (
+                                <FolderCard
+                                  item={item}
+                                  sectionId={place.sectionId}
+                                />
+                              )}
+                            </StaggerItem>
+                          ))}
                         </Stagger>
                       </div>
                     ) : null}
@@ -1409,7 +1647,11 @@ export function FilesLibrary({
                       <div className="flex flex-col gap-s">
                         <GroupLabel>Documents</GroupLabel>
                         <Stagger kind="grid" className={gridClass}>
-                          {docs.map(renderCard)}
+                          {docs.map((item) => (
+                            <StaggerItem key={item.id}>
+                              <DocumentCard item={item} />
+                            </StaggerItem>
+                          ))}
                         </Stagger>
                       </div>
                     ) : null}
@@ -1418,7 +1660,11 @@ export function FilesLibrary({
                       <div className="flex flex-col gap-s">
                         <GroupLabel>Images</GroupLabel>
                         <Stagger kind="grid" className={gridClass}>
-                          {media.map(renderCard)}
+                          {media.map((item) => (
+                            <StaggerItem key={item.id}>
+                              <MediaCard item={item} />
+                            </StaggerItem>
+                          ))}
                         </Stagger>
                       </div>
                     ) : null}
@@ -1432,7 +1678,7 @@ export function FilesLibrary({
                         document or folder.
                       </p>
                     ) : null}
-                  </>
+                  </BrowserContext>
                 )}
               </motion.div>
             </AnimatePresence>
@@ -1468,11 +1714,7 @@ export function FilesLibrary({
                       : { x: "100%" }
                 }
                 animate={
-                  reduceMotion
-                    ? { opacity: 1 }
-                    : isMobile
-                      ? { y: 0 }
-                      : { x: 0 }
+                  reduceMotion ? { opacity: 1 } : isMobile ? { y: 0 } : { x: 0 }
                 }
                 exit={
                   reduceMotion
@@ -1745,6 +1987,7 @@ export function FilesLibrary({
               </DialogFooter>
             </>
           )}
+          <DialogCloseButton />
         </DialogContent>
       </Dialog>
     </div>

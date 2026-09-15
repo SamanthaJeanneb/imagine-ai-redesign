@@ -2,8 +2,14 @@
 
 import { cn } from "cn";
 import { motion } from "motion/react";
-import { useId, useState } from "react";
-import type { DragEvent } from "react";
+import {
+  createContext,
+  useContext,
+  useId,
+  useState,
+  type DragEvent,
+  type ReactNode,
+} from "react";
 
 import type {
   FileNode,
@@ -29,19 +35,6 @@ export interface TreeLocation {
   sectionId: string;
   folderId?: string;
 }
-
-interface FileTreeNavProps {
-  sections: readonly FileSection[];
-  /** The highlighted row: the open document, else the browsed location. */
-  selectedId?: string;
-  onSelectLocation: (location: TreeLocation) => void;
-  onOpenFile: (id: string) => void;
-  /** Drop a dragged file onto a library or folder to move it. */
-  onMoveFile?: (id: string, dest: FileMoveDest) => void;
-  className?: string;
-}
-
-type FolderNode = Extract<FileNode, { type: "folder" }>;
 
 function initials(name: string): string {
   return name
@@ -93,376 +86,48 @@ function SectionMark({ section }: { section: FileSection }) {
   );
 }
 
-function destKey(dest: FileMoveDest): string {
-  return dest.folderId ?? dest.sectionId;
-}
+/* ------------------------------------------------------------------------ */
+/* State: which rows are open, and which is selected                        */
+/* ------------------------------------------------------------------------ */
 
-interface FileMoveUi {
-  draggingId: string | null;
-  dropKey: string | null;
-  start: (id: string, event: DragEvent<HTMLElement>) => void;
-  end: () => void;
-  over: (dest: FileMoveDest, event: DragEvent<HTMLElement>) => void;
-  leave: (key: string, event: DragEvent<HTMLElement>) => void;
-  drop: (dest: FileMoveDest, event: DragEvent<HTMLElement>) => void;
-}
-
-interface RowProps {
-  selected: boolean;
-  indicatorId: string;
-  /** Present on containers; toggles without selecting. */
-  open?: boolean;
-  onToggle?: () => void;
-  onClick: () => void;
-  leading: React.ReactNode;
-  label: string;
-  emphasis?: boolean;
-  movable?: boolean;
-  moveId?: string;
-  dropDest?: FileMoveDest;
-  move?: FileMoveUi;
-}
-
-/**
- * One line of the tree. The label and the chevron are separate buttons so a
- * folder can be opened to look inside without becoming the location. The
- * chevron sits at the row's end and points down when open.
- */
-function Row({
-  selected,
-  indicatorId,
-  open,
-  onToggle,
-  onClick,
-  leading,
-  label,
-  emphasis = false,
-  movable = false,
-  moveId,
-  dropDest,
-  move,
-}: RowProps) {
-  const dropKey = dropDest === undefined ? undefined : destKey(dropDest);
-  const dropActive = dropKey !== undefined && move?.dropKey === dropKey;
-  const dragging = movable && moveId !== undefined && move?.draggingId === moveId;
-
-  return (
-    <div
-      data-selected={selected || undefined}
-      draggable={movable}
-      onDragStart={
-        movable && moveId !== undefined && move !== undefined
-          ? (event) => {
-              event.stopPropagation();
-              move.start(moveId, event);
-            }
-          : undefined
-      }
-      onDragEnd={movable ? move?.end : undefined}
-      onDragOver={
-        dropDest !== undefined && move !== undefined
-          ? (event) => {
-              move.over(dropDest, event);
-            }
-          : undefined
-      }
-      onDragLeave={
-        dropKey !== undefined && move !== undefined
-          ? (event) => {
-              move.leave(dropKey, event);
-            }
-          : undefined
-      }
-      onDrop={
-        dropDest !== undefined && move !== undefined
-          ? (event) => {
-              move.drop(dropDest, event);
-            }
-          : undefined
-      }
-      className={cn(
-        "group/row relative flex h-8 items-center rounded-control pl-xs transition-colors",
-        onToggle === undefined && "pr-xs",
-        selected
-          ? "text-imagine-foreground"
-          : "text-imagine-foreground-muted hover:bg-imagine-foreground/5 hover:text-imagine-foreground",
-        movable && "cursor-grab active:cursor-grabbing",
-        dragging && "opacity-40",
-        dropActive &&
-          "bg-imagine-secondary-soft text-imagine-secondary hover:bg-imagine-secondary-soft hover:text-imagine-secondary",
-      )}
-    >
-      {selected ? (
-        <motion.span
-          layoutId={indicatorId}
-          layoutDependency={label}
-          aria-hidden="true"
-          transition={spring.snappy}
-          className="absolute inset-0 rounded-control bg-imagine-foreground/8"
-        />
-      ) : null}
-      <motion.button
-        type="button"
-        aria-current={selected ? "location" : undefined}
-        draggable={movable}
-        onDragStart={
-          movable && moveId !== undefined && move !== undefined
-            ? (event) => {
-                event.stopPropagation();
-                move.start(moveId, event);
-              }
-            : undefined
-        }
-        onDragEnd={movable ? move?.end : undefined}
-        onDragOver={
-          dropDest !== undefined && move !== undefined
-            ? (event) => {
-                move.over(dropDest, event);
-              }
-            : undefined
-        }
-        onDragLeave={
-          dropKey !== undefined && move !== undefined
-            ? (event) => {
-                move.leave(dropKey, event);
-              }
-            : undefined
-        }
-        onDrop={
-          dropDest !== undefined && move !== undefined
-            ? (event) => {
-                move.drop(dropDest, event);
-              }
-            : undefined
-        }
-        whileTap={pressRow.whileTap}
-        transition={pressRow.transition}
-        onClick={onClick}
-        className="relative z-10 flex h-full min-w-0 flex-1 items-center gap-xs rounded-control text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-      >
-        <span className="flex size-6 shrink-0 items-center justify-center">
-          {leading}
-        </span>
-        <span
-          className={cn(
-            "min-w-0 flex-1 truncate type-small",
-            selected || emphasis ? "font-semibold" : "font-medium",
-          )}
-        >
-          {label}
-        </span>
-      </motion.button>
-      {onToggle === undefined ? null : (
-        <button
-          type="button"
-          aria-expanded={open}
-          aria-label={open ? `Collapse ${label}` : `Expand ${label}`}
-          onClick={onToggle}
-          className="relative z-10 flex h-full w-7 shrink-0 items-center justify-center rounded-xs text-imagine-foreground-faint outline-none hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
-        >
-          <motion.span
-            animate={{ rotate: open ? 180 : 0 }}
-            transition={spring.snappy}
-            className="flex"
-          >
-            <Icon name="chevron-down" size="s" />
-          </motion.span>
-        </button>
-      )}
-    </div>
-  );
-}
-
-interface BranchProps {
-  sectionId: string;
-  nodes: readonly FileNode[];
-  depth: number;
-  selectedId?: string;
+interface TreeNavState {
+  selectedId: string | undefined;
   indicatorId: string;
   isOpen: (id: string) => boolean;
   toggle: (id: string) => void;
-  onSelectLocation: (location: TreeLocation) => void;
-  onOpenFile: (id: string) => void;
-  move?: FileMoveUi;
 }
 
-/** Folders and files under one parent. Asset rows belong to the browser, not here. */
-function Branch({
-  sectionId,
-  nodes,
-  depth,
-  selectedId,
-  indicatorId,
-  isOpen,
-  toggle,
-  onSelectLocation,
-  onOpenFile,
-  move,
-}: BranchProps) {
-  const visible = nodes.filter((node) => node.type !== "assets");
-  if (visible.length === 0) return null;
+const TreeNavContext = createContext<TreeNavState | null>(null);
 
-  return (
-    <ul
-      className={cn(
-        "flex flex-col gap-px",
-        // A guide line drops from under the parent's mark along its children.
-        depth > 0 && "ml-l border-l border-imagine-border pl-s",
-      )}
-    >
-      {visible.map((node, index) => (
-        <motion.li
-          key={node.id}
-          initial={{ opacity: 0, x: -4 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ ...fade.base, delay: index * stagger.list }}
-        >
-          {node.type === "folder" ? (
-            <FolderRows
-              sectionId={sectionId}
-              folder={node}
-              depth={depth}
-              selectedId={selectedId}
-              indicatorId={indicatorId}
-              isOpen={isOpen}
-              toggle={toggle}
-              onSelectLocation={onSelectLocation}
-              onOpenFile={onOpenFile}
-              {...(move === undefined ? {} : { move })}
-            />
-          ) : (
-            <Row
-              selected={node.id === selectedId}
-              indicatorId={indicatorId}
-              onClick={() => {
-                onOpenFile(node.id);
-              }}
-              leading={<Icon name="file-lines" size="s" />}
-              label={node.name}
-              movable={move !== undefined}
-              moveId={node.id}
-              {...(move === undefined ? {} : { move })}
-            />
-          )}
-        </motion.li>
-      ))}
-    </ul>
-  );
-}
-
-function FolderRows({
-  sectionId,
-  folder,
-  depth,
-  selectedId,
-  indicatorId,
-  isOpen,
-  toggle,
-  onSelectLocation,
-  onOpenFile,
-  move,
-}: Omit<BranchProps, "nodes"> & { folder: FolderNode }) {
-  const open = isOpen(folder.id);
-  const dest: FileMoveDest = { sectionId, folderId: folder.id };
-  return (
-    <>
-      <Row
-        selected={folder.id === selectedId}
-        indicatorId={indicatorId}
-        open={open}
-        onToggle={() => {
-          toggle(folder.id);
-        }}
-        onClick={() => {
-          onSelectLocation({ sectionId, folderId: folder.id });
-        }}
-        leading={<Icon name={open ? "folder-open" : "folder"} size="s" />}
-        label={folder.name}
-        movable={move !== undefined}
-        moveId={folder.id}
-        dropDest={dest}
-        {...(move === undefined ? {} : { move })}
-      />
-      <Disclosure open={open}>
-        <Branch
-          sectionId={sectionId}
-          nodes={folder.children}
-          depth={depth + 1}
-          selectedId={selectedId}
-          indicatorId={indicatorId}
-          isOpen={isOpen}
-          toggle={toggle}
-          onSelectLocation={onSelectLocation}
-          onOpenFile={onOpenFile}
-          {...(move === undefined ? {} : { move })}
-        />
-      </Disclosure>
-    </>
-  );
+function useTreeNav(part: string): TreeNavState {
+  const context = useContext(TreeNavContext);
+  if (context === null) {
+    throw new Error(`${part} must be rendered inside TreeNav`);
+  }
+  return context;
 }
 
 /**
- * The rail's tree. Libraries at the top level, folders and documents below.
- * Rows are for getting somewhere: a library or folder becomes the browser's
- * location, a document opens. The path to the selection is held open unless
- * the user has closed it themselves.
+ * The rail's tree frame. The path to the selection is held open unless the
+ * user has closed it themselves; other rows open on demand.
  */
-export function FileTreeNav({
+export function TreeNav({
   sections,
   selectedId,
-  onSelectLocation,
-  onOpenFile,
-  onMoveFile,
   className,
-}: FileTreeNavProps) {
+  children,
+}: {
+  sections: readonly FileSection[];
+  /** The highlighted row: the open document, else the browsed location. */
+  selectedId?: string;
+  className?: string;
+  children: ReactNode;
+}) {
   const indicatorId = useId();
   // User toggles override the default of "open along the selected path".
   const [overrides, setOverrides] = useState<ReadonlyMap<string, boolean>>(
     new Map(),
   );
-  const [draggingId, setDraggingId] = useState<string | null>(null);
-  const [dropKey, setDropKey] = useState<string | null>(null);
-
-  const move: FileMoveUi | undefined =
-    onMoveFile === undefined
-      ? undefined
-      : {
-          draggingId,
-          dropKey,
-          start: (id, event) => {
-            beginFileMove(event, id);
-            setDraggingId(id);
-          },
-          end: () => {
-            endFileMove();
-            setDraggingId(null);
-            setDropKey(null);
-          },
-          over: (dest, event) => {
-            const id = fileMoveId();
-            if (id === null || !isFileMove(Array.from(event.dataTransfer.types))) {
-              return;
-            }
-            if (!canMoveLibraryItem(sections, id, dest)) {
-              event.dataTransfer.dropEffect = "none";
-              return;
-            }
-            preventFileMove(event);
-            setDropKey(destKey(dest));
-          },
-          leave: (key, event) => {
-            if (!isFileMove(Array.from(event.dataTransfer.types))) return;
-            if (!isLeavingDropTarget(event)) return;
-            setDropKey((current) => (current === key ? null : current));
-          },
-          drop: (dest, event) => {
-            const id = fileMoveId();
-            if (id === null) return;
-            event.preventDefault();
-            setDropKey(null);
-            onMoveFile(id, dest);
-          },
-        };
 
   const selectedPath = new Set<string>();
   if (selectedId !== undefined) {
@@ -486,48 +151,601 @@ export function FileTreeNav({
   };
 
   return (
-    <nav
-      aria-label="Libraries"
-      data-slot="file-tree-nav"
-      className={cn("flex flex-col gap-px", className)}
+    <TreeNavContext value={{ selectedId, indicatorId, isOpen, toggle }}>
+      <nav
+        aria-label="Libraries"
+        data-slot="file-tree-nav"
+        className={cn("flex flex-col gap-px", className)}
+      >
+        {children}
+      </nav>
+    </TreeNavContext>
+  );
+}
+
+/* ------------------------------------------------------------------------ */
+/* Moving: wrap a row to drag it, or to catch what is dragged onto it       */
+/* ------------------------------------------------------------------------ */
+
+const DragContext = createContext<{ dragging: boolean } | null>(null);
+const DropContext = createContext<{ active: boolean } | null>(null);
+
+/** Makes the row inside a native drag source for moving it between folders. */
+export function TreeNavDraggable({
+  dragging = false,
+  onDragStart,
+  onDragEnd,
+  children,
+}: {
+  dragging?: boolean;
+  onDragStart: (event: DragEvent<HTMLElement>) => void;
+  onDragEnd: (event: DragEvent<HTMLElement>) => void;
+  children: ReactNode;
+}) {
+  return (
+    <DragContext value={{ dragging }}>
+      <div
+        draggable
+        data-slot="tree-nav-draggable"
+        data-dragging={dragging || undefined}
+        onDragStart={(event) => {
+          event.stopPropagation();
+          onDragStart(event);
+        }}
+        onDragEnd={onDragEnd}
+        className={cn(
+          "cursor-grab transition-opacity active:cursor-grabbing",
+          dragging && "opacity-40",
+        )}
+      >
+        {children}
+      </div>
+    </DragContext>
+  );
+}
+
+/** Lets a library or folder row accept a dragged item; `active` lights it. */
+export function TreeNavDropTarget({
+  active = false,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  children,
+}: {
+  active?: boolean;
+  onDragOver: (event: DragEvent<HTMLElement>) => void;
+  onDragLeave: (event: DragEvent<HTMLElement>) => void;
+  onDrop: (event: DragEvent<HTMLElement>) => void;
+  children: ReactNode;
+}) {
+  return (
+    <DropContext value={{ active }}>
+      <div
+        data-slot="tree-nav-drop-target"
+        data-drop-active={active || undefined}
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={onDrop}
+      >
+        {children}
+      </div>
+    </DropContext>
+  );
+}
+
+/* ------------------------------------------------------------------------ */
+/* Rows                                                                     */
+/* ------------------------------------------------------------------------ */
+
+/**
+ * One line of the tree. The label and any trailing chevron are separate
+ * buttons so a folder can be opened to look inside without becoming the
+ * location.
+ */
+function Row({
+  selected,
+  onClick,
+  leading,
+  label,
+  emphasis = false,
+  trailing,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  leading: ReactNode;
+  label: string;
+  emphasis?: boolean;
+  trailing?: ReactNode;
+}) {
+  const { indicatorId } = useTreeNav("TreeNav row");
+  const drag = useContext(DragContext);
+  const dropActive = useContext(DropContext)?.active ?? false;
+
+  return (
+    <div
+      data-selected={selected || undefined}
+      className={cn(
+        "group/row relative flex h-8 items-center rounded-control pl-xs transition-colors",
+        trailing === undefined && "pr-xs",
+        selected
+          ? "text-imagine-foreground"
+          : "text-imagine-foreground-muted hover:bg-imagine-foreground/5 hover:text-imagine-foreground",
+        dropActive &&
+          "bg-imagine-secondary-soft text-imagine-secondary hover:bg-imagine-secondary-soft hover:text-imagine-secondary",
+      )}
     >
-      {sections.map((section) => {
-        const open = isOpen(section.id);
-        return (
-          <div key={section.id} className="flex flex-col gap-px">
-            <Row
-              selected={section.id === selectedId}
-              indicatorId={indicatorId}
-              open={open}
-              onToggle={() => {
-                toggle(section.id);
+      {selected ? (
+        <motion.span
+          layoutId={indicatorId}
+          layoutDependency={label}
+          aria-hidden="true"
+          transition={spring.snappy}
+          className="absolute inset-0 rounded-control bg-imagine-foreground/8"
+        />
+      ) : null}
+      <motion.button
+        type="button"
+        aria-current={selected ? "location" : undefined}
+        // Some browsers only start a drag from the element under the pointer.
+        draggable={drag === null ? undefined : true}
+        whileTap={pressRow.whileTap}
+        transition={pressRow.transition}
+        onClick={onClick}
+        className="relative z-10 flex h-full min-w-0 flex-1 items-center gap-xs rounded-control text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+      >
+        <span className="flex size-6 shrink-0 items-center justify-center">
+          {leading}
+        </span>
+        <span
+          className={cn(
+            "min-w-0 flex-1 truncate type-small",
+            selected || emphasis ? "font-semibold" : "font-medium",
+          )}
+        >
+          {label}
+        </span>
+      </motion.button>
+      {trailing}
+    </div>
+  );
+}
+
+/** The chevron at a container row's end; points down when open. */
+function Toggle({ id, label }: { id: string; label: string }) {
+  const { isOpen, toggle } = useTreeNav("TreeNav toggle");
+  const open = isOpen(id);
+  return (
+    <button
+      type="button"
+      aria-expanded={open}
+      aria-label={open ? `Collapse ${label}` : `Expand ${label}`}
+      onClick={() => {
+        toggle(id);
+      }}
+      className="relative z-10 flex h-full w-7 shrink-0 items-center justify-center rounded-xs text-imagine-foreground-faint outline-none hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
+    >
+      <motion.span
+        animate={{ rotate: open ? 180 : 0 }}
+        transition={spring.snappy}
+        className="flex"
+      >
+        <Icon name="chevron-down" size="s" />
+      </motion.span>
+    </button>
+  );
+}
+
+/** A library's row: its mark, its name in bold, and a chevron. */
+export function TreeNavSection({
+  section,
+  onSelect,
+}: {
+  section: FileSection;
+  onSelect: () => void;
+}) {
+  const { selectedId } = useTreeNav("TreeNavSection");
+  return (
+    <Row
+      selected={section.id === selectedId}
+      onClick={onSelect}
+      leading={<SectionMark section={section} />}
+      label={section.title}
+      emphasis
+      trailing={<Toggle id={section.id} label={section.title} />}
+    />
+  );
+}
+
+/** A folder's row: the folder mark reflects whether it is open. */
+export function TreeNavFolder({
+  id,
+  name,
+  onSelect,
+}: {
+  id: string;
+  name: string;
+  onSelect: () => void;
+}) {
+  const { selectedId, isOpen } = useTreeNav("TreeNavFolder");
+  return (
+    <Row
+      selected={id === selectedId}
+      onClick={onSelect}
+      leading={<Icon name={isOpen(id) ? "folder-open" : "folder"} size="s" />}
+      label={name}
+      trailing={<Toggle id={id} label={name} />}
+    />
+  );
+}
+
+/** A document's row. Opens on click. */
+export function TreeNavFile({
+  id,
+  name,
+  onOpen,
+}: {
+  id: string;
+  name: string;
+  onOpen: () => void;
+}) {
+  const { selectedId } = useTreeNav("TreeNavFile");
+  return (
+    <Row
+      selected={id === selectedId}
+      onClick={onOpen}
+      leading={<Icon name="file-lines" size="s" />}
+      label={name}
+    />
+  );
+}
+
+/** What sits under a section or folder row; folds with it. */
+export function TreeNavBranch({
+  id,
+  children,
+}: {
+  id: string;
+  children: ReactNode;
+}) {
+  const { isOpen } = useTreeNav("TreeNavBranch");
+  return <Disclosure open={isOpen(id)}>{children}</Disclosure>;
+}
+
+/** The rows under one parent, indented behind a guide line. */
+export function TreeNavList({ children }: { children: ReactNode }) {
+  return (
+    <ul className="ml-l flex flex-col gap-px border-l border-imagine-border pl-s">
+      {children}
+    </ul>
+  );
+}
+
+/** One row's slot in a `TreeNavList`; enters staggered by its position. */
+export function TreeNavItem({
+  index,
+  children,
+}: {
+  index: number;
+  children: ReactNode;
+}) {
+  return (
+    <motion.li
+      initial={{ opacity: 0, x: -4 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ ...fade.base, delay: index * stagger.list }}
+    >
+      {children}
+    </motion.li>
+  );
+}
+
+/* ------------------------------------------------------------------------ */
+/* Assembled trees                                                          */
+/* ------------------------------------------------------------------------ */
+
+interface TreeNavActions {
+  onSelectLocation: (location: TreeLocation) => void;
+  onOpenFile: (id: string) => void;
+}
+
+interface FileTreeNavProps extends TreeNavActions {
+  sections: readonly FileSection[];
+  selectedId?: string;
+  className?: string;
+}
+
+/** Folders and files only; asset rows belong to the browser, not the rail. */
+function browsable(nodes: readonly FileNode[]) {
+  return nodes.filter((node) => node.type !== "assets");
+}
+
+const BrowseContext = createContext<TreeNavActions | null>(null);
+
+function useBrowse() {
+  const context = useContext(BrowseContext);
+  if (context === null) throw new Error("Missing FileTreeNav");
+  return context;
+}
+
+function BrowseBranch({
+  sectionId,
+  nodes,
+}: {
+  sectionId: string;
+  nodes: readonly FileNode[];
+}) {
+  const actions = useBrowse();
+  const visible = browsable(nodes);
+  if (visible.length === 0) return null;
+  return (
+    <TreeNavList>
+      {visible.map((node, index) => (
+        <TreeNavItem key={node.id} index={index}>
+          {node.type === "folder" ? (
+            <>
+              <TreeNavFolder
+                id={node.id}
+                name={node.name}
+                onSelect={() => {
+                  actions.onSelectLocation({ sectionId, folderId: node.id });
+                }}
+              />
+              <TreeNavBranch id={node.id}>
+                <BrowseBranch sectionId={sectionId} nodes={node.children} />
+              </TreeNavBranch>
+            </>
+          ) : (
+            <TreeNavFile
+              id={node.id}
+              name={node.name}
+              onOpen={() => {
+                actions.onOpenFile(node.id);
               }}
-              onClick={() => {
+            />
+          )}
+        </TreeNavItem>
+      ))}
+    </TreeNavList>
+  );
+}
+
+/**
+ * The rail's tree. Libraries at the top level, folders and documents below.
+ * Rows are for getting somewhere: a library or folder becomes the browser's
+ * location, a document opens.
+ */
+export function FileTreeNav({
+  sections,
+  selectedId,
+  onSelectLocation,
+  onOpenFile,
+  className,
+}: FileTreeNavProps) {
+  return (
+    <BrowseContext value={{ onSelectLocation, onOpenFile }}>
+      <TreeNav
+        sections={sections}
+        {...(selectedId === undefined ? {} : { selectedId })}
+        {...(className === undefined ? {} : { className })}
+      >
+        {sections.map((section) => (
+          <div key={section.id} className="flex flex-col gap-px">
+            <TreeNavSection
+              section={section}
+              onSelect={() => {
                 onSelectLocation({ sectionId: section.id });
               }}
-              leading={<SectionMark section={section} />}
-              label={section.title}
-              emphasis
-              dropDest={{ sectionId: section.id }}
-              {...(move === undefined ? {} : { move })}
             />
-            <Disclosure open={open}>
-              <Branch
-                sectionId={section.id}
-                nodes={section.nodes}
-                depth={1}
-                selectedId={selectedId}
-                indicatorId={indicatorId}
-                isOpen={isOpen}
-                toggle={toggle}
-                onSelectLocation={onSelectLocation}
-                onOpenFile={onOpenFile}
-                {...(move === undefined ? {} : { move })}
-              />
-            </Disclosure>
+            <TreeNavBranch id={section.id}>
+              <BrowseBranch sectionId={section.id} nodes={section.nodes} />
+            </TreeNavBranch>
           </div>
-        );
-      })}
-    </nav>
+        ))}
+      </TreeNav>
+    </BrowseContext>
+  );
+}
+
+/* --- With moving ------------------------------------------------------- */
+
+function destKey(dest: FileMoveDest): string {
+  return dest.folderId ?? dest.sectionId;
+}
+
+interface FileMoveUi {
+  draggingId: string | null;
+  dropKey: string | null;
+  start: (id: string, event: DragEvent<HTMLElement>) => void;
+  end: () => void;
+  over: (dest: FileMoveDest, event: DragEvent<HTMLElement>) => void;
+  leave: (key: string, event: DragEvent<HTMLElement>) => void;
+  drop: (dest: FileMoveDest, event: DragEvent<HTMLElement>) => void;
+}
+
+const MoveContext = createContext<
+  (TreeNavActions & { move: FileMoveUi }) | null
+>(null);
+
+function useMove() {
+  const context = useContext(MoveContext);
+  if (context === null) throw new Error("Missing MovableFileTreeNav");
+  return context;
+}
+
+/** Catches a drop on a library or folder row. */
+function MoveDropTarget({
+  dest,
+  children,
+}: {
+  dest: FileMoveDest;
+  children: ReactNode;
+}) {
+  const { move } = useMove();
+  const key = destKey(dest);
+  return (
+    <TreeNavDropTarget
+      active={move.dropKey === key}
+      onDragOver={(event) => {
+        move.over(dest, event);
+      }}
+      onDragLeave={(event) => {
+        move.leave(key, event);
+      }}
+      onDrop={(event) => {
+        move.drop(dest, event);
+      }}
+    >
+      {children}
+    </TreeNavDropTarget>
+  );
+}
+
+/** Lets a folder or file row be picked up. */
+function MoveSource({ id, children }: { id: string; children: ReactNode }) {
+  const { move } = useMove();
+  return (
+    <TreeNavDraggable
+      dragging={move.draggingId === id}
+      onDragStart={(event) => {
+        move.start(id, event);
+      }}
+      onDragEnd={move.end}
+    >
+      {children}
+    </TreeNavDraggable>
+  );
+}
+
+function MoveBranch({
+  sectionId,
+  nodes,
+}: {
+  sectionId: string;
+  nodes: readonly FileNode[];
+}) {
+  const actions = useMove();
+  const visible = browsable(nodes);
+  if (visible.length === 0) return null;
+  return (
+    <TreeNavList>
+      {visible.map((node, index) => (
+        <TreeNavItem key={node.id} index={index}>
+          {node.type === "folder" ? (
+            <>
+              <MoveSource id={node.id}>
+                <MoveDropTarget dest={{ sectionId, folderId: node.id }}>
+                  <TreeNavFolder
+                    id={node.id}
+                    name={node.name}
+                    onSelect={() => {
+                      actions.onSelectLocation({
+                        sectionId,
+                        folderId: node.id,
+                      });
+                    }}
+                  />
+                </MoveDropTarget>
+              </MoveSource>
+              <TreeNavBranch id={node.id}>
+                <MoveBranch sectionId={sectionId} nodes={node.children} />
+              </TreeNavBranch>
+            </>
+          ) : (
+            <MoveSource id={node.id}>
+              <TreeNavFile
+                id={node.id}
+                name={node.name}
+                onOpen={() => {
+                  actions.onOpenFile(node.id);
+                }}
+              />
+            </MoveSource>
+          )}
+        </TreeNavItem>
+      ))}
+    </TreeNavList>
+  );
+}
+
+/**
+ * The library's rail: `FileTreeNav`, plus every folder and file can be
+ * dragged onto a library or folder to move it there.
+ */
+export function MovableFileTreeNav({
+  sections,
+  selectedId,
+  onSelectLocation,
+  onOpenFile,
+  onMoveFile,
+  className,
+}: FileTreeNavProps & {
+  /** Drop a dragged item onto a library or folder to move it. */
+  onMoveFile: (id: string, dest: FileMoveDest) => void;
+}) {
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dropKey, setDropKey] = useState<string | null>(null);
+
+  const move: FileMoveUi = {
+    draggingId,
+    dropKey,
+    start: (id, event) => {
+      beginFileMove(event, id);
+      setDraggingId(id);
+    },
+    end: () => {
+      endFileMove();
+      setDraggingId(null);
+      setDropKey(null);
+    },
+    over: (dest, event) => {
+      const id = fileMoveId();
+      if (id === null || !isFileMove(Array.from(event.dataTransfer.types))) {
+        return;
+      }
+      if (!canMoveLibraryItem(sections, id, dest)) {
+        event.dataTransfer.dropEffect = "none";
+        return;
+      }
+      preventFileMove(event);
+      setDropKey(destKey(dest));
+    },
+    leave: (key, event) => {
+      if (!isFileMove(Array.from(event.dataTransfer.types))) return;
+      if (!isLeavingDropTarget(event)) return;
+      setDropKey((current) => (current === key ? null : current));
+    },
+    drop: (dest, event) => {
+      const id = fileMoveId();
+      if (id === null) return;
+      event.preventDefault();
+      setDropKey(null);
+      onMoveFile(id, dest);
+    },
+  };
+
+  return (
+    <MoveContext value={{ onSelectLocation, onOpenFile, move }}>
+      <TreeNav
+        sections={sections}
+        {...(selectedId === undefined ? {} : { selectedId })}
+        {...(className === undefined ? {} : { className })}
+      >
+        {sections.map((section) => (
+          <div key={section.id} className="flex flex-col gap-px">
+            <MoveDropTarget dest={{ sectionId: section.id }}>
+              <TreeNavSection
+                section={section}
+                onSelect={() => {
+                  onSelectLocation({ sectionId: section.id });
+                }}
+              />
+            </MoveDropTarget>
+            <TreeNavBranch id={section.id}>
+              <MoveBranch sectionId={section.id} nodes={section.nodes} />
+            </TreeNavBranch>
+          </div>
+        ))}
+      </TreeNav>
+    </MoveContext>
   );
 }

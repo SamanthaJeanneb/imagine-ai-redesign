@@ -12,7 +12,15 @@ import {
 } from "@/components/features/agent/agent-message";
 import { ChatProvider } from "@/components/features/agent/chat-provider";
 import {
-  Composer,
+  ComposerAttachButton,
+  ComposerAttachments,
+  ComposerExpandAction,
+  ComposerFrame,
+  ComposerInput,
+  ComposerInputRow,
+  ComposerPreviewChips,
+  ComposerProvider,
+  ComposerSendButton,
   type ComposerPreview,
 } from "@/components/features/agent/composer";
 import { AssetPicker } from "@/components/features/agent/asset-picker";
@@ -23,7 +31,10 @@ import {
 } from "@/components/features/agent/linkedin-post-draft";
 import { PostContext } from "@/components/features/agent/post-context";
 import { PreviewSurface } from "@/components/features/agent/preview-surface";
-import { ResourceContext } from "@/components/features/agent/resource-context";
+import {
+  AssetContext,
+  FileContext,
+} from "@/components/features/agent/resource-context";
 import { ScheduledGraphic } from "@/components/features/agent/scheduled-graphic";
 import { ProfileSelector } from "@/components/features/agent/profile-selector";
 import {
@@ -35,21 +46,43 @@ import { AnalyticsPage } from "@/components/features/analytics/analytics-page";
 import { AnalyticsPage2 } from "@/components/features/analytics/analytics-page-2";
 import { ByProfileList } from "@/components/features/analytics/by-profile-list";
 import {
-  ChartBlock,
+  AreaChartBlock,
+  BarChartBlock,
+  BarChartPreview,
   type ChartDatum,
-  type ChartSeries,
+  ChartFrame,
+  ChartHeader,
+  ChartHeadline,
+  ChartLegend,
+  ChartProvider,
+  ComposedChartBlock,
+  ComposedChartProvider,
+  type ComposedChartSeries,
+  HorizontalBarChartBlock,
 } from "@/components/features/analytics/chart-block";
-import { ChartCard } from "@/components/features/analytics/chart-card";
+import {
+  ChartCard,
+  ChartPreviewCard,
+} from "@/components/features/analytics/chart-card";
 import { StatGroup, StatTile } from "@/components/features/analytics/stat-tile";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { TopPosts } from "@/components/features/analytics/top-posts";
 import {
   type CalendarDay,
-  CalendarGrid,
+  CalendarMonth,
+  CalendarPreview,
+  CalendarStrip,
 } from "@/components/features/calendar/calendar-grid";
 import { CalendarPage } from "@/components/features/calendar/calendar-page";
 import { CalendarTimeGrid } from "@/components/features/calendar/calendar-time-grid";
-import { CalendarToolbar } from "@/components/features/calendar/calendar-toolbar";
+import {
+  CalendarRange,
+  CalendarRangeLabel,
+  CalendarRangeStepper,
+  CalendarSearch,
+  CalendarToolbar,
+  CalendarViewToggle,
+} from "@/components/features/calendar/calendar-toolbar";
 import {
   EventChip,
   type EventChipData,
@@ -58,24 +91,40 @@ import { LinkedInPostEditor } from "@/components/features/calendar/linkedin-post
 import {
   PostChip,
   type PostChipData,
+  PostChipDense,
 } from "@/components/features/calendar/post-chip";
 import { UpNextList } from "@/components/features/calendar/up-next-list";
-import { AssetGrid } from "@/components/features/files/asset-grid";
+import {
+  AssetGridItem,
+  AssetGridOverflow,
+  AssetGridSmall,
+} from "@/components/features/files/asset-grid";
 import {
   AssetTile,
+  AssetTileButton,
   type AssetTileData,
 } from "@/components/features/files/asset-tile";
 import {
+  EditorSheetInset,
   EditorTabStrip,
   type EditorTab,
 } from "@/components/features/files/editor-tab-strip";
 import { FilesLibrary } from "@/components/features/files/files-library";
 import { FileTreeNav } from "@/components/features/files/file-tree-nav";
-import { LibraryCard } from "@/components/features/files/library-card";
+import {
+  LibraryCardDocument,
+  LibraryCardFolder,
+  LibraryCardMedia,
+  LibraryCardMenu,
+  LibraryCardMenuDestructiveItem,
+  LibraryCardMenuItem,
+  LibraryCardRow,
+} from "@/components/features/files/library-card";
 import { FilesWorkspacePage } from "@/components/features/files/files-workspace-page";
 import {
+  BrowseFileTree,
+  ChatFileTree,
   type FileSection,
-  FileTree,
 } from "@/components/features/files/file-tree";
 import { MarkdownEditor } from "@/components/features/files/markdown-editor";
 import { NewMenu } from "@/components/features/files/new-menu";
@@ -83,10 +132,21 @@ import {
   type Skill,
   SkillsList,
 } from "@/components/features/files/skills-list";
-import { ConnectLinkedIn } from "@/components/features/onboarding/connect-linkedin";
-import { JoinOrganization } from "@/components/features/onboarding/join-organization";
+import {
+  ConnectLinkedIn,
+  ConnectLinkedInActions,
+} from "@/components/features/onboarding/connect-linkedin";
+import {
+  JoinOrganization,
+  JoinOrganizationActions,
+  JoinOrganizationHero,
+  JoinOrganizationInvitee,
+  JoinOrganizationMembers,
+  JoinOrganizationPanel,
+} from "@/components/features/onboarding/join-organization";
 import {
   InviteTeamForm,
+  InviteTeamFormActions,
   type TeamMember,
 } from "@/components/features/onboarding/invite-team-form";
 import { OrganizationForm } from "@/components/features/onboarding/organization-form";
@@ -106,8 +166,24 @@ import {
   MembersList,
 } from "@/components/features/settings/members-list";
 import {
-  type ProfileDetailData,
   ProfileDetail,
+  ProfileDetailCompany,
+  ProfileDetailCompanyCard,
+  ProfileDetailCompanyHeader,
+  ProfileDetailConnection,
+  type ProfileDetailData,
+  ProfileDetailFacts,
+  ProfileDetailFirstConnected,
+  ProfileDetailFooter,
+  ProfileDetailIndexPostsButton,
+  ProfileDetailLinkCompanyForm,
+  ProfileDetailPersona,
+  ProfileDetailPersonaCard,
+  ProfileDetailPersonaEmpty,
+  ProfileDetailPersonHeader,
+  ProfileDetailPostsIndexed,
+  ProfileDetailReconnectButton,
+  ProfileDetailRemoveButton,
 } from "@/components/features/settings/profile-detail";
 import {
   ProfileList,
@@ -119,14 +195,27 @@ import {
   SettingsTabs,
 } from "@/components/features/settings/settings-tabs";
 import { ThemeChoice } from "@/components/features/settings/theme-choice";
-import { AccountControls } from "@/components/layout/account";
-import { ChatColumn } from "@/components/layout/chat-column";
+import { AccountControls, AccountName } from "@/components/layout/account";
+import { DockedChatColumn } from "@/components/layout/chat-column";
 import {
   ChatContextPanel,
   type ChatPanelMode,
 } from "@/components/layout/chat-context-panel";
-import { ChatControls, ChatTitle } from "@/components/layout/chat-controls";
-import { FilesPanel } from "@/components/layout/files-panel";
+import {
+  ChatControls,
+  ChatHistoryMenu,
+  ChatTitle,
+} from "@/components/layout/chat-controls";
+import {
+  FilesPanelCloseButton,
+  FilesPanelDragHint,
+  FilesPanelFiles,
+  FilesPanelFrame,
+  FilesPanelHeader,
+  FilesPanelSearch,
+  FilesPanelSkills,
+  FilesPanelTabs,
+} from "@/components/layout/files-panel";
 import {
   Sidebar,
   SidebarExpandButton,
@@ -271,7 +360,7 @@ for (let week = 0; week < 27; week += 1) {
     deals: Math.floor(week * 0.95),
   });
 }
-const PIPELINE_SERIES: ChartSeries[] = [
+const PIPELINE_SERIES: ComposedChartSeries[] = [
   { key: "engagements", label: "Engagements", mark: "bar" },
   { key: "prospects", label: "Prospects", mark: "line" },
   {
@@ -1148,7 +1237,9 @@ export function SidebarDemo() {
               onSignOut={() => {
                 toast("Signed out");
               }}
-            />
+            >
+              <AccountName />
+            </AccountControls>
           </PageStub>
         </OnBackground>
       </Demo>
@@ -1175,7 +1266,9 @@ export function SidebarDemo() {
                 />
               ) : null}
             </AnimatePresence>
-            <AccountControls user={SIDEBAR_USER} className="ml-auto" />
+            <AccountControls user={SIDEBAR_USER} className="ml-auto">
+              <AccountName />
+            </AccountControls>
           </PageStub>
         </OnBackground>
       </Demo>
@@ -1193,14 +1286,16 @@ export function ChatChromeDemo() {
           <div className="flex h-96 overflow-hidden border border-imagine-border bg-imagine-surface">
             <div className="flex min-w-0 flex-1 flex-col p-l">
               <div className="flex h-8 items-center gap-s">
-                <ChatTitle
-                  title="What made Friday's post take off"
-                  threads={THREADS}
-                  currentThreadId="t1"
-                  onSelectThread={(id) => {
-                    toast(`Open ${id}`);
-                  }}
-                />
+                <ChatTitle title="What made Friday's post take off">
+                  <ChatHistoryMenu
+                    title="What made Friday's post take off"
+                    threads={THREADS}
+                    currentThreadId="t1"
+                    onSelectThread={(id) => {
+                      toast(`Open ${id}`);
+                    }}
+                  />
+                </ChatTitle>
                 <ChatControls
                   panel={panel}
                   onPanelChange={setPanel}
@@ -1231,7 +1326,7 @@ export function ChatChromeDemo() {
         <KitChatScope>
           <LayoutGroup id="kit-chat-column">
             <div className="flex h-96 justify-end overflow-hidden border border-imagine-border bg-imagine-surface">
-              <ChatColumn
+              <DockedChatColumn
                 page="analytics"
                 title="New chat"
                 threads={THREADS}
@@ -1284,38 +1379,58 @@ export function FilesPanelDemo() {
       <Demo label="Files panel">
         <OnBackground className="h-[720px] rounded-l-none">
           <PageStub side="left" />
-          <FilesPanel
-            title="Acme"
-            logoUrl={ACME_LOGO}
-            dragHint
-            sections={FILE_SECTIONS}
-            skills={skills}
-            activeFileId={activeFile}
-            openSkillId={activeSkill ?? undefined}
-            onOpenFile={setActiveFile}
-            onToggleSkill={toggleSkill}
-            onOpenSkillFile={openSkillFile}
-            onEditFile={(id) => {
-              toast(`Edit ${id}`);
-            }}
-            onAttachFile={(file) => {
-              toast(`Attached ${file.title}`);
-            }}
-            onOpenAsset={(asset) => {
-              toast(asset.caption ?? asset.id);
-            }}
-            onClose={() => {
-              toast("Close panel");
-            }}
-          />
+          <FilesPanelFrame>
+            <FilesPanelHeader title="Acme" logoUrl={ACME_LOGO}>
+              <FilesPanelCloseButton
+                onPress={() => {
+                  toast("Close panel");
+                }}
+              />
+            </FilesPanelHeader>
+            <FilesPanelSearch
+              sections={FILE_SECTIONS}
+              skills={skills}
+              onOpenFile={setActiveFile}
+              onOpenAsset={(asset) => {
+                toast(asset.caption ?? asset.id);
+              }}
+              onOpenSkillFile={openSkillFile}
+            />
+            <FilesPanelTabs>
+              <FilesPanelFiles>
+                <ChatFileTree
+                  sections={FILE_SECTIONS}
+                  activeFileId={activeFile}
+                  onOpenFile={setActiveFile}
+                  onEditFile={(id) => {
+                    toast(`Edit ${id}`);
+                  }}
+                  onAttachFile={(file) => {
+                    toast(`Attached ${file.title}`);
+                  }}
+                  onOpenAsset={(asset) => {
+                    toast(asset.caption ?? asset.id);
+                  }}
+                />
+              </FilesPanelFiles>
+              <FilesPanelSkills>
+                <SkillsList
+                  skills={skills}
+                  openSkillId={activeSkill ?? undefined}
+                  onToggle={toggleSkill}
+                  onOpenFile={openSkillFile}
+                />
+              </FilesPanelSkills>
+            </FilesPanelTabs>
+            <FilesPanelDragHint />
+          </FilesPanelFrame>
         </OnBackground>
       </Demo>
       <Demo label="File tree" className="w-72">
-        <FileTree
+        <BrowseFileTree
           sections={FILE_SECTIONS.slice(0, 2)}
           activeFileId={activeFile}
           onOpenFile={setActiveFile}
-          assetSize="sm"
         />
       </Demo>
       <Demo
@@ -1344,25 +1459,27 @@ export function FilesPanelDemo() {
                 }}
                 className="w-full"
               >
-                <MarkdownEditor
-                  meta={{ title: openSkill.fileName }}
-                  value={text[openSkill.id] ?? ""}
-                  savedValue={savedText[openSkill.id] ?? ""}
-                  onValueChange={(next) => {
-                    setText((current) => ({
-                      ...current,
-                      [openSkill.id]: next,
-                    }));
-                  }}
-                  onSave={() => {
-                    setSavedText((current) => ({
-                      ...current,
-                      [openSkill.id]: text[openSkill.id] ?? "",
-                    }));
-                    toast.success(`Saved ${openSkill.fileName}`);
-                  }}
-                  className="p-l"
-                />
+                <EditorSheetInset>
+                  <MarkdownEditor
+                    meta={{ title: openSkill.fileName }}
+                    value={text[openSkill.id] ?? ""}
+                    savedValue={savedText[openSkill.id] ?? ""}
+                    onValueChange={(next) => {
+                      setText((current) => ({
+                        ...current,
+                        [openSkill.id]: next,
+                      }));
+                    }}
+                    onSave={() => {
+                      setSavedText((current) => ({
+                        ...current,
+                        [openSkill.id]: text[openSkill.id] ?? "",
+                      }));
+                      toast.success(`Saved ${openSkill.fileName}`);
+                    }}
+                    className="p-l"
+                  />
+                </EditorSheetInset>
               </EditorTabStrip>
             ) : (
               <p className="m-auto type-small text-imagine-foreground-muted">
@@ -1392,17 +1509,82 @@ export function FilesWorkspacePageDemo() {
   );
 }
 
-const DOCUMENT_ACTIONS = [
-  { id: "open", label: "Open", icon: "file-lines" as const },
-  { id: "send", label: "Send to agent", icon: "imagine" as const },
-  { id: "rename", label: "Rename", icon: "pen" as const },
-  {
-    id: "trash",
-    label: "Move to trash",
-    icon: "trash" as const,
-    destructive: true,
-  },
-];
+/** The document menu; `act` reports which entry was chosen. */
+function DocumentMenu({ act }: { act: (action: string) => void }) {
+  return (
+    <LibraryCardMenu>
+      <LibraryCardMenuItem
+        icon="file-lines"
+        onSelect={() => {
+          act("open");
+        }}
+      >
+        Open
+      </LibraryCardMenuItem>
+      <SendMenuItem act={act} />
+      <RenameMenuItem act={act} />
+      <TrashMenuItem act={act} />
+    </LibraryCardMenu>
+  );
+}
+
+function SendMenuItem({ act }: { act: (action: string) => void }) {
+  return (
+    <LibraryCardMenuItem
+      icon="imagine"
+      onSelect={() => {
+        act("send");
+      }}
+    >
+      Send to agent
+    </LibraryCardMenuItem>
+  );
+}
+
+function RenameMenuItem({ act }: { act: (action: string) => void }) {
+  return (
+    <LibraryCardMenuItem
+      icon="pen"
+      onSelect={() => {
+        act("rename");
+      }}
+    >
+      Rename
+    </LibraryCardMenuItem>
+  );
+}
+
+function TrashMenuItem({ act }: { act: (action: string) => void }) {
+  return (
+    <LibraryCardMenuDestructiveItem
+      icon="trash"
+      onSelect={() => {
+        act("trash");
+      }}
+    >
+      Move to trash
+    </LibraryCardMenuDestructiveItem>
+  );
+}
+
+/** Folders can be renamed or trashed. */
+function FolderMenu({ act }: { act: (action: string) => void }) {
+  return (
+    <LibraryCardMenu>
+      <RenameMenuItem act={act} />
+      <TrashMenuItem act={act} />
+    </LibraryCardMenu>
+  );
+}
+
+/** Media can only be sent to the agent. */
+function MediaMenu({ act }: { act: (action: string) => void }) {
+  return (
+    <LibraryCardMenu>
+      <SendMenuItem act={act} />
+    </LibraryCardMenu>
+  );
+}
 
 const BRAND_VOICE_EXCERPT =
   "Brand voice\nAcme writes the way its engineers talk in a review: plainly, with the number attached.\nAlways\nSay what changed before saying why it matters.";
@@ -1435,56 +1617,53 @@ export function FilesPartsDemo() {
 
         <div className="flex flex-col gap-l">
           <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-m">
-            <LibraryCard
-              kind="folder"
+            <LibraryCardFolder
               name="Campaigns"
               onPress={() => {
                 toast("Open Campaigns");
               }}
-              actions={DOCUMENT_ACTIONS.slice(2)}
-              onAction={act("Campaigns")}
-            />
-            <LibraryCard
-              kind="document"
+            >
+              <FolderMenu act={act("Campaigns")} />
+            </LibraryCardFolder>
+            <LibraryCardDocument
               name="brand-voice.md"
               excerpt={BRAND_VOICE_EXCERPT}
               onPress={() => {
                 toast("Open brand-voice.md");
               }}
-              actions={DOCUMENT_ACTIONS}
-              onAction={act("brand-voice.md")}
-            />
-            <LibraryCard
-              kind="document"
+            >
+              <DocumentMenu act={act("brand-voice.md")} />
+            </LibraryCardDocument>
+            <LibraryCardDocument
               name="untitled.md"
               selected
               onPress={() => {
                 toast("Open untitled.md");
               }}
-              actions={DOCUMENT_ACTIONS}
-              onAction={act("untitled.md")}
-            />
-            <LibraryCard
+            >
+              <DocumentMenu act={act("untitled.md")} />
+            </LibraryCardDocument>
+            <LibraryCardMedia
               kind="image"
               name="Team at the offsite"
               {...(ASSETS[0]?.src === undefined ? {} : { src: ASSETS[0].src })}
               onPress={() => {
                 toast("Preview image");
               }}
-              actions={DOCUMENT_ACTIONS.slice(1, 2)}
-              onAction={act("Team at the offsite")}
-            />
-            <LibraryCard
+            >
+              <MediaMenu act={act("Team at the offsite")} />
+            </LibraryCardMedia>
+            <LibraryCardMedia
               kind="video"
               name="Launch teaser"
               {...(ASSETS[1]?.src === undefined ? {} : { src: ASSETS[1].src })}
               onPress={() => {
                 toast("Preview video");
               }}
-              actions={DOCUMENT_ACTIONS.slice(1, 2)}
-              onAction={act("Launch teaser")}
-            />
-            <LibraryCard
+            >
+              <MediaMenu act={act("Launch teaser")} />
+            </LibraryCardMedia>
+            <LibraryCardMedia
               kind="image"
               name="Missing file"
               onPress={() => {
@@ -1493,36 +1672,33 @@ export function FilesPartsDemo() {
             />
           </div>
           <div className="flex flex-col gap-px">
-            <LibraryCard
-              view="list"
+            <LibraryCardRow
               kind="folder"
               name="Campaigns"
               onPress={() => {
                 toast("Open Campaigns");
               }}
-              actions={DOCUMENT_ACTIONS.slice(2)}
-              onAction={act("Campaigns")}
-            />
-            <LibraryCard
-              view="list"
+            >
+              <FolderMenu act={act("Campaigns")} />
+            </LibraryCardRow>
+            <LibraryCardRow
               kind="document"
               name="brand-voice.md"
               onPress={() => {
                 toast("Open brand-voice.md");
               }}
-              actions={DOCUMENT_ACTIONS}
-              onAction={act("brand-voice.md")}
-            />
-            <LibraryCard
-              view="list"
+            >
+              <DocumentMenu act={act("brand-voice.md")} />
+            </LibraryCardRow>
+            <LibraryCardRow
               kind="image"
               name="Team at the offsite"
               onPress={() => {
                 toast("Preview image");
               }}
-              actions={DOCUMENT_ACTIONS.slice(1, 2)}
-              onAction={act("Team at the offsite")}
-            />
+            >
+              <MediaMenu act={act("Team at the offsite")} />
+            </LibraryCardRow>
           </div>
         </div>
       </div>
@@ -1554,20 +1730,14 @@ export function ResourceContextDemo() {
   return (
     <Demo label="Files and assets attached to chat">
       <div className="flex flex-wrap gap-m bg-imagine-surface p-l">
-        <ResourceContext
-          resource={{
-            kind: "file",
-            file: { id: "f1", title: "brand-voice.md" },
-          }}
+        <FileContext
+          file={{ id: "f1", title: "brand-voice.md" }}
           onRemove={() => {
             toast("Removed brand-voice.md");
           }}
         />
-        <ResourceContext
-          resource={{
-            kind: "asset",
-            asset: ASSETS[1] ?? { id: "a2", kind: "image" },
-          }}
+        <AssetContext
+          asset={ASSETS[1] ?? { id: "a2", kind: "image" }}
           onRemove={() => {
             toast("Removed asset");
           }}
@@ -1588,40 +1758,58 @@ export function ComposerDemo() {
     <div className="flex flex-col gap-xl">
       <Demo label="Hero (landing)">
         <OnBackground className="p-xxl">
-          <Composer
-            variant="hero"
+          <ComposerProvider
             value={hero}
             onValueChange={setHero}
             onSend={(text) => {
               toast(`Sent: ${text}`);
               setHero("");
             }}
-          />
+          >
+            <ComposerFrame className="p-s">
+              <ComposerInputRow className="p-xs pl-s">
+                <ComposerAttachButton size="icon" />
+                <ComposerInput className="min-h-9 py-2 type-heading font-normal" />
+                <ComposerSendButton size="icon" />
+              </ComposerInputRow>
+            </ComposerFrame>
+          </ComposerProvider>
         </OnBackground>
       </Demo>
       <div className="grid gap-xl lg:grid-cols-2">
         <Demo label="Dock (thread)">
           <OnBackground className="items-end p-l">
-            <Composer
+            <ComposerProvider
               value={dock}
               onValueChange={setDock}
               onSend={(text) => {
                 toast(`Sent: ${text}`);
                 setDock("");
               }}
-              preview={null}
-              onPreviewChange={() => {
-                toast("Preview opens in the next demo");
-              }}
-              onAttach={() => {
-                toast("Attach");
-              }}
-            />
+            >
+              <ComposerFrame className="p-xs">
+                <ComposerPreviewChips
+                  value={null}
+                  onValueChange={() => {
+                    toast("Preview opens in the next demo");
+                  }}
+                />
+                <ComposerInputRow className="p-xs">
+                  <ComposerAttachButton
+                    onClick={() => {
+                      toast("Attach");
+                    }}
+                  />
+                  <ComposerInput />
+                  <ComposerSendButton />
+                </ComposerInputRow>
+              </ComposerFrame>
+            </ComposerProvider>
           </OnBackground>
         </Demo>
         <Demo label="Dock with a preview open. Select a post to attach it to the message.">
           <OnBackground className="items-end p-l">
-            <Composer
+            <ComposerProvider
               value={withPreview}
               onValueChange={setWithPreview}
               onSend={(text) => {
@@ -1633,62 +1821,67 @@ export function ComposerDemo() {
                 setWithPreview("");
                 setAttached(null);
               }}
-              placeholder={
-                attached ? `Ask about "${attached.title}"` : undefined
-              }
-              preview={preview}
-              onPreviewChange={setPreview}
-              attachments={
-                <PostContext
-                  posts={attached ? [attached] : []}
-                  onRemove={() => {
-                    setAttached(null);
-                  }}
-                />
-              }
-              onAttach={() => {
-                toast("Attach");
-              }}
-              {...(preview === null
-                ? {}
-                : {
-                    expandLabel:
-                      preview === "calendar"
-                        ? "Open calendar"
-                        : "Open analytics",
-                    onExpand: () => {
-                      toast(
-                        preview === "calendar"
-                          ? "Expands to /calendar"
-                          : "Expands to /analytics",
-                      );
-                    },
-                  })}
             >
-              <PreviewSurface open={preview === "calendar"}>
-                <CalendarGrid
-                  days={TWO_WEEKS}
-                  density="preview"
-                  selectedPostId={attached?.id}
-                  onOpenPost={(post) => {
-                    setAttached((current) =>
-                      current?.id === post.id ? null : post,
-                    );
-                  }}
-                />
-              </PreviewSurface>
-              <PreviewSurface open={preview === "analytics"}>
-                <ChartBlock
-                  kind="bar"
-                  data={IMPRESSIONS}
-                  series={[IMPRESSIONS_SERIES]}
-                  tone="accent"
-                  dense
-                  plain
-                  highlightIndex={3}
-                />
-              </PreviewSurface>
-            </Composer>
+              <ComposerFrame className="p-xs">
+                <PreviewSurface open={preview === "calendar"}>
+                  <CalendarPreview
+                    days={TWO_WEEKS}
+                    selectedPostId={attached?.id}
+                    onOpenPost={(post) => {
+                      setAttached((current) =>
+                        current?.id === post.id ? null : post,
+                      );
+                    }}
+                  />
+                </PreviewSurface>
+                <PreviewSurface open={preview === "analytics"}>
+                  <ChartPreviewCard chart={KIT_PREVIEW_CHART} />
+                </PreviewSurface>
+                <ComposerPreviewChips
+                  value={preview}
+                  onValueChange={setPreview}
+                >
+                  {preview === null ? null : (
+                    <ComposerExpandAction
+                      onClick={() => {
+                        toast(
+                          preview === "calendar"
+                            ? "Expands to /calendar"
+                            : "Expands to /analytics",
+                        );
+                      }}
+                    >
+                      {preview === "calendar"
+                        ? "Open calendar"
+                        : "Open analytics"}
+                    </ComposerExpandAction>
+                  )}
+                </ComposerPreviewChips>
+                <ComposerAttachments className="px-xs pt-xs">
+                  {attached ? (
+                    <PostContext
+                      posts={[attached]}
+                      onRemove={() => {
+                        setAttached(null);
+                      }}
+                    />
+                  ) : null}
+                </ComposerAttachments>
+                <ComposerInputRow className="p-xs">
+                  <ComposerAttachButton
+                    onClick={() => {
+                      toast("Attach");
+                    }}
+                  />
+                  <ComposerInput
+                    {...(attached
+                      ? { placeholder: `Ask about "${attached.title}"` }
+                      : {})}
+                  />
+                  <ComposerSendButton />
+                </ComposerInputRow>
+              </ComposerFrame>
+            </ComposerProvider>
           </OnBackground>
         </Demo>
       </div>
@@ -1854,57 +2047,77 @@ export function ChartBlockDemo() {
         label="Composed: bars, a line, a step on its own scale, annotated"
         className="lg:col-span-2"
       >
-        <ChartBlock
-          kind="composed"
-          data={PIPELINE}
-          series={PIPELINE_SERIES}
-          title="Content → pipeline"
-          description="Weekly, last six months"
-          xTicks={PIPELINE_TICKS}
-          annotations={[
-            { at: PIPELINE[13]?.label ?? "", label: "CSM hire" },
-            { at: PIPELINE[22]?.label ?? "", label: "Rebrand" },
-          ]}
-          legend
-        />
+        <ComposedChartProvider data={PIPELINE} series={PIPELINE_SERIES}>
+          <ChartFrame>
+            <ChartHeader
+              title="Content → pipeline"
+              description="Weekly, last six months"
+            >
+              <ChartLegend />
+            </ChartHeader>
+            <ComposedChartBlock
+              xTicks={PIPELINE_TICKS}
+              annotations={[
+                { at: PIPELINE[13]?.label ?? "", label: "CSM hire" },
+                { at: PIPELINE[22]?.label ?? "", label: "Rebrand" },
+              ]}
+            />
+          </ChartFrame>
+        </ComposedChartProvider>
       </Demo>
       <Demo label="Bar, accent, dense, highlighted day (right rail)">
-        <ChartBlock
-          kind="bar"
+        <ChartProvider
           data={IMPRESSIONS}
           series={[IMPRESSIONS_SERIES]}
           tone="accent"
-          dense
-          highlightIndex={3}
-        />
+        >
+          {/* The preview strip in a frame of its own, as the rail once drew it. */}
+          <div className="flex flex-col gap-s border border-imagine-border bg-imagine-surface p-m">
+            <ChartHeader>
+              <ChartHeadline />
+            </ChartHeader>
+            <BarChartPreview highlightIndex={3} />
+          </div>
+        </ChartProvider>
       </Demo>
       <Demo label="Bar, value labels, mean rule">
-        <ChartBlock
-          kind="bar"
+        <ChartProvider
           data={BY_TYPE}
           series={[{ key: "posts", label: "Posts" }]}
-          title="By post type"
-          description="Last 30 days"
-        />
+        >
+          <ChartFrame>
+            <ChartHeader title="By post type" description="Last 30 days">
+              <ChartHeadline />
+            </ChartHeader>
+            <BarChartBlock />
+          </ChartFrame>
+        </ChartProvider>
       </Demo>
       <Demo label="Area, three series, key with totals, toggles">
-        <ChartBlock
-          kind="area"
-          data={IMPRESSIONS}
-          series={SERIES}
-          title="Impressions over time"
-          description="Last 7 days"
-          legend
-        />
+        <ChartProvider data={IMPRESSIONS} series={SERIES}>
+          <ChartFrame>
+            <ChartHeader
+              title="Impressions over time"
+              description="Last 7 days"
+            >
+              <ChartLegend />
+            </ChartHeader>
+            <AreaChartBlock />
+          </ChartFrame>
+        </ChartProvider>
       </Demo>
       <Demo label="Horizontal bar, values at the end">
-        <ChartBlock
-          kind="hbar"
+        <ChartProvider
           data={BY_TYPE}
           series={[{ key: "posts", label: "Posts" }]}
-          title="Posts by type"
-          description="Last 30 days"
-        />
+        >
+          <ChartFrame>
+            <ChartHeader title="Posts by type" description="Last 30 days">
+              <ChartHeadline />
+            </ChartHeader>
+            <HorizontalBarChartBlock />
+          </ChartFrame>
+        </ChartProvider>
       </Demo>
     </div>
   );
@@ -1925,9 +2138,8 @@ export function ChartCardDemo() {
         />
       </Demo>
       <Demo label="Dense chart card for the composer preview">
-        <ChartCard
+        <ChartPreviewCard
           chart={KIT_PREVIEW_CHART}
-          dense
           selected
           onOpen={() => {
             toast("Attached impressions");
@@ -1964,7 +2176,7 @@ export function PostChipDemo() {
         <PostChip post={POST_Q3} />
       </Demo>
       <Demo label="dense (preview)" className="w-44">
-        <PostChip post={POST_LAUNCH} dense />
+        <PostChipDense post={POST_LAUNCH} />
       </Demo>
       <Demo label="event" className="w-44">
         <EventChip
@@ -1981,23 +2193,21 @@ export function PostChipDemo() {
 export function CalendarGridDemo() {
   return (
     <div className="flex flex-col gap-xl">
-      <Demo label="Strip density (landing, two weeks)">
-        <CalendarGrid
+      <Demo label="Strip (landing, two weeks)">
+        <CalendarStrip
           days={TWO_WEEKS}
-          density="strip"
           onOpenPost={(post) => {
             toast(post.title);
           }}
         />
       </Demo>
       <div className="grid gap-xl lg:grid-cols-[1fr_1.4fr]">
-        <Demo label="Preview density (inside the composer)">
-          <CalendarGrid days={TWO_WEEKS} density="preview" />
+        <Demo label="Preview (inside the composer)">
+          <CalendarPreview days={TWO_WEEKS} />
         </Demo>
-        <Demo label="Page density, one week, selected post">
-          <CalendarGrid
+        <Demo label="Month, one week, selected post">
+          <CalendarMonth
             days={TWO_WEEKS.slice(0, 7)}
-            density="page"
             selectedPostId="p1"
             onOpenPost={(post) => {
               toast(post.title);
@@ -2050,44 +2260,49 @@ export function CalendarToolbarDemo() {
   return (
     <div className="flex flex-col gap-xl">
       <Demo label="Calendar toolbar">
-        <CalendarToolbar
-          rangeLabel={label}
-          view={view}
-          onViewChange={setView}
-          onPrevious={() => {
-            setMonth((m) => m - 1);
-          }}
-          onNext={() => {
-            setMonth((m) => m + 1);
-          }}
-          onToday={() => {
-            setMonth(8);
-          }}
-          search={search}
-          onSearchChange={setSearch}
-          searchResults={
-            search.trim() === ""
-              ? []
-              : [
-                  {
-                    id: "demo-1",
-                    icon: "clock",
-                    title: "Why we stopped weekly planning",
-                    detail: "Tue, 8 Sep · 9:00 · Sarah",
-                  },
-                  {
-                    id: "demo-2",
-                    icon: "pen",
-                    title: "Webinar follow-up",
-                    detail: "Thu, 10 Sep · 14:00 · Marcus",
-                  },
-                ]
-          }
-          onSearchSelect={(id) => {
-            setSearch("");
-            toast(`Opened ${id}`);
-          }}
-        />
+        <CalendarToolbar>
+          <CalendarRange>
+            <CalendarRangeStepper
+              onPrevious={() => {
+                setMonth((m) => m - 1);
+              }}
+              onNext={() => {
+                setMonth((m) => m + 1);
+              }}
+              onToday={() => {
+                setMonth(8);
+              }}
+            />
+            <CalendarRangeLabel>{label}</CalendarRangeLabel>
+          </CalendarRange>
+          <CalendarViewToggle value={view} onValueChange={setView} />
+          <CalendarSearch
+            value={search}
+            onValueChange={setSearch}
+            results={
+              search.trim() === ""
+                ? []
+                : [
+                    {
+                      id: "demo-1",
+                      icon: "clock",
+                      title: "Why we stopped weekly planning",
+                      detail: "Tue, 8 Sep · 9:00 · Sarah",
+                    },
+                    {
+                      id: "demo-2",
+                      icon: "pen",
+                      title: "Webinar follow-up",
+                      detail: "Thu, 10 Sep · 14:00 · Marcus",
+                    },
+                  ]
+            }
+            onSelect={(id) => {
+              setSearch("");
+              toast(`Opened ${id}`);
+            }}
+          />
+        </CalendarToolbar>
       </Demo>
       <Demo label="Up next (right rail)" className="max-w-80">
         <UpNextList
@@ -2306,7 +2521,7 @@ export function AssetsDemo() {
           <AssetTile asset={ASSETS[2] ?? { id: "x", kind: "video" }} />
         </Demo>
         <Demo label="Selected" className="w-24">
-          <AssetTile
+          <AssetTileButton
             asset={ASSETS[1] ?? { id: "x", kind: "image" }}
             selected
             onSelect={() => {
@@ -2318,14 +2533,21 @@ export function AssetsDemo() {
           <AssetTile asset={{ id: "empty", kind: "image", caption: "logo" }} />
         </Demo>
         <Demo label="Grid, four shown, rest folded">
-          <AssetGrid
-            assets={ASSETS}
-            limit={3}
-            size="sm"
-            onShowAll={() => {
-              toast("Show all");
-            }}
-          />
+          <AssetGridSmall>
+            {ASSETS.slice(0, 3).map((asset) => (
+              <AssetGridItem key={asset.id} asset={asset}>
+                <AssetTile asset={asset} />
+              </AssetGridItem>
+            ))}
+            {ASSETS.length > 3 ? (
+              <AssetGridOverflow
+                count={ASSETS.length - 3}
+                onPress={() => {
+                  toast("Show all");
+                }}
+              />
+            ) : null}
+          </AssetGridSmall>
         </Demo>
       </div>
       <Demo label="Asset picker (agent offers images)" className="max-w-lg">
@@ -2510,27 +2732,29 @@ export function EditorDemo() {
           }}
           className="w-full"
         >
-          {activeTab === "f6" ? (
-            <MarkdownEditor
-              meta={{
-                title: "sarah-persona.md",
-              }}
-              value={value}
-              savedValue={saved}
-              onValueChange={setValue}
-              onSave={() => {
-                setSaved(value);
-                toast.success("Saved sarah-persona.md");
-              }}
-              className="p-l"
-            />
-          ) : (
-            <p className="p-l type-small text-imagine-foreground-muted">
-              {activeTab === "thread"
-                ? "The agent thread lives here."
-                : "brand-voice.md"}
-            </p>
-          )}
+          <EditorSheetInset>
+            {activeTab === "f6" ? (
+              <MarkdownEditor
+                meta={{
+                  title: "sarah-persona.md",
+                }}
+                value={value}
+                savedValue={saved}
+                onValueChange={setValue}
+                onSave={() => {
+                  setSaved(value);
+                  toast.success("Saved sarah-persona.md");
+                }}
+                className="p-l"
+              />
+            ) : (
+              <p className="p-l type-small text-imagine-foreground-muted">
+                {activeTab === "thread"
+                  ? "The agent thread lives here."
+                  : "brand-voice.md"}
+              </p>
+            )}
+          </EditorSheetInset>
         </EditorTabStrip>
       </OnBackground>
     </Demo>
@@ -2628,6 +2852,48 @@ export function SettingsPartsDemo() {
   );
 }
 
+/** The facts rows every detail tree in the kit shares. */
+function ProfileDetailDemoFacts({ detail }: { detail: ProfileDetailData }) {
+  return (
+    <ProfileDetailFacts>
+      <ProfileDetailConnection status={detail.status}>
+        {detail.status === "connected" ? null : (
+          <ProfileDetailReconnectButton
+            onClick={() => {
+              toast("Reconnect LinkedIn");
+            }}
+          />
+        )}
+      </ProfileDetailConnection>
+      <ProfileDetailFirstConnected
+        {...(detail.connectedAt === undefined
+          ? {}
+          : { connectedAt: detail.connectedAt })}
+      />
+      {detail.postsIndexed === undefined ? null : (
+        <ProfileDetailPostsIndexed count={detail.postsIndexed} />
+      )}
+    </ProfileDetailFacts>
+  );
+}
+
+function ProfileDetailDemoPersona({ detail }: { detail: ProfileDetailData }) {
+  return (
+    <ProfileDetailPersona>
+      {detail.persona ? (
+        <ProfileDetailPersonaCard
+          fileName={detail.persona.fileName}
+          onView={() => {
+            toast("Open in Files");
+          }}
+        />
+      ) : (
+        <ProfileDetailPersonaEmpty />
+      )}
+    </ProfileDetailPersona>
+  );
+}
+
 export function ProfilesDemo() {
   const [selected, setSelected] = useState("c2");
   const detail = PROFILE_DETAILS[selected] ?? SARAH_DETAIL;
@@ -2645,35 +2911,109 @@ export function ProfilesDemo() {
         />
       </Demo>
       <Demo label="Profile detail (follows the list)">
-        <ProfileDetail
-          profile={detail}
-          onReconnect={() => {
-            toast("Reconnect LinkedIn");
-          }}
-          onChangeCompany={() => {
-            toast("Change company");
-          }}
-          onLinkCompany={(url) => {
-            toast(`Link ${url}`);
-          }}
-          onViewPersona={() => {
-            toast("Open in Files");
-          }}
-          onIndexPosts={() => {
-            toast("Indexing posts");
-          }}
-          onRemove={() => {
-            toast.error("Remove profile");
-          }}
-        />
+        {detail.kind === "person" ? (
+          <ProfileDetail profileId={detail.id}>
+            <ProfileDetailPersonHeader
+              name={detail.name}
+              headline={detail.headline}
+              {...(detail.avatarUrl === undefined
+                ? {}
+                : { avatarUrl: detail.avatarUrl })}
+            />
+            <ProfileDetailDemoFacts detail={detail} />
+            <ProfileDetailCompany>
+              {detail.company ? (
+                <ProfileDetailCompanyCard
+                  company={detail.company}
+                  onChange={() => {
+                    toast("Change company");
+                  }}
+                />
+              ) : (
+                <ProfileDetailLinkCompanyForm
+                  onLink={(url) => {
+                    toast(`Link ${url}`);
+                  }}
+                />
+              )}
+            </ProfileDetailCompany>
+            <ProfileDetailDemoPersona detail={detail} />
+            <ProfileDetailFooter>
+              <ProfileDetailIndexPostsButton
+                onClick={() => {
+                  toast("Indexing posts");
+                }}
+              />
+              <ProfileDetailRemoveButton
+                name={detail.name}
+                onRemove={() => {
+                  toast.error("Remove profile");
+                }}
+              />
+            </ProfileDetailFooter>
+          </ProfileDetail>
+        ) : (
+          <ProfileDetail profileId={detail.id}>
+            <ProfileDetailCompanyHeader
+              name={detail.name}
+              headline={detail.headline}
+              {...(detail.avatarUrl === undefined
+                ? {}
+                : { avatarUrl: detail.avatarUrl })}
+            />
+            <ProfileDetailDemoFacts detail={detail} />
+            <ProfileDetailDemoPersona detail={detail} />
+            <ProfileDetailFooter>
+              <ProfileDetailIndexPostsButton
+                onClick={() => {
+                  toast("Indexing posts");
+                }}
+              />
+              <ProfileDetailRemoveButton
+                name={detail.name}
+                onRemove={() => {
+                  toast.error("Remove profile");
+                }}
+              />
+            </ProfileDetailFooter>
+          </ProfileDetail>
+        )}
       </Demo>
       <Demo label="Profile detail, disconnected">
-        <ProfileDetail
-          profile={RAVI_DETAIL}
-          onReconnect={() => {
-            toast("Reconnect LinkedIn");
-          }}
-        />
+        <ProfileDetail profileId={RAVI_DETAIL.id}>
+          <ProfileDetailPersonHeader
+            name={RAVI_DETAIL.name}
+            headline={RAVI_DETAIL.headline}
+            {...(RAVI_DETAIL.avatarUrl === undefined
+              ? {}
+              : { avatarUrl: RAVI_DETAIL.avatarUrl })}
+          />
+          <ProfileDetailDemoFacts detail={RAVI_DETAIL} />
+          <ProfileDetailCompany>
+            {RAVI_DETAIL.company ? (
+              <ProfileDetailCompanyCard
+                company={RAVI_DETAIL.company}
+                onChange={() => {
+                  toast("Change company");
+                }}
+              />
+            ) : (
+              <ProfileDetailLinkCompanyForm
+                onLink={(url) => {
+                  toast(`Link ${url}`);
+                }}
+              />
+            )}
+          </ProfileDetailCompany>
+          <ProfileDetailDemoPersona detail={RAVI_DETAIL} />
+          <ProfileDetailFooter>
+            <ProfileDetailIndexPostsButton
+              onClick={() => {
+                toast("Indexing posts");
+              }}
+            />
+          </ProfileDetailFooter>
+        </ProfileDetail>
       </Demo>
     </div>
   );
@@ -2789,6 +3129,9 @@ export function AccountDemo() {
 
 export function OnboardingPartsDemo() {
   const [step, setStep] = useState(2);
+  const [org, setOrg] = useState<{ name: string; logoUrl: string | undefined }>(
+    { name: "", logoUrl: undefined },
+  );
 
   return (
     <div className="flex flex-col gap-xl">
@@ -2821,8 +3164,20 @@ export function OnboardingPartsDemo() {
         </Demo>
         <Demo label="2. Set up organization">
           <OrganizationForm
-            onContinue={(values) => {
-              toast(`Organization: ${values.name}`);
+            name={org.name}
+            onNameChange={(name) => {
+              setOrg((current) => ({ ...current, name }));
+            }}
+            logoUrl={org.logoUrl}
+            onLogoChange={(file) => {
+              if (org.logoUrl !== undefined) URL.revokeObjectURL(org.logoUrl);
+              setOrg({
+                name: org.name,
+                logoUrl: file ? URL.createObjectURL(file) : undefined,
+              });
+            }}
+            onContinue={() => {
+              toast(`Organization: ${org.name.trim()}`);
             }}
           />
         </Demo>
@@ -2836,13 +3191,26 @@ export function OnboardingPartsDemo() {
             onContinue={() => {
               toast("Continue");
             }}
+            onRoleChange={(_id, role) => {
+              toast(`Role: ${role}`);
+            }}
             onResend={() => {
               toast("Invite resent");
             }}
-            onSkip={() => {
-              toast("Skipped");
-            }}
-          />
+          >
+            <InviteTeamFormActions>
+              <Button
+                type="button"
+                variant="link"
+                className="text-imagine-foreground-muted"
+                onClick={() => {
+                  toast("Skipped");
+                }}
+              >
+                Skip, invite people later
+              </Button>
+            </InviteTeamFormActions>
+          </InviteTeamForm>
         </Demo>
         <Demo label="4. Connect LinkedIn">
           <ConnectLinkedIn
@@ -2852,34 +3220,70 @@ export function OnboardingPartsDemo() {
               "Publish posts you approve, on the schedule you set",
               "Read post analytics to plan what to write next",
             ]}
-            onConnect={() => {
-              toast.success("LinkedIn connected");
-            }}
-            onSkip={() => {
-              toast("Skipped");
-            }}
-          />
+          >
+            <ConnectLinkedInActions
+              onConnect={() => {
+                toast.success("LinkedIn connected");
+              }}
+            >
+              <Button
+                variant="link"
+                className="text-imagine-foreground-muted"
+                onClick={() => {
+                  toast("Skipped");
+                }}
+              >
+                Skip and do this later
+              </Button>
+            </ConnectLinkedInActions>
+          </ConnectLinkedIn>
         </Demo>
         <Demo label="Invite link landing, replaces 2 and 3">
-          <JoinOrganization
-            orgName="Acme"
-            orgLogoUrl={ACME_LOGO}
-            orgNote="12 members · 3 LinkedIn profiles"
-            members={[
-              { id: "m1", name: "Sarah Chen", avatarUrl: AVATAR(47) },
-              { id: "m2", name: "Ravi Patel", avatarUrl: AVATAR(12) },
-              { id: "m3", name: "Maya Okafor", avatarUrl: AVATAR(32) },
-              { id: "m4", name: "Tom Lindqvist", avatarUrl: AVATAR(59) },
-            ]}
-            memberCount={12}
-            invitedBy={{ id: "m1", name: "Sarah Chen", avatarUrl: AVATAR(47) }}
-            onJoin={() => {
-              toast.success("Joined Acme");
-            }}
-            onDecline={() => {
-              toast("Not now");
-            }}
-          />
+          <JoinOrganization>
+            <JoinOrganizationHero orgName="Acme" invitedBy="Sarah Chen" />
+            <JoinOrganizationPanel
+              orgName="Acme"
+              orgLogoUrl={ACME_LOGO}
+              orgNote="12 members · 3 LinkedIn profiles"
+            >
+              <JoinOrganizationMembers
+                members={[
+                  { id: "m1", name: "Sarah Chen", avatarUrl: AVATAR(47) },
+                  { id: "m2", name: "Ravi Patel", avatarUrl: AVATAR(12) },
+                  { id: "m3", name: "Maya Okafor", avatarUrl: AVATAR(32) },
+                  { id: "m4", name: "Tom Lindqvist", avatarUrl: AVATAR(59) },
+                ]}
+                memberCount={12}
+              />
+            </JoinOrganizationPanel>
+            <JoinOrganizationInvitee
+              invitedBy={{
+                id: "m1",
+                name: "Sarah Chen",
+                avatarUrl: AVATAR(47),
+              }}
+              role="member"
+            />
+            <JoinOrganizationActions>
+              <Button
+                size="lg"
+                onClick={() => {
+                  toast.success("Joined Acme");
+                }}
+              >
+                Join Acme
+              </Button>
+              <Button
+                variant="link"
+                className="text-imagine-foreground-muted"
+                onClick={() => {
+                  toast("Not now");
+                }}
+              >
+                Not now
+              </Button>
+            </JoinOrganizationActions>
+          </JoinOrganization>
         </Demo>
       </div>
     </div>

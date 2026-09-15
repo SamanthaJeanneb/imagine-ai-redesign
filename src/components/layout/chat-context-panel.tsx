@@ -4,7 +4,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { useState } from "react";
 
 import {
-  FileTree,
+  BrowseFileTree,
   type FileSection,
 } from "@/components/features/files/file-tree";
 import { Button } from "@/components/ui/button";
@@ -56,7 +56,7 @@ function FilesPanel({
   const [activeFileId, setActiveFileId] = useState<string>();
 
   return (
-    <FileTree
+    <BrowseFileTree
       sections={fileSections}
       {...(activeFileId === undefined ? {} : { activeFileId })}
       onOpenFile={setActiveFileId}

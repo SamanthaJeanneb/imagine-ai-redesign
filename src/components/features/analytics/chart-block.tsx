@@ -2,7 +2,14 @@
 
 import { cn } from "cn";
 import { motion, useReducedMotion } from "motion/react";
-import { useId, useState } from "react";
+import {
+  type ComponentProps,
+  createContext,
+  type ReactNode,
+  useContext,
+  useId,
+  useState,
+} from "react";
 import {
   Area,
   AreaChart,
@@ -32,10 +39,18 @@ import {
   CHART_LABEL as LABEL,
   CHART_TICK as TICK,
   ChartTooltip,
+  ChartTooltipLabel,
+  ChartTooltipSeries,
 } from "@/components/features/analytics/chart-theme";
 import { fade } from "@/styles/motion";
 
-export type ChartKind = "bar" | "area" | "hbar" | "composed";
+/**
+ * The plots mock data can name (`PreviewChart`, a chart message part). The
+ * name becomes a tree in one place: `CHART_PLOT_BY_KIND` and
+ * `CHART_PREVIEW_BY_KIND`. Composed charts need a mark per series, so they are
+ * assembled in JSX with `ComposedChartSeries` and never named by kind.
+ */
+export type ChartKind = "bar" | "area" | "hbar";
 
 export type ChartMark = "bar" | "line" | "step";
 
@@ -44,11 +59,15 @@ export interface ChartSeries {
   label: string;
   /** Follows the value in the tooltip and the bar labels, e.g. `%`. */
   unit?: string;
-  /** Composed charts only. How the series is drawn. Default `line`. */
+}
+
+/** A series in a composed chart: how it is drawn and which scale it reads. */
+export interface ComposedChartSeries extends ChartSeries {
+  /** How the series is drawn. Default `line`. */
   mark?: ChartMark;
-  /** Composed charts only. `right` gets its own scale. Default `left`. */
+  /** `right` gets its own scale. Default `left`. */
   axis?: "left" | "right";
-  /** Composed charts only. Mark the last point and print its value. */
+  /** Mark the last point and print its value. */
   endLabel?: boolean;
 }
 
@@ -61,40 +80,172 @@ export interface ChartAnnotation {
 
 export type ChartDatum = { label: string } & Record<string, string | number>;
 
-type Tone = "accent" | "neutral";
+/** Pink fills for the agent and landing; neutral for the analytics page. */
+export type ChartTone = "accent" | "neutral";
 
-interface ChartBlockProps {
-  kind: ChartKind;
+interface SeriesStats {
+  total: number;
+  max: number;
+  mean: number;
+  last: number;
+}
+
+const EMPTY_STATS: SeriesStats = { total: 0, max: 0, mean: 0, last: 0 };
+
+/**
+ * What every part of a chart reads: the data, the series, and which series
+ * the reader has switched off in the key. The provider that renders it
+ * decides how series are colored and which number the key prints.
+ */
+interface ChartContextValue {
   data: readonly ChartDatum[];
   series: readonly ChartSeries[];
-  title?: string;
-  description?: string;
-  /** Pink fills for the agent and landing; neutral for the analytics page. */
-  tone?: Tone;
-  /** Index of the bar to draw solid (today, the selected post). */
-  highlightIndex?: number;
-  /** Let the reader toggle series in the key. */
-  legend?: boolean;
-  /** Compact: a one-line header and a short plot with a baseline only. */
-  dense?: boolean;
-  /** No frame of its own. Use inside a container that already has one. */
-  plain?: boolean;
-  /** Show the primary series total beside the title. Off for composed charts. */
-  headline?: boolean;
-  /** Composed charts only. Events to mark along the x axis. */
-  annotations?: readonly ChartAnnotation[];
-  /** Which category labels get an axis tick. Default: all of them. */
-  xTicks?: readonly string[];
-  className?: string;
+  tone: ChartTone;
+  hidden: ReadonlySet<string>;
+  toggle: (key: string) => void;
+  colorOf: (key: string) => string;
+  statsOf: (key: string) => SeriesStats;
+  /** The number the key prints beside a series. */
+  summaryOf: (key: string) => number;
+  /** The shape of the key swatch for a series. */
+  swatchOf: (key: string) => ChartMark;
+}
+
+const ChartContext = createContext<ChartContextValue | null>(null);
+const ComposedSeriesContext = createContext<
+  readonly ComposedChartSeries[] | null
+>(null);
+
+function useChart(): ChartContextValue {
+  const chart = useContext(ChartContext);
+  if (chart === null) {
+    throw new Error(
+      "Chart parts render inside <ChartProvider> or <ComposedChartProvider>.",
+    );
+  }
+  return chart;
+}
+
+function useComposedSeries(): readonly ComposedChartSeries[] {
+  const series = useContext(ComposedSeriesContext);
+  if (series === null) {
+    throw new Error(
+      "<ComposedChartBlock> renders inside <ComposedChartProvider>.",
+    );
+  }
+  return series;
+}
+
+/** Which series the key has switched off. It never hides the last one. */
+function useHiddenSeries(count: number): {
+  hidden: ReadonlySet<string>;
+  toggle: (key: string) => void;
+} {
+  const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
+  const toggle = (key: string) => {
+    setHidden((current) => {
+      const next = new Set(current);
+      if (next.has(key)) next.delete(key);
+      else if (next.size < count - 1) next.add(key);
+      return next;
+    });
+  };
+  return { hidden, toggle };
+}
+
+interface ChartProviderProps {
+  data: readonly ChartDatum[];
+  series: readonly ChartSeries[];
+  tone?: ChartTone;
+  children: ReactNode;
+}
+
+/**
+ * State for a bar, area, or horizontal bar chart: series colored by position,
+ * the first carrying the tone; the key prints each series' total.
+ */
+export function ChartProvider({
+  data,
+  series,
+  tone = "neutral",
+  children,
+}: ChartProviderProps) {
+  const { hidden, toggle } = useHiddenSeries(series.length);
+  const colors = new Map(
+    series.map((item, index) => [item.key, seriesColor(index, tone)]),
+  );
+  const stats = new Map(
+    series.map((item) => [item.key, seriesStats(data, item.key)]),
+  );
+  return (
+    <ChartContext.Provider
+      value={{
+        data,
+        series,
+        tone,
+        hidden,
+        toggle,
+        colorOf: (key) => colors.get(key) ?? COLOR.muted,
+        statsOf: (key) => stats.get(key) ?? EMPTY_STATS,
+        summaryOf: (key) => stats.get(key)?.total ?? 0,
+        swatchOf: () => "bar",
+      }}
+    >
+      {children}
+    </ChartContext.Provider>
+  );
+}
+
+interface ComposedChartProviderProps {
+  data: readonly ChartDatum[];
+  series: readonly ComposedChartSeries[];
+  children: ReactNode;
+}
+
+/**
+ * State for a composed chart: series colored by mark, and since they are
+ * usually running counts the key shows where each one ended up rather than a
+ * sum of the whole line.
+ */
+export function ComposedChartProvider({
+  data,
+  series,
+  children,
+}: ComposedChartProviderProps) {
+  const { hidden, toggle } = useHiddenSeries(series.length);
+  const colors = composedColors(series);
+  const stats = new Map(
+    series.map((item) => [item.key, seriesStats(data, item.key)]),
+  );
+  const marks = new Map(series.map((item) => [item.key, item.mark ?? "line"]));
+  return (
+    <ChartContext.Provider
+      value={{
+        data,
+        series,
+        tone: "neutral",
+        hidden,
+        toggle,
+        colorOf: (key) => colors.get(key) ?? COLOR.muted,
+        statsOf: (key) => stats.get(key) ?? EMPTY_STATS,
+        summaryOf: (key) => stats.get(key)?.last ?? 0,
+        swatchOf: (key) => marks.get(key) ?? "line",
+      }}
+    >
+      <ComposedSeriesContext.Provider value={series}>
+        {children}
+      </ComposedSeriesContext.Provider>
+    </ChartContext.Provider>
+  );
 }
 
 /** Series colors by position. The first series carries the block's tone. */
-const PALETTE: Record<Tone, readonly string[]> = {
+const PALETTE: Record<ChartTone, readonly string[]> = {
   accent: [COLOR.secondary, COLOR.muted, COLOR.faint],
   neutral: [COLOR.muted, COLOR.secondary, COLOR.faint],
 };
 
-function seriesColor(index: number, tone: Tone): string {
+function seriesColor(index: number, tone: ChartTone): string {
   const palette = PALETTE[tone];
   return palette[index] ?? palette[palette.length - 1] ?? COLOR.muted;
 }
@@ -109,7 +260,9 @@ const COMPOSED_LINES = [
   COLOR.muted,
 ] as const;
 
-function composedColors(series: readonly ChartSeries[]): Map<string, string> {
+function composedColors(
+  series: readonly ComposedChartSeries[],
+): Map<string, string> {
   const colors = new Map<string, string>();
   let lines = 0;
   for (const item of series) {
@@ -152,10 +305,7 @@ function labelFormatter(unit = "") {
     (typeof value === "number" ? formatCompact(value) : text(value)) + unit;
 }
 
-function seriesStats(
-  data: readonly ChartDatum[],
-  key: string,
-): { total: number; max: number; mean: number; last: number } {
+function seriesStats(data: readonly ChartDatum[], key: string): SeriesStats {
   let total = 0;
   let max = 0;
   let count = 0;
@@ -178,24 +328,26 @@ function seriesStats(
  */
 function AreaGradients({
   blockId,
-  colors,
+  series,
+  colorOf,
 }: {
   blockId: string;
-  colors: ReadonlyMap<string, string>;
+  series: readonly ChartSeries[];
+  colorOf: (key: string) => string;
 }) {
   return (
     <defs>
-      {[...colors].map(([key, color]) => (
+      {series.map((item) => (
         <linearGradient
-          key={key}
-          id={`${blockId}-${key}`}
+          key={item.key}
+          id={`${blockId}-${item.key}`}
           x1="0"
           y1="0"
           x2="0"
           y2="1"
         >
-          <stop offset="5%" stopColor={color} stopOpacity={0.6} />
-          <stop offset="95%" stopColor={color} stopOpacity={0} />
+          <stop offset="5%" stopColor={colorOf(item.key)} stopOpacity={0.6} />
+          <stop offset="95%" stopColor={colorOf(item.key)} stopOpacity={0} />
         </linearGradient>
       ))}
     </defs>
@@ -247,104 +399,24 @@ function Swatch({
   );
 }
 
-/**
- * A chart in a hairline frame. One header line carries the title and either
- * the total or a key with per-series numbers; the plot is stock Recharts with
- * the palette applied. Used in agent replies, the landing rail, and the
- * analytics page.
+/*
+ * Parts. A chart is assembled from these at the call site: a provider, then a
+ * header and a plot, inside `ChartFrame` or inside whatever frame the caller
+ * already has (a card, a reply).
  */
-export function ChartBlock({
-  kind,
-  data,
-  series,
-  title,
-  description,
-  tone = "neutral",
-  highlightIndex,
-  legend = false,
-  dense = false,
-  plain = false,
-  headline = kind !== "composed",
-  annotations = [],
-  xTicks,
+
+/**
+ * The hairline frame around a header and a plot, fading in as one. Charts
+ * inside a container that already has a frame skip this and stack the parts
+ * in their own column.
+ */
+export function ChartFrame({
+  children,
   className,
-}: ChartBlockProps) {
-  const reduceMotion = useReducedMotion();
-  // `useId` puts colons in the id; `url(#…)` fragments are happier without.
-  const blockId = useId().replace(/:/g, "");
-  const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
-  const visible = series.filter((item) => !hidden.has(item.key));
-  const primary = series[0];
-  const composed = kind === "composed";
-
-  const colorOf = composed
-    ? composedColors(series)
-    : new Map(
-        series.map((item, index) => [item.key, seriesColor(index, tone)]),
-      );
-  const labelOf = new Map(series.map((item) => [item.key, item.label]));
-  const unitOf = new Map(series.map((item) => [item.key, item.unit ?? ""]));
-  const stats = new Map(
-    series.map((item) => [item.key, seriesStats(data, item.key)]),
-  );
-  const primaryStats = primary ? stats.get(primary.key) : undefined;
-  /* Composed series are usually running counts, so the key shows where each
-     one ended up rather than a sum of the whole line. */
-  const summaryOf = (key: string): number => {
-    const stat = stats.get(key);
-    if (!stat) return 0;
-    return composed ? stat.last : stat.total;
-  };
-
-  const highlightColor = tone === "accent" ? COLOR.foreground : COLOR.secondary;
-
-  const restMax = Math.max(
-    0,
-    ...series.slice(1).map((item) => stats.get(item.key)?.max ?? 0),
-  );
-  const splitScale = restMax > 0 && (primaryStats?.max ?? 0) > restMax * 4;
-
-  /* Value labels on bars only, when there is one series to read and room to
-     read it. Lines carry their values in the tooltip. */
-  const showValues =
-    !dense && kind !== "area" && visible.length === 1 && data.length <= 12;
-  /* Every category gets a tick while they fit; past that Recharts thins them
-     evenly, keeping the first. */
-  const tickInterval = data.length <= 7 ? 0 : "equidistantPreserveStart";
-  const showMean =
-    !dense &&
-    !composed &&
-    kind !== "hbar" &&
-    primary !== undefined &&
-    data.length > 2;
-  const hasRightAxis = composed && series.some((item) => item.axis === "right");
-  const last = data[data.length - 1];
-
-  const mutable = data.map((datum) => ({ ...datum }));
-  const animate = !reduceMotion;
-
-  const tooltip = (
-    <Tooltip
-      cursor={
-        kind === "area" || composed ? CHART_CURSOR_LINE : CHART_CURSOR_BAND
-      }
-      isAnimationActive={false}
-      content={
-        <ChartTooltip
-          labelOf={labelOf}
-          format={(value, key) =>
-            value.toLocaleString() + (unitOf.get(key) ?? "")
-          }
-        />
-      }
-    />
-  );
-
-  const barShape =
-    highlightIndex === undefined
-      ? undefined
-      : highlightBar(highlightIndex, highlightColor);
-
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
     <motion.div
       data-slot="chart-block"
@@ -352,411 +424,791 @@ export function ChartBlock({
       animate={{ opacity: 1 }}
       transition={fade.base}
       className={cn(
-        "flex flex-col",
-        dense ? "gap-s" : "gap-l",
-        !plain && "border border-imagine-border bg-imagine-surface",
-        !plain && (dense ? "p-m" : "p-l"),
+        "flex flex-col gap-l border border-imagine-border bg-imagine-surface p-l",
         className,
       )}
     >
-      {/* One line: what this is on the left, the number(s) on the right. Where
-          the block is narrow the description drops to a second line whole. */}
-      <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-l gap-y-xs">
-        <span className="min-w-0 type-small font-medium text-imagine-foreground-muted">
-          <span>{title ?? primary?.label}</span>
-          {description ? (
-            <>
-              {" "}
-              <span className="text-imagine-foreground-faint">
-                · {description}
-              </span>
-            </>
-          ) : null}
-        </span>
-        {series.length > 1 ? (
-          <dl className="flex min-w-0 flex-wrap items-center justify-end gap-x-l gap-y-xxs">
-            {series.map((item) => {
-              const off = hidden.has(item.key);
-              const row = (
-                <>
-                  <dt className="flex items-center gap-xs type-small text-imagine-foreground-muted">
-                    <Swatch
-                      mark={composed ? (item.mark ?? "line") : "bar"}
-                      color={colorOf.get(item.key)}
-                      off={off}
-                    />
-                    {item.label}
-                  </dt>
-                  <dd
-                    className={cn(
-                      "type-small font-medium tabular-nums",
-                      off && "text-imagine-foreground-faint",
-                    )}
-                  >
-                    {formatCompact(summaryOf(item.key))}
-                  </dd>
-                </>
-              );
-              if (!legend) {
-                return (
-                  <div key={item.key} className="flex items-center gap-s">
-                    {row}
-                  </div>
-                );
-              }
-              return (
-                <button
-                  key={item.key}
-                  type="button"
-                  aria-pressed={!off}
-                  onClick={() => {
-                    setHidden((current) => {
-                      const next = new Set(current);
-                      if (next.has(item.key)) next.delete(item.key);
-                      else if (next.size < series.length - 1)
-                        next.add(item.key);
-                      return next;
-                    });
-                  }}
-                  className={cn(
-                    "-mx-xs flex items-center gap-s px-xs transition-colors hover:bg-imagine-foreground/5",
-                    off && "text-imagine-foreground-faint",
-                  )}
-                >
-                  {row}
-                </button>
-              );
-            })}
-          </dl>
-        ) : headline && primaryStats ? (
-          <span className="shrink-0 type-small font-semibold tabular-nums">
-            {formatCompact(primaryStats.total)}
-          </span>
-        ) : null}
-      </div>
-
-      <div
-        className={cn("w-full", dense ? "h-16" : composed ? "h-64" : "h-48")}
-      >
-        <ResponsiveContainer width="100%" height="100%">
-          {composed ? (
-            <ComposedChart
-              data={mutable}
-              margin={{
-                left: 0,
-                right: hasRightAxis ? 0 : 12,
-                top: annotations.length > 0 ? 20 : 12,
-                bottom: 0,
-              }}
-            >
-              <CartesianGrid vertical={false} {...GRID} />
-              <XAxis
-                dataKey="label"
-                {...AXIS}
-                tickMargin={8}
-                interval={xTicks ? 0 : "preserveStartEnd"}
-                ticks={xTicks ? [...xTicks] : undefined}
-                tick={TICK}
-              />
-              <YAxis
-                yAxisId="left"
-                {...AXIS}
-                tickMargin={6}
-                width={36}
-                tickCount={5}
-                domain={[0, "auto"]}
-                tick={TICK}
-                tickFormatter={formatCompact}
-              />
-              {hasRightAxis ? (
-                <YAxis
-                  yAxisId="right"
-                  orientation="right"
-                  {...AXIS}
-                  tickMargin={6}
-                  width={32}
-                  tickCount={5}
-                  domain={[0, "auto"]}
-                  tick={TICK}
-                  tickFormatter={formatCompact}
-                />
-              ) : null}
-              {tooltip}
-              {annotations.map((note) => (
-                <ReferenceLine
-                  key={note.at}
-                  yAxisId="left"
-                  x={note.at}
-                  stroke={COLOR.faint}
-                  strokeDasharray="3 3"
-                  label={{
-                    value: note.label.toUpperCase(),
-                    position: "top",
-                    ...LABEL,
-                  }}
-                />
-              ))}
-              {visible.map((item) => {
-                const color = colorOf.get(item.key) ?? COLOR.muted;
-                const mark = item.mark ?? "line";
-                const axis = item.axis ?? "left";
-                if (mark === "bar") {
-                  return (
-                    <Bar
-                      key={item.key}
-                      yAxisId={axis}
-                      dataKey={item.key}
-                      fill={color}
-                      maxBarSize={24}
-                      isAnimationActive={animate}
-                      {...CHART_ANIMATION}
-                    />
-                  );
-                }
-                return (
-                  <Line
-                    key={item.key}
-                    yAxisId={axis}
-                    dataKey={item.key}
-                    type={mark === "step" ? "stepAfter" : "monotone"}
-                    stroke={color}
-                    strokeWidth={2}
-                    dot={false}
-                    activeDot={{ r: 4 }}
-                    isAnimationActive={animate}
-                    {...CHART_ANIMATION}
-                  />
-                );
-              })}
-              {/* The end marker is a reference dot on the last datum. */}
-              {visible.map((item) => {
-                const value = last?.[item.key];
-                if (!item.endLabel || typeof value !== "number" || !last) {
-                  return null;
-                }
-                const color = colorOf.get(item.key) ?? COLOR.muted;
-                return (
-                  <ReferenceDot
-                    key={`${item.key}-end`}
-                    yAxisId={item.axis ?? "left"}
-                    x={last.label}
-                    y={value}
-                    r={4}
-                    fill={color}
-                    stroke="none"
-                    label={{
-                      value: formatCompact(value),
-                      position: "top",
-                      fontSize: 12,
-                      fontWeight: 600,
-                      fill: COLOR.foreground,
-                    }}
-                  />
-                );
-              })}
-            </ComposedChart>
-          ) : kind === "area" ? (
-            <AreaChart
-              data={mutable}
-              margin={{
-                left: 0,
-                right: splitScale ? 0 : 8,
-                top: 12,
-                bottom: 0,
-              }}
-            >
-              <AreaGradients blockId={blockId} colors={colorOf} />
-              <CartesianGrid vertical={false} {...GRID} />
-              <XAxis
-                dataKey="label"
-                {...AXIS}
-                tickMargin={8}
-                interval={dense ? "preserveStartEnd" : tickInterval}
-                tick={dense ? false : TICK}
-                height={dense ? 1 : undefined}
-              />
-              <YAxis
-                yAxisId="left"
-                hide={dense}
-                {...AXIS}
-                tickMargin={6}
-                width={36}
-                tickCount={5}
-                domain={[0, "auto"]}
-                tick={TICK}
-                tickFormatter={formatCompact}
-              />
-              {splitScale ? (
-                <YAxis
-                  yAxisId="right"
-                  orientation="right"
-                  hide={dense}
-                  {...AXIS}
-                  tickMargin={6}
-                  width={32}
-                  tickCount={5}
-                  domain={[0, "auto"]}
-                  tick={TICK}
-                  tickFormatter={formatCompact}
-                />
-              ) : null}
-              {tooltip}
-              {showMean && primaryStats ? (
-                <ReferenceLine
-                  yAxisId="left"
-                  y={primaryStats.mean}
-                  stroke={COLOR.faint}
-                  strokeDasharray="3 3"
-                  label={{
-                    value: `avg ${formatCompact(Math.round(primaryStats.mean))}`,
-                    position: splitScale
-                      ? "insideBottomLeft"
-                      : "insideBottomRight",
-                    ...LABEL,
-                  }}
-                />
-              ) : null}
-              {visible.map((item, index) => {
-                const color = colorOf.get(item.key) ?? COLOR.muted;
-                const isPrimary = item.key === primary?.key;
-                const axis =
-                  splitScale && !isPrimary && index > 0 ? "right" : "left";
-                return (
-                  <Area
-                    key={item.key}
-                    yAxisId={axis}
-                    dataKey={item.key}
-                    type="monotone"
-                    stroke={color}
-                    strokeWidth={2}
-                    fill={`url(#${blockId}-${item.key})`}
-                    fillOpacity={1}
-                    dot={false}
-                    activeDot={{ r: 4 }}
-                    isAnimationActive={animate}
-                    {...CHART_ANIMATION}
-                  />
-                );
-              })}
-            </AreaChart>
-          ) : kind === "hbar" ? (
-            <BarChart
-              data={mutable}
-              layout="vertical"
-              margin={{ left: 0, right: 44, top: 0, bottom: 0 }}
-              barCategoryGap="34%"
-            >
-              <CartesianGrid horizontal={false} {...GRID} />
-              <XAxis type="number" hide domain={[0, "auto"]} />
-              <YAxis
-                dataKey="label"
-                type="category"
-                {...AXIS}
-                width={dense ? 56 : 112}
-                interval={0}
-                tick={{ fontSize: 12, fill: COLOR.foreground }}
-              />
-              {tooltip}
-              {visible.map((item) => {
-                const color = colorOf.get(item.key) ?? COLOR.muted;
-                const isPrimary = item.key === primary?.key;
-                return (
-                  <Bar
-                    key={item.key}
-                    dataKey={item.key}
-                    fill={color}
-                    maxBarSize={dense ? 10 : 14}
-                    shape={isPrimary ? barShape : undefined}
-                    isAnimationActive={animate}
-                    {...CHART_ANIMATION}
-                  >
-                    {isPrimary ? (
-                      <LabelList
-                        dataKey={item.key}
-                        position="right"
-                        offset={8}
-                        formatter={labelFormatter(item.unit)}
-                        fontSize={11}
-                        fill={COLOR.foreground}
-                      />
-                    ) : null}
-                  </Bar>
-                );
-              })}
-            </BarChart>
-          ) : (
-            <BarChart
-              data={mutable}
-              margin={{
-                left: 0,
-                right: showMean ? MEAN_GUTTER : 0,
-                top: showValues ? 16 : 8,
-                bottom: 0,
-              }}
-              barCategoryGap={dense ? "16%" : "24%"}
-              barGap={2}
-            >
-              {dense ? null : <CartesianGrid vertical={false} {...GRID} />}
-              <XAxis
-                dataKey="label"
-                {...AXIS}
-                tickMargin={8}
-                interval={dense ? "preserveStartEnd" : tickInterval}
-                tick={dense ? false : TICK}
-                height={dense ? 1 : undefined}
-              />
-              <YAxis
-                hide={dense}
-                {...AXIS}
-                tickMargin={6}
-                width={36}
-                tickCount={5}
-                domain={[0, "auto"]}
-                tick={TICK}
-                tickFormatter={formatCompact}
-              />
-              {tooltip}
-              {showMean && primaryStats ? (
-                <ReferenceLine
-                  y={primaryStats.mean}
-                  stroke={COLOR.faint}
-                  strokeDasharray="3 3"
-                  label={{
-                    value: `avg ${formatCompact(Math.round(primaryStats.mean))}`,
-                    position: "right",
-                    ...LABEL,
-                  }}
-                />
-              ) : null}
-              {visible.map((item) => {
-                const color = colorOf.get(item.key) ?? COLOR.muted;
-                const isPrimary = item.key === primary?.key;
-                return (
-                  <Bar
-                    key={item.key}
-                    dataKey={item.key}
-                    fill={color}
-                    maxBarSize={dense ? 28 : 40}
-                    shape={isPrimary ? barShape : undefined}
-                    isAnimationActive={animate}
-                    {...CHART_ANIMATION}
-                  >
-                    {isPrimary && showValues ? (
-                      <LabelList
-                        dataKey={item.key}
-                        position="top"
-                        offset={6}
-                        formatter={labelFormatter(item.unit)}
-                        {...LABEL}
-                      />
-                    ) : null}
-                  </Bar>
-                );
-              })}
-            </BarChart>
-          )}
-        </ResponsiveContainer>
-      </div>
+      {children}
     </motion.div>
   );
 }
+
+/**
+ * One line: what this is on the left, and on the right whatever the caller
+ * renders: a `ChartHeadline`, a `ChartKey`, a `ChartLegend`, or nothing.
+ * Where the block is narrow the description drops to a second line whole.
+ */
+export function ChartHeader({
+  title,
+  description,
+  children,
+}: {
+  /** Default: the primary series' label. */
+  title?: string;
+  description?: string;
+  children?: ReactNode;
+}) {
+  const { series } = useChart();
+  return (
+    <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-l gap-y-xs">
+      <span className="min-w-0 type-small font-medium text-imagine-foreground-muted">
+        <span>{title ?? series[0]?.label}</span>
+        {description ? (
+          <>
+            {" "}
+            <span className="text-imagine-foreground-faint">
+              · {description}
+            </span>
+          </>
+        ) : null}
+      </span>
+      {children}
+    </div>
+  );
+}
+
+/** The primary series' total, beside the title. */
+export function ChartHeadline() {
+  const { series, statsOf } = useChart();
+  const primary = series[0];
+  if (primary === undefined) return null;
+  return (
+    <span className="shrink-0 type-small font-semibold tabular-nums">
+      {formatCompact(statsOf(primary.key).total)}
+    </span>
+  );
+}
+
+/** A series' swatch, name, and number, as one key entry. */
+function KeyEntry({ item }: { item: ChartSeries }) {
+  const { hidden, colorOf, swatchOf, summaryOf } = useChart();
+  const off = hidden.has(item.key);
+  return (
+    <>
+      <dt className="flex items-center gap-xs type-small text-imagine-foreground-muted">
+        <Swatch mark={swatchOf(item.key)} color={colorOf(item.key)} off={off} />
+        {item.label}
+      </dt>
+      <dd
+        className={cn(
+          "type-small font-medium tabular-nums",
+          off && "text-imagine-foreground-faint",
+        )}
+      >
+        {formatCompact(summaryOf(item.key))}
+      </dd>
+    </>
+  );
+}
+
+const KEY_CLASS =
+  "flex min-w-0 flex-wrap items-center justify-end gap-x-l gap-y-xxs";
+
+/** Every series with its swatch and number. Read only; see `ChartLegend`. */
+export function ChartKey() {
+  const { series } = useChart();
+  return (
+    <dl className={KEY_CLASS}>
+      {series.map((item) => (
+        <div key={item.key} className="flex items-center gap-s">
+          <KeyEntry item={item} />
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+/** The key as toggles, so the reader can switch series off. */
+export function ChartLegend() {
+  const { series, hidden, toggle } = useChart();
+  return (
+    <dl className={KEY_CLASS}>
+      {series.map((item) => {
+        const off = hidden.has(item.key);
+        return (
+          <button
+            key={item.key}
+            type="button"
+            aria-pressed={!off}
+            onClick={() => {
+              toggle(item.key);
+            }}
+            className={cn(
+              "-mx-xs flex items-center gap-s px-xs transition-colors hover:bg-imagine-foreground/5",
+              off && "text-imagine-foreground-faint",
+            )}
+          >
+            <KeyEntry item={item} />
+          </button>
+        );
+      })}
+    </dl>
+  );
+}
+
+/*
+ * Plots. Each is stock Recharts with the palette applied, reading its data and
+ * series from the provider. The `*Block` plots are full size with axes; the
+ * `*Preview` plots are the composer's short strip with a baseline only.
+ */
+
+interface PlotProps {
+  className?: string;
+}
+
+interface BarPlotProps extends PlotProps {
+  /** Index of the bar to draw solid (today, the selected post). */
+  highlightIndex?: number;
+}
+
+/** What every plot derives from its provider. */
+function usePlot() {
+  const chart = useChart();
+  const reduceMotion = useReducedMotion();
+  const primary = chart.series[0];
+  return {
+    ...chart,
+    primary,
+    primaryStats:
+      primary === undefined ? undefined : chart.statsOf(primary.key),
+    visible: chart.series.filter((item) => !chart.hidden.has(item.key)),
+    labelOf: new Map(chart.series.map((item) => [item.key, item.label])),
+    unitOf: new Map(chart.series.map((item) => [item.key, item.unit ?? ""])),
+    /* Recharts mutates the rows it is handed. */
+    rows: chart.data.map((datum) => ({ ...datum })),
+    animate: !reduceMotion,
+    highlightColor:
+      chart.tone === "accent" ? COLOR.foreground : COLOR.secondary,
+  };
+}
+
+/** Every category gets a tick while they fit; past that Recharts thins them evenly, keeping the first. */
+function tickInterval(count: number): 0 | "equidistantPreserveStart" {
+  return count <= 7 ? 0 : "equidistantPreserveStart";
+}
+
+function plotTooltip(
+  cursor: ComponentProps<typeof Tooltip>["cursor"],
+  labelOf: ReadonlyMap<string, string>,
+  unitOf: ReadonlyMap<string, string>,
+) {
+  return (
+    <Tooltip
+      cursor={cursor}
+      isAnimationActive={false}
+      content={
+        <ChartTooltip>
+          <ChartTooltipLabel />
+          <ChartTooltipSeries
+            labelOf={labelOf}
+            format={(value, key) =>
+              value.toLocaleString() + (unitOf.get(key) ?? "")
+            }
+          />
+        </ChartTooltip>
+      }
+    />
+  );
+}
+
+/** Bars by category, with value labels and a mean rule where there is room. */
+export function BarChartBlock({ highlightIndex, className }: BarPlotProps) {
+  const plot = usePlot();
+  /* Value labels when there is one series to read and room to read it. */
+  const showValues = plot.visible.length === 1 && plot.data.length <= 12;
+  const showMean = plot.primaryStats !== undefined && plot.data.length > 2;
+  const barShape =
+    highlightIndex === undefined
+      ? undefined
+      : highlightBar(highlightIndex, plot.highlightColor);
+
+  return (
+    <div className={cn("h-48 w-full", className)}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={plot.rows}
+          margin={{
+            left: 0,
+            right: showMean ? MEAN_GUTTER : 0,
+            top: showValues ? 16 : 8,
+            bottom: 0,
+          }}
+          barCategoryGap="24%"
+          barGap={2}
+        >
+          <CartesianGrid vertical={false} {...GRID} />
+          <XAxis
+            dataKey="label"
+            {...AXIS}
+            tickMargin={8}
+            interval={tickInterval(plot.data.length)}
+            tick={TICK}
+          />
+          <YAxis
+            {...AXIS}
+            tickMargin={6}
+            width={36}
+            tickCount={5}
+            domain={[0, "auto"]}
+            tick={TICK}
+            tickFormatter={formatCompact}
+          />
+          {plotTooltip(CHART_CURSOR_BAND, plot.labelOf, plot.unitOf)}
+          {showMean && plot.primaryStats ? (
+            <ReferenceLine
+              y={plot.primaryStats.mean}
+              stroke={COLOR.faint}
+              strokeDasharray="3 3"
+              label={{
+                value: `avg ${formatCompact(Math.round(plot.primaryStats.mean))}`,
+                position: "right",
+                ...LABEL,
+              }}
+            />
+          ) : null}
+          {plot.visible.map((item) => {
+            const isPrimary = item.key === plot.primary?.key;
+            return (
+              <Bar
+                key={item.key}
+                dataKey={item.key}
+                fill={plot.colorOf(item.key)}
+                maxBarSize={40}
+                shape={isPrimary ? barShape : undefined}
+                isAnimationActive={plot.animate}
+                {...CHART_ANIMATION}
+              >
+                {isPrimary && showValues ? (
+                  <LabelList
+                    dataKey={item.key}
+                    position="top"
+                    offset={6}
+                    formatter={labelFormatter(item.unit)}
+                    {...LABEL}
+                  />
+                ) : null}
+              </Bar>
+            );
+          })}
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/** The short bar strip for the composer preview: no grid, no axes. */
+export function BarChartPreview({ highlightIndex, className }: BarPlotProps) {
+  const plot = usePlot();
+  const barShape =
+    highlightIndex === undefined
+      ? undefined
+      : highlightBar(highlightIndex, plot.highlightColor);
+
+  return (
+    <div className={cn("h-16 w-full", className)}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={plot.rows}
+          margin={{ left: 0, right: 0, top: 8, bottom: 0 }}
+          barCategoryGap="16%"
+          barGap={2}
+        >
+          <XAxis
+            dataKey="label"
+            {...AXIS}
+            tickMargin={8}
+            interval="preserveStartEnd"
+            tick={false}
+            height={1}
+          />
+          <YAxis
+            hide
+            {...AXIS}
+            tickMargin={6}
+            width={36}
+            tickCount={5}
+            domain={[0, "auto"]}
+            tick={TICK}
+            tickFormatter={formatCompact}
+          />
+          {plotTooltip(CHART_CURSOR_BAND, plot.labelOf, plot.unitOf)}
+          {plot.visible.map((item) => (
+            <Bar
+              key={item.key}
+              dataKey={item.key}
+              fill={plot.colorOf(item.key)}
+              maxBarSize={28}
+              shape={item.key === plot.primary?.key ? barShape : undefined}
+              isAnimationActive={plot.animate}
+              {...CHART_ANIMATION}
+            />
+          ))}
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/**
+ * Whether the secondary series get their own scale: when the primary dwarfs
+ * them, one axis would flatten them to the baseline.
+ */
+function splitScaleFor(plot: ReturnType<typeof usePlot>): boolean {
+  const restMax = Math.max(
+    0,
+    ...plot.series.slice(1).map((item) => plot.statsOf(item.key).max),
+  );
+  return restMax > 0 && (plot.primaryStats?.max ?? 0) > restMax * 4;
+}
+
+function areaFor(
+  plot: ReturnType<typeof usePlot>,
+  item: ChartSeries,
+  index: number,
+  splitScale: boolean,
+  blockId: string,
+) {
+  const isPrimary = item.key === plot.primary?.key;
+  return (
+    <Area
+      key={item.key}
+      yAxisId={splitScale && !isPrimary && index > 0 ? "right" : "left"}
+      dataKey={item.key}
+      type="monotone"
+      stroke={plot.colorOf(item.key)}
+      strokeWidth={2}
+      fill={`url(#${blockId}-${item.key})`}
+      fillOpacity={1}
+      dot={false}
+      activeDot={{ r: 4 }}
+      isAnimationActive={plot.animate}
+      {...CHART_ANIMATION}
+    />
+  );
+}
+
+/** Areas over time, with a mean rule where there is room. */
+export function AreaChartBlock({ className }: PlotProps) {
+  const plot = usePlot();
+  // `useId` puts colons in the id; `url(#…)` fragments are happier without.
+  const blockId = useId().replace(/:/g, "");
+  const splitScale = splitScaleFor(plot);
+  const showMean = plot.primaryStats !== undefined && plot.data.length > 2;
+
+  return (
+    <div className={cn("h-48 w-full", className)}>
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart
+          data={plot.rows}
+          margin={{ left: 0, right: splitScale ? 0 : 8, top: 12, bottom: 0 }}
+        >
+          <AreaGradients
+            blockId={blockId}
+            series={plot.series}
+            colorOf={plot.colorOf}
+          />
+          <CartesianGrid vertical={false} {...GRID} />
+          <XAxis
+            dataKey="label"
+            {...AXIS}
+            tickMargin={8}
+            interval={tickInterval(plot.data.length)}
+            tick={TICK}
+          />
+          <YAxis
+            yAxisId="left"
+            {...AXIS}
+            tickMargin={6}
+            width={36}
+            tickCount={5}
+            domain={[0, "auto"]}
+            tick={TICK}
+            tickFormatter={formatCompact}
+          />
+          {splitScale ? (
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              {...AXIS}
+              tickMargin={6}
+              width={32}
+              tickCount={5}
+              domain={[0, "auto"]}
+              tick={TICK}
+              tickFormatter={formatCompact}
+            />
+          ) : null}
+          {plotTooltip(CHART_CURSOR_LINE, plot.labelOf, plot.unitOf)}
+          {showMean && plot.primaryStats ? (
+            <ReferenceLine
+              yAxisId="left"
+              y={plot.primaryStats.mean}
+              stroke={COLOR.faint}
+              strokeDasharray="3 3"
+              label={{
+                value: `avg ${formatCompact(Math.round(plot.primaryStats.mean))}`,
+                position: splitScale ? "insideBottomLeft" : "insideBottomRight",
+                ...LABEL,
+              }}
+            />
+          ) : null}
+          {plot.visible.map((item, index) =>
+            areaFor(plot, item, index, splitScale, blockId),
+          )}
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/** The short area strip for the composer preview: a baseline, no axes. */
+export function AreaChartPreview({ className }: PlotProps) {
+  const plot = usePlot();
+  const blockId = useId().replace(/:/g, "");
+  const splitScale = splitScaleFor(plot);
+
+  return (
+    <div className={cn("h-16 w-full", className)}>
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart
+          data={plot.rows}
+          margin={{ left: 0, right: splitScale ? 0 : 8, top: 12, bottom: 0 }}
+        >
+          <AreaGradients
+            blockId={blockId}
+            series={plot.series}
+            colorOf={plot.colorOf}
+          />
+          <CartesianGrid vertical={false} {...GRID} />
+          <XAxis
+            dataKey="label"
+            {...AXIS}
+            tickMargin={8}
+            interval="preserveStartEnd"
+            tick={false}
+            height={1}
+          />
+          <YAxis
+            yAxisId="left"
+            hide
+            {...AXIS}
+            tickMargin={6}
+            width={36}
+            tickCount={5}
+            domain={[0, "auto"]}
+            tick={TICK}
+            tickFormatter={formatCompact}
+          />
+          {splitScale ? (
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              hide
+              {...AXIS}
+              tickMargin={6}
+              width={32}
+              tickCount={5}
+              domain={[0, "auto"]}
+              tick={TICK}
+              tickFormatter={formatCompact}
+            />
+          ) : null}
+          {plotTooltip(CHART_CURSOR_LINE, plot.labelOf, plot.unitOf)}
+          {plot.visible.map((item, index) =>
+            areaFor(plot, item, index, splitScale, blockId),
+          )}
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/** Bars across, one per category, the primary series' value at each end. */
+export function HorizontalBarChartBlock({
+  highlightIndex,
+  className,
+}: BarPlotProps) {
+  const plot = usePlot();
+  const barShape =
+    highlightIndex === undefined
+      ? undefined
+      : highlightBar(highlightIndex, plot.highlightColor);
+
+  return (
+    <div className={cn("h-48 w-full", className)}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={plot.rows}
+          layout="vertical"
+          margin={{ left: 0, right: 44, top: 0, bottom: 0 }}
+          barCategoryGap="34%"
+        >
+          <CartesianGrid horizontal={false} {...GRID} />
+          <XAxis type="number" hide domain={[0, "auto"]} />
+          <YAxis
+            dataKey="label"
+            type="category"
+            {...AXIS}
+            width={112}
+            interval={0}
+            tick={{ fontSize: 12, fill: COLOR.foreground }}
+          />
+          {plotTooltip(CHART_CURSOR_BAND, plot.labelOf, plot.unitOf)}
+          {plot.visible.map((item) => {
+            const isPrimary = item.key === plot.primary?.key;
+            return (
+              <Bar
+                key={item.key}
+                dataKey={item.key}
+                fill={plot.colorOf(item.key)}
+                maxBarSize={14}
+                shape={isPrimary ? barShape : undefined}
+                isAnimationActive={plot.animate}
+                {...CHART_ANIMATION}
+              >
+                {isPrimary ? (
+                  <LabelList
+                    dataKey={item.key}
+                    position="right"
+                    offset={8}
+                    formatter={labelFormatter(item.unit)}
+                    fontSize={11}
+                    fill={COLOR.foreground}
+                  />
+                ) : null}
+              </Bar>
+            );
+          })}
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/** The short horizontal bar strip for the composer preview. */
+export function HorizontalBarChartPreview({
+  highlightIndex,
+  className,
+}: BarPlotProps) {
+  const plot = usePlot();
+  const barShape =
+    highlightIndex === undefined
+      ? undefined
+      : highlightBar(highlightIndex, plot.highlightColor);
+
+  return (
+    <div className={cn("h-16 w-full", className)}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={plot.rows}
+          layout="vertical"
+          margin={{ left: 0, right: 44, top: 0, bottom: 0 }}
+          barCategoryGap="34%"
+        >
+          <CartesianGrid horizontal={false} {...GRID} />
+          <XAxis type="number" hide domain={[0, "auto"]} />
+          <YAxis
+            dataKey="label"
+            type="category"
+            {...AXIS}
+            width={56}
+            interval={0}
+            tick={{ fontSize: 12, fill: COLOR.foreground }}
+          />
+          {plotTooltip(CHART_CURSOR_BAND, plot.labelOf, plot.unitOf)}
+          {plot.visible.map((item) => {
+            const isPrimary = item.key === plot.primary?.key;
+            return (
+              <Bar
+                key={item.key}
+                dataKey={item.key}
+                fill={plot.colorOf(item.key)}
+                maxBarSize={10}
+                shape={isPrimary ? barShape : undefined}
+                isAnimationActive={plot.animate}
+                {...CHART_ANIMATION}
+              >
+                {isPrimary ? (
+                  <LabelList
+                    dataKey={item.key}
+                    position="right"
+                    offset={8}
+                    formatter={labelFormatter(item.unit)}
+                    fontSize={11}
+                    fill={COLOR.foreground}
+                  />
+                ) : null}
+              </Bar>
+            );
+          })}
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/**
+ * Bars, lines, and steps on shared categories, some on a second scale, with
+ * events marked along the x axis. Reads `ComposedChartSeries` from
+ * `ComposedChartProvider` for each series' mark and axis.
+ */
+export function ComposedChartBlock({
+  annotations = [],
+  xTicks,
+  className,
+}: PlotProps & {
+  /** Events to mark along the x axis. */
+  annotations?: readonly ChartAnnotation[];
+  /** Which category labels get an axis tick. Default: all of them. */
+  xTicks?: readonly string[];
+}) {
+  const plot = usePlot();
+  const series = useComposedSeries();
+  const visible = series.filter((item) => !plot.hidden.has(item.key));
+  const hasRightAxis = series.some((item) => item.axis === "right");
+  const last = plot.data[plot.data.length - 1];
+
+  return (
+    <div className={cn("h-64 w-full", className)}>
+      <ResponsiveContainer width="100%" height="100%">
+        <ComposedChart
+          data={plot.rows}
+          margin={{
+            left: 0,
+            right: hasRightAxis ? 0 : 12,
+            top: annotations.length > 0 ? 20 : 12,
+            bottom: 0,
+          }}
+        >
+          <CartesianGrid vertical={false} {...GRID} />
+          <XAxis
+            dataKey="label"
+            {...AXIS}
+            tickMargin={8}
+            interval={xTicks ? 0 : "preserveStartEnd"}
+            ticks={xTicks ? [...xTicks] : undefined}
+            tick={TICK}
+          />
+          <YAxis
+            yAxisId="left"
+            {...AXIS}
+            tickMargin={6}
+            width={36}
+            tickCount={5}
+            domain={[0, "auto"]}
+            tick={TICK}
+            tickFormatter={formatCompact}
+          />
+          {hasRightAxis ? (
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              {...AXIS}
+              tickMargin={6}
+              width={32}
+              tickCount={5}
+              domain={[0, "auto"]}
+              tick={TICK}
+              tickFormatter={formatCompact}
+            />
+          ) : null}
+          {plotTooltip(CHART_CURSOR_LINE, plot.labelOf, plot.unitOf)}
+          {annotations.map((note) => (
+            <ReferenceLine
+              key={note.at}
+              yAxisId="left"
+              x={note.at}
+              stroke={COLOR.faint}
+              strokeDasharray="3 3"
+              label={{
+                value: note.label.toUpperCase(),
+                position: "top",
+                ...LABEL,
+              }}
+            />
+          ))}
+          {visible.map((item) => {
+            const color = plot.colorOf(item.key);
+            const mark = item.mark ?? "line";
+            const axis = item.axis ?? "left";
+            if (mark === "bar") {
+              return (
+                <Bar
+                  key={item.key}
+                  yAxisId={axis}
+                  dataKey={item.key}
+                  fill={color}
+                  maxBarSize={24}
+                  isAnimationActive={plot.animate}
+                  {...CHART_ANIMATION}
+                />
+              );
+            }
+            return (
+              <Line
+                key={item.key}
+                yAxisId={axis}
+                dataKey={item.key}
+                type={mark === "step" ? "stepAfter" : "monotone"}
+                stroke={color}
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4 }}
+                isAnimationActive={plot.animate}
+                {...CHART_ANIMATION}
+              />
+            );
+          })}
+          {/* The end marker is a reference dot on the last datum. */}
+          {visible.map((item) => {
+            const value = last?.[item.key];
+            if (!item.endLabel || typeof value !== "number" || !last) {
+              return null;
+            }
+            return (
+              <ReferenceDot
+                key={`${item.key}-end`}
+                yAxisId={item.axis ?? "left"}
+                x={last.label}
+                y={value}
+                r={4}
+                fill={plot.colorOf(item.key)}
+                stroke="none"
+                label={{
+                  value: formatCompact(value),
+                  position: "top",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  fill: COLOR.foreground,
+                }}
+              />
+            );
+          })}
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/**
+ * Mock data names its chart by kind (`PreviewChart`, a chart message part).
+ * These records are the one place that name becomes a plot; everywhere else
+ * renders the plot it wants directly.
+ */
+export const CHART_PLOT_BY_KIND: Record<
+  ChartKind,
+  (props: BarPlotProps) => ReactNode
+> = {
+  bar: BarChartBlock,
+  area: AreaChartBlock,
+  hbar: HorizontalBarChartBlock,
+};
+
+export const CHART_PREVIEW_BY_KIND: Record<
+  ChartKind,
+  (props: BarPlotProps) => ReactNode
+> = {
+  bar: BarChartPreview,
+  area: AreaChartPreview,
+  hbar: HorizontalBarChartPreview,
+};

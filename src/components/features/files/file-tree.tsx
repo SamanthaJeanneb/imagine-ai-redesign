@@ -2,14 +2,23 @@
 
 import { cn } from "cn";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 
-import { AssetGrid } from "@/components/features/files/asset-grid";
-import { type AssetTileData } from "@/components/features/files/asset-tile";
 import {
-  type FileResource,
-  writeResourceDrag,
-} from "@/components/features/files/resource-drag";
+  AssetGridItem,
+  AssetGridOverflow,
+  AssetGridSmall,
+} from "@/components/features/files/asset-grid";
+import {
+  AssetTile,
+  AssetTileButton,
+  type AssetTileData,
+} from "@/components/features/files/asset-tile";
+import {
+  DraggableAsset,
+  DraggableFile,
+} from "@/components/features/files/draggable-resource";
+import type { FileResource } from "@/components/features/files/resource-drag";
 import { Disclosure } from "@/components/motion/disclosure";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -42,21 +51,8 @@ export interface FileSection {
   nodes: readonly FileNode[];
 }
 
-interface FileTreeProps {
-  sections: readonly FileSection[];
-  activeFileId?: string;
-  activeAssetId?: string;
-  onOpenFile?: (id: string) => void;
-  onEditFile?: (id: string) => void;
-  onAttachFile?: (file: FileResource) => void;
-  onOpenAsset?: (asset: AssetTileData) => void;
-  onShowAllAssets?: (nodeId: string) => void;
-  expandedAssetIds?: readonly string[];
-  /** Tile size for asset rows. */
-  assetSize?: "sm" | "default";
-  draggableResources?: boolean;
-  className?: string;
-}
+/** Asset tiles a tree row shows before folding the rest into "+N". */
+const TREE_ASSET_LIMIT = 2;
 
 function initials(name: string): string {
   return name
@@ -80,320 +76,496 @@ function Chevron({ open }: { open: boolean }) {
   );
 }
 
-function FileRow({
-  node,
-  active,
-  onOpen,
-  onEdit,
-  onAttach,
-  draggableResources,
+/* ------------------------------------------------------------------------ */
+/* Parts                                                                    */
+/* ------------------------------------------------------------------------ */
+
+/** The tree's frame. Holds `FileTreeSection`s. */
+export function FileTree({
+  className,
+  children,
 }: {
-  node: Extract<FileNode, { type: "file" }>;
-  active: boolean;
-  onOpen?: (id: string) => void;
-  onEdit?: (id: string) => void;
-  onAttach?: (file: FileResource) => void;
-  draggableResources: boolean;
+  className?: string;
+  children: ReactNode;
 }) {
   return (
-    <div
-      draggable={draggableResources}
-      title={draggableResources ? "Drag to attach to chat" : undefined}
-      onDragStart={(event) => {
-        if (!draggableResources) return;
-        event.currentTarget.dataset["dragging"] = "true";
-        writeResourceDrag(event, {
-          kind: "file",
-          file: { id: node.id, title: node.name },
-        });
-      }}
-      onDragEnd={(event) => {
-        delete event.currentTarget.dataset["dragging"];
-      }}
-      className={cn(
-        "group/file relative flex h-8 cursor-grab items-center gap-s rounded-control pr-xs pl-s transition-[background-color,opacity] hover:bg-imagine-surface-raised active:cursor-grabbing data-[dragging=true]:opacity-40",
-        active && "bg-imagine-secondary-soft hover:bg-imagine-secondary-soft",
-      )}
-    >
-      {active ? (
-        <span
-          aria-hidden="true"
-          className="absolute inset-y-1.5 -left-m w-0.5 rounded-full bg-imagine-secondary"
-        />
-      ) : null}
-      <button
-        type="button"
-        onClick={() => onOpen?.(node.id)}
-        className="flex min-w-0 flex-1 items-center gap-s text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-      >
-        <Icon
-          name="file-lines"
-          size="s"
-          className="text-imagine-foreground-faint"
-        />
-        <span
-          className={cn(
-            "truncate type-small",
-            active
-              ? "font-medium"
-              : "text-imagine-foreground-muted group-hover/file:text-imagine-foreground",
-          )}
-        >
-          {node.name}
-        </span>
-      </button>
-      {onAttach ? (
-        <Button
-          size="icon-xs"
-          variant="ghost"
-          aria-label={`Attach ${node.name} to chat`}
-          onClick={() => {
-            onAttach({ id: node.id, title: node.name });
-          }}
-          className="text-imagine-foreground-faint opacity-0 transition-opacity group-hover/file:opacity-100 focus-visible:opacity-100"
-        >
-          <Icon name="paperclip" size="s" />
-        </Button>
-      ) : null}
-      {onEdit ? (
-        <Button
-          size="icon-xs"
-          variant="ghost"
-          aria-label={`Edit ${node.name}`}
-          onClick={() => {
-            onEdit(node.id);
-          }}
-          className="opacity-0 transition-opacity group-hover/file:opacity-100 focus-visible:opacity-100"
-        >
-          <Icon name="pen" size="s" />
-        </Button>
-      ) : null}
+    <div data-slot="file-tree" className={cn("flex flex-col gap-s", className)}>
+      {children}
     </div>
-  );
-}
-
-function Nodes({
-  nodes,
-  depth,
-  activeFileId,
-  activeAssetId,
-  assetSize,
-  onOpenFile,
-  onEditFile,
-  onAttachFile,
-  onOpenAsset,
-  onShowAllAssets,
-  expandedAssetIds,
-  draggableResources,
-}: {
-  nodes: readonly FileNode[];
-  depth: number;
-} & Pick<
-  FileTreeProps,
-  | "activeFileId"
-  | "activeAssetId"
-  | "assetSize"
-  | "onOpenFile"
-  | "onEditFile"
-  | "onAttachFile"
-  | "onOpenAsset"
-  | "onShowAllAssets"
-  | "expandedAssetIds"
-  | "draggableResources"
->) {
-  const [closed, setClosed] = useState<ReadonlySet<string>>(new Set());
-
-  return (
-    <ul
-      className={cn(
-        "flex flex-col gap-xxs",
-        depth > 0 && "ml-m border-l border-imagine-border pl-s",
-      )}
-    >
-      {nodes.map((node, index) => (
-        <motion.li
-          key={node.id}
-          initial={{ opacity: 0, x: -4 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ ...fade.base, delay: index * stagger.list }}
-        >
-          {node.type === "file" ? (
-            <FileRow
-              node={node}
-              active={node.id === activeFileId}
-              onOpen={onOpenFile}
-              onEdit={onEditFile}
-              onAttach={onAttachFile}
-              draggableResources={draggableResources ?? false}
-            />
-          ) : node.type === "folder" ? (
-            <>
-              <motion.button
-                type="button"
-                aria-expanded={!closed.has(node.id)}
-                onClick={() => {
-                  setClosed((current) => {
-                    const next = new Set(current);
-                    if (next.has(node.id)) next.delete(node.id);
-                    else next.add(node.id);
-                    return next;
-                  });
-                }}
-                whileTap={pressRow.whileTap}
-                transition={pressRow.transition}
-                className="flex h-8 w-full items-center gap-s rounded-control px-s text-left text-imagine-foreground-muted transition-colors outline-none hover:bg-imagine-surface-raised hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
-              >
-                <Icon
-                  name="folder"
-                  size="s"
-                  className="text-imagine-foreground-faint"
-                />
-                <span className="truncate type-small">{node.name}</span>
-                <Chevron open={!closed.has(node.id)} />
-              </motion.button>
-              <Disclosure open={!closed.has(node.id)}>
-                <Nodes
-                  nodes={node.children}
-                  depth={depth + 1}
-                  activeFileId={activeFileId}
-                  activeAssetId={activeAssetId}
-                  assetSize={assetSize}
-                  onOpenFile={onOpenFile}
-                  onEditFile={onEditFile}
-                  onAttachFile={onAttachFile}
-                  onOpenAsset={onOpenAsset}
-                  onShowAllAssets={onShowAllAssets}
-                  expandedAssetIds={expandedAssetIds}
-                  draggableResources={draggableResources}
-                />
-              </Disclosure>
-            </>
-          ) : (
-            <div className="flex flex-col gap-s py-xs">
-              <span className="flex h-6 items-center gap-s px-s type-small text-imagine-foreground-muted">
-                <Icon
-                  name="image"
-                  size="s"
-                  className="text-imagine-foreground-faint"
-                />
-                {node.name}
-              </span>
-              <AssetGrid
-                assets={node.assets}
-                selectedId={activeAssetId}
-                limit={
-                  expandedAssetIds?.includes(node.id)
-                    ? undefined
-                    : assetSize === "sm"
-                      ? 2
-                      : 5
-                }
-                size={assetSize}
-                onSelect={onOpenAsset}
-                onShowAll={() => onShowAllAssets?.(node.id)}
-                draggableResources={draggableResources}
-                className="px-s"
-              />
-            </div>
-          )}
-        </motion.li>
-      ))}
-    </ul>
   );
 }
 
 /**
- * Drive-like tree: an organization section and one per person, each
- * collapsible, with markdown files, folders, and an assets row. Hovering a
- * file reveals edit; the open file carries a left bar.
+ * A library: an organization or a person, collapsible under its mark. The
+ * children (a `FileTreeList`) sit inside a guide line.
  */
-export function FileTree({
-  sections,
-  activeFileId,
-  activeAssetId,
-  onOpenFile,
-  onEditFile,
-  onAttachFile,
-  onOpenAsset,
-  onShowAllAssets,
-  expandedAssetIds,
-  assetSize = "sm",
-  draggableResources = false,
-  className,
-}: FileTreeProps) {
-  const [closed, setClosed] = useState<ReadonlySet<string>>(new Set());
-
+export function FileTreeSection({
+  section,
+  children,
+}: {
+  section: FileSection;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(true);
   return (
-    <div data-slot="file-tree" className={cn("flex flex-col gap-s", className)}>
-      {sections.map((section) => {
-        const open = !closed.has(section.id);
-        return (
-          <section key={section.id} className="flex flex-col gap-xxs">
-            <motion.button
-              type="button"
-              aria-expanded={open}
-              onClick={() => {
-                setClosed((current) => {
-                  const next = new Set(current);
-                  if (next.has(section.id)) next.delete(section.id);
-                  else next.add(section.id);
-                  return next;
-                });
-              }}
-              whileTap={pressRow.whileTap}
-              transition={pressRow.transition}
-              className="flex h-9 w-full items-center gap-s rounded-control px-s text-left transition-colors outline-none hover:bg-imagine-surface-raised focus-visible:ring-2 focus-visible:ring-ring/40"
-            >
-              {section.kind === "organization" ? (
-                section.avatarUrl ? (
-                  // Org logos are user uploads from arbitrary hosts; next/image needs a domain list.
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={section.avatarUrl}
-                    alt=""
-                    className="size-6 shrink-0 rounded-control object-cover"
-                  />
-                ) : (
-                  <span className="flex size-6 items-center justify-center rounded-control bg-imagine-secondary-soft text-imagine-secondary">
-                    <Icon name="building" size="s" />
-                  </span>
-                )
-              ) : (
-                <Avatar size="sm" className="size-6">
-                  {section.avatarUrl ? (
-                    <AvatarImage src={section.avatarUrl} alt={section.title} />
-                  ) : null}
-                  <AvatarFallback className="text-xs">
-                    {initials(section.title)}
-                  </AvatarFallback>
-                </Avatar>
-              )}
-              <span className="truncate type-body font-medium">
-                {section.title}
-              </span>
-              <Chevron open={open} />
-            </motion.button>
-            <Disclosure open={open}>
-              <div className="ml-m border-l border-imagine-border pl-s">
-                <Nodes
-                  nodes={section.nodes}
-                  depth={0}
-                  activeFileId={activeFileId}
-                  activeAssetId={activeAssetId}
-                  assetSize={assetSize}
-                  onOpenFile={onOpenFile}
-                  onEditFile={onEditFile}
-                  onAttachFile={onAttachFile}
-                  onOpenAsset={onOpenAsset}
-                  onShowAllAssets={onShowAllAssets}
-                  expandedAssetIds={expandedAssetIds}
-                  draggableResources={draggableResources}
-                />
-              </div>
-            </Disclosure>
-          </section>
-        );
-      })}
+    <section className="flex flex-col gap-xxs">
+      <motion.button
+        type="button"
+        aria-expanded={open}
+        onClick={() => {
+          setOpen((current) => !current);
+        }}
+        whileTap={pressRow.whileTap}
+        transition={pressRow.transition}
+        className="flex h-9 w-full items-center gap-s rounded-control px-s text-left transition-colors outline-none hover:bg-imagine-surface-raised focus-visible:ring-2 focus-visible:ring-ring/40"
+      >
+        {section.kind === "organization" ? (
+          section.avatarUrl ? (
+            // Org logos are user uploads from arbitrary hosts; next/image needs a domain list.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={section.avatarUrl}
+              alt=""
+              className="size-6 shrink-0 rounded-control object-cover"
+            />
+          ) : (
+            <span className="flex size-6 items-center justify-center rounded-control bg-imagine-secondary-soft text-imagine-secondary">
+              <Icon name="building" size="s" />
+            </span>
+          )
+        ) : (
+          <Avatar size="sm" className="size-6">
+            {section.avatarUrl ? (
+              <AvatarImage src={section.avatarUrl} alt={section.title} />
+            ) : null}
+            <AvatarFallback className="text-xs">
+              {initials(section.title)}
+            </AvatarFallback>
+          </Avatar>
+        )}
+        <span className="truncate type-body font-medium">{section.title}</span>
+        <Chevron open={open} />
+      </motion.button>
+      <Disclosure open={open}>
+        <div className="ml-m border-l border-imagine-border pl-s">
+          {children}
+        </div>
+      </Disclosure>
+    </section>
+  );
+}
+
+/** The rows under one parent. */
+export function FileTreeList({ children }: { children: ReactNode }) {
+  return <ul className="flex flex-col gap-xxs">{children}</ul>;
+}
+
+/** One row's slot in a `FileTreeList`; enters staggered by its position. */
+export function FileTreeItem({
+  index,
+  children,
+}: {
+  index: number;
+  children: ReactNode;
+}) {
+  return (
+    <motion.li
+      initial={{ opacity: 0, x: -4 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ ...fade.base, delay: index * stagger.list }}
+    >
+      {children}
+    </motion.li>
+  );
+}
+
+/** A collapsible folder row; its children (a `FileTreeList`) indent under it. */
+export function FileTreeFolder({
+  name,
+  children,
+}: {
+  name: string;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(true);
+  return (
+    <>
+      <motion.button
+        type="button"
+        aria-expanded={open}
+        onClick={() => {
+          setOpen((current) => !current);
+        }}
+        whileTap={pressRow.whileTap}
+        transition={pressRow.transition}
+        className="flex h-8 w-full items-center gap-s rounded-control px-s text-left text-imagine-foreground-muted transition-colors outline-none hover:bg-imagine-surface-raised hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
+      >
+        <Icon
+          name="folder"
+          size="s"
+          className="text-imagine-foreground-faint"
+        />
+        <span className="truncate type-small">{name}</span>
+        <Chevron open={open} />
+      </motion.button>
+      <Disclosure open={open}>
+        <div className="ml-m border-l border-imagine-border pl-s">
+          {children}
+        </div>
+      </Disclosure>
+    </>
+  );
+}
+
+const FileTreeFileContext = createContext<{ name: string } | null>(null);
+
+function useFileTreeFile(part: string) {
+  const context = useContext(FileTreeFileContext);
+  if (context === null) {
+    throw new Error(`${part} must be rendered inside FileTreeFile`);
+  }
+  return context;
+}
+
+/**
+ * A document row. The open one carries a left bar. Children are the actions
+ * that appear on hover: `FileTreeFileAttachAction`, `FileTreeFileEditAction`.
+ */
+export function FileTreeFile({
+  name,
+  active = false,
+  onOpen,
+  children,
+}: {
+  name: string;
+  active?: boolean;
+  onOpen: () => void;
+  children?: ReactNode;
+}) {
+  return (
+    <FileTreeFileContext value={{ name }}>
+      <div
+        className={cn(
+          "group/file relative flex h-8 items-center gap-s rounded-control pr-xs pl-s transition-[background-color,opacity] hover:bg-imagine-surface-raised",
+          active && "bg-imagine-secondary-soft hover:bg-imagine-secondary-soft",
+        )}
+      >
+        {active ? (
+          <span
+            aria-hidden="true"
+            className="absolute inset-y-1.5 -left-m w-0.5 rounded-full bg-imagine-secondary"
+          />
+        ) : null}
+        <button
+          type="button"
+          onClick={onOpen}
+          className="flex min-w-0 flex-1 items-center gap-s text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+        >
+          <Icon
+            name="file-lines"
+            size="s"
+            className="text-imagine-foreground-faint"
+          />
+          <span
+            className={cn(
+              "truncate type-small",
+              active
+                ? "font-medium"
+                : "text-imagine-foreground-muted group-hover/file:text-imagine-foreground",
+            )}
+          >
+            {name}
+          </span>
+        </button>
+        {children}
+      </div>
+    </FileTreeFileContext>
+  );
+}
+
+export function FileTreeFileAttachAction({ onPress }: { onPress: () => void }) {
+  const { name } = useFileTreeFile("FileTreeFileAttachAction");
+  return (
+    <Button
+      size="icon-xs"
+      variant="ghost"
+      aria-label={`Attach ${name} to chat`}
+      onClick={onPress}
+      className="text-imagine-foreground-faint opacity-0 transition-opacity group-hover/file:opacity-100 focus-visible:opacity-100"
+    >
+      <Icon name="paperclip" size="s" />
+    </Button>
+  );
+}
+
+export function FileTreeFileEditAction({ onPress }: { onPress: () => void }) {
+  const { name } = useFileTreeFile("FileTreeFileEditAction");
+  return (
+    <Button
+      size="icon-xs"
+      variant="ghost"
+      aria-label={`Edit ${name}`}
+      onClick={onPress}
+      className="opacity-0 transition-opacity group-hover/file:opacity-100 focus-visible:opacity-100"
+    >
+      <Icon name="pen" size="s" />
+    </Button>
+  );
+}
+
+/** An assets row: a label over whatever grid the caller puts under it. */
+export function FileTreeAssets({
+  name,
+  children,
+}: {
+  name: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-s py-xs">
+      <span className="flex h-6 items-center gap-s px-s type-small text-imagine-foreground-muted">
+        <Icon name="image" size="s" className="text-imagine-foreground-faint" />
+        {name}
+      </span>
+      {children}
     </div>
+  );
+}
+
+/* ------------------------------------------------------------------------ */
+/* Assembled trees                                                          */
+/* ------------------------------------------------------------------------ */
+
+/** Which asset rows show everything, once "+N" has been pressed. */
+function useExpandedAssets() {
+  const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
+  const expand = (id: string) => {
+    setExpanded((current) => new Set(current).add(id));
+  };
+  return { expanded, expand };
+}
+
+interface ChatFileTreeProps {
+  sections: readonly FileSection[];
+  activeFileId?: string;
+  /** The asset already attached to the draft. */
+  activeAssetId?: string;
+  onOpenFile: (id: string) => void;
+  onEditFile: (id: string) => void;
+  onAttachFile: (file: FileResource) => void;
+  onOpenAsset: (asset: AssetTileData) => void;
+  className?: string;
+}
+
+interface ChatFileTreeApi extends Omit<
+  ChatFileTreeProps,
+  "sections" | "className"
+> {
+  expanded: ReadonlySet<string>;
+  expand: (id: string) => void;
+}
+
+const ChatFileTreeContext = createContext<ChatFileTreeApi | null>(null);
+
+function useChatFileTree() {
+  const context = useContext(ChatFileTreeContext);
+  if (context === null) throw new Error("Missing ChatFileTree");
+  return context;
+}
+
+function ChatNodes({ nodes }: { nodes: readonly FileNode[] }) {
+  const tree = useChatFileTree();
+  return (
+    <FileTreeList>
+      {nodes.map((node, index) => (
+        <FileTreeItem key={node.id} index={index}>
+          {node.type === "file" ? (
+            <DraggableFile file={{ id: node.id, title: node.name }}>
+              <FileTreeFile
+                name={node.name}
+                active={node.id === tree.activeFileId}
+                onOpen={() => {
+                  tree.onOpenFile(node.id);
+                }}
+              >
+                <FileTreeFileAttachAction
+                  onPress={() => {
+                    tree.onAttachFile({ id: node.id, title: node.name });
+                  }}
+                />
+                <FileTreeFileEditAction
+                  onPress={() => {
+                    tree.onEditFile(node.id);
+                  }}
+                />
+              </FileTreeFile>
+            </DraggableFile>
+          ) : node.type === "folder" ? (
+            <FileTreeFolder name={node.name}>
+              <ChatNodes nodes={node.children} />
+            </FileTreeFolder>
+          ) : (
+            <ChatAssets node={node} />
+          )}
+        </FileTreeItem>
+      ))}
+    </FileTreeList>
+  );
+}
+
+function ChatAssets({ node }: { node: Extract<FileNode, { type: "assets" }> }) {
+  const tree = useChatFileTree();
+  const shown = tree.expanded.has(node.id)
+    ? node.assets
+    : node.assets.slice(0, TREE_ASSET_LIMIT);
+  const overflow = node.assets.length - shown.length;
+  return (
+    <FileTreeAssets name={node.name}>
+      <AssetGridSmall className="px-s">
+        {shown.map((asset) => (
+          <DraggableAsset key={asset.id} asset={asset}>
+            <AssetGridItem asset={asset}>
+              <AssetTileButton
+                asset={asset}
+                selected={asset.id === tree.activeAssetId}
+                onSelect={tree.onOpenAsset}
+              />
+            </AssetGridItem>
+          </DraggableAsset>
+        ))}
+        {overflow > 0 ? (
+          <AssetGridOverflow
+            count={overflow}
+            onPress={() => {
+              tree.expand(node.id);
+            }}
+          />
+        ) : null}
+      </AssetGridSmall>
+    </FileTreeAssets>
+  );
+}
+
+/**
+ * The tree beside a chat: every file and asset drags into the composer, and
+ * hovering a file offers attach and edit.
+ */
+export function ChatFileTree({
+  sections,
+  className,
+  ...api
+}: ChatFileTreeProps) {
+  const { expanded, expand } = useExpandedAssets();
+  return (
+    <ChatFileTreeContext value={{ ...api, expanded, expand }}>
+      <FileTree className={className}>
+        {sections.map((section) => (
+          <FileTreeSection key={section.id} section={section}>
+            <ChatNodes nodes={section.nodes} />
+          </FileTreeSection>
+        ))}
+      </FileTree>
+    </ChatFileTreeContext>
+  );
+}
+
+interface BrowseFileTreeProps {
+  sections: readonly FileSection[];
+  activeFileId?: string;
+  onOpenFile: (id: string) => void;
+  className?: string;
+}
+
+interface BrowseFileTreeApi extends Omit<
+  BrowseFileTreeProps,
+  "sections" | "className"
+> {
+  expanded: ReadonlySet<string>;
+  expand: (id: string) => void;
+}
+
+const BrowseFileTreeContext = createContext<BrowseFileTreeApi | null>(null);
+
+function useBrowseFileTree() {
+  const context = useContext(BrowseFileTreeContext);
+  if (context === null) throw new Error("Missing BrowseFileTree");
+  return context;
+}
+
+function BrowseNodes({ nodes }: { nodes: readonly FileNode[] }) {
+  const tree = useBrowseFileTree();
+  return (
+    <FileTreeList>
+      {nodes.map((node, index) => (
+        <FileTreeItem key={node.id} index={index}>
+          {node.type === "file" ? (
+            <FileTreeFile
+              name={node.name}
+              active={node.id === tree.activeFileId}
+              onOpen={() => {
+                tree.onOpenFile(node.id);
+              }}
+            />
+          ) : node.type === "folder" ? (
+            <FileTreeFolder name={node.name}>
+              <BrowseNodes nodes={node.children} />
+            </FileTreeFolder>
+          ) : (
+            <BrowseAssets node={node} />
+          )}
+        </FileTreeItem>
+      ))}
+    </FileTreeList>
+  );
+}
+
+function BrowseAssets({
+  node,
+}: {
+  node: Extract<FileNode, { type: "assets" }>;
+}) {
+  const tree = useBrowseFileTree();
+  const shown = tree.expanded.has(node.id)
+    ? node.assets
+    : node.assets.slice(0, TREE_ASSET_LIMIT);
+  const overflow = node.assets.length - shown.length;
+  return (
+    <FileTreeAssets name={node.name}>
+      <AssetGridSmall className="px-s">
+        {shown.map((asset) => (
+          <AssetGridItem key={asset.id} asset={asset}>
+            <AssetTile asset={asset} />
+          </AssetGridItem>
+        ))}
+        {overflow > 0 ? (
+          <AssetGridOverflow
+            count={overflow}
+            onPress={() => {
+              tree.expand(node.id);
+            }}
+          />
+        ) : null}
+      </AssetGridSmall>
+    </FileTreeAssets>
+  );
+}
+
+/** A read-only tree: files open, folders fold, assets are just shown. */
+export function BrowseFileTree({
+  sections,
+  className,
+  ...api
+}: BrowseFileTreeProps) {
+  const { expanded, expand } = useExpandedAssets();
+  return (
+    <BrowseFileTreeContext value={{ ...api, expanded, expand }}>
+      <FileTree className={className}>
+        {sections.map((section) => (
+          <FileTreeSection key={section.id} section={section}>
+            <BrowseNodes nodes={section.nodes} />
+          </FileTreeSection>
+        ))}
+      </FileTree>
+    </BrowseFileTreeContext>
   );
 }

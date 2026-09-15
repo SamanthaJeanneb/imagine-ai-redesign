@@ -13,14 +13,17 @@ import {
   YAxis,
 } from "recharts";
 
-import { AskButton } from "@/components/features/analytics/ask-imagine";
+import { AskIconButton } from "@/components/features/analytics/ask-imagine";
 import {
   CHART_ANIMATION,
   CHART_AXIS,
   CHART_COLOR,
   CHART_TICK,
-  ChartSkeleton,
+  ChartSkeletonGrid,
   ChartTooltip,
+  ChartTooltipList,
+  ChartTooltipRow,
+  useChartTooltipDatum,
 } from "@/components/features/analytics/chart-theme";
 import { Panel } from "@/components/features/analytics/panel";
 import { Icon } from "@/components/ui/icon";
@@ -158,6 +161,25 @@ function cell(
 }
 
 /**
+ * What the tooltip says about a slot. The scatter's payload keys are the
+ * cell's coordinates, so the rows are read from the slot itself rather than
+ * from the series.
+ */
+function SlotTooltipRows() {
+  const slot = useChartTooltipDatum() as unknown as TimeSlot | undefined;
+  if (slot === undefined) return null;
+  return (
+    <ChartTooltipList>
+      <ChartTooltipRow label="Slot" value={formatSlot(slot)} />
+      <ChartTooltipRow
+        label="Engagement rate"
+        value={slot.posts > 0 ? `${slot.rate.toFixed(1)}%` : "Untested"}
+      />
+    </ChartTooltipList>
+  );
+}
+
+/**
  * When to post. Weekdays down, hours across, the accent deepening where
  * posts have done well. The three best slots are dotted and listed beside
  * the grid; pressing any slot hands it to the agent to schedule into.
@@ -202,7 +224,7 @@ export function BestTimeGrid({
         description={description}
         className={className}
       >
-        <ChartSkeleton kind="grid" height="h-52" header={false} />
+        <ChartSkeletonGrid height="h-52" />
       </Panel>
     );
   }
@@ -213,8 +235,7 @@ export function BestTimeGrid({
       description={description}
       actions={
         onAsk ? (
-          <AskButton
-            compact
+          <AskIconButton
             prompt="When should next week's posts go out, and why those slots?"
             onAsk={onAsk}
           />
@@ -259,22 +280,9 @@ export function BestTimeGrid({
                 cursor={false}
                 isAnimationActive={false}
                 content={
-                  <ChartTooltip
-                    hideLabel
-                    rows={(datum) => {
-                      const slot = datum as unknown as TimeSlot;
-                      return [
-                        { label: "Slot", value: formatSlot(slot) },
-                        {
-                          label: "Engagement rate",
-                          value:
-                            slot.posts > 0
-                              ? `${slot.rate.toFixed(1)}%`
-                              : "Untested",
-                        },
-                      ];
-                    }}
-                  />
+                  <ChartTooltip>
+                    <SlotTooltipRows />
+                  </ChartTooltip>
                 }
               />
               <Scatter

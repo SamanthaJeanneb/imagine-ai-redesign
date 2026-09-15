@@ -6,8 +6,10 @@ import { toast } from "sonner";
 
 import {
   InviteTeamForm,
+  InviteTeamFormActions,
   type TeamMember,
 } from "@/components/features/onboarding/invite-team-form";
+import { Button } from "@/components/ui/button";
 
 interface TeamStepProps {
   inviteUrl: string;
@@ -18,6 +20,10 @@ interface TeamStepProps {
 export function TeamStep({ inviteUrl, owner }: TeamStepProps) {
   const router = useRouter();
   const [members, setMembers] = useState<readonly TeamMember[]>([owner]);
+
+  function next() {
+    router.push("/onboarding-1/linkedin");
+  }
 
   return (
     <InviteTeamForm
@@ -44,12 +50,18 @@ export function TeamStep({ inviteUrl, owner }: TeamStepProps) {
       onResend={(id) => {
         toast(`Invite resent to ${id}`);
       }}
-      onContinue={() => {
-        router.push("/onboarding-1/linkedin");
-      }}
-      onSkip={() => {
-        router.push("/onboarding-1/linkedin");
-      }}
-    />
+      onContinue={next}
+    >
+      <InviteTeamFormActions>
+        <Button
+          type="button"
+          variant="link"
+          className="text-imagine-foreground-muted"
+          onClick={next}
+        >
+          Skip, invite people later
+        </Button>
+      </InviteTeamFormActions>
+    </InviteTeamForm>
   );
 }

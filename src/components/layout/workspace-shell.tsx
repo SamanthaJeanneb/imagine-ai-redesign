@@ -3,7 +3,7 @@
 import { cn } from "cn";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import {
   ChatProvider,
@@ -12,24 +12,54 @@ import {
   useChat,
 } from "@/components/features/agent/chat-provider";
 import type { ComposerPreview } from "@/components/features/agent/composer";
-import { ProfileSelector } from "@/components/features/agent/profile-selector";
 import {
+  ProfileSelector,
+  ProfileSelectorLabel,
+  ProfileSelectorPrefix,
+} from "@/components/features/agent/profile-selector";
+import {
+  EditorSheetInset,
   EditorTabStrip,
   type EditorTab,
 } from "@/components/features/files/editor-tab-strip";
-import type { FileSection } from "@/components/features/files/file-tree";
+import {
+  ChatFileTree,
+  type FileSection,
+} from "@/components/features/files/file-tree";
 import { MarkdownEditor } from "@/components/features/files/markdown-editor";
-import type { Skill } from "@/components/features/files/skills-list";
+import {
+  type Skill,
+  SkillsList,
+} from "@/components/features/files/skills-list";
 import type { ProfileSummary } from "@/components/features/settings/profile-list";
-import { AccountControls, type AccountUser } from "@/components/layout/account";
-import { ChatColumn } from "@/components/layout/chat-column";
+import {
+  AccountControls,
+  AccountName,
+  type AccountUser,
+} from "@/components/layout/account";
+import {
+  DockedChatColumn,
+  OverlayChatColumn,
+  SheetChatColumn,
+} from "@/components/layout/chat-column";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { type ChatPanelMode } from "@/components/layout/chat-context-panel";
-import { ChatControls, ChatTitle } from "@/components/layout/chat-controls";
 import {
-  FilesPanel,
+  ChatControls,
+  ChatHistoryMenu,
+  ChatTitle,
+} from "@/components/layout/chat-controls";
+import {
   FilesPanelApiProvider,
+  FilesPanelCloseButton,
+  FilesPanelDragHint,
+  FilesPanelFiles,
+  FilesPanelFrame,
+  FilesPanelHeader,
+  FilesPanelSearch,
+  FilesPanelSkills,
+  FilesPanelTabs,
 } from "@/components/layout/files-panel";
 import { PageAsideHostProvider } from "@/components/layout/page-aside";
 import { ResizeHandle } from "@/components/ui/resize-handle";
@@ -133,212 +163,185 @@ const HEADER_SWAP = {
 
 const WORKSPACE_TAB_ID = "workspace";
 
-interface WorkspaceHeaderProps {
-  collapsed: boolean;
-  onExpand: () => void;
-  /** Phone overlay is open; keeps the menu control in sync. */
-  mobileNavOpen?: boolean;
-  onOpenMobileNav?: () => void;
-  profiles: readonly ProfileSummary[];
-  selectedProfileIds: readonly string[];
-  onSelectedIdsChange: (ids: readonly string[]) => void;
-  compact: boolean;
-  prefix: boolean;
-  chatTitle?: string;
-  chatThreads?: readonly SidebarThread[];
-  currentThreadId?: string | null;
-  onSelectThread?: (id: string) => void;
-  chatOpen: boolean;
-  /** Docked chat is an overlay; the header holds the way into it. */
-  chatOverlay?: boolean;
-  chatOverlayOpen?: boolean;
-  onChatOverlayChange?: (open: boolean) => void;
-  panel: ChatPanelMode | null;
-  onPanelChange: (panel: ChatPanelMode | null) => void;
-  user: AccountUser;
-  onOpenSettings: () => void;
-  onSignOut: () => void;
-}
-
 /**
- * The page header row. On the left, the way out of the collapsed rail and
- * then which profiles the agent is posting as. On the right, the account.
- * With a conversation open the profiles shrink to their faces, its name
- * follows them, and its controls take the right. When the chat is docked
- * this row stays over the page so the column can take the full right side.
- * The space below the divider is `WorkspacePage`, not this row.
+ * The page header row: what the shell puts in it is assembled in
+ * `WorkspaceFrame`. The space below the divider is the page, not this row.
  */
-function WorkspaceHeader({
-  collapsed,
-  onExpand,
-  mobileNavOpen = false,
-  onOpenMobileNav,
-  profiles,
-  selectedProfileIds,
-  onSelectedIdsChange,
-  compact,
-  prefix,
-  chatTitle,
-  chatThreads,
-  currentThreadId = null,
-  onSelectThread,
-  chatOpen,
-  chatOverlay = false,
-  chatOverlayOpen = false,
-  onChatOverlayChange,
-  panel,
-  onPanelChange,
-  user,
-  onOpenSettings,
-  onSignOut,
-}: WorkspaceHeaderProps) {
+function WorkspaceHeaderBar({ children }: { children: ReactNode }) {
   return (
     <div className="relative mt-m mb-m flex h-8 min-w-0 shrink-0 items-center gap-s overflow-x-clip px-l after:pointer-events-none after:absolute after:inset-x-0 after:-bottom-m after:border-b after:border-imagine-border md:px-xxl">
-      <Button
-        size="icon-sm"
-        variant="ghost"
-        aria-label="Open menu"
-        aria-expanded={mobileNavOpen}
-        onClick={onOpenMobileNav}
-        className="-ml-2.5 text-imagine-foreground-faint hover:text-imagine-foreground md:hidden"
-      >
-        <Icon name="sidebar" />
-      </Button>
-      <AnimatePresence initial={false}>
-        {collapsed ? (
-          <SidebarExpandButton
-            key="expand"
-            onExpand={onExpand}
-            // Optically aligns the chevron with the page's text column.
-            className="-ml-2.5 hidden md:flex"
-          />
-        ) : null}
-      </AnimatePresence>
-      {profiles.length > 0 ? (
-        <ProfileSelector
-          profiles={profiles}
-          selectedIds={selectedProfileIds}
-          onSelectedIdsChange={onSelectedIdsChange}
-          compact={compact}
-          {...(prefix ? {} : { prefix: false })}
-          // First in the row, the faces sit on the page's text column;
-          // after the expand chevron they take the row's gap instead.
-          className={cn("min-w-0", !collapsed && "-ml-1.5")}
-        />
-      ) : null}
-      <AnimatePresence initial={false}>
-        {!chatOpen || chatTitle === undefined ? null : (
-          <motion.div
-            key="title"
-            initial={{ opacity: 0, x: -8 }}
-            animate={{
-              opacity: 1,
-              x: 0,
-              transition: { ...fade.base, delay: 0.1 },
-            }}
-            exit={{ opacity: 0, x: -8, transition: fade.fast }}
-            className="min-w-0"
-          >
-            <ChatTitle
-              title={chatTitle}
-              {...(chatThreads === undefined ? {} : { threads: chatThreads })}
-              currentThreadId={currentThreadId}
-              {...(onSelectThread === undefined ? {} : { onSelectThread })}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-      {/* Both clusters end on the same glyph edge: the gear's or the
-          panel toggle's, pulled in by the icon button's own padding. */}
-      <AnimatePresence initial={false} mode="wait">
-        {chatOpen ? (
-          <motion.div
-            key="chat"
-            {...HEADER_SWAP}
-            className="-mr-s ml-auto flex shrink-0"
-          >
-            <ChatControls panel={panel} onPanelChange={onPanelChange} />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="account"
-            {...HEADER_SWAP}
-            className="-mr-s ml-auto flex shrink-0 items-center gap-xxs"
-          >
-            {chatOverlay ? (
-              <Button
-                size="icon-sm"
-                variant="ghost"
-                aria-label={chatOverlayOpen ? "Hide chat" : "Open chat"}
-                aria-pressed={chatOverlayOpen}
-                onClick={() => {
-                  onChatOverlayChange?.(!chatOverlayOpen);
-                }}
-                className={cn(
-                  "xl:hidden",
-                  chatOverlayOpen
-                    ? "bg-imagine-surface-raised text-imagine-foreground"
-                    : "text-imagine-foreground-muted hover:text-imagine-foreground",
-                )}
-              >
-                <Icon name="message" />
-              </Button>
-            ) : null}
-            <AccountControls
-              user={user}
-              onOpenSettings={onOpenSettings}
-              onSignOut={onSignOut}
-              compact={compact}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {children}
     </div>
   );
 }
 
+/** The way into the phone's nav sheet. */
+function MobileNavButton({
+  open,
+  onClick,
+}: {
+  open: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      size="icon-sm"
+      variant="ghost"
+      aria-label="Open menu"
+      aria-expanded={open}
+      onClick={onClick}
+      className="-ml-2.5 text-imagine-foreground-faint hover:text-imagine-foreground md:hidden"
+    >
+      <Icon name="sidebar" />
+    </Button>
+  );
+}
+
+/** The open conversation's name, sliding in after the profile faces. */
+function WorkspaceHeaderTitle({ children }: { children: ReactNode }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -8 }}
+      animate={{
+        opacity: 1,
+        x: 0,
+        transition: { ...fade.base, delay: 0.1 },
+      }}
+      exit={{ opacity: 0, x: -8, transition: fade.fast }}
+      className="min-w-0"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 /**
- * The inset every workspace page starts in, after the header divider. Pages
- * do not set their own top or side padding; this is the one frame.
- *
- * Padding lives on the scrollport, not the clip around it. `overflow-y-auto`
- * makes the inner box clip on x as well, and the landing composer sits flush
- * to that edge — its shadow and left radius disappear if the inset is outside.
- *
- * The side inset is `px-page`: the gutter on a laptop, and on a wide monitor
- * the space left over once the page is a centered `max-w-page` column. The
- * header above keeps its controls at the frame's edges, as chrome does. The
- * scrollport is the `frame` container so a page can ask whether it is running
- * narrower than the frame (`@page/frame`) and drop a bleed that no longer
- * reaches an edge.
+ * The header's right end. Render one keyed cluster inside an
+ * `AnimatePresence mode="wait"`: the account, or the chat's controls. Both end
+ * on the same glyph edge, pulled in by the icon button's own padding.
  */
-function WorkspacePage({
+function WorkspaceHeaderEnd({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <motion.div
+      {...HEADER_SWAP}
+      className={cn("-mr-s ml-auto flex shrink-0", className)}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/** The way into the docked chat where it overlays the page. */
+function ChatOverlayToggle({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  return (
+    <Button
+      size="icon-sm"
+      variant="ghost"
+      aria-label={open ? "Hide chat" : "Open chat"}
+      aria-pressed={open}
+      onClick={() => {
+        onOpenChange(!open);
+      }}
+      className={cn(
+        "xl:hidden",
+        open
+          ? "bg-imagine-surface-raised text-imagine-foreground"
+          : "text-imagine-foreground-muted hover:text-imagine-foreground",
+      )}
+    >
+      <Icon name="message" />
+    </Button>
+  );
+}
+
+/**
+ * The frame every workspace page sits in, after the header divider. Padding
+ * lives on the scrollport, not the clip around it. `overflow-y-auto` makes
+ * the inner box clip on x as well, and the landing composer sits flush to
+ * that edge — its shadow and left radius disappear if the inset is outside.
+ *
+ * The scrollport is the `frame` container so a page can ask whether it is
+ * running narrower than the frame (`@page/frame`) and drop a bleed that no
+ * longer reaches an edge.
+ */
+function WorkspacePageFrame({
   children,
   overlay,
-  flush = false,
+  className,
 }: {
   children: ReactNode;
+  /** File tabs and the editor, over the page. */
   overlay?: ReactNode;
-  /** Pane-based workspaces provide their own internal frame. */
-  flush?: boolean;
+  className?: string;
 }) {
   return (
     <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-      {/* File tabs sit in an overlay; this spacer keeps the thread from
-          sliding under them. */}
+      {/* The overlay's tab strip; this spacer keeps the thread from sliding
+          under it. */}
       {overlay === undefined ? null : (
         <div aria-hidden="true" className="h-9 shrink-0" />
       )}
       <div
         className={cn(
           "@container/frame flex min-h-0 min-w-0 flex-1 flex-col overflow-x-clip overflow-y-auto",
-          !flush && "px-page pt-l pb-l md:pt-xxl md:pb-xxl",
+          className,
         )}
       >
         {children}
       </div>
       {overlay}
     </div>
+  );
+}
+
+/**
+ * The inset most pages start in. Pages do not set their own top or side
+ * padding; this is the one frame. The side inset is `px-page`: the gutter on
+ * a laptop, and on a wide monitor the space left over once the page is a
+ * centered `max-w-page` column. The header above keeps its controls at the
+ * frame's edges, as chrome does.
+ */
+function WorkspaceInsetPage({
+  children,
+  overlay,
+}: {
+  children: ReactNode;
+  overlay?: ReactNode;
+}) {
+  return (
+    <WorkspacePageFrame
+      {...(overlay === undefined ? {} : { overlay })}
+      className="px-page pt-l pb-l md:pt-xxl md:pb-xxl"
+    >
+      {children}
+    </WorkspacePageFrame>
+  );
+}
+
+/** Pane-based workspaces, like files and the calendar, frame themselves. */
+function WorkspaceFlushPage({
+  children,
+  overlay,
+}: {
+  children: ReactNode;
+  overlay?: ReactNode;
+}) {
+  return (
+    <WorkspacePageFrame {...(overlay === undefined ? {} : { overlay })}>
+      {children}
+    </WorkspacePageFrame>
   );
 }
 
@@ -421,9 +424,6 @@ function WorkspaceFrame({
   const [panel, setPanel] = useState<ChatPanelMode | null>(null);
   const [railBeforeFiles, setRailBeforeFiles] = useState(false);
   const [railBeforeCalendar, setRailBeforeCalendar] = useState(false);
-  const onCalendarRef = useRef(false);
-  const collapsedRef = useRef(collapsed);
-  collapsedRef.current = collapsed;
   const [skills, setSkills] = useState(initialSkills);
   const [activeFileId, setActiveFileId] = useState<string>();
   const [openDocumentIds, setOpenDocumentIds] = useState<readonly string[]>([]);
@@ -442,35 +442,35 @@ function WorkspaceFrame({
     ),
   );
 
-  useEffect(() => {
+  // Frame and route changes reset what they made room for. Adjusted during
+  // render against the last seen value, so there is no frame in between.
+  const [seenCompact, setSeenCompact] = useState(isCompact);
+  if (isCompact !== seenCompact) {
+    setSeenCompact(isCompact);
     if (isCompact) setCollapsed(true);
-  }, [isCompact]);
-
-  useEffect(() => {
+    else setChatOverlayOpen(false);
+  }
+  const [seenMobile, setSeenMobile] = useState(isMobile);
+  if (isMobile !== seenMobile) {
+    setSeenMobile(isMobile);
     if (!isMobile) setMobileNavOpen(false);
-  }, [isMobile]);
-
-  useEffect(() => {
-    if (!isCompact) setChatOverlayOpen(false);
-  }, [isCompact]);
-
-  useEffect(() => {
-    setMobileNavOpen(false);
-    setChatOverlayOpen(false);
-  }, [pathname]);
-
+  }
   // Calendar needs the full width: tuck the rail away on entry and put it
   // back how the user had it when they leave, unless the files panel owns it.
-  useEffect(() => {
+  const [seenPathname, setSeenPathname] = useState(pathname);
+  if (pathname !== seenPathname) {
+    setSeenPathname(pathname);
+    setMobileNavOpen(false);
+    setChatOverlayOpen(false);
+    const wasOnCalendar = seenPathname.startsWith("/calendar");
     const onCalendar = pathname.startsWith("/calendar");
-    if (onCalendar && !onCalendarRef.current) {
-      setRailBeforeCalendar(collapsedRef.current);
+    if (onCalendar && !wasOnCalendar) {
+      setRailBeforeCalendar(collapsed);
       setCollapsed(true);
-    } else if (!onCalendar && onCalendarRef.current && panel !== "files") {
+    } else if (!onCalendar && wasOnCalendar && panel !== "files") {
       setCollapsed(railBeforeCalendar);
     }
-    onCalendarRef.current = onCalendar;
-  }, [pathname, panel, railBeforeCalendar]);
+  }
 
   function changePanel(next: ChatPanelMode | null) {
     if (next === "files" && panel !== "files") {
@@ -550,44 +550,94 @@ function WorkspaceFrame({
       : docked
         ? "New chat"
         : undefined;
+  const compactProfiles = chatOpen || isMobile;
+  const showPostingAs = !docked && !isMobile;
   const header = (
-    <WorkspaceHeader
-      collapsed={collapsed}
-      onExpand={() => {
-        setCollapsed(false);
-      }}
-      mobileNavOpen={mobileNavOpen}
-      onOpenMobileNav={() => {
-        setMobileNavOpen(true);
-        setChatOverlayOpen(false);
-      }}
-      profiles={profiles}
-      selectedProfileIds={selectedProfileIds}
-      onSelectedIdsChange={setSelectedProfileIds}
-      compact={chatOpen || isMobile}
-      prefix={!docked && !isMobile}
-      {...(chatTitle === undefined ? {} : { chatTitle })}
-      chatThreads={visibleThreads}
-      currentThreadId={chat.threadId}
-      onSelectThread={openThread}
-      chatOpen={chatOpen}
-      chatOverlay={docked}
-      chatOverlayOpen={chatOverlayOpen}
-      onChatOverlayChange={(open) => {
-        setChatOverlayOpen(open);
-        if (open) setMobileNavOpen(false);
-      }}
-      panel={panel}
-      onPanelChange={changePanel}
-      user={user}
-      onOpenSettings={() => {
-        router.push("/settings");
-      }}
-      onSignOut={() => {
-        // The mock has no session to end; leaving lands on sign-in.
-        router.push("/sign-in");
-      }}
-    />
+    <WorkspaceHeaderBar>
+      <MobileNavButton
+        open={mobileNavOpen}
+        onClick={() => {
+          setMobileNavOpen(true);
+          setChatOverlayOpen(false);
+        }}
+      />
+      <AnimatePresence initial={false}>
+        {collapsed ? (
+          <SidebarExpandButton
+            key="expand"
+            onExpand={() => {
+              setCollapsed(false);
+            }}
+            // Optically aligns the chevron with the page's text column.
+            className="-ml-2.5 hidden md:flex"
+          />
+        ) : null}
+      </AnimatePresence>
+      {profiles.length > 0 ? (
+        <ProfileSelector
+          profiles={profiles}
+          selectedIds={selectedProfileIds}
+          onSelectedIdsChange={setSelectedProfileIds}
+          // First in the row, the faces sit on the page's text column;
+          // after the expand chevron they take the row's gap instead.
+          className={cn("min-w-0", !collapsed && "-ml-1.5")}
+        >
+          {/* With a conversation open the faces stand alone and its name
+              follows them. Beside the calendar and analytics the chat has
+              its own column, so the header drops "Posting as". */}
+          {compactProfiles ? null : (
+            <ProfileSelectorLabel key="label">
+              {showPostingAs ? <ProfileSelectorPrefix key="prefix" /> : null}
+            </ProfileSelectorLabel>
+          )}
+        </ProfileSelector>
+      ) : null}
+      <AnimatePresence initial={false}>
+        {chatOpen && chatTitle !== undefined ? (
+          <WorkspaceHeaderTitle key="title">
+            <ChatTitle title={chatTitle}>
+              <ChatHistoryMenu
+                title={chatTitle}
+                threads={visibleThreads}
+                currentThreadId={chat.threadId}
+                onSelectThread={openThread}
+              />
+            </ChatTitle>
+          </WorkspaceHeaderTitle>
+        ) : null}
+      </AnimatePresence>
+      <AnimatePresence initial={false} mode="wait">
+        {chatOpen ? (
+          <WorkspaceHeaderEnd key="chat">
+            <ChatControls panel={panel} onPanelChange={changePanel} />
+          </WorkspaceHeaderEnd>
+        ) : (
+          <WorkspaceHeaderEnd key="account" className="items-center gap-xxs">
+            {docked ? (
+              <ChatOverlayToggle
+                open={chatOverlayOpen}
+                onOpenChange={(open) => {
+                  setChatOverlayOpen(open);
+                  if (open) setMobileNavOpen(false);
+                }}
+              />
+            ) : null}
+            <AccountControls
+              user={user}
+              onOpenSettings={() => {
+                router.push("/settings");
+              }}
+              onSignOut={() => {
+                // The mock has no session to end; leaving lands on sign-in.
+                router.push("/sign-in");
+              }}
+            >
+              {compactProfiles ? null : <AccountName />}
+            </AccountControls>
+          </WorkspaceHeaderEnd>
+        )}
+      </AnimatePresence>
+    </WorkspaceHeaderBar>
   );
   const editorLayer =
     activeKey !== "agent" || openDocumentIds.length === 0 ? null : (
@@ -617,78 +667,101 @@ function WorkspaceFrame({
           )}
         >
           {activeDocument === undefined ? null : (
-            <AnimatePresence initial={false} mode="wait">
-              <motion.div
-                key={activeDocument.id}
-                initial={{ opacity: 0, x: 8 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -8 }}
-                transition={fade.fast}
-                className="min-h-0 w-full min-w-0 flex-1 overflow-y-auto"
-              >
-                <MarkdownEditor
-                  meta={activeDocument.meta}
-                  value={
-                    documentValues[activeDocument.id] ?? activeDocument.value
-                  }
-                  savedValue={
-                    savedDocumentValues[activeDocument.id] ??
-                    activeDocument.value
-                  }
-                  onValueChange={(value) => {
-                    setDocumentValues((current) => ({
-                      ...current,
-                      [activeDocument.id]: value,
-                    }));
-                  }}
-                  onSave={() => {
-                    setSavedDocumentValues((current) => ({
-                      ...current,
-                      [activeDocument.id]:
-                        documentValues[activeDocument.id] ??
-                        activeDocument.value,
-                    }));
-                  }}
-                  className="mx-auto p-xxl"
-                />
-              </motion.div>
-            </AnimatePresence>
+            <EditorSheetInset>
+              <AnimatePresence initial={false} mode="wait">
+                <motion.div
+                  key={activeDocument.id}
+                  initial={{ opacity: 0, x: 8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -8 }}
+                  transition={fade.fast}
+                  className="min-h-0 w-full min-w-0 flex-1 overflow-y-auto"
+                >
+                  <MarkdownEditor
+                    meta={activeDocument.meta}
+                    value={
+                      documentValues[activeDocument.id] ?? activeDocument.value
+                    }
+                    savedValue={
+                      savedDocumentValues[activeDocument.id] ??
+                      activeDocument.value
+                    }
+                    onValueChange={(value) => {
+                      setDocumentValues((current) => ({
+                        ...current,
+                        [activeDocument.id]: value,
+                      }));
+                    }}
+                    onSave={() => {
+                      setSavedDocumentValues((current) => ({
+                        ...current,
+                        [activeDocument.id]:
+                          documentValues[activeDocument.id] ??
+                          activeDocument.value,
+                      }));
+                    }}
+                    className="mx-auto p-xxl"
+                  />
+                </motion.div>
+              </AnimatePresence>
+            </EditorSheetInset>
           )}
         </EditorTabStrip>
       </motion.div>
     );
-  const page = (
-    <WorkspacePage
-      flush={activeKey === "files" || activeKey === "calendar"}
-      {...(editorLayer === null ? {} : { overlay: editorLayer })}
-    >
-      <PageAsideHostProvider host={asideHost}>{children}</PageAsideHostProvider>
-    </WorkspacePage>
+  const pageContent = (
+    <PageAsideHostProvider host={asideHost}>{children}</PageAsideHostProvider>
   );
+  const page =
+    activeKey === "files" || activeKey === "calendar" ? (
+      <WorkspaceFlushPage
+        {...(editorLayer === null ? {} : { overlay: editorLayer })}
+      >
+        {pageContent}
+      </WorkspaceFlushPage>
+    ) : (
+      <WorkspaceInsetPage
+        {...(editorLayer === null ? {} : { overlay: editorLayer })}
+      >
+        {pageContent}
+      </WorkspaceInsetPage>
+    );
   // `contents` on wide frames so the page rail is a flex item of the row.
   // Hidden below `xl` before JS hydrates, so a third column cannot crush
   // the page while the window is still being measured.
   const pageAside = <div ref={setAsideHost} className="hidden xl:contents" />;
   const overlayChat = docked && isCompact;
+  const columnContent =
+    chatColumn === undefined
+      ? undefined
+      : {
+          page: chatColumn,
+          title: chatTitle ?? "New chat",
+          threads: visibleThreads,
+          currentThreadId: chat.threadId,
+          onSelectThread: openThread,
+        };
+  const closeChatOverlay = () => {
+    setChatOverlayOpen(false);
+  };
   const column =
-    chatColumn === undefined ? null : (
-      <ChatColumn
+    columnContent === undefined ? null : isMobile ? (
+      <SheetChatColumn
         key="chat"
-        page={chatColumn}
-        title={chatTitle ?? "New chat"}
-        threads={visibleThreads}
-        currentThreadId={chat.threadId}
-        onSelectThread={openThread}
-        overlay={overlayChat}
-        fullWidth={isMobile}
-        className={overlayChat ? undefined : "max-xl:hidden"}
-        onClose={
-          overlayChat
-            ? () => {
-                setChatOverlayOpen(false);
-              }
-            : undefined
-        }
+        {...columnContent}
+        onClose={closeChatOverlay}
+      />
+    ) : overlayChat ? (
+      <OverlayChatColumn
+        key="chat"
+        {...columnContent}
+        onClose={closeChatOverlay}
+      />
+    ) : (
+      <DockedChatColumn
+        key="chat"
+        {...columnContent}
+        className="max-xl:hidden"
       />
     );
   const contextPanel =
@@ -707,41 +780,64 @@ function WorkspaceFrame({
           dragging={filesResize.dragging}
           label="Resize files"
         />
-        <FilesPanel
-          width={filesResize.width}
-          title={orgName}
-          {...(orgLogoUrl === undefined ? {} : { logoUrl: orgLogoUrl })}
-          sections={fileSections}
-          skills={skills}
-          dragHint
-          {...(activeFileId === undefined ? {} : { activeFileId })}
-          {...(attachedAssetId === undefined
-            ? {}
-            : { activeAssetId: attachedAssetId })}
-          onOpenFile={setActiveFileId}
-          onEditFile={openEditor}
-          onAttachFile={(file) => {
-            setActiveFileId(file.id);
-            chat.attach({ kind: "file", file });
-          }}
-          onOpenAsset={(asset) => {
-            chat.attach({ kind: "asset", asset });
-          }}
-          onToggleSkill={(id, enabled) => {
-            setSkills((current) =>
-              current.map((skill) =>
-                skill.id === id ? { ...skill, enabled } : skill,
-              ),
-            );
-          }}
-          onOpenSkillFile={openEditor}
-          {...(activeEditorId === WORKSPACE_TAB_ID
-            ? {}
-            : { openSkillId: activeEditorId })}
-          onClose={() => {
-            changePanel(null);
-          }}
-        />
+        <FilesPanelFrame width={filesResize.width}>
+          <FilesPanelHeader
+            title={orgName}
+            {...(orgLogoUrl === undefined ? {} : { logoUrl: orgLogoUrl })}
+          >
+            <FilesPanelCloseButton
+              onPress={() => {
+                changePanel(null);
+              }}
+            />
+          </FilesPanelHeader>
+          <FilesPanelSearch
+            sections={fileSections}
+            skills={skills}
+            onOpenFile={setActiveFileId}
+            onOpenAsset={(asset) => {
+              chat.attach({ kind: "asset", asset });
+            }}
+            onOpenSkillFile={openEditor}
+          />
+          <FilesPanelTabs>
+            <FilesPanelFiles>
+              <ChatFileTree
+                sections={fileSections}
+                {...(activeFileId === undefined ? {} : { activeFileId })}
+                {...(attachedAssetId === undefined
+                  ? {}
+                  : { activeAssetId: attachedAssetId })}
+                onOpenFile={setActiveFileId}
+                onEditFile={openEditor}
+                onAttachFile={(file) => {
+                  setActiveFileId(file.id);
+                  chat.attach({ kind: "file", file });
+                }}
+                onOpenAsset={(asset) => {
+                  chat.attach({ kind: "asset", asset });
+                }}
+              />
+            </FilesPanelFiles>
+            <FilesPanelSkills>
+              <SkillsList
+                skills={skills}
+                {...(activeEditorId === WORKSPACE_TAB_ID
+                  ? {}
+                  : { openSkillId: activeEditorId })}
+                onToggle={(id, enabled) => {
+                  setSkills((current) =>
+                    current.map((skill) =>
+                      skill.id === id ? { ...skill, enabled } : skill,
+                    ),
+                  );
+                }}
+                onOpenFile={openEditor}
+              />
+            </FilesPanelSkills>
+          </FilesPanelTabs>
+          <FilesPanelDragHint />
+        </FilesPanelFrame>
       </motion.div>
     );
 
@@ -790,52 +886,37 @@ function WorkspaceFrame({
       }}
     >
       <LayoutGroup>
-      <div className="flex h-dvh overflow-hidden bg-imagine-background">
-        <div
-          className={cn(
-            isMobile && mobileNavOpen
-              ? "fixed inset-0 z-50 flex bg-imagine-foreground/10"
-              : "hidden h-full md:flex",
-          )}
-          onClick={
-            isMobile && mobileNavOpen
-              ? () => {
-                  setMobileNavOpen(false);
-                }
-              : undefined
-          }
-        >
+        <div className="flex h-dvh overflow-hidden bg-imagine-background">
           <div
-            className="h-full"
-            onClick={(event) => {
-              event.stopPropagation();
-            }}
+            className={cn(
+              isMobile && mobileNavOpen
+                ? "fixed inset-0 z-50 flex bg-imagine-foreground/10"
+                : "hidden h-full md:flex",
+            )}
+            onClick={
+              isMobile && mobileNavOpen
+                ? () => {
+                    setMobileNavOpen(false);
+                  }
+                : undefined
+            }
           >
-            {sidebar}
-          </div>
-        </div>
-        <div className="relative flex min-w-0 flex-1 flex-col rounded-none bg-imagine-surface shadow-raised md:rounded-l-surface">
-          {docked ? (
-            <div className="flex min-h-0 min-w-0 flex-1">
-              <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-                {header}
-                {page}
-              </div>
-              {pageAside}
-              {showChatInFlow ? (
-                <AnimatePresence initial={false}>{column}</AnimatePresence>
-              ) : null}
-              {inFlowPanels ? (
-                <AnimatePresence initial={false}>
-                  {contextPanel}
-                </AnimatePresence>
-              ) : null}
+            <div
+              className="h-full"
+              onClick={(event) => {
+                event.stopPropagation();
+              }}
+            >
+              {sidebar}
             </div>
-          ) : (
-            <>
-              {header}
-              <div className="relative flex min-h-0 min-w-0 flex-1">
-                {page}
+          </div>
+          <div className="relative flex min-w-0 flex-1 flex-col rounded-none bg-imagine-surface shadow-raised md:rounded-l-surface">
+            {docked ? (
+              <div className="flex min-h-0 min-w-0 flex-1">
+                <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+                  {header}
+                  {page}
+                </div>
                 {pageAside}
                 {showChatInFlow ? (
                   <AnimatePresence initial={false}>{column}</AnimatePresence>
@@ -846,65 +927,80 @@ function WorkspaceFrame({
                   </AnimatePresence>
                 ) : null}
               </div>
-            </>
-          )}
-          <AnimatePresence initial={false}>
-            {showChatOverlay ? (
-              <motion.div
-                key="chat-overlay"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={fade.fast}
-                className="absolute inset-0 z-40 flex justify-end bg-imagine-foreground/10"
-                onClick={() => {
-                  setChatOverlayOpen(false);
-                }}
-              >
-                <div
-                  className="flex h-full max-w-full"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                  }}
-                >
-                  {isMobile && contextPanel !== null ? (
-                    contextPanel
-                  ) : (
-                    <>
-                      {column}
+            ) : (
+              <>
+                {header}
+                <div className="relative flex min-h-0 min-w-0 flex-1">
+                  {page}
+                  {pageAside}
+                  {showChatInFlow ? (
+                    <AnimatePresence initial={false}>{column}</AnimatePresence>
+                  ) : null}
+                  {inFlowPanels ? (
+                    <AnimatePresence initial={false}>
                       {contextPanel}
-                    </>
-                  )}
+                    </AnimatePresence>
+                  ) : null}
                 </div>
-              </motion.div>
-            ) : null}
-          </AnimatePresence>
-          <AnimatePresence initial={false}>
-            {overlayPanels && contextPanel !== null ? (
-              <motion.div
-                key="panel-overlay"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={fade.fast}
-                className="absolute inset-0 z-40 flex justify-end bg-imagine-foreground/10"
-                onClick={() => {
-                  changePanel(null);
-                }}
-              >
-                <div
-                  className="flex h-full max-w-full"
-                  onClick={(event) => {
-                    event.stopPropagation();
+              </>
+            )}
+            <AnimatePresence initial={false}>
+              {showChatOverlay ? (
+                <motion.div
+                  key="chat-overlay"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={fade.fast}
+                  className="absolute inset-0 z-40 flex justify-end bg-imagine-foreground/10"
+                  onClick={() => {
+                    setChatOverlayOpen(false);
                   }}
                 >
-                  {contextPanel}
-                </div>
-              </motion.div>
-            ) : null}
-          </AnimatePresence>
+                  <div
+                    className="flex h-full max-w-full"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                    }}
+                  >
+                    {isMobile && contextPanel !== null ? (
+                      contextPanel
+                    ) : (
+                      <>
+                        {column}
+                        {contextPanel}
+                      </>
+                    )}
+                  </div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+            <AnimatePresence initial={false}>
+              {overlayPanels && contextPanel !== null ? (
+                <motion.div
+                  key="panel-overlay"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={fade.fast}
+                  className="absolute inset-0 z-40 flex justify-end bg-imagine-foreground/10"
+                  onClick={() => {
+                    changePanel(null);
+                  }}
+                >
+                  <div
+                    className="flex h-full max-w-full"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                    }}
+                  >
+                    {contextPanel}
+                  </div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+          </div>
         </div>
-      </div>
       </LayoutGroup>
     </FilesPanelApiProvider>
   );

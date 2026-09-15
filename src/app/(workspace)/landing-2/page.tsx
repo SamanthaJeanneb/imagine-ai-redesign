@@ -1,4 +1,4 @@
-import { AgentWorkspace } from "@/components/features/agent/agent-workspace";
+import { CenteredLandingWorkspace } from "@/components/features/agent/agent-workspace";
 import { formatFullDate } from "@/lib/format";
 import { getNow } from "@/mocks/db";
 import { getTimeline } from "@/services/agent";
@@ -17,8 +17,7 @@ export default function LandingTwoPage() {
   const [firstName] = getCurrentUser().name.split(" ");
 
   return (
-    <AgentWorkspace
-      landingLayout="centered"
+    <CenteredLandingWorkspace
       landing={{
         greeting: `Hi ${firstName ?? "there"}, what are we posting next?`,
         dateLabel: formatFullDate(getNow()),

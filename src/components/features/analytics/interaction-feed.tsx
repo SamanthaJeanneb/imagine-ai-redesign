@@ -2,8 +2,8 @@
 
 import { cn } from "cn";
 
-import { AskButton } from "@/components/features/analytics/ask-imagine";
-import { ChartSkeleton } from "@/components/features/analytics/chart-theme";
+import { AskIconButton } from "@/components/features/analytics/ask-imagine";
+import { ChartSkeletonRows } from "@/components/features/analytics/chart-theme";
 import { initials, Panel } from "@/components/features/analytics/panel";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -107,7 +107,7 @@ export function InteractionFeed({
         description={description}
         className={className}
       >
-        <ChartSkeleton kind="rows" height="h-64" header={false} />
+        <ChartSkeletonRows height="h-64" />
       </Panel>
     );
   }
@@ -118,8 +118,7 @@ export function InteractionFeed({
       description={description}
       actions={
         onAsk ? (
-          <AskButton
-            compact
+          <AskIconButton
             prompt="Who from this week's engagers should we reply to first, and what should we say?"
             onAsk={onAsk}
           />

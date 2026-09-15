@@ -22,8 +22,10 @@ import {
   CHART_COLOR,
   CHART_GRID,
   CHART_TICK,
-  ChartSkeleton,
+  ChartSkeletonLine,
+  ChartSkeletonRows,
   ChartTooltip,
+  ChartTooltipSeries,
 } from "@/components/features/analytics/chart-theme";
 import { initials, Panel } from "@/components/features/analytics/panel";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
@@ -402,8 +404,8 @@ export function IcpPosts({
         className={className}
       >
         <div className="grid gap-l @3xl/panel:grid-cols-[18rem_minmax(0,1fr)]">
-          <ChartSkeleton kind="line" height="h-52" header={false} />
-          <ChartSkeleton kind="rows" height="h-52" header={false} />
+          <ChartSkeletonLine height="h-52" />
+          <ChartSkeletonRows height="h-52" />
         </div>
       </Panel>
     );
@@ -480,23 +482,23 @@ export function IcpPosts({
                       <ChartTooltip
                         active={props.active}
                         payload={props.payload}
-                        hideLabel
-                        labelOf={labelOf}
-                        format={(value, key) =>
-                          key === "reach"
-                            ? formatCompact(value)
-                            : key === "icpShare"
-                              ? `${String(Math.round(value))}%`
-                              : String(value)
-                        }
-                        header={
-                          title === "" ? undefined : (
-                            <p className="mb-s max-w-56 border-b border-imagine-border pb-s type-small font-medium">
-                              {title}
-                            </p>
-                          )
-                        }
-                      />
+                      >
+                        {title === "" ? null : (
+                          <p className="mb-s max-w-56 border-b border-imagine-border pb-s type-small font-medium">
+                            {title}
+                          </p>
+                        )}
+                        <ChartTooltipSeries
+                          labelOf={labelOf}
+                          format={(value, key) =>
+                            key === "reach"
+                              ? formatCompact(value)
+                              : key === "icpShare"
+                                ? `${String(Math.round(value))}%`
+                                : String(value)
+                          }
+                        />
+                      </ChartTooltip>
                     );
                   }}
                 />

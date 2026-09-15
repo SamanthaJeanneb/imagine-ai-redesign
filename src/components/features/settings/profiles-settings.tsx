@@ -8,7 +8,23 @@ import { toast } from "sonner";
 
 import {
   ProfileDetail,
+  ProfileDetailCompany,
+  ProfileDetailCompanyCard,
+  ProfileDetailCompanyHeader,
+  ProfileDetailConnection,
   type ProfileDetailData,
+  ProfileDetailFacts,
+  ProfileDetailFirstConnected,
+  ProfileDetailFooter,
+  ProfileDetailIndexPostsButton,
+  ProfileDetailLinkCompanyForm,
+  ProfileDetailPersona,
+  ProfileDetailPersonaCard,
+  ProfileDetailPersonaEmpty,
+  ProfileDetailPersonHeader,
+  ProfileDetailPostsIndexed,
+  ProfileDetailReconnectButton,
+  ProfileDetailRemoveButton,
 } from "@/components/features/settings/profile-detail";
 import {
   ProfileList,
@@ -17,6 +33,7 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogCloseButton,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -130,6 +147,7 @@ function AddProfileDialog({
             </Button>
           </DialogFooter>
         </form>
+        <DialogCloseButton />
       </DialogContent>
     </Dialog>
   );
@@ -179,6 +197,44 @@ export function ProfilesSettings({
     );
   }
 
+  // The actions both detail trees share. Each reads `selected` at call time.
+  function reconnect() {
+    if (selected === undefined) return;
+    patch(selected.id, {
+      status: "connected",
+      connectedAt: selected.connectedAt ?? new Date().toISOString(),
+    });
+    toast.success(`${selected.name} reconnected`);
+  }
+
+  function viewPersona() {
+    router.push("/files");
+  }
+
+  function indexPosts() {
+    if (selected === undefined) return;
+    const id = selected.id;
+    startIndexing(async () => {
+      await wait(1200);
+      const count = details[id]?.postsIndexed ?? 0;
+      patch(id, { postsIndexed: count });
+      toast.success(
+        count === 0
+          ? "Nothing new to index"
+          : `${String(count)} posts up to date`,
+      );
+    });
+  }
+
+  function remove() {
+    if (selected === undefined) return;
+    const index = profiles.findIndex((profile) => profile.id === selected.id);
+    const remaining = profiles.filter((profile) => profile.id !== selected.id);
+    setProfiles(remaining);
+    setSelectedId((remaining[index] ?? remaining[index - 1])?.id);
+    toast(`Removed ${selected.name}`);
+  }
+
   return (
     <div className="grid min-h-0 min-w-0 flex-1 gap-xl lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
       <ProfileList
@@ -226,27 +282,47 @@ export function ProfilesSettings({
                 Add profile
               </Button>
             </motion.div>
-          ) : (
+          ) : selected.kind === "person" ? (
             <ProfileDetail
               // One instance across selections: it cross-fades between
               // profiles itself. Only the empty state swaps in and out.
               key="detail"
+              profileId={selected.id}
               className={PANE}
-              profile={selected}
-              indexing={indexing}
-              onReconnect={() => {
-                patch(selected.id, {
-                  status: "connected",
-                  connectedAt: selected.connectedAt ?? new Date().toISOString(),
-                });
-                toast.success(`${selected.name} reconnected`);
-              }}
-              {...(selected.kind === "person"
-                ? {
-                    onChangeCompany: () => {
+            >
+              <ProfileDetailPersonHeader
+                name={selected.name}
+                headline={selected.headline}
+                {...(selected.avatarUrl === undefined
+                  ? {}
+                  : { avatarUrl: selected.avatarUrl })}
+              />
+              <ProfileDetailFacts>
+                <ProfileDetailConnection status={selected.status}>
+                  {selected.status === "connected" ? null : (
+                    <ProfileDetailReconnectButton onClick={reconnect} />
+                  )}
+                </ProfileDetailConnection>
+                <ProfileDetailFirstConnected
+                  {...(selected.connectedAt === undefined
+                    ? {}
+                    : { connectedAt: selected.connectedAt })}
+                />
+                {selected.postsIndexed === undefined ? null : (
+                  <ProfileDetailPostsIndexed count={selected.postsIndexed} />
+                )}
+              </ProfileDetailFacts>
+              <ProfileDetailCompany>
+                {selected.company ? (
+                  <ProfileDetailCompanyCard
+                    company={selected.company}
+                    onChange={() => {
                       patch(selected.id, { company: undefined });
-                    },
-                    onLinkCompany: (url: string) => {
+                    }}
+                  />
+                ) : (
+                  <ProfileDetailLinkCompanyForm
+                    onLink={(url) => {
                       const trimmed = url
                         .replace(/^https?:\/\/(www\.)?/, "")
                         .replace(/\/+$/, "");
@@ -256,37 +332,82 @@ export function ProfilesSettings({
                           url: trimmed,
                         },
                       });
-                    },
-                  }
-                : {})}
-              onViewPersona={() => {
-                router.push("/files");
-              }}
-              onIndexPosts={() => {
-                const id = selected.id;
-                startIndexing(async () => {
-                  await wait(1200);
-                  const count = details[id]?.postsIndexed ?? 0;
-                  patch(id, { postsIndexed: count });
-                  toast.success(
-                    count === 0
-                      ? "Nothing new to index"
-                      : `${String(count)} posts up to date`,
-                  );
-                });
-              }}
-              onRemove={() => {
-                const index = profiles.findIndex(
-                  (profile) => profile.id === selected.id,
-                );
-                const remaining = profiles.filter(
-                  (profile) => profile.id !== selected.id,
-                );
-                setProfiles(remaining);
-                setSelectedId((remaining[index] ?? remaining[index - 1])?.id);
-                toast(`Removed ${selected.name}`);
-              }}
-            />
+                    }}
+                  />
+                )}
+              </ProfileDetailCompany>
+              <ProfileDetailPersona>
+                {selected.persona ? (
+                  <ProfileDetailPersonaCard
+                    fileName={selected.persona.fileName}
+                    onView={viewPersona}
+                  />
+                ) : (
+                  <ProfileDetailPersonaEmpty />
+                )}
+              </ProfileDetailPersona>
+              <ProfileDetailFooter>
+                <ProfileDetailIndexPostsButton
+                  indexing={indexing}
+                  onClick={indexPosts}
+                />
+                <ProfileDetailRemoveButton
+                  name={selected.name}
+                  onRemove={remove}
+                />
+              </ProfileDetailFooter>
+            </ProfileDetail>
+          ) : (
+            <ProfileDetail
+              // Same instance as the person tree: switching kinds keeps the
+              // frame and cross-fades the contents.
+              key="detail"
+              profileId={selected.id}
+              className={PANE}
+            >
+              <ProfileDetailCompanyHeader
+                name={selected.name}
+                headline={selected.headline}
+                {...(selected.avatarUrl === undefined
+                  ? {}
+                  : { avatarUrl: selected.avatarUrl })}
+              />
+              <ProfileDetailFacts>
+                <ProfileDetailConnection status={selected.status}>
+                  {selected.status === "connected" ? null : (
+                    <ProfileDetailReconnectButton onClick={reconnect} />
+                  )}
+                </ProfileDetailConnection>
+                <ProfileDetailFirstConnected
+                  {...(selected.connectedAt === undefined
+                    ? {}
+                    : { connectedAt: selected.connectedAt })}
+                />
+                {selected.postsIndexed === undefined ? null : (
+                  <ProfileDetailPostsIndexed count={selected.postsIndexed} />
+                )}
+              </ProfileDetailFacts>
+              <ProfileDetailPersona>
+                {selected.persona ? (
+                  <ProfileDetailPersonaCard
+                    fileName={selected.persona.fileName}
+                    onView={viewPersona}
+                  />
+                ) : (
+                  <ProfileDetailPersonaEmpty />
+                )}
+              </ProfileDetailPersona>
+              <ProfileDetailFooter>
+                <ProfileDetailIndexPostsButton
+                  indexing={indexing}
+                  onClick={indexPosts}
+                />
+                <ProfileDetailRemoveButton
+                  name={selected.name}
+                  onRemove={remove}
+                />
+              </ProfileDetailFooter>
+            </ProfileDetail>
           )}
         </AnimatePresence>
       </div>

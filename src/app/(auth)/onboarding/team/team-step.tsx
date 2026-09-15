@@ -60,7 +60,6 @@ export function TeamStep({ inviteUrl, owner }: TeamStepProps) {
       <InviteTeamForm
         inviteUrl={inviteUrl}
         members={members}
-        showActions={false}
         onInvite={(invites) => {
           setMembers((current) => [
             ...current,

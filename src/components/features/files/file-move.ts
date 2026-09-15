@@ -220,48 +220,38 @@ export function moveLibraryItem(
       : (findFolder(destination.nodes, dest.folderId)?.name ??
         destination.title);
 
+  /** `emptied` is the source library without the item; `put` adds it back. */
+  const finish = (
+    emptied: FileNode[],
+    name: string,
+    put: (nodes: readonly FileNode[]) => FileNode[],
+  ) => {
+    // Same library: the item goes back into the already-emptied tree.
+    const filled = put(
+      dest.sectionId === from.sectionId ? emptied : destination.nodes,
+    );
+    const next = sections.map((section) => {
+      if (section.id === dest.sectionId) return { ...section, nodes: filled };
+      if (section.id === from.sectionId) return { ...section, nodes: emptied };
+      return section;
+    });
+    return { sections: next, name, destName };
+  };
+
+  // Take the item out of its library: a node first, else an asset.
   const nodeTake = extractNode(source.nodes, itemId);
-  const assetTake =
-    nodeTake.taken === undefined
-      ? extractAsset(source.nodes, itemId)
-      : undefined;
-  if (nodeTake.taken === undefined && assetTake?.taken === undefined) {
-    return null;
+  const movedNode = nodeTake.taken;
+  if (movedNode !== undefined) {
+    return finish(nodeTake.nodes, movedNode.name, (nodes) =>
+      insertNode(nodes, dest.folderId, movedNode),
+    );
   }
-
-  const name =
-    nodeTake.taken?.name ??
-    assetTake?.taken.caption ??
-    "Untitled";
-
-  const emptied =
-    nodeTake.taken !== undefined ? nodeTake.nodes : (assetTake?.nodes ?? []);
-
-  const filled =
-    dest.sectionId === from.sectionId
-      ? nodeTake.taken !== undefined
-        ? insertNode(emptied, dest.folderId, nodeTake.taken)
-        : insertAsset(emptied, dest.folderId, assetTake!.taken!)
-      : dest.sectionId === destination.id
-        ? nodeTake.taken !== undefined
-          ? insertNode(destination.nodes, dest.folderId, nodeTake.taken)
-          : insertAsset(destination.nodes, dest.folderId, assetTake!.taken!)
-        : destination.nodes;
-
-  const next = sections.map((section) => {
-    if (section.id === from.sectionId && section.id === dest.sectionId) {
-      return { ...section, nodes: filled };
-    }
-    if (section.id === from.sectionId) {
-      return { ...section, nodes: emptied };
-    }
-    if (section.id === dest.sectionId) {
-      return { ...section, nodes: filled };
-    }
-    return section;
-  });
-
-  return { sections: next, name, destName };
+  const assetTake = extractAsset(source.nodes, itemId);
+  const movedAsset = assetTake.taken;
+  if (movedAsset === undefined) return null;
+  return finish(assetTake.nodes, movedAsset.caption ?? "Untitled", (nodes) =>
+    insertAsset(nodes, dest.folderId, movedAsset),
+  );
 }
 
 export function preventFileMove(event: DragEvent<HTMLElement>) {

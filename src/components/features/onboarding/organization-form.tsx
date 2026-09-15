@@ -139,26 +139,29 @@ export function LogoUpload({ value, onChange, className }: LogoUploadProps) {
 }
 
 interface OrganizationFormProps {
-  onContinue: (values: { name: string; logo: File | null }) => void;
-  /** What was typed on an earlier visit, so coming back does not clear it. */
-  defaultName?: string;
-  defaultLogoUrl?: string;
-  /** Every keystroke and logo change, for a live preview beside the form. */
-  onChange?: (values: { name: string; logoUrl: string | undefined }) => void;
+  name: string;
+  onNameChange: (name: string) => void;
+  /** Object URL or remote URL of the chosen logo. */
+  logoUrl: string | undefined;
+  /** A picked file, or `null` once removed. The owner turns it into a URL. */
+  onLogoChange: (file: File | null) => void;
+  /** Submit, only once a name is entered. */
+  onContinue: () => void;
   className?: string;
 }
 
-/** Onboarding step: organization name and logo. */
+/**
+ * Onboarding step: organization name and logo. Controlled: whoever renders it
+ * owns the draft, so a preview beside the form reads the same state.
+ */
 export function OrganizationForm({
+  name,
+  onNameChange,
+  logoUrl,
+  onLogoChange,
   onContinue,
-  defaultName = "",
-  defaultLogoUrl,
-  onChange,
   className,
 }: OrganizationFormProps) {
-  const [name, setName] = useState(defaultName);
-  const [logo, setLogo] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | undefined>(defaultLogoUrl);
   const named = name.trim() !== "";
 
   return (
@@ -170,7 +173,7 @@ export function OrganizationForm({
       )}
       onSubmit={(event) => {
         event.preventDefault();
-        if (named) onContinue({ name: name.trim(), logo });
+        if (named) onContinue();
       }}
     >
       <Field>
@@ -185,8 +188,7 @@ export function OrganizationForm({
           autoFocus
           className="h-control-lg px-3 md:text-base"
           onChange={(event) => {
-            setName(event.target.value);
-            onChange?.({ name: event.target.value, logoUrl: preview });
+            onNameChange(event.target.value);
           }}
         />
       </Field>
@@ -198,21 +200,17 @@ export function OrganizationForm({
           </span>
         </FieldLabel>
         <LogoUpload
-          value={preview}
-          onChange={(file) => {
-            setLogo(file);
-            // A URL that came in as a default is not ours to revoke.
-            if (preview !== undefined && preview !== defaultLogoUrl) {
-              URL.revokeObjectURL(preview);
-            }
-            const next = file ? URL.createObjectURL(file) : undefined;
-            setPreview(next);
-            onChange?.({ name, logoUrl: next });
-          }}
+          {...(logoUrl === undefined ? {} : { value: logoUrl })}
+          onChange={onLogoChange}
         />
       </Field>
       <div className="mt-l flex flex-wrap items-center gap-l">
-        <Button type="submit" size="lg" disabled={!named} className="max-md:w-full">
+        <Button
+          type="submit"
+          size="lg"
+          disabled={!named}
+          className="max-md:w-full"
+        >
           Continue
         </Button>
         {named ? null : (

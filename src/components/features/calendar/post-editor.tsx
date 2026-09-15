@@ -28,8 +28,9 @@ export interface PostEditorValue {
 }
 
 interface PostEditorProps {
+  /** The post as it is now. The editor owns nothing: every edit comes back through `onChange`. */
   value: PostEditorValue;
-  /** Persist the current draft. Called as the post changes (autosave). */
+  /** The next value, on every edit. The owner keeps it and renders it back. */
   onChange: (value: PostEditorValue) => void;
   onOpenAgent: (value: PostEditorValue) => void;
   /** The editor asking for its tab to go away, after a delete. */
@@ -50,6 +51,35 @@ function withLabels(
   const [first, ...rest] = labels;
   if (first === undefined) return { label: undefined, labels: [] };
   return { labels: [first, ...rest], label: first };
+}
+
+/** The value with part of its post changed. */
+function withPost(
+  value: PostEditorValue,
+  patch: Partial<PostChipData>,
+): PostEditorValue {
+  return { ...value, post: { ...value.post, ...patch } };
+}
+
+/** The value with `name` added to its labels, unless it is already there in some casing. */
+function withLabelAdded(value: PostEditorValue, name: string): PostEditorValue {
+  const labels = labelsOf(value.post);
+  const exists = labels.some(
+    (item) =>
+      item.localeCompare(name, undefined, { sensitivity: "accent" }) === 0,
+  );
+  if (exists) return value;
+  return withPost(value, withLabels([...labels, name]));
+}
+
+function withLabelRemoved(
+  value: PostEditorValue,
+  name: string,
+): PostEditorValue {
+  return withPost(
+    value,
+    withLabels(labelsOf(value.post).filter((item) => item !== name)),
+  );
 }
 
 function LabelPill({
@@ -120,38 +150,26 @@ export function PostEditor({
   onDelete,
   mediaLibrary,
 }: PostEditorProps) {
-  const [draft, setDraft] = useState(value);
+  // The only state here is the label field's text before it becomes a label.
   const [labelInput, setLabelInput] = useState("");
-  const preview = draft.post.preview;
+  const preview = value.post.preview;
   const author = preview?.author;
-  const body = preview?.body ?? draft.post.title;
-  const labels = labelsOf(draft.post);
-
-  function commit(next: PostEditorValue) {
-    setDraft(next);
-    onChange(next);
-  }
+  const body = preview?.body ?? value.post.title;
+  const labels = labelsOf(value.post);
 
   function updatePost(patch: Partial<PostChipData>) {
-    commit({
-      ...draft,
-      post: { ...draft.post, ...patch },
-    });
+    onChange(withPost(value, patch));
   }
 
   function addLabel() {
     const next = labelInput.trim();
     if (next === "") return;
-    const exists = labels.some(
-      (item) =>
-        item.localeCompare(next, undefined, { sensitivity: "accent" }) === 0,
-    );
-    if (!exists) updatePost(withLabels([...labels, next]));
+    onChange(withLabelAdded(value, next));
     setLabelInput("");
   }
 
   function removeLabel(name: string) {
-    updatePost(withLabels(labels.filter((item) => item !== name)));
+    onChange(withLabelRemoved(value, name));
   }
 
   return (
@@ -159,16 +177,16 @@ export function PostEditor({
       <div className="mx-auto flex w-full max-w-6xl shrink-0 flex-row items-center gap-s px-l py-m">
         <h2 className="type-body font-semibold">Edit post</h2>
         <span
-          style={postChipStyle(draft.post.status)}
+          style={postChipStyle(value.post.status)}
           className="rounded-control bg-[color-mix(in_srgb,var(--chip-color)_18%,transparent)] px-s py-xxs type-caption text-imagine-foreground-muted"
         >
-          {STATUS_LABEL[draft.post.status]}
+          {STATUS_LABEL[value.post.status]}
         </span>
         <Button
           type="button"
           variant="outline"
           onClick={() => {
-            onOpenAgent(draft);
+            onOpenAgent(value);
           }}
           className="ml-auto"
         >
@@ -190,7 +208,7 @@ export function PostEditor({
             />
           ) : (
             <LinkedInPostEditor
-              post={draft.post}
+              post={value.post}
               body={body}
               mediaLibrary={mediaLibrary}
               onBodyChange={(nextBody) => {
@@ -209,7 +227,7 @@ export function PostEditor({
           )}
 
           <div className="mt-l flex items-center gap-s pt-m">
-            {draft.post.engagement === undefined ? (
+            {value.post.engagement === undefined ? (
               <>
                 <Avatar
                   shape={author?.kind === "company" ? "square" : "circle"}
@@ -219,7 +237,7 @@ export function PostEditor({
                     <AvatarImage src={author.avatarUrl} alt="" />
                   )}
                   <AvatarFallback>
-                    {initials(author?.name ?? draft.post.profile)}
+                    {initials(author?.name ?? value.post.profile)}
                   </AvatarFallback>
                 </Avatar>
                 <Tooltip>
@@ -249,14 +267,14 @@ export function PostEditor({
             </legend>
             <Input
               type="date"
-              value={draft.date}
+              value={value.date}
               onChange={(event) => {
-                commit({ ...draft, date: event.target.value });
+                onChange({ ...value, date: event.target.value });
               }}
             />
             <Input
               type="time"
-              value={draft.post.time.padStart(5, "0")}
+              value={value.post.time.padStart(5, "0")}
               onChange={(event) => {
                 updatePost({ time: event.target.value });
               }}
@@ -273,9 +291,9 @@ export function PostEditor({
                   key={item.status}
                   type="button"
                   variant={
-                    draft.post.status === item.status ? "soft" : "outline"
+                    value.post.status === item.status ? "soft" : "outline"
                   }
-                  aria-pressed={draft.post.status === item.status}
+                  aria-pressed={value.post.status === item.status}
                   onClick={() => {
                     updatePost({ status: item.status });
                   }}
@@ -323,9 +341,9 @@ export function PostEditor({
               Internal notes
             </span>
             <Textarea
-              value={draft.internalNotes}
+              value={value.internalNotes}
               onChange={(event) => {
-                commit({ ...draft, internalNotes: event.target.value });
+                onChange({ ...value, internalNotes: event.target.value });
               }}
               placeholder="Add a note for your team"
               className="min-h-32 resize-none"
@@ -340,7 +358,7 @@ export function PostEditor({
             type="button"
             variant="ghost"
             onClick={() => {
-              onDelete(draft.post.id);
+              onDelete(value.post.id);
               onClose();
             }}
             className="text-destructive hover:text-destructive"
@@ -352,10 +370,7 @@ export function PostEditor({
           type="button"
           variant="outline"
           onClick={() => {
-            commit({
-              ...draft,
-              post: { ...draft.post, status: "published" },
-            });
+            updatePost({ status: "published" });
           }}
           className="ml-auto"
         >

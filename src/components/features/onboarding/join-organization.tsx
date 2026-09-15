@@ -10,30 +10,12 @@ import {
   AvatarGroupCount,
   AvatarImage,
 } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
 import { fade } from "@/styles/motion";
 
 export interface JoinMember {
   id: string;
   name: string;
   avatarUrl?: string;
-}
-
-interface JoinOrganizationProps {
-  orgName: string;
-  orgLogoUrl?: string;
-  /** One line under the name, e.g. "12 members · 3 LinkedIn profiles". */
-  orgNote: string;
-  /** A few members to show. `memberCount` is the full total. */
-  members: readonly JoinMember[];
-  memberCount: number;
-  invitedBy: JoinMember;
-  role?: "member" | "admin";
-  onJoin: () => void;
-  onDecline?: () => void;
-  pending?: boolean;
-  className?: string;
 }
 
 const SHOWN_MEMBERS = 4;
@@ -65,115 +47,165 @@ function membersLine(
 }
 
 /**
- * Invite landing: the organization you were invited to, who is already in
- * it, who invited you, then one primary action. Same panel and rhythm as the
- * other onboarding steps.
+ * Invite landing frame. Same panel and rhythm as the other onboarding steps;
+ * compose it from `JoinOrganizationHero`, `JoinOrganizationPanel` (with
+ * `JoinOrganizationMembers` inside), `JoinOrganizationInvitee`, and
+ * `JoinOrganizationActions`.
  */
 export function JoinOrganization({
-  orgName,
-  orgLogoUrl,
-  orgNote,
-  members,
-  memberCount,
-  invitedBy,
-  role = "member",
-  onJoin,
-  onDecline,
-  pending = false,
   className,
-}: JoinOrganizationProps) {
-  const shown = members.slice(0, SHOWN_MEMBERS);
-  const overflow = memberCount - shown.length;
-
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div
       data-slot="join-organization"
       className={cn("flex w-full max-w-md flex-col gap-xl", className)}
     >
-      <div className="flex flex-col gap-xs">
-        <h1 className="type-display">Join {orgName}</h1>
-        <p className="type-body text-imagine-foreground-muted">
-          {invitedBy.name} invited you to work on {orgName}&apos;s LinkedIn with
-          the team.
-        </p>
-      </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={fade.base}
-        className="flex flex-col gap-l rounded-panel bg-imagine-surface p-l shadow-raised"
-      >
-        <div className="flex items-center gap-m">
-          <Avatar size="lg" shape="square">
-            {orgLogoUrl ? <AvatarImage src={orgLogoUrl} alt="" /> : null}
-            <AvatarFallback>{initials(orgName)}</AvatarFallback>
-          </Avatar>
-          <div className="flex min-w-0 flex-col">
-            <span className="truncate type-heading">{orgName}</span>
-            <span className="truncate type-small text-imagine-foreground-muted">
-              {orgNote}
-            </span>
-          </div>
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ ...fade.base, delay: 0.1 }}
-          className="flex items-center gap-m"
-        >
-          <AvatarGroup>
-            {shown.map((member) => (
-              <Avatar key={member.id} size="sm" title={member.name}>
-                {member.avatarUrl ? (
-                  <AvatarImage src={member.avatarUrl} alt={member.name} />
-                ) : null}
-                <AvatarFallback>{initials(member.name)}</AvatarFallback>
-              </Avatar>
-            ))}
-            {overflow > 0 ? (
-              <AvatarGroupCount className="size-6 bg-imagine-surface-raised type-micro text-imagine-foreground-muted">
-                +{overflow}
-              </AvatarGroupCount>
-            ) : null}
-          </AvatarGroup>
-          <span className="type-small text-imagine-foreground-muted">
-            {membersLine(members, memberCount)}
-          </span>
-        </motion.div>
-      </motion.div>
-
-      <div className="flex items-center gap-m pl-xs">
-        <Avatar size="sm">
-          {invitedBy.avatarUrl ? (
-            <AvatarImage src={invitedBy.avatarUrl} alt="" />
-          ) : null}
-          <AvatarFallback>{initials(invitedBy.name)}</AvatarFallback>
-        </Avatar>
-        <p className="type-small text-imagine-foreground-muted">
-          <span className="font-medium text-imagine-foreground">
-            {invitedBy.name}
-          </span>{" "}
-          invited you as {role === "admin" ? "an admin" : "a member"}
-        </p>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-l">
-        <Button size="lg" disabled={pending} onClick={onJoin}>
-          {pending ? <Spinner size="s" data-icon="inline-start" /> : null}
-          Join {orgName}
-        </Button>
-        {onDecline ? (
-          <Button
-            variant="link"
-            className="text-imagine-foreground-muted"
-            onClick={onDecline}
-          >
-            Not now
-          </Button>
-        ) : null}
-      </div>
+      {children}
     </div>
   );
+}
+
+interface JoinOrganizationHeroProps {
+  orgName: string;
+  /** Who sent the invite, by name. */
+  invitedBy: string;
+}
+
+export function JoinOrganizationHero({
+  orgName,
+  invitedBy,
+}: JoinOrganizationHeroProps) {
+  return (
+    <div className="flex flex-col gap-xs">
+      <h1 className="type-display">Join {orgName}</h1>
+      <p className="type-body text-imagine-foreground-muted">
+        {invitedBy} invited you to work on {orgName}&apos;s LinkedIn with the
+        team.
+      </p>
+    </div>
+  );
+}
+
+interface JoinOrganizationPanelProps {
+  orgName: string;
+  orgLogoUrl?: string;
+  /** One line under the name, e.g. "12 members · 3 LinkedIn profiles". */
+  orgNote: string;
+  /** Rows under the organization, e.g. `JoinOrganizationMembers`. */
+  children?: React.ReactNode;
+}
+
+/** The raised card: the organization you were invited to. */
+export function JoinOrganizationPanel({
+  orgName,
+  orgLogoUrl,
+  orgNote,
+  children,
+}: JoinOrganizationPanelProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={fade.base}
+      className="flex flex-col gap-l rounded-panel bg-imagine-surface p-l shadow-raised"
+    >
+      <div className="flex items-center gap-m">
+        <Avatar size="lg" shape="square">
+          {orgLogoUrl ? <AvatarImage src={orgLogoUrl} alt="" /> : null}
+          <AvatarFallback>{initials(orgName)}</AvatarFallback>
+        </Avatar>
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate type-heading">{orgName}</span>
+          <span className="truncate type-small text-imagine-foreground-muted">
+            {orgNote}
+          </span>
+        </div>
+      </div>
+      {children}
+    </motion.div>
+  );
+}
+
+interface JoinOrganizationMembersProps {
+  /** A few members to show. `memberCount` is the full total. */
+  members: readonly JoinMember[];
+  memberCount: number;
+}
+
+/** Who is already in: a stack of avatars and the sentence beside it. */
+export function JoinOrganizationMembers({
+  members,
+  memberCount,
+}: JoinOrganizationMembersProps) {
+  const shown = members.slice(0, SHOWN_MEMBERS);
+  const overflow = memberCount - shown.length;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ ...fade.base, delay: 0.1 }}
+      className="flex items-center gap-m"
+    >
+      <AvatarGroup>
+        {shown.map((member) => (
+          <Avatar key={member.id} size="sm" title={member.name}>
+            {member.avatarUrl ? (
+              <AvatarImage src={member.avatarUrl} alt={member.name} />
+            ) : null}
+            <AvatarFallback>{initials(member.name)}</AvatarFallback>
+          </Avatar>
+        ))}
+        {overflow > 0 ? (
+          <AvatarGroupCount className="size-6 bg-imagine-surface-raised type-micro text-imagine-foreground-muted">
+            +{overflow}
+          </AvatarGroupCount>
+        ) : null}
+      </AvatarGroup>
+      <span className="type-small text-imagine-foreground-muted">
+        {membersLine(members, memberCount)}
+      </span>
+    </motion.div>
+  );
+}
+
+interface JoinOrganizationInviteeProps {
+  invitedBy: JoinMember;
+  role: "member" | "admin";
+}
+
+/** Who invited you, and as what. */
+export function JoinOrganizationInvitee({
+  invitedBy,
+  role,
+}: JoinOrganizationInviteeProps) {
+  return (
+    <div className="flex items-center gap-m pl-xs">
+      <Avatar size="sm">
+        {invitedBy.avatarUrl ? (
+          <AvatarImage src={invitedBy.avatarUrl} alt="" />
+        ) : null}
+        <AvatarFallback>{initials(invitedBy.name)}</AvatarFallback>
+      </Avatar>
+      <p className="type-small text-imagine-foreground-muted">
+        <span className="font-medium text-imagine-foreground">
+          {invitedBy.name}
+        </span>{" "}
+        invited you as {role === "admin" ? "an admin" : "a member"}
+      </p>
+    </div>
+  );
+}
+
+/** The action row: the primary Join button and whatever sits beside it. */
+export function JoinOrganizationActions({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <div className="flex flex-wrap items-center gap-l">{children}</div>;
 }

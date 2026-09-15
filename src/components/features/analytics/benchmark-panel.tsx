@@ -17,8 +17,11 @@ import {
   CHART_ANIMATION,
   CHART_COLOR,
   CHART_TICK,
-  ChartSkeleton,
+  ChartSkeletonRadar,
+  ChartSkeletonRows,
   ChartTooltip,
+  ChartTooltipLabel,
+  ChartTooltipSeries,
 } from "@/components/features/analytics/chart-theme";
 import { initials, Panel } from "@/components/features/analytics/panel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -134,8 +137,8 @@ export function BenchmarkPanel({
     return (
       <Panel title="Benchmark" description={description} className={className}>
         <div className="grid gap-l @3xl/panel:grid-cols-[16rem_minmax(0,1fr)]">
-          <ChartSkeleton kind="radar" height="h-56" header={false} />
-          <ChartSkeleton kind="rows" height="h-56" header={false} />
+          <ChartSkeletonRadar height="h-56" />
+          <ChartSkeletonRows height="h-56" />
         </div>
       </Panel>
     );
@@ -187,14 +190,17 @@ export function BenchmarkPanel({
                 <Tooltip
                   isAnimationActive={false}
                   content={
-                    <ChartTooltip
-                      labelOf={labelOf}
-                      format={(value, key, datum) => {
-                        const raw =
-                          datum?.[key === "you" ? "youRaw" : "themRaw"];
-                        return typeof raw === "string" ? raw : String(value);
-                      }}
-                    />
+                    <ChartTooltip>
+                      <ChartTooltipLabel />
+                      <ChartTooltipSeries
+                        labelOf={labelOf}
+                        format={(value, key, datum) => {
+                          const raw =
+                            datum?.[key === "you" ? "youRaw" : "themRaw"];
+                          return typeof raw === "string" ? raw : String(value);
+                        }}
+                      />
+                    </ChartTooltip>
                   }
                 />
                 <Radar

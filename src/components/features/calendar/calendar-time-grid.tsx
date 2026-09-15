@@ -8,10 +8,12 @@ import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
 import {
   EventChip,
   type EventChipData,
+  EventChipDense,
 } from "@/components/features/calendar/event-chip";
 import {
   PostChip,
   type PostChipData,
+  PostChipDense,
   type PostOpenOptions,
 } from "@/components/features/calendar/post-chip";
 import {
@@ -168,11 +170,11 @@ export function CalendarTimeGrid({
                         delay: dayIndex * stagger.calendar,
                       }}
                     >
-                      <EventChip
-                        event={event}
-                        dense={!single}
-                        onOpen={onOpenEvent}
-                      />
+                      {single ? (
+                        <EventChip event={event} onOpen={onOpenEvent} />
+                      ) : (
+                        <EventChipDense event={event} onOpen={onOpenEvent} />
+                      )}
                     </motion.div>
                   ))}
               </div>
@@ -225,11 +227,11 @@ export function CalendarTimeGrid({
                           delay: dayIndex * stagger.calendar,
                         }}
                       >
-                        <EventChip
-                          event={event}
-                          dense={!single}
-                          onOpen={onOpenEvent}
-                        />
+                        {single ? (
+                          <EventChip event={event} onOpen={onOpenEvent} />
+                        ) : (
+                          <EventChipDense event={event} onOpen={onOpenEvent} />
+                        )}
                       </motion.div>
                     ))}
                   {day.posts
@@ -244,15 +246,23 @@ export function CalendarTimeGrid({
                           delay: dayIndex * stagger.calendar,
                         }}
                       >
-                        <PostChip
-                          post={post}
-                          dense={!single}
-                          // A day has the width for a paragraph; a week's column
-                          // has room for a couple of lines.
-                          lines={single ? 4 : 2}
-                          selected={post.id === selectedPostId}
-                          onOpen={onOpenPost}
-                        />
+                        {/* A day has the width for a paragraph; a week's
+                            column has room for a couple of lines. */}
+                        {single ? (
+                          <PostChip
+                            post={post}
+                            lines={4}
+                            selected={post.id === selectedPostId}
+                            onOpen={onOpenPost}
+                          />
+                        ) : (
+                          <PostChipDense
+                            post={post}
+                            lines={2}
+                            selected={post.id === selectedPostId}
+                            onOpen={onOpenPost}
+                          />
+                        )}
                       </motion.div>
                     ))}
                 </div>

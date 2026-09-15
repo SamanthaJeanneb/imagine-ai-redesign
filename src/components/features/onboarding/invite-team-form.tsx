@@ -133,8 +133,9 @@ export function InviteLinkField({ url, className }: InviteLinkFieldProps) {
 
 interface TeamMemberRowProps {
   member: TeamMember;
-  onRoleChange?: (id: string, role: MemberRole) => void;
-  onResend?: (id: string) => void;
+  onRoleChange: (id: string, role: MemberRole) => void;
+  /** Invited rows get a Resend action. */
+  onResend: (id: string) => void;
 }
 
 export function TeamMemberRow({
@@ -171,9 +172,11 @@ export function TeamMemberRow({
             size="sm"
             value={member.role}
             label={`Role for ${label}`}
-            onChange={(role) => onRoleChange?.(member.id, role)}
+            onChange={(role) => {
+              onRoleChange(member.id, role);
+            }}
           />
-          {member.status === "invited" && onResend ? (
+          {member.status === "invited" ? (
             <Button
               size="xs"
               variant="ghost"
@@ -196,12 +199,12 @@ interface InviteTeamFormProps {
   members: readonly TeamMember[];
   /** Send the drafted invites; they join `members` as invited rows. */
   onInvite: (invites: readonly { email: string; role: MemberRole }[]) => void;
+  /** The form's submit. Render `InviteTeamFormActions` to give it a button. */
   onContinue: () => void;
-  onRoleChange?: (id: string, role: MemberRole) => void;
-  onResend?: (id: string) => void;
-  onSkip?: () => void;
-  /** `false` when the page pins Continue and Skip elsewhere. */
-  showActions?: boolean;
+  onRoleChange: (id: string, role: MemberRole) => void;
+  onResend: (id: string) => void;
+  /** The footer, after the team list. Omit when the page pins its own. */
+  children?: React.ReactNode;
   className?: string;
 }
 
@@ -217,8 +220,7 @@ export function InviteTeamForm({
   onContinue,
   onRoleChange,
   onResend,
-  onSkip,
-  showActions = true,
+  children,
   className,
 }: InviteTeamFormProps) {
   const [email, setEmail] = useState("");
@@ -305,23 +307,33 @@ export function InviteTeamForm({
         </Stagger>
       </Field>
 
-      {showActions ? (
-        <div className="mt-l flex flex-wrap items-center gap-l max-md:flex-col-reverse max-md:items-stretch">
-          <Button type="submit" size="lg" className="max-md:w-full">
-            Continue
-          </Button>
-          {onSkip ? (
-            <Button
-              type="button"
-              variant="link"
-              className="text-imagine-foreground-muted"
-              onClick={onSkip}
-            >
-              Skip, invite people later
-            </Button>
-          ) : null}
-        </div>
-      ) : null}
+      {children}
     </form>
+  );
+}
+
+/**
+ * The form's own footer: Continue submits, and anything else (a Skip link)
+ * sits beside it.
+ */
+export function InviteTeamFormActions({
+  children,
+  className,
+}: {
+  children?: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "mt-l flex flex-wrap items-center gap-l max-md:flex-col-reverse max-md:items-stretch",
+        className,
+      )}
+    >
+      <Button type="submit" size="lg" className="max-md:w-full">
+        Continue
+      </Button>
+      {children}
+    </div>
   );
 }

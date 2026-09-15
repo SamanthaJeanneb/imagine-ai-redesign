@@ -15,13 +15,23 @@ import {
 } from "@/components/features/agent/linkedin-post-draft";
 import { ScheduledGraphic } from "@/components/features/agent/scheduled-graphic";
 import {
-  ChartBlock,
+  CHART_PLOT_BY_KIND,
   type ChartDatum,
+  ChartHeader,
+  ChartHeadline,
+  ChartKey,
   type ChartKind,
+  ChartProvider,
   type ChartSeries,
 } from "@/components/features/analytics/chart-block";
-import { AssetGrid } from "@/components/features/files/asset-grid";
-import { type AssetTileData } from "@/components/features/files/asset-tile";
+import {
+  AssetGrid,
+  AssetGridItem,
+} from "@/components/features/files/asset-grid";
+import {
+  AssetTile,
+  type AssetTileData,
+} from "@/components/features/files/asset-tile";
 import { ThinkingIndicator } from "@/components/motion/thinking-indicator";
 import { Button } from "@/components/ui/button";
 import { fade, stagger } from "@/styles/motion";
@@ -80,6 +90,26 @@ function assertNever(value: never): never {
 }
 
 type DraftPartData = Extract<MessagePart, { type: "post_draft" }>;
+type ChartPartData = Extract<MessagePart, { type: "chart" }>;
+
+/**
+ * A chart in the reply. The message is the frame, so the parts stack in
+ * their own column; the header carries the total, or the key when there is
+ * more than one series to name.
+ */
+function ChartPart({ part }: { part: ChartPartData }) {
+  const Plot = CHART_PLOT_BY_KIND[part.kind];
+  return (
+    <ChartProvider data={part.data} series={part.series} tone="accent">
+      <div className="flex max-w-lg flex-col gap-l">
+        <ChartHeader title={part.title}>
+          {part.series.length > 1 ? <ChartKey /> : <ChartHeadline />}
+        </ChartHeader>
+        <Plot highlightIndex={part.highlightIndex} />
+      </div>
+    </ChartProvider>
+  );
+}
 
 /**
  * A draft in the thread. Edit opens the body in place; Done keeps the
@@ -158,18 +188,7 @@ function Part({
         <p className="max-w-prose type-heading font-semibold">{part.text}</p>
       );
     case "chart":
-      return (
-        <ChartBlock
-          kind={part.kind}
-          data={part.data}
-          series={part.series}
-          title={part.title}
-          tone="accent"
-          highlightIndex={part.highlightIndex}
-          plain
-          className="max-w-lg"
-        />
-      );
+      return <ChartPart part={part} />;
     case "post_draft":
       return (
         <DraftPart
@@ -267,7 +286,13 @@ export function UserMessage({
       className={cn("flex w-full flex-col items-end gap-s", className)}
     >
       {attachments && attachments.length > 0 ? (
-        <AssetGrid assets={attachments} className="w-48 grid-cols-2" />
+        <AssetGrid className="w-48 grid-cols-2">
+          {attachments.map((asset) => (
+            <AssetGridItem key={asset.id} asset={asset}>
+              <AssetTile asset={asset} />
+            </AssetGridItem>
+          ))}
+        </AssetGrid>
       ) : null}
       <motion.p
         initial={{ opacity: 0, y: 6 }}

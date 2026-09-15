@@ -3,10 +3,8 @@
 import {
   createContext,
   type ReactNode,
-  useCallback,
   useContext,
   useEffect,
-  useMemo,
   useState,
 } from "react";
 
@@ -187,10 +185,10 @@ export function ChatProvider({
   const [lastPreview, setLastPreview] = useState<ComposerPreview>("calendar");
   const [handoff, setHandoff] = useState<ComposerPreview | null>(null);
 
-  const setPreview = useCallback((next: ComposerPreview | null) => {
+  function setPreview(next: ComposerPreview | null) {
     setPreviewState(next);
     if (next !== null) setLastPreview(next);
-  }, []);
+  }
   const [turns, setTurns] = useState(0);
 
   // The reply arrives a part at a time: the thinking state holds, then the rest.
@@ -222,100 +220,91 @@ export function ChatProvider({
     };
   }, [streaming]);
 
-  const send = useCallback(
-    (text: string, intent = "default") => {
-      const turn = String(turns + 1);
-      const messageId = `reply-${turn}`;
-      // What is attached rides along in the message, the way a person would say it.
-      const about = attached.map(subject);
-      const spoken =
-        about.length === 0
-          ? text
-          : `About ${about.map((item) => `"${item.title}"`).join(", ")}: ${text}`;
+  function send(text: string, intent = "default") {
+    const turn = String(turns + 1);
+    const messageId = `reply-${turn}`;
+    // What is attached rides along in the message, the way a person would say it.
+    const about = attached.map(subject);
+    const spoken =
+      about.length === 0
+        ? text
+        : `About ${about.map((item) => `"${item.title}"`).join(", ")}: ${text}`;
 
-      setTurns(turns + 1);
-      setThreadId((current) => current ?? NEW_THREAD_ID);
-      setMessages((current) => [
-        ...current,
-        {
-          id: `user-${turn}`,
-          role: "user",
-          parts: [{ type: "text", text: spoken }],
-        },
-        { id: messageId, role: "assistant", parts: [] },
-      ]);
-      setStreaming({
-        messageId,
-        revealed: 0,
-        reply: replies[REPLY_FOR_INTENT[intent] ?? "default"],
-      });
-      setDraft("");
-      setAttached([]);
-    },
-    [attached, replies, turns],
-  );
+    setTurns(turns + 1);
+    setThreadId((current) => current ?? NEW_THREAD_ID);
+    setMessages((current) => [
+      ...current,
+      {
+        id: `user-${turn}`,
+        role: "user",
+        parts: [{ type: "text", text: spoken }],
+      },
+      { id: messageId, role: "assistant", parts: [] },
+    ]);
+    setStreaming({
+      messageId,
+      revealed: 0,
+      reply: replies[REPLY_FOR_INTENT[intent] ?? "default"],
+    });
+    setDraft("");
+    setAttached([]);
+  }
 
-  const toggleAttached = useCallback((next: ChatAttachment) => {
+  function toggleAttached(next: ChatAttachment) {
     const id = subject(next).id;
     setAttached((current) =>
       current.some((item) => subject(item).id === id)
         ? current.filter((item) => subject(item).id !== id)
         : [...current, next],
     );
-  }, []);
+  }
 
-  const attach = useCallback((next: ChatAttachment) => {
+  function attach(next: ChatAttachment) {
     const id = subject(next).id;
     setAttached((current) =>
       current.some((item) => subject(item).id === id)
         ? current
         : [...current, next],
     );
-  }, []);
+  }
 
-  const clearAttached = useCallback((id?: string) => {
+  function clearAttached(id?: string) {
     setAttached((current) =>
       id === undefined ? [] : current.filter((item) => subject(item).id !== id),
     );
-  }, []);
+  }
 
-  const sendIntent = useCallback(
-    (intent: string) => {
-      send(INTENT_PROMPT[intent] ?? "Go ahead.", intent);
-    },
-    [send],
-  );
+  function sendIntent(intent: string) {
+    send(INTENT_PROMPT[intent] ?? "Go ahead.", intent);
+  }
 
-  const open = useCallback(
-    (id: string, stored: readonly AgentMessage[]) => {
-      if (threadId === id) return;
-      setThreadId(id);
-      setMessages(stored);
-      setStreaming(null);
-      setAttached([]);
-    },
-    [threadId],
-  );
+  function open(id: string, stored: readonly AgentMessage[]) {
+    if (threadId === id) return;
+    setThreadId(id);
+    setMessages(stored);
+    setStreaming(null);
+    setAttached([]);
+  }
 
-  const reset = useCallback(() => {
+  function reset() {
     setThreadId(null);
     setMessages([]);
     setStreaming(null);
     setDraft("");
     setAttached([]);
     setPreviewState(null);
-  }, []);
+  }
 
-  const startNew = useCallback(() => {
+  function startNew() {
     setThreadId(NEW_THREAD_ID);
     setMessages([]);
     setStreaming(null);
     setDraft("");
     setAttached([]);
     setPreviewState(null);
-  }, []);
+  }
 
-  const startPostChat = useCallback((post: PostChipData) => {
+  function startPostChat(post: PostChipData) {
     setThreadId(NEW_THREAD_ID);
     setMessages([
       {
@@ -328,68 +317,43 @@ export function ChatProvider({
     setDraft("");
     setAttached([{ kind: "post", post }]);
     setPreviewState(null);
-  }, []);
+  }
 
-  const expand = useCallback((next: ComposerPreview) => {
+  function expand(next: ComposerPreview) {
     setPreviewState(null);
     setHandoff(next);
-  }, []);
+  }
 
-  const landed = useCallback(() => {
+  function landed() {
     setHandoff(null);
-  }, []);
+  }
 
-  const value = useMemo<ChatState & ChatActions>(
-    () => ({
-      threadId,
-      messages,
-      thinking: streaming !== null,
-      thinkingStatuses: streaming?.reply.statuses,
-      draft,
-      attached,
-      attachedIds: attached.map((item) => subject(item).id),
-      preview,
-      lastPreview,
-      handoff,
-      previews,
-      send,
-      sendIntent,
-      setDraft,
-      attach,
-      toggleAttached,
-      clearAttached,
-      setPreview,
-      open,
-      reset,
-      startNew,
-      startPostChat,
-      expand,
-      landed,
-    }),
-    [
-      threadId,
-      messages,
-      streaming,
-      draft,
-      attached,
-      preview,
-      lastPreview,
-      handoff,
-      previews,
-      send,
-      sendIntent,
-      attach,
-      toggleAttached,
-      clearAttached,
-      setPreview,
-      open,
-      reset,
-      startNew,
-      startPostChat,
-      expand,
-      landed,
-    ],
-  );
+  const value: ChatState & ChatActions = {
+    threadId,
+    messages,
+    thinking: streaming !== null,
+    thinkingStatuses: streaming?.reply.statuses,
+    draft,
+    attached,
+    attachedIds: attached.map((item) => subject(item).id),
+    preview,
+    lastPreview,
+    handoff,
+    previews,
+    send,
+    sendIntent,
+    setDraft,
+    attach,
+    toggleAttached,
+    clearAttached,
+    setPreview,
+    open,
+    reset,
+    startNew,
+    startPostChat,
+    expand,
+    landed,
+  };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
 }

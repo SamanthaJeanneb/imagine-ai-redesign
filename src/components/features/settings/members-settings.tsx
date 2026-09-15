@@ -14,6 +14,7 @@ import { SettingsSection } from "@/components/features/settings/settings-section
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogCloseButton,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -139,6 +140,7 @@ function InviteDialog({ open, onOpenChange, onInvite }: InviteDialogProps) {
             </Button>
           </DialogFooter>
         </form>
+        <DialogCloseButton />
       </DialogContent>
     </Dialog>
   );

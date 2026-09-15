@@ -9,48 +9,19 @@ import {
   searchSkills,
   toSearchResults,
 } from "@/components/features/files/file-search";
-import {
-  FileTree,
-  type FileSection,
-} from "@/components/features/files/file-tree";
-import type { FileResource } from "@/components/features/files/resource-drag";
-import {
-  type Skill,
-  SkillsList,
-} from "@/components/features/files/skills-list";
+import { type FileSection } from "@/components/features/files/file-tree";
+import { type Skill } from "@/components/features/files/skills-list";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SearchBox } from "@/components/ui/search-box";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-interface FilesPanelProps {
-  title: string;
-  /** The organization's mark, shown before the title. */
-  logoUrl?: string;
-  sections: readonly FileSection[];
-  skills: readonly Skill[];
-  activeFileId?: string;
-  activeAssetId?: string;
-  onOpenFile?: (id: string) => void;
-  onEditFile?: (id: string) => void;
-  onAttachFile?: (file: FileResource) => void;
-  onOpenAsset?: (asset: AssetTileData) => void;
-  /** Larger asset tiles on the full Files route. */
-  assetSize?: "sm" | "default";
-  /** Explains the chat-only drag interaction. */
-  dragHint?: boolean;
-  onToggleSkill?: (id: string, enabled: boolean) => void;
-  /** Opens a skill's markdown in an editor tab. */
-  onOpenSkillFile?: (id: string) => void;
-  openSkillId?: string;
-  onClose?: () => void;
-  /** Pixels. The shell drives this when the panel is resizable. */
-  width?: number;
-  className?: string;
-}
-
 const DEFAULT_WIDTH = 400;
+
+/* ------------------------------------------------------------------------ */
+/* Open / close, for anything in the shell                                  */
+/* ------------------------------------------------------------------------ */
 
 interface FilesPanelApi {
   open: () => void;
@@ -75,35 +46,123 @@ export function useFilesPanelApi() {
   return useContext(FilesPanelApiContext);
 }
 
+/* ------------------------------------------------------------------------ */
+/* The panel                                                                */
+/* ------------------------------------------------------------------------ */
+
+type FilesPanelTab = "files" | "skills";
+
+interface FilesPanelState {
+  tab: FilesPanelTab;
+  setTab: (tab: FilesPanelTab) => void;
+}
+
+const FilesPanelContext = createContext<FilesPanelState | null>(null);
+
+function useFilesPanel(part: string): FilesPanelState {
+  const context = useContext(FilesPanelContext);
+  if (context === null) {
+    throw new Error(`${part} must be rendered inside FilesPanelFrame`);
+  }
+  return context;
+}
+
 /**
- * The right column that pushes the workspace when open: search, Files and
- * Skills tabs, and the tree. In-flow, never an overlay.
+ * The right column that pushes the workspace when open. In-flow, never an
+ * overlay. Compose it: `FilesPanelHeader`, `FilesPanelSearch`,
+ * `FilesPanelTabs` (with `FilesPanelFiles` and `FilesPanelSkills`), and
+ * `FilesPanelDragHint` when the tree drags into a chat.
  */
-export function FilesPanel({
-  title,
-  logoUrl,
-  sections,
-  skills,
-  activeFileId,
-  activeAssetId,
-  onOpenFile,
-  onEditFile,
-  onAttachFile,
-  onOpenAsset,
-  assetSize = "sm",
-  dragHint = false,
-  onToggleSkill,
-  onOpenSkillFile,
-  openSkillId,
-  onClose,
+export function FilesPanelFrame({
   width = DEFAULT_WIDTH,
   className,
-}: FilesPanelProps) {
-  const [query, setQuery] = useState("");
-  const [tab, setTab] = useState("files");
-  const [expandedAssetIds, setExpandedAssetIds] = useState<readonly string[]>(
-    [],
+  children,
+}: {
+  /** Pixels. The shell drives this when the panel is resizable. */
+  width?: number;
+  className?: string;
+  children: ReactNode;
+}) {
+  const [tab, setTab] = useState<FilesPanelTab>("files");
+  return (
+    <FilesPanelContext value={{ tab, setTab }}>
+      {/* Width is set, not animated: the shell animates the column it sits in,
+          and a drag has to follow the pointer. */}
+      <aside
+        data-slot="files-panel"
+        style={{ width }}
+        className={cn(
+          "flex h-full shrink-0 flex-col gap-m bg-imagine-background px-m py-l",
+          className,
+        )}
+      >
+        {children}
+      </aside>
+    </FilesPanelContext>
   );
+}
+
+/** The organization's mark and name; children sit at the row's end. */
+export function FilesPanelHeader({
+  title,
+  logoUrl,
+  children,
+}: {
+  title: string;
+  logoUrl?: string;
+  children?: ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-s px-xs">
+      <span className="flex min-w-0 items-center gap-s">
+        {logoUrl ? (
+          // Org logos are user uploads from arbitrary hosts; next/image needs a domain list.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={logoUrl}
+            alt=""
+            className="size-6 shrink-0 rounded-control object-cover"
+          />
+        ) : null}
+        <span className="truncate type-body font-semibold">{title}</span>
+      </span>
+      {children}
+    </div>
+  );
+}
+
+export function FilesPanelCloseButton({ onPress }: { onPress: () => void }) {
+  return (
+    <Button
+      size="icon-xs"
+      variant="ghost"
+      aria-label="Close files"
+      onClick={onPress}
+    >
+      <Icon name="xmark" size="s" />
+    </Button>
+  );
+}
+
+/**
+ * Search across files, assets, and skills. A hit switches to its tab and
+ * opens it.
+ */
+export function FilesPanelSearch({
+  sections,
+  skills,
+  onOpenFile,
+  onOpenAsset,
+  onOpenSkillFile,
+}: {
+  sections: readonly FileSection[];
+  skills: readonly Skill[];
+  onOpenFile: (id: string) => void;
+  onOpenAsset: (asset: AssetTileData) => void;
+  onOpenSkillFile: (id: string) => void;
+}) {
+  const { setTab } = useFilesPanel("FilesPanelSearch");
+  const [query, setQuery] = useState("");
   const hits = [
     ...searchFiles(sections, query),
     ...searchSkills(skills, query),
@@ -115,111 +174,79 @@ export function FilesPanel({
     if (hit === undefined) return;
     if (hit.kind === "skill") {
       setTab("skills");
-      onOpenSkillFile?.(id);
+      onOpenSkillFile(id);
       return;
     }
     setTab("files");
     if (hit.asset !== undefined) {
-      onOpenAsset?.(hit.asset);
+      onOpenAsset(hit.asset);
       return;
     }
-    onOpenFile?.(id);
+    onOpenFile(id);
   };
 
   return (
-    // Width is set, not animated: the shell animates the column it sits in,
-    // and a drag has to follow the pointer.
-    <aside
-      data-slot="files-panel"
-      style={{ width }}
-      className={cn(
-        "flex h-full shrink-0 flex-col gap-m bg-imagine-background px-m py-l",
-        className,
-      )}
+    <SearchBox
+      value={query}
+      onValueChange={setQuery}
+      results={toSearchResults(hits)}
+      onSelect={openHit}
+      placeholder="Search files"
+      emptyLabel={`Nothing matches “${query.trim()}”`}
+      listLabel="Files"
+    />
+  );
+}
+
+/** Files and Skills tabs; children are `FilesPanelFiles` and `FilesPanelSkills`. */
+export function FilesPanelTabs({ children }: { children: ReactNode }) {
+  const { tab, setTab } = useFilesPanel("FilesPanelTabs");
+  return (
+    <Tabs
+      value={tab}
+      onValueChange={(next) => {
+        if (next === "files" || next === "skills") setTab(next);
+      }}
+      variant="line"
+      className="min-h-0 flex-1"
     >
-      <div className="flex items-center justify-between gap-s px-xs">
-        <span className="flex min-w-0 items-center gap-s">
-          {logoUrl ? (
-            // Org logos are user uploads from arbitrary hosts; next/image needs a domain list.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={logoUrl}
-              alt=""
-              className="size-6 shrink-0 rounded-control object-cover"
-            />
-          ) : null}
-          <span className="truncate type-body font-semibold">{title}</span>
-        </span>
-        {onClose ? (
-          <Button
-            size="icon-xs"
-            variant="ghost"
-            aria-label="Close files"
-            onClick={onClose}
-          >
-            <Icon name="xmark" size="s" />
-          </Button>
-        ) : null}
-      </div>
-      <SearchBox
-        value={query}
-        onValueChange={setQuery}
-        results={toSearchResults(hits)}
-        onSelect={openHit}
-        placeholder="Search files"
-        emptyLabel={`Nothing matches “${query.trim()}”`}
-        listLabel="Files"
-      />
-      <Tabs
-        value={tab}
-        onValueChange={setTab}
-        variant="line"
-        className="min-h-0 flex-1"
-      >
-        <TabsList className="px-xs">
-          <TabsTrigger value="files">Files</TabsTrigger>
-          <TabsTrigger value="skills">Skills</TabsTrigger>
-        </TabsList>
-        <TabsContent value="files" className="min-h-0">
-          <ScrollArea className="h-full">
-            <FileTree
-              sections={sections}
-              activeFileId={activeFileId}
-              activeAssetId={activeAssetId}
-              onOpenFile={onOpenFile}
-              onEditFile={onEditFile}
-              onAttachFile={onAttachFile}
-              onOpenAsset={onOpenAsset}
-              onShowAllAssets={(id) => {
-                setExpandedAssetIds((current) =>
-                  current.includes(id) ? current : [...current, id],
-                );
-              }}
-              expandedAssetIds={expandedAssetIds}
-              assetSize={assetSize}
-              draggableResources={dragHint}
-              className="pr-s"
-            />
-          </ScrollArea>
-        </TabsContent>
-        <TabsContent value="skills" className="min-h-0">
-          <ScrollArea className="h-full">
-            <SkillsList
-              skills={skills}
-              openSkillId={openSkillId}
-              onToggle={onToggleSkill}
-              onOpenFile={onOpenSkillFile}
-              className="pr-s"
-            />
-          </ScrollArea>
-        </TabsContent>
-      </Tabs>
-      {dragHint ? (
-        <div className="flex items-center gap-s border-t border-imagine-border px-xs pt-m type-small text-imagine-foreground-muted">
-          <Icon name="paperclip" size="s" />
-          Drag a file or asset into chat
-        </div>
-      ) : null}
-    </aside>
+      <TabsList className="px-xs">
+        <TabsTrigger value="files">Files</TabsTrigger>
+        <TabsTrigger value="skills">Skills</TabsTrigger>
+      </TabsList>
+      {children}
+    </Tabs>
+  );
+}
+
+/** The Files tab: a scrolling home for a tree. */
+export function FilesPanelFiles({ children }: { children: ReactNode }) {
+  return (
+    <TabsContent value="files" className="min-h-0">
+      <ScrollArea className="h-full">
+        <div className="pr-s">{children}</div>
+      </ScrollArea>
+    </TabsContent>
+  );
+}
+
+/** The Skills tab: a scrolling home for a `SkillsList`. */
+export function FilesPanelSkills({ children }: { children: ReactNode }) {
+  return (
+    <TabsContent value="skills" className="min-h-0">
+      <ScrollArea className="h-full">
+        <div className="pr-s">{children}</div>
+      </ScrollArea>
+    </TabsContent>
+  );
+}
+
+/** Footer strip explaining the chat-only drag interaction. */
+export function FilesPanelDragHint() {
+  return (
+    <div className="flex items-center gap-s border-t border-imagine-border px-xs pt-m type-small text-imagine-foreground-muted">
+      <Icon name="paperclip" size="s" />
+      Drag a file or asset into chat
+    </div>
   );
 }

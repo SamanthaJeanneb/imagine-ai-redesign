@@ -1,13 +1,18 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { PREVIEW_LAYOUT_ID } from "@/components/features/agent/chat-dock";
 import { useChat } from "@/components/features/agent/chat-provider";
 import { AnalyticsToolbar } from "@/components/features/analytics/analytics-toolbar";
 import { ByProfileList } from "@/components/features/analytics/by-profile-list";
-import { ChartBlock } from "@/components/features/analytics/chart-block";
+import {
+  ChartFrame,
+  ChartHeader,
+  ChartProvider,
+  HorizontalBarChartBlock,
+} from "@/components/features/analytics/chart-block";
 import { ChartCard } from "@/components/features/analytics/chart-card";
 import { StatGroup, StatTile } from "@/components/features/analytics/stat-tile";
 import { TopPosts } from "@/components/features/analytics/top-posts";
@@ -82,25 +87,15 @@ export function AnalyticsPage({ data }: AnalyticsPageProps) {
     .at(-1);
   const rangeDescription =
     RANGE_DESCRIPTION[range === "7d" || range === "3m" ? range : "1m"];
-  const impressionsChart = useMemo<PreviewChart>(
-    () => ({
-      id: `impressions:${range}:${profileId}`,
-      title: "Impressions over time",
-      description: rangeDescription,
-      kind: "area",
-      summary: overview.stats[0]?.value ?? "0",
-      data: overview.impressions.data,
-      series: overview.impressions.series,
-    }),
-    [
-      overview.impressions.data,
-      overview.impressions.series,
-      overview.stats,
-      profileId,
-      range,
-      rangeDescription,
-    ],
-  );
+  const impressionsChart: PreviewChart = {
+    id: `impressions:${range}:${profileId}`,
+    title: "Impressions over time",
+    description: rangeDescription,
+    kind: "area",
+    summary: overview.stats[0]?.value ?? "0",
+    data: overview.impressions.data,
+    series: overview.impressions.series,
+  };
 
   return (
     <motion.div
@@ -163,15 +158,15 @@ export function AnalyticsPage({ data }: AnalyticsPageProps) {
       />
 
       <div className="grid min-w-0 gap-l xl:grid-cols-2">
-        <ChartBlock
-          kind="hbar"
+        <ChartProvider
           data={overview.byLabel.data}
           series={overview.byLabel.series}
-          title="By post label"
-          description={rangeDescription}
-          headline={false}
-          className="min-w-0"
-        />
+        >
+          <ChartFrame className="min-w-0">
+            <ChartHeader title="By post label" description={rangeDescription} />
+            <HorizontalBarChartBlock />
+          </ChartFrame>
+        </ChartProvider>
         <ByProfileList
           items={overview.byProfile}
           selectedId={profileId === "all" ? undefined : profileId}

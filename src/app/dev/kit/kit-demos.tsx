@@ -25,9 +25,14 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Chip, ChipGroup } from "@/components/ui/chip-group";
-import { DashedAction } from "@/components/ui/dashed-action";
+import {
+  DashedActionRow,
+  DashedActionTile,
+} from "@/components/ui/dashed-action";
 import {
   Dialog,
+  DialogClose,
+  DialogCloseButton,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -373,9 +378,13 @@ export function OverlayDemo() {
             </DialogDescription>
           </DialogHeader>
           <Input placeholder="linkedin.com/in/" />
-          <DialogFooter showCloseButton>
+          <DialogFooter>
             <Button>Add</Button>
+            <DialogClose asChild>
+              <Button variant="outline">Close</Button>
+            </DialogClose>
           </DialogFooter>
+          <DialogCloseButton />
         </DialogContent>
       </Dialog>
 
@@ -492,22 +501,21 @@ export function FileChromeDemo() {
       </Breadcrumb>
 
       <div className="grid gap-m sm:grid-cols-[14rem_1fr]">
-        <DashedAction
+        <DashedActionRow
           onClick={() => {
             toast("New folder");
           }}
         >
           New folder
-        </DashedAction>
-        <DashedAction
-          shape="tile"
+        </DashedActionRow>
+        <DashedActionTile
           icon="file-plus"
           onClick={() => {
             toast("New document");
           }}
         >
           New document
-        </DashedAction>
+        </DashedActionTile>
       </div>
     </div>
   );

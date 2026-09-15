@@ -2,7 +2,12 @@
 
 import { cn } from "cn";
 import { motion } from "motion/react";
-import type { DragEvent } from "react";
+import {
+  createContext,
+  useContext,
+  type DragEvent,
+  type ReactNode,
+} from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -19,41 +24,6 @@ export type LibraryCardKind = "folder" | "document" | "image" | "video";
 
 export type LibraryCardView = "grid" | "list";
 
-export interface LibraryCardAction {
-  id: string;
-  label: string;
-  icon?: IconName;
-  destructive?: boolean;
-}
-
-interface LibraryCardProps {
-  kind: LibraryCardKind;
-  name: string;
-  /** Document preview: its opening lines. */
-  excerpt?: string;
-  /** Image and video preview. */
-  src?: string;
-  selected?: boolean;
-  view?: LibraryCardView;
-  /** Click. Folders navigate; files select. */
-  onPress: () => void;
-  /** Double click or Enter on a file. Omit when pressing already opens it. */
-  onOpen?: () => void;
-  actions?: readonly LibraryCardAction[];
-  onAction?: (id: string) => void;
-  /** Drag this card to a folder to move it in the library. */
-  movable?: boolean;
-  onMoveStart?: (event: DragEvent<HTMLElement>) => void;
-  onMoveEnd?: (event: DragEvent<HTMLElement>) => void;
-  droppable?: boolean;
-  dropActive?: boolean;
-  onMoveOver?: (event: DragEvent<HTMLElement>) => void;
-  onMoveLeave?: (event: DragEvent<HTMLElement>) => void;
-  onMoveDrop?: (event: DragEvent<HTMLElement>) => void;
-  dragging?: boolean;
-  className?: string;
-}
-
 const KIND_ICON: Record<LibraryCardKind, IconName> = {
   folder: "folder",
   document: "file-lines",
@@ -61,19 +31,94 @@ const KIND_ICON: Record<LibraryCardKind, IconName> = {
   video: "video",
 };
 
-function ActionsMenu({
-  name,
-  actions,
-  onAction,
+/* ------------------------------------------------------------------------ */
+/* Moving: wrap a card to drag it, or to catch what is dragged onto it      */
+/* ------------------------------------------------------------------------ */
+
+const DragContext = createContext<{ dragging: boolean } | null>(null);
+const DropContext = createContext<{ active: boolean } | null>(null);
+
+/**
+ * Makes the card inside a native drag source, so it can be moved to a folder
+ * in the library. Plain element: motion's own drag props never see it.
+ */
+export function LibraryCardDraggable({
+  dragging = false,
+  onDragStart,
+  onDragEnd,
   className,
+  children,
 }: {
-  name: string;
-  actions: readonly LibraryCardAction[];
-  onAction?: (id: string) => void;
+  /** This card is the one in flight; it fades and stops reacting to hover. */
+  dragging?: boolean;
+  onDragStart: (event: DragEvent<HTMLElement>) => void;
+  onDragEnd: (event: DragEvent<HTMLElement>) => void;
   className?: string;
+  children: ReactNode;
 }) {
-  const plain = actions.filter((action) => !action.destructive);
-  const destructive = actions.filter((action) => action.destructive);
+  return (
+    <DragContext value={{ dragging }}>
+      <div
+        draggable
+        data-slot="library-card-draggable"
+        data-dragging={dragging || undefined}
+        onDragStart={(event) => {
+          event.stopPropagation();
+          onDragStart(event);
+        }}
+        onDragEnd={onDragEnd}
+        className={cn("min-w-0 cursor-grab active:cursor-grabbing", className)}
+      >
+        {children}
+      </div>
+    </DragContext>
+  );
+}
+
+/** Lets a folder card accept a dragged file; `active` lights it up. */
+export function LibraryCardDropTarget({
+  active = false,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  className,
+  children,
+}: {
+  active?: boolean;
+  onDragOver: (event: DragEvent<HTMLElement>) => void;
+  onDragLeave: (event: DragEvent<HTMLElement>) => void;
+  onDrop: (event: DragEvent<HTMLElement>) => void;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <DropContext value={{ active }}>
+      <div
+        data-slot="library-card-drop-target"
+        data-drop-active={active || undefined}
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={onDrop}
+        className={cn("min-w-0", className)}
+      >
+        {children}
+      </div>
+    </DropContext>
+  );
+}
+
+/* ------------------------------------------------------------------------ */
+/* Menu                                                                     */
+/* ------------------------------------------------------------------------ */
+
+const NameContext = createContext("");
+
+/**
+ * The card's actions, revealed on hover. Children are `LibraryCardMenuItem`,
+ * `LibraryCardMenuSeparator`, and `LibraryCardMenuDestructiveItem`.
+ */
+export function LibraryCardMenu({ children }: { children: ReactNode }) {
+  const name = useContext(NameContext);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -81,51 +126,63 @@ function ActionsMenu({
           size="icon-xs"
           variant="ghost"
           aria-label={`Actions for ${name}`}
-          className={cn(
-            "size-7 text-imagine-foreground-faint hover:text-imagine-foreground data-open:text-imagine-foreground",
-            className,
-          )}
+          className="size-7 text-imagine-foreground-faint hover:text-imagine-foreground data-open:text-imagine-foreground"
         >
           <Icon name="ellipsis" size="s" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44 p-xs">
-        {plain.map((action) => (
-          <DropdownMenuItem
-            key={action.id}
-            onSelect={() => onAction?.(action.id)}
-            className="h-8 gap-s px-s"
-          >
-            {action.icon === undefined ? null : (
-              <Icon
-                name={action.icon}
-                size="s"
-                className="text-imagine-foreground-muted"
-              />
-            )}
-            {action.label}
-          </DropdownMenuItem>
-        ))}
-        {destructive.length > 0 && plain.length > 0 ? (
-          <DropdownMenuSeparator className="my-xs bg-imagine-border" />
-        ) : null}
-        {destructive.map((action) => (
-          <DropdownMenuItem
-            key={action.id}
-            variant="destructive"
-            onSelect={() => onAction?.(action.id)}
-            className="h-8 gap-s px-s"
-          >
-            {action.icon === undefined ? null : (
-              <Icon name={action.icon} size="s" />
-            )}
-            {action.label}
-          </DropdownMenuItem>
-        ))}
+        {children}
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
+
+interface LibraryCardMenuItemProps {
+  icon?: IconName;
+  onSelect: () => void;
+  children: ReactNode;
+}
+
+export function LibraryCardMenuItem({
+  icon,
+  onSelect,
+  children,
+}: LibraryCardMenuItemProps) {
+  return (
+    <DropdownMenuItem onSelect={onSelect} className="h-8 gap-s px-s">
+      {icon === undefined ? null : (
+        <Icon name={icon} size="s" className="text-imagine-foreground-muted" />
+      )}
+      {children}
+    </DropdownMenuItem>
+  );
+}
+
+export function LibraryCardMenuDestructiveItem({
+  icon,
+  onSelect,
+  children,
+}: LibraryCardMenuItemProps) {
+  return (
+    <DropdownMenuItem
+      variant="destructive"
+      onSelect={onSelect}
+      className="h-8 gap-s px-s"
+    >
+      {icon === undefined ? null : <Icon name={icon} size="s" />}
+      {children}
+    </DropdownMenuItem>
+  );
+}
+
+export function LibraryCardMenuSeparator() {
+  return <DropdownMenuSeparator className="my-xs bg-imagine-border" />;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Shared internals                                                         */
+/* ------------------------------------------------------------------------ */
 
 /** The document card's face: its first lines, fading out before the footer. */
 function DocumentPreview({ excerpt }: { excerpt?: string }) {
@@ -159,7 +216,13 @@ function DocumentPreview({ excerpt }: { excerpt?: string }) {
   );
 }
 
-function MediaPreview({ kind, src }: { kind: "image" | "video"; src?: string }) {
+function MediaPreview({
+  kind,
+  src,
+}: {
+  kind: "image" | "video";
+  src?: string;
+}) {
   return (
     <span className="relative block aspect-[7/4] w-full overflow-hidden rounded-t-control bg-imagine-surface-raised">
       {src === undefined ? (
@@ -185,37 +248,19 @@ function MediaPreview({ kind, src }: { kind: "image" | "video"; src?: string }) 
   );
 }
 
-/**
- * One item in the browser. Folders are a single line; documents and media
- * show a face above their name. In list view every kind is a row. The menu
- * appears on hover.
- */
-export function LibraryCard({
+/** Icon and name under a face, or the whole of a row. */
+function Footer({
   kind,
   name,
-  excerpt,
-  src,
-  selected = false,
-  view = "grid",
-  onPress,
-  onOpen,
-  actions,
-  onAction,
-  movable = false,
-  onMoveStart,
-  onMoveEnd,
-  droppable = false,
-  dropActive = false,
-  onMoveOver,
-  onMoveLeave,
-  onMoveDrop,
-  dragging = false,
-  className,
-}: LibraryCardProps) {
-  const row = view === "list" || kind === "folder";
-  const hasMenu = actions !== undefined && actions.length > 0;
-
-  const footer = (
+  row,
+  reserveMenu,
+}: {
+  kind: LibraryCardKind;
+  name: string;
+  row: boolean;
+  reserveMenu: boolean;
+}) {
+  return (
     <span
       className={cn(
         "flex min-w-0 items-center gap-s",
@@ -228,94 +273,210 @@ export function LibraryCard({
       <span className="min-w-0 flex-1 truncate type-small font-medium">
         {name}
       </span>
-      {hasMenu ? <span aria-hidden="true" className="w-7 shrink-0" /> : null}
+      {reserveMenu ? (
+        <span aria-hidden="true" className="w-7 shrink-0" />
+      ) : null}
     </span>
   );
+}
+
+interface ShellProps {
+  kind: LibraryCardKind;
+  view: LibraryCardView;
+  name: string;
+  selected: boolean;
+  onPress: () => void;
+  /** Rendered above the footer in a grid card. */
+  face?: ReactNode;
+  /** The menu, if any. */
+  children?: ReactNode;
+  className?: string;
+}
+
+/**
+ * The card's box, press target, and hover menu slot. A row when it is a
+ * folder or the list is in list view; otherwise a face over a footer.
+ */
+function Shell({
+  kind,
+  view,
+  name,
+  selected,
+  onPress,
+  face,
+  children,
+  className,
+}: ShellProps) {
+  const drag = useContext(DragContext);
+  const drop = useContext(DropContext);
+  const dragging = drag?.dragging ?? false;
+  const dropActive = drop?.active ?? false;
+  const row = face === undefined;
+  const hasMenu = children !== undefined && children !== null;
 
   return (
-    <motion.div
-      data-slot="library-card"
-      data-kind={kind}
-      data-view={view}
-      data-selected={selected || undefined}
-      data-drop-active={dropActive || undefined}
-      draggable={movable}
-      onDragStart={
-        movable
-          ? (event) => {
-              event.stopPropagation();
-              onMoveStart?.(event);
-            }
-          : undefined
-      }
-      onDragEnd={movable ? onMoveEnd : undefined}
-      onDragOver={droppable ? onMoveOver : undefined}
-      onDragLeave={droppable ? onMoveLeave : undefined}
-      onDrop={droppable ? onMoveDrop : undefined}
-      whileHover={dragging ? undefined : hoverLift.whileHover}
-      whileTap={dragging ? undefined : pressRow.whileTap}
-      transition={pressRow.transition}
-      className={cn(
-        "group/card relative min-w-0 transition-[background-color,border-color,box-shadow]",
-        "rounded-control border border-imagine-border",
-        row
-          ? "hover:bg-imagine-surface-raised/60"
-          : "bg-imagine-surface hover:shadow-raised",
-        view === "list" && "border-transparent",
-        selected && "border-imagine-foreground shadow-control",
-        movable && "cursor-grab active:cursor-grabbing",
-        dragging && "opacity-40",
-        dropActive &&
-          "border-imagine-secondary bg-imagine-secondary-soft shadow-none",
-        className,
-      )}
-    >
-      <button
-        type="button"
-        aria-pressed={onOpen === undefined ? undefined : selected}
-        draggable={movable}
-        onDragStart={
-          movable
-            ? (event) => {
-                event.stopPropagation();
-                onMoveStart?.(event);
-              }
-            : undefined
-        }
-        onDragEnd={movable ? onMoveEnd : undefined}
-        onDragOver={droppable ? onMoveOver : undefined}
-        onDragLeave={droppable ? onMoveLeave : undefined}
-        onDrop={droppable ? onMoveDrop : undefined}
-        onClick={onPress}
-        onDoubleClick={onOpen}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" && onOpen !== undefined) {
-            event.preventDefault();
-            onOpen();
-          }
-        }}
+    <NameContext value={name}>
+      <motion.div
+        data-slot="library-card"
+        data-kind={kind}
+        data-view={view}
+        data-selected={selected || undefined}
+        data-drop-active={dropActive || undefined}
+        whileHover={dragging ? undefined : hoverLift.whileHover}
+        whileTap={dragging ? undefined : pressRow.whileTap}
+        transition={pressRow.transition}
         className={cn(
-          "flex w-full min-w-0 rounded-control text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
-          row ? "items-center" : "flex-col",
+          "group/card relative min-w-0 transition-[background-color,border-color,box-shadow]",
+          "rounded-control border border-imagine-border",
+          row
+            ? "hover:bg-imagine-surface-raised/60"
+            : "bg-imagine-surface hover:shadow-raised",
+          view === "list" && "border-transparent",
+          selected && "border-imagine-foreground shadow-control",
+          dragging && "opacity-40",
+          dropActive &&
+            "border-imagine-secondary bg-imagine-secondary-soft shadow-none",
+          className,
         )}
       >
-        {row ? null : kind === "document" ? (
-          <DocumentPreview excerpt={excerpt} />
-        ) : (
-          <MediaPreview kind={kind} src={src} />
-        )}
-        {footer}
-      </button>
-      {hasMenu ? (
-        <span
+        <button
+          type="button"
+          // Some browsers only start a drag from the element under the pointer.
+          draggable={drag === null ? undefined : true}
+          onClick={onPress}
           className={cn(
-            "absolute right-xs flex opacity-0 transition-opacity group-focus-within/card:opacity-100 group-hover/card:opacity-100 has-[[data-state=open]]:opacity-100",
-            row ? "top-1/2 -translate-y-1/2" : "bottom-1.5",
+            "flex w-full min-w-0 rounded-control text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+            row ? "items-center" : "flex-col",
           )}
         >
-          <ActionsMenu name={name} actions={actions} onAction={onAction} />
-        </span>
-      ) : null}
-    </motion.div>
+          {face}
+          <Footer kind={kind} name={name} row={row} reserveMenu={hasMenu} />
+        </button>
+        {hasMenu ? (
+          <span
+            className={cn(
+              "absolute right-xs flex opacity-0 transition-opacity group-focus-within/card:opacity-100 group-hover/card:opacity-100 has-[[data-state=open]]:opacity-100",
+              row ? "top-1/2 -translate-y-1/2" : "bottom-1.5",
+            )}
+          >
+            {children}
+          </span>
+        ) : null}
+      </motion.div>
+    </NameContext>
+  );
+}
+
+/* ------------------------------------------------------------------------ */
+/* Cards                                                                    */
+/* ------------------------------------------------------------------------ */
+
+interface CardProps {
+  name: string;
+  selected?: boolean;
+  /** Click. Folders navigate; files select. */
+  onPress: () => void;
+  /** A `LibraryCardMenu`. */
+  children?: ReactNode;
+  className?: string;
+}
+
+/** A folder in the grid: a single line, no face. */
+export function LibraryCardFolder({
+  name,
+  selected = false,
+  onPress,
+  children,
+  className,
+}: CardProps) {
+  return (
+    <Shell
+      kind="folder"
+      view="grid"
+      name={name}
+      selected={selected}
+      onPress={onPress}
+      className={className}
+    >
+      {children}
+    </Shell>
+  );
+}
+
+/** A document in the grid: its opening lines over its name. */
+export function LibraryCardDocument({
+  name,
+  excerpt,
+  selected = false,
+  onPress,
+  children,
+  className,
+}: CardProps & {
+  /** The document's opening lines. */
+  excerpt?: string;
+}) {
+  return (
+    <Shell
+      kind="document"
+      view="grid"
+      name={name}
+      selected={selected}
+      onPress={onPress}
+      face={<DocumentPreview excerpt={excerpt} />}
+      className={className}
+    >
+      {children}
+    </Shell>
+  );
+}
+
+/** An image or video in the grid: the picture over its name. */
+export function LibraryCardMedia({
+  kind,
+  name,
+  src,
+  selected = false,
+  onPress,
+  children,
+  className,
+}: CardProps & {
+  kind: "image" | "video";
+  src?: string;
+}) {
+  return (
+    <Shell
+      kind={kind}
+      view="grid"
+      name={name}
+      selected={selected}
+      onPress={onPress}
+      face={<MediaPreview kind={kind} src={src} />}
+      className={className}
+    >
+      {children}
+    </Shell>
+  );
+}
+
+/** Any item in list view: icon, name, and the menu at the row's end. */
+export function LibraryCardRow({
+  kind,
+  name,
+  selected = false,
+  onPress,
+  children,
+  className,
+}: CardProps & { kind: LibraryCardKind }) {
+  return (
+    <Shell
+      kind={kind}
+      view="list"
+      name={name}
+      selected={selected}
+      onPress={onPress}
+      className={className}
+    >
+      {children}
+    </Shell>
   );
 }

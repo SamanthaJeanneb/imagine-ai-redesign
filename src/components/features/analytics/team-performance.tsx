@@ -15,7 +15,7 @@ import {
   YAxis,
 } from "recharts";
 
-import { AskButton } from "@/components/features/analytics/ask-imagine";
+import { AskIconButton } from "@/components/features/analytics/ask-imagine";
 import {
   CHART_ANIMATION,
   CHART_AXIS,
@@ -23,8 +23,11 @@ import {
   CHART_CURSOR_BAND,
   CHART_GRID,
   CHART_TICK,
-  ChartSkeleton,
+  ChartSkeletonBars,
+  ChartSkeletonRows,
   ChartTooltip,
+  ChartTooltipLabel,
+  ChartTooltipSeries,
 } from "@/components/features/analytics/chart-theme";
 import { initials, Panel } from "@/components/features/analytics/panel";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
@@ -155,8 +158,8 @@ export function TeamPerformance({
         className={className}
       >
         <div className="grid gap-l @2xl/panel:grid-cols-[minmax(0,1fr)_15rem]">
-          <ChartSkeleton kind="bars" height="h-56" header={false} />
-          <ChartSkeleton kind="rows" height="h-56" header={false} />
+          <ChartSkeletonBars height="h-56" />
+          <ChartSkeletonRows height="h-56" />
         </div>
       </Panel>
     );
@@ -177,8 +180,7 @@ export function TeamPerformance({
         <>
           {tabs}
           {onAsk ? (
-            <AskButton
-              compact
+            <AskIconButton
               prompt={`Who on the team should own which kind of post, going by ${spec.label.toLowerCase()} per category?`}
               onAsk={onAsk}
             />
@@ -222,10 +224,13 @@ export function TeamPerformance({
                   cursor={CHART_CURSOR_BAND}
                   isAnimationActive={false}
                   content={
-                    <ChartTooltip
-                      labelOf={labelOf}
-                      format={(value) => spec.format(value)}
-                    />
+                    <ChartTooltip>
+                      <ChartTooltipLabel />
+                      <ChartTooltipSeries
+                        labelOf={labelOf}
+                        format={(value) => spec.format(value)}
+                      />
+                    </ChartTooltip>
                   }
                 />
                 {ranked.map((member) => (

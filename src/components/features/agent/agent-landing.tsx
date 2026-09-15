@@ -10,14 +10,18 @@ import {
   type TimelineEntry,
 } from "@/components/features/agent/timeline";
 import {
-  ChartBlock,
+  AreaChartBlock,
   type ChartDatum,
+  ChartFrame,
+  ChartHeader,
+  ChartHeadline,
+  ChartProvider,
   type ChartSeries,
 } from "@/components/features/analytics/chart-block";
 import { StatTile } from "@/components/features/analytics/stat-tile";
 import {
   type CalendarDay,
-  CalendarGrid,
+  CalendarStrip,
 } from "@/components/features/calendar/calendar-grid";
 import type { EventChipData } from "@/components/features/calendar/event-chip";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
@@ -141,10 +145,8 @@ export function LandingBelow({
             to the height left on screen: both weeks show at full height and
             the page scrolls to reach them. */}
         <div className="min-w-0">
-          <CalendarGrid
+          <CalendarStrip
             days={days}
-            density="strip"
-            fill={false}
             onOpenPost={onOpenPost}
             onOpenEvent={onOpenEvent}
             {...(selectedPostId === undefined ? {} : { selectedPostId })}
@@ -155,26 +157,53 @@ export function LandingBelow({
   );
 }
 
-/**
- * The landing's right sidebar: this month's numbers, the impressions curve,
- * and what posts next. A full-height column beside the page like the chat
- * and context panels, with its own scroll and a drag handle on its inner
- * edge. It leaves by width, so the page widens in the same beat.
- */
-export function LandingRail({
-  stats,
-  chart,
-  upNext,
-  onOpenCalendar,
-  stacked = false,
-}: {
+interface LandingOverviewProps {
   stats: readonly LandingStat[];
   chart: { data: readonly ChartDatum[]; series: readonly ChartSeries[] };
   upNext: readonly UpNextItem[];
   onOpenCalendar: () => void;
-  /** Below the page instead of beside it, when the frame is too narrow. */
-  stacked?: boolean;
-}) {
+}
+
+/** This month's numbers, the impressions curve, and what posts next. */
+function LandingOverview({
+  stats,
+  chart,
+  upNext,
+  onOpenCalendar,
+}: LandingOverviewProps) {
+  return (
+    <>
+      {/* Numbers only. The deltas live on the analytics page, where there is
+          room for them and a range control to make them mean something. */}
+      <Stagger kind="grid" className="grid grid-cols-2 gap-l">
+        {stats.map((stat) => (
+          <StatTile
+            key={stat.label}
+            value={stat.value}
+            label={stat.label}
+            size="compact"
+          />
+        ))}
+      </Stagger>
+      <ChartProvider data={chart.data} series={chart.series} tone="accent">
+        <ChartFrame>
+          <ChartHeader title="Impressions over time" description="Last 30 days">
+            <ChartHeadline />
+          </ChartHeader>
+          <AreaChartBlock />
+        </ChartFrame>
+      </ChartProvider>
+      <UpNextList items={upNext} onViewAll={onOpenCalendar} />
+    </>
+  );
+}
+
+/**
+ * The landing's right sidebar. A full-height column beside the page like the
+ * chat and context panels, with its own scroll and a drag handle on its inner
+ * edge. It leaves by width, so the page widens in the same beat.
+ */
+export function LandingRail(props: LandingOverviewProps) {
   const reduceMotion = useReducedMotion();
   const resize = useResizable({
     defaultWidth: RAIL_WIDTH.default,
@@ -182,65 +211,46 @@ export function LandingRail({
     max: RAIL_WIDTH.max,
     edge: "start",
   });
-  const width = stacked ? "100%" : resize.width;
 
   return (
     <motion.aside
       data-slot="landing-rail"
       initial={false}
-      animate={{ width, opacity: 1 }}
+      animate={{ width: resize.width, opacity: 1 }}
       exit={
         reduceMotion
           ? { opacity: 0, transition: fade.fast }
           : { width: 0, opacity: 0, transition: fade.base }
       }
       transition={resize.transition}
-      className={cn(
-        "relative flex min-h-0 shrink-0 overflow-hidden",
-        stacked ? "w-full" : "justify-end",
-      )}
+      className="relative flex min-h-0 shrink-0 justify-end overflow-hidden"
     >
-      {stacked ? null : (
-        <ResizeHandle
-          edge="start"
-          binding={resize.handle}
-          dragging={resize.dragging}
-          label="Resize overview"
-        />
-      )}
+      <ResizeHandle
+        edge="start"
+        binding={resize.handle}
+        dragging={resize.dragging}
+        label="Resize overview"
+      />
       {/* Fixed at the final width, so nothing rewraps while the column
           animates. Padding matches the page's own inset. */}
       <div
-        style={stacked ? undefined : { width: resize.width }}
-        className={cn(
-          "flex min-h-0 flex-col gap-xxl overflow-y-auto",
-          stacked
-            ? "w-full border-t border-imagine-foreground/12 pt-xxl"
-            : "shrink-0 border-l border-imagine-foreground/12 px-xl pt-xxl pb-xxl",
-        )}
+        style={{ width: resize.width }}
+        className="flex min-h-0 shrink-0 flex-col gap-xxl overflow-y-auto border-l border-imagine-foreground/12 px-xl pt-xxl pb-xxl"
       >
-        {/* Numbers only. The deltas live on the analytics page, where there is
-            room for them and a range control to make them mean something. */}
-        <Stagger kind="grid" className="grid grid-cols-2 gap-l">
-          {stats.map((stat) => (
-            <StatTile
-              key={stat.label}
-              value={stat.value}
-              label={stat.label}
-              size="compact"
-            />
-          ))}
-        </Stagger>
-        <ChartBlock
-          kind="area"
-          data={chart.data}
-          series={chart.series}
-          title="Impressions over time"
-          description="Last 30 days"
-          tone="accent"
-        />
-        <UpNextList items={upNext} onViewAll={onOpenCalendar} />
+        <LandingOverview {...props} />
       </div>
     </motion.aside>
+  );
+}
+
+/** The same overview below the page, when the frame is too narrow for a rail. */
+export function LandingRailStacked(props: LandingOverviewProps) {
+  return (
+    <aside
+      data-slot="landing-rail"
+      className="flex min-h-0 w-full shrink-0 flex-col gap-xxl border-t border-imagine-foreground/12 pt-xxl"
+    >
+      <LandingOverview {...props} />
+    </aside>
   );
 }

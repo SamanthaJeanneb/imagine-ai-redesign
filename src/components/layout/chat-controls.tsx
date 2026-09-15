@@ -2,7 +2,7 @@
 
 import { cn } from "cn";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 import type { ChatPanelMode } from "@/components/layout/chat-context-panel";
 import { searchThreads } from "@/components/layout/chat-search";
@@ -86,7 +86,11 @@ function historyThreads(
   return threads;
 }
 
-function ChatHistoryMenu({
+/**
+ * The arrow beside the open conversation's name: the rest of the history, in
+ * a popover with a search. Render it inside `ChatTitle`.
+ */
+export function ChatHistoryMenu({
   title,
   threads,
   currentThreadId,
@@ -200,20 +204,17 @@ function ChatHistoryMenu({
 
 /**
  * The open conversation's name, in the page header after the profile faces.
- * An arrow beside the name opens the rest of the history. Enter and leave
- * motion lives on the header wrapper, so the menu is not a motion child.
+ * `ChatHistoryMenu` as a child puts the way into the rest of the history
+ * beside it. Enter and leave motion lives on the header wrapper, so the menu
+ * is not a motion child.
  */
 export function ChatTitle({
   title,
-  threads,
-  currentThreadId = null,
-  onSelectThread,
+  children,
   className,
 }: {
   title: string;
-  threads?: readonly SidebarThread[];
-  currentThreadId?: string | null;
-  onSelectThread?: (id: string) => void;
+  children?: ReactNode;
   className?: string;
 }) {
   return (
@@ -224,14 +225,7 @@ export function ChatTitle({
       >
         {title}
       </h1>
-      {onSelectThread === undefined || threads === undefined ? null : (
-        <ChatHistoryMenu
-          title={title}
-          threads={threads}
-          currentThreadId={currentThreadId}
-          onSelectThread={onSelectThread}
-        />
-      )}
+      {children}
     </div>
   );
 }

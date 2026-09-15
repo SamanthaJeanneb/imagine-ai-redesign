@@ -16,33 +16,12 @@ export interface AssetTileData {
   inUse?: boolean;
 }
 
-interface AssetTileProps {
-  asset: AssetTileData;
-  selected?: boolean;
-  /** Renders as a button. */
-  onSelect?: (asset: AssetTileData) => void;
-  className?: string;
-}
+const TILE_CLASS =
+  "group/asset relative aspect-square overflow-hidden rounded-control bg-imagine-surface-raised outline-none";
 
-/**
- * A square media thumbnail. Videos get a small play mark; a selection ring is
- * the only chrome. Placeholders use the raised surface.
- */
-export function AssetTile({
-  asset,
-  selected = false,
-  onSelect,
-  className,
-}: AssetTileProps) {
-  const classes = cn(
-    "group/asset relative aspect-square overflow-hidden rounded-control bg-imagine-surface-raised outline-none",
-    onSelect && "focus-visible:ring-2 focus-visible:ring-ring/40",
-    selected &&
-      "ring-2 ring-imagine-foreground ring-offset-2 ring-offset-imagine-surface",
-    className,
-  );
-
-  const content = (
+/** The thumbnail itself: the image, or a placeholder mark, plus a video badge. */
+function AssetTileContent({ asset }: { asset: AssetTileData }) {
+  return (
     <>
       {asset.src ? (
         // Mock assets come from arbitrary hosts; next/image needs a domain list.
@@ -65,15 +44,42 @@ export function AssetTile({
       ) : null}
     </>
   );
+}
 
-  if (!onSelect) {
-    return (
-      <div data-slot="asset-tile" data-kind={asset.kind} className={classes}>
-        {content}
-      </div>
-    );
-  }
+/**
+ * A square media thumbnail. Videos get a small play mark; placeholders use
+ * the raised surface. Static: use `AssetTileButton` when it can be picked.
+ */
+export function AssetTile({
+  asset,
+  className,
+}: {
+  asset: AssetTileData;
+  className?: string;
+}) {
+  return (
+    <div
+      data-slot="asset-tile"
+      data-kind={asset.kind}
+      className={cn(TILE_CLASS, className)}
+    >
+      <AssetTileContent asset={asset} />
+    </div>
+  );
+}
 
+/** A selectable tile. A ring is its only selected chrome. */
+export function AssetTileButton({
+  asset,
+  selected = false,
+  onSelect,
+  className,
+}: {
+  asset: AssetTileData;
+  selected?: boolean;
+  onSelect: (asset: AssetTileData) => void;
+  className?: string;
+}) {
   return (
     <motion.button
       type="button"
@@ -87,9 +93,15 @@ export function AssetTile({
       transition={press.transition}
       data-slot="asset-tile"
       data-kind={asset.kind}
-      className={classes}
+      className={cn(
+        TILE_CLASS,
+        "focus-visible:ring-2 focus-visible:ring-ring/40",
+        selected &&
+          "ring-2 ring-imagine-foreground ring-offset-2 ring-offset-imagine-surface",
+        className,
+      )}
     >
-      {content}
+      <AssetTileContent asset={asset} />
     </motion.button>
   );
 }

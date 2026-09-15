@@ -1,4 +1,4 @@
-import { AgentWorkspace } from "@/components/features/agent/agent-workspace";
+import { SplitLandingWorkspace } from "@/components/features/agent/agent-workspace";
 import { formatFullDate } from "@/lib/format";
 import { getNow } from "@/mocks/db";
 import { getTimeline } from "@/services/agent";
@@ -9,7 +9,7 @@ export default function AgentPage() {
   const rail = getLandingRail();
 
   return (
-    <AgentWorkspace
+    <SplitLandingWorkspace
       landing={{
         greeting: "How can I help with your LinkedIn content today?",
         dateLabel: formatFullDate(getNow()),

@@ -16,7 +16,7 @@ import {
   linkedInReactionTypes,
 } from "@/components/features/agent/linkedin-reaction";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DashedAction } from "@/components/ui/dashed-action";
+import { DashedActionRow } from "@/components/ui/dashed-action";
 import { Icon } from "@/components/ui/icon";
 
 interface LinkedInPostEditorProps {
@@ -149,14 +149,14 @@ export function LinkedInPostEditor({
               onMediaChange([...media, ...uploaded]);
             }}
           />
-          <DashedAction
+          <DashedActionRow
             icon="upload"
             onClick={() => {
               fileInputRef.current?.click();
             }}
           >
             {media.length === 0 ? "Add media" : "Add another image"}
-          </DashedAction>
+          </DashedActionRow>
         </>
       )}
 

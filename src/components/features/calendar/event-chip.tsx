@@ -2,7 +2,7 @@
 
 import { cn } from "cn";
 import { motion } from "motion/react";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,10 +31,6 @@ export interface EventChipData {
 
 interface EventChipProps {
   event: EventChipData;
-  /** Drops the time line so the title gets the room. */
-  dense?: boolean;
-  /** One tight line: the mark and the title. For a cell with no height to spare. */
-  line?: boolean;
   onOpen?: (event: EventChipData) => void;
   className?: string;
 }
@@ -48,22 +44,16 @@ const EVENT_STYLE: CSSProperties & {
 };
 
 /**
- * A connected-calendar event inside a cell: the plum chip, the one color no
- * post status uses, so events read apart from posts at a glance. The title
- * and the time. Hovering it is how you draft a post about what is coming up.
+ * The chip's chrome, shared by every variant: the plum chip, the one color no
+ * post status uses, so events read apart from posts at a glance. Hovering it
+ * is how you draft a post about what is coming up.
  */
-export function EventChip({
+function EventChipButton({
   event,
-  dense = false,
-  line = false,
   onOpen,
   className,
-}: EventChipProps) {
-  const range =
-    event.allDay || event.endTime === undefined
-      ? event.time
-      : `${event.time}–${event.endTime}`;
-
+  children,
+}: EventChipProps & { children: ReactNode }) {
   const chip = (
     <motion.button
       type="button"
@@ -76,7 +66,6 @@ export function EventChip({
       style={EVENT_STYLE}
       className={cn(
         "relative flex w-full min-w-0 flex-col gap-xxs overflow-hidden rounded-control px-s pl-m text-left text-imagine-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-imagine-surface",
-        line ? "py-xxs" : "py-xs",
         "chip-wash @max-[6rem]/chip:pr-xs @max-[6rem]/chip:pl-s",
         className,
       )}
@@ -85,14 +74,7 @@ export function EventChip({
         aria-hidden="true"
         className="absolute inset-y-0 left-0 w-1 bg-[var(--chip-color)]"
       />
-      <span className="min-w-0 truncate type-caption font-semibold">
-        {event.title}
-      </span>
-      {dense || line ? null : (
-        <span className="type-caption text-imagine-foreground-muted tabular-nums">
-          {range}
-        </span>
-      )}
+      {children}
     </motion.button>
   );
 
@@ -106,6 +88,63 @@ export function EventChip({
         <EventPreview event={event} onDraft={onOpen} />
       </HoverCardContent>
     </HoverCard>
+  );
+}
+
+function EventChipTitle({ event }: { event: EventChipData }) {
+  return (
+    <span className="min-w-0 truncate type-caption font-semibold">
+      {event.title}
+    </span>
+  );
+}
+
+/** "9:00–10:00", or just the start when the event is all day or open-ended. */
+function rangeOf(event: EventChipData): string {
+  return event.allDay || event.endTime === undefined
+    ? event.time
+    : `${event.time}–${event.endTime}`;
+}
+
+/** A connected-calendar event inside a cell: the title and the time. */
+export function EventChip({ event, onOpen, className }: EventChipProps) {
+  return (
+    <EventChipButton
+      event={event}
+      onOpen={onOpen}
+      className={cn("py-xs", className)}
+    >
+      <EventChipTitle event={event} />
+      <span className="type-caption text-imagine-foreground-muted tabular-nums">
+        {rangeOf(event)}
+      </span>
+    </EventChipButton>
+  );
+}
+
+/** Drops the time line so the title gets the room. */
+export function EventChipDense({ event, onOpen, className }: EventChipProps) {
+  return (
+    <EventChipButton
+      event={event}
+      onOpen={onOpen}
+      className={cn("py-xs", className)}
+    >
+      <EventChipTitle event={event} />
+    </EventChipButton>
+  );
+}
+
+/** One tight line: the mark and the title. For a cell with no height to spare. */
+export function EventChipLine({ event, onOpen, className }: EventChipProps) {
+  return (
+    <EventChipButton
+      event={event}
+      onOpen={onOpen}
+      className={cn("py-xxs", className)}
+    >
+      <EventChipTitle event={event} />
+    </EventChipButton>
   );
 }
 

@@ -19,9 +19,18 @@ export default function OrganizationStepPage() {
         total={4}
       />
       <OrganizationForm
-        defaultName={orgName}
-        {...(orgLogoUrl === undefined ? {} : { defaultLogoUrl: orgLogoUrl })}
-        onChange={setOrganization}
+        name={orgName}
+        onNameChange={(name) => {
+          setOrganization({ name, logoUrl: orgLogoUrl });
+        }}
+        logoUrl={orgLogoUrl}
+        onLogoChange={(file) => {
+          if (orgLogoUrl !== undefined) URL.revokeObjectURL(orgLogoUrl);
+          setOrganization({
+            name: orgName,
+            logoUrl: file ? URL.createObjectURL(file) : undefined,
+          });
+        }}
         onContinue={() => {
           router.push("/onboarding-1/team");
         }}

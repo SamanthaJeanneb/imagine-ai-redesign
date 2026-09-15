@@ -4,7 +4,7 @@ import { cn } from "cn";
 import { useState } from "react";
 
 import {
-  AssetTile,
+  AssetTileButton,
   type AssetTileData,
 } from "@/components/features/files/asset-tile";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
@@ -47,7 +47,7 @@ export function AssetPicker({
       <Stagger kind="grid" className="grid grid-cols-4 gap-s p-xs">
         {assets.map((asset) => (
           <StaggerItem key={asset.id}>
-            <AssetTile
+            <AssetTileButton
               asset={asset}
               selected={asset.id === selectedId}
               onSelect={(next) => {
