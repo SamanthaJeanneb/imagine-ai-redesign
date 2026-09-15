@@ -9,6 +9,8 @@ export const spring = {
   snappy: { type: "spring", stiffness: 500, damping: 40 },
   /** Panels, morphs, previews. */
   soft: { type: "spring", bounce: 0.15, visualDuration: 0.4 },
+  /** Overlay sheets sliding in, like the files editor. */
+  sheet: { type: "spring", bounce: 0, visualDuration: 0.2 },
   /** Size changes that must not overshoot: a post or document entering edit mode. */
   settle: { type: "spring", bounce: 0, visualDuration: 0.3 },
   /** Parallax following the pointer: heavy and slow, so scenery lags the hand. */

@@ -1359,7 +1359,7 @@ export function FilesLibrary({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={fade.base}
+              transition={fade.fast}
               className="absolute inset-0 z-20 flex bg-imagine-foreground/10 max-md:items-end md:justify-end"
               onClick={closeEditor}
             >
@@ -1388,7 +1388,7 @@ export function FilesLibrary({
                       ? { y: "100%" }
                       : { x: "100%" }
                 }
-                transition={reduceMotion ? fade.base : spring.soft}
+                transition={reduceMotion ? fade.fast : spring.sheet}
                 style={isMobile ? undefined : { width: editorResize.width }}
                 className={cn(
                   "relative flex h-full max-w-full flex-col overflow-hidden bg-imagine-surface shadow-raised",
