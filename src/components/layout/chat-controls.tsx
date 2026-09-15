@@ -5,7 +5,6 @@ import { motion } from "motion/react";
 import { useState, type ReactNode } from "react";
 
 import { searchThreads } from "@/components/layout/chat-search";
-import type { SidebarThread } from "@/components/layout/sidebar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import {
@@ -19,6 +18,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { SidebarThread } from "@/entities/agent";
 import { pressRow } from "@/styles/motion";
 
 interface ChatControlsProps {

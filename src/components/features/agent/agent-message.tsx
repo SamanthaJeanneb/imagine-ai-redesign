@@ -5,10 +5,7 @@ import { motion } from "motion/react";
 import { createContext, useContext, useState, type ReactNode } from "react";
 
 import { AssetPicker } from "@/components/features/agent/asset-picker";
-import {
-  CommentDraft,
-  type CommentDraftContent,
-} from "@/components/features/agent/comment-draft";
+import { CommentDraft } from "@/components/features/agent/comment-draft";
 import {
   LinkedInPostActions,
   LinkedInPostActor,
@@ -20,18 +17,14 @@ import {
   LinkedInPostFoldButton,
   LinkedInPostMedia,
   LinkedInPostProvider,
-  type PostAuthor,
 } from "@/components/features/agent/linkedin-post-draft";
 import { ScheduledGraphic } from "@/components/features/agent/scheduled-graphic";
 import {
   CHART_PLOT_BY_KIND,
-  type ChartDatum,
   ChartHeader,
   ChartHeadline,
   ChartKey,
-  type ChartKind,
   ChartProvider,
-  type ChartSeries,
 } from "@/components/features/analytics/chart-block";
 import {
   AssetGrid,
@@ -42,43 +35,8 @@ import {
   type AssetTileData,
 } from "@/components/features/files/asset-tile";
 import { Button } from "@/components/ui/button";
+import type { MessagePart } from "@/entities/agent";
 import { fade, stagger } from "@/styles/motion";
-
-/**
- * Discriminated content parts, mirroring `mastra_messages.content`. Built by
- * `services/agent`; the renderer is exhaustive.
- */
-export type MessagePart =
-  | { type: "text"; text: string }
-  | { type: "emphasis"; text: string }
-  | {
-      type: "chart";
-      kind: ChartKind;
-      data: readonly ChartDatum[];
-      series: readonly ChartSeries[];
-      title?: string;
-      highlightIndex?: number;
-    }
-  | {
-      type: "post_draft";
-      postId: string;
-      author: PostAuthor;
-      body: string;
-      media?: readonly AssetTileData[];
-    }
-  | {
-      type: "scheduled";
-      postId: string;
-      dayNumber: number;
-      monthLabel: string;
-      timeLabel: string;
-      whenLabel: string;
-      profileName: string;
-      weekdayIndex: number;
-      occupied?: readonly number[];
-    }
-  | { type: "asset_picker"; prompt: string; assets: readonly AssetTileData[] }
-  | ({ type: "comment_draft"; commentId?: string } & CommentDraftContent);
 
 interface AgentMessageProps {
   parts: readonly MessagePart[];

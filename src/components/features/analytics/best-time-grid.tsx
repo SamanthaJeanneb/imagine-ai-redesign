@@ -27,29 +27,8 @@ import {
 } from "@/components/features/analytics/chart-theme";
 import { Panel } from "@/components/features/analytics/panel";
 import { Icon } from "@/components/ui/icon";
+import type { BestTimeData, TimeSlot } from "@/entities/analytics";
 import { fade, pressRow, spring } from "@/styles/motion";
-
-/** One hour on one weekday. */
-export interface TimeSlot {
-  /** 0 Monday … 6 Sunday. */
-  day: number;
-  /** 0 to 23, local to the audience. */
-  hour: number;
-  /** 0 to 1: how well posts in this slot have done, relative to the best slot. */
-  score: number;
-  /** How many posts in the window went out here. */
-  posts: number;
-  /** Mean engagement rate of those posts, percent. 0 when none. */
-  rate: number;
-}
-
-export interface BestTimeData {
-  slots: readonly TimeSlot[];
-  /** The three strongest slots, best first. */
-  best: readonly TimeSlot[];
-  /** The first hour shown and the last, inclusive. */
-  hours: readonly [number, number];
-}
 
 interface BestTimeGridProps {
   data: BestTimeData;

@@ -32,21 +32,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { Member, MemberRole } from "@/entities/settings";
 import { fade } from "@/styles/motion";
 import { initials } from "@/lib/initials";
-
-/** `organization_members.role`, narrowed to what settings can assign. */
-export type MemberRole = "admin" | "member";
-
-export interface Member {
-  id: string;
-  name: string;
-  email: string;
-  avatarUrl?: string;
-  role: MemberRole;
-  /** Invited but not yet signed in. */
-  pending?: boolean;
-}
 
 interface MembersListProps {
   members: readonly Member[];

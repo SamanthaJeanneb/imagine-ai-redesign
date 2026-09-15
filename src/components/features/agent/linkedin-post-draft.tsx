@@ -18,33 +18,9 @@ import { Button } from "@/components/ui/button";
 import { Icon, type IconName } from "@/components/ui/icon";
 import { PersonAvatar } from "@/components/ui/person-avatar";
 import { Separator } from "@/components/ui/separator";
+import type { LinkedInPostContent, LinkedInPostStats } from "@/entities/post";
 import { fade } from "@/styles/motion";
 import { COUNT } from "@/lib/format";
-
-export interface PostAuthor {
-  name: string;
-  headline: string;
-  avatarUrl?: string;
-  /** Company pages get a square avatar, as on LinkedIn. Default `person`. */
-  kind?: "person" | "company";
-}
-
-/** Counts LinkedIn reports back after a post goes out. */
-interface LinkedInPostStats {
-  reactions: number;
-  comments: number;
-  reposts: number;
-  impressions?: number;
-}
-
-/** Everything needed to render a post the way LinkedIn will. */
-export interface LinkedInPostContent {
-  author: PostAuthor;
-  body: string;
-  media?: readonly AssetTileData[];
-  /** Present once the post has gone out and LinkedIn has reported back. */
-  stats?: LinkedInPostStats;
-}
 
 /** The feed's overlapping trio when a post has reactions but no type breakdown. */
 const FEED_REACTIONS: readonly LinkedInReactionType[] = [

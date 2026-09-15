@@ -10,10 +10,7 @@ import {
   useFileMoveTargets,
   type FileMoveDest,
 } from "@/components/features/files/file-move";
-import type {
-  FileNode,
-  FileSection,
-} from "@/components/features/files/file-tree";
+import type { FileSection } from "@/components/features/files/file-tree";
 import {
   findFolder,
   insertAsset,
@@ -35,6 +32,7 @@ import type {
 } from "@/components/features/files/files-library-types";
 import type { DraggableResource } from "@/components/features/files/resource-drag";
 import type { Skill } from "@/components/features/files/skills-list";
+import type { FileNode } from "@/entities/files";
 import type { OpenDocument } from "@/services/files";
 
 type MoveHandler = (event: DragEvent<HTMLElement>) => void;

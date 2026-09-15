@@ -3,14 +3,7 @@
 import { NOTHING_SCHEDULED } from "@/components/features/calendar/calendar-copy";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";
-
-export interface UpNextItem {
-  id: string;
-  /** "Tue 9:00". */
-  when: string;
-  title: string;
-  profileName: string;
-}
+import type { UpNextItem } from "@/entities/calendar-event";
 
 interface UpNextListProps {
   items: readonly UpNextItem[];

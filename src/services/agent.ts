@@ -1,10 +1,10 @@
-import type { MessagePart } from "@/components/features/agent/agent-message";
 import type {
+  MessagePart,
+  SidebarThread,
   TimelineAction,
   TimelineEntry,
   TimelineKind,
-} from "@/components/features/agent/timeline";
-import type { SidebarThread } from "@/components/layout/sidebar";
+} from "@/entities/agent";
 import type { Client } from "@/entities/client";
 import {
   transformEngagementCommentRow,

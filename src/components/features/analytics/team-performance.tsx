@@ -33,36 +33,11 @@ import { Panel } from "@/components/features/analytics/panel";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { PersonAvatar } from "@/components/ui/person-avatar";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import type { TeamData } from "@/entities/analytics";
 import { formatCompact } from "@/lib/format";
 import { fade, swapUp } from "@/styles/motion";
 
 type TeamMetric = "reach" | "rate";
-
-export interface TeamMember {
-  id: string;
-  name: string;
-  avatarUrl?: string;
-  isCompany: boolean;
-  posts: number;
-  /** Total impressions in the window. */
-  reach: number;
-  /** Mean engagement rate, percent. */
-  rate: number;
-  followers: number;
-  /** The post label they do best in, by average reach. */
-  bestCategory?: string;
-}
-
-/** One category, with a value per member id. */
-export type TeamDatum = { label: string } & Record<string, string | number>;
-
-export interface TeamData {
-  members: readonly TeamMember[];
-  /** Average reach per post, by category, one key per member. */
-  reach: readonly TeamDatum[];
-  /** Mean engagement rate (percent), by category, one key per member. */
-  rate: readonly TeamDatum[];
-}
 
 interface TeamPerformanceProps {
   data: TeamData;

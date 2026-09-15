@@ -1,9 +1,6 @@
 import { useState, type DragEvent } from "react";
 
-import type {
-  FileNode,
-  FileSection,
-} from "@/components/features/files/file-tree";
+import type { FileSection } from "@/components/features/files/file-tree";
 import {
   extractAsset,
   extractNode,
@@ -12,6 +9,7 @@ import {
   insertAsset,
   insertNode,
 } from "@/components/features/files/file-tree-ops";
+import type { FileNode } from "@/entities/files";
 
 const FILE_MOVE_TYPE = "application/x-imagine-file-move";
 

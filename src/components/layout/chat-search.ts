@@ -1,5 +1,5 @@
-import type { SidebarThread } from "@/components/layout/sidebar";
 import type { SearchBoxResult } from "@/components/ui/search-box";
+import type { SidebarThread } from "@/entities/agent";
 
 /** Chats whose title or preview contains every word in the query. */
 export function searchThreads(

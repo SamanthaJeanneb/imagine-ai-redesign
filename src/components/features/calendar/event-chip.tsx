@@ -11,22 +11,7 @@ import {
 } from "@/components/features/calendar/chip-shell";
 import { Button } from "@/components/ui/button";
 import { Icon, type IconName } from "@/components/ui/icon";
-
-export interface EventChipData {
-  id: string;
-  title: string;
-  /** "9:00" or "All day". */
-  time: string;
-  /** "10:30" when the event has an end on the same day. */
-  endTime?: string;
-  allDay: boolean;
-  location?: string;
-  notes?: string;
-  calendarName: string;
-  source: "google";
-  /** "Tue, 8 Sep at 9:00–10:00". */
-  whenLabel: string;
-}
+import type { EventChipData } from "@/entities/calendar-event";
 
 interface EventChipProps {
   event: EventChipData;

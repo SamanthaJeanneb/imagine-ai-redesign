@@ -43,24 +43,10 @@ import {
   ChartTooltipSeries,
   valueText,
 } from "@/components/features/analytics/chart-theme";
+import type { ChartDatum, ChartKind, ChartSeries } from "@/entities/analytics";
 import { fade } from "@/styles/motion";
 
-/**
- * The plots mock data can name (`PreviewChart`, a chart message part). The
- * name becomes a tree in one place: `CHART_PLOT_BY_KIND` and
- * `CHART_PREVIEW_BY_KIND`. Composed charts need a mark per series, so they are
- * assembled in JSX with `ComposedChartSeries` and never named by kind.
- */
-export type ChartKind = "bar" | "area" | "hbar";
-
 type ChartMark = "bar" | "line" | "step";
-
-export interface ChartSeries {
-  key: string;
-  label: string;
-  /** Follows the value in the tooltip and the bar labels, e.g. `%`. */
-  unit?: string;
-}
 
 /** A series in a composed chart: how it is drawn and which scale it reads. */
 export interface ComposedChartSeries extends ChartSeries {
@@ -78,8 +64,6 @@ interface ChartAnnotation {
   at: string;
   label: string;
 }
-
-export type ChartDatum = { label: string } & Record<string, string | number>;
 
 /** Pink fills for the agent and landing; neutral for the analytics page. */
 type ChartTone = "accent" | "neutral";

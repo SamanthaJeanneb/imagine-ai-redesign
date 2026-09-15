@@ -12,11 +12,7 @@ import {
   ProfileSelectorPrefix,
 } from "@/components/features/agent/profile-selector";
 import type { ProfileSummary } from "@/components/features/settings/profile-list";
-import {
-  AccountControls,
-  AccountName,
-  type AccountUser,
-} from "@/components/layout/account";
+import { AccountControls, AccountName } from "@/components/layout/account";
 import {
   ChatControls,
   ChatHistoryMenu,
@@ -33,6 +29,7 @@ import {
   WorkspaceHeaderTitle,
 } from "@/components/layout/workspace-header";
 import { useWorkspaceNav } from "@/components/layout/workspace-nav";
+import type { AccountUser } from "@/entities/workspace";
 
 /**
  * The header row above the page. On the agent page with a conversation open

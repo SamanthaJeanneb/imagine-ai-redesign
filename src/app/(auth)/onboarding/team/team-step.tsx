@@ -5,11 +5,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { StepFrame } from "@/app/(auth)/onboarding/step-frame";
-import {
-  InviteTeamForm,
-  type TeamMember,
-} from "@/components/features/onboarding/invite-team-form";
+import { InviteTeamForm } from "@/components/features/onboarding/invite-team-form";
 import { Button } from "@/components/ui/button";
+import type { TeamMember } from "@/entities/onboarding";
 
 interface TeamStepProps {
   inviteUrl: string;

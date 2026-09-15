@@ -1,5 +1,4 @@
-import type { JoinMember } from "@/components/features/onboarding/join-organization";
-import type { AccountUser } from "@/components/layout/account";
+import type { AccountUser, JoinMember } from "@/entities/workspace";
 import { getDb, getOrganization } from "@/mocks/db";
 
 export interface Workspace {

@@ -16,10 +16,7 @@ import {
   useFileDrag,
   useFileDrop,
 } from "@/components/features/files/file-drag";
-import type {
-  FileNode,
-  FileSection,
-} from "@/components/features/files/file-tree";
+import type { FileSection } from "@/components/features/files/file-tree";
 import {
   useFileMoveTargets,
   type FileMoveDest,
@@ -28,6 +25,7 @@ import {
 import { Disclosure } from "@/components/motion/disclosure";
 import { Icon } from "@/components/ui/icon";
 import { PersonAvatar } from "@/components/ui/person-avatar";
+import type { FileNode } from "@/entities/files";
 import { fade, pressRow, spring, stagger } from "@/styles/motion";
 
 /** Where the browser should go: a library, or a folder inside one. */

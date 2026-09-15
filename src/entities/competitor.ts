@@ -26,6 +26,29 @@ export interface TargetedPost {
   shares: number;
 }
 
+/** How an account performs per post, averaged over the window. */
+export interface BenchmarkProfile {
+  id: string;
+  name: string;
+  headline: string;
+  avatarUrl?: string;
+  isCompany: boolean;
+  postsPerWeek: number;
+  avgReactions: number;
+  avgComments: number;
+  avgShares: number;
+  /** What they write about, most common first. */
+  topics: readonly string[];
+}
+
+/** An account you watch. The same shape as your own, so the radar can pair them. */
+export type Competitor = BenchmarkProfile;
+
+export interface BenchmarkData {
+  you: BenchmarkProfile;
+  competitors: readonly Competitor[];
+}
+
 export function transformTargetedAccountRow(
   row: TargetedAccountRow,
 ): TargetedAccount {

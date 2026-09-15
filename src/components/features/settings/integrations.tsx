@@ -6,22 +6,11 @@ import { motion } from "motion/react";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";
 import { Icon, type IconName } from "@/components/ui/icon";
+import type {
+  AvailableIntegration,
+  ConnectedIntegration,
+} from "@/entities/settings";
 import { hoverLift, press } from "@/styles/motion";
-
-export interface ConnectedIntegration {
-  id: string;
-  name: string;
-  description: string;
-  icon: IconName;
-  status: "connected" | "expired";
-}
-
-export interface AvailableIntegration {
-  id: string;
-  name: string;
-  description: string;
-  icon: IconName;
-}
 
 function IntegrationMark({ icon }: { icon: IconName }) {
   return (

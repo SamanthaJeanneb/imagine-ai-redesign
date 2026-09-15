@@ -3,10 +3,7 @@
 import { cn } from "cn";
 import { useState } from "react";
 
-import {
-  type MemberRole,
-  ROLE_LABEL,
-} from "@/components/features/settings/members-list";
+import { ROLE_LABEL } from "@/components/features/settings/members-list";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -28,16 +25,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { TeamMember } from "@/entities/onboarding";
+import type { MemberRole } from "@/entities/settings";
 import { contactInitials } from "@/lib/initials";
-
-export interface TeamMember {
-  id: string;
-  email: string;
-  name?: string;
-  avatarUrl?: string;
-  role: MemberRole;
-  status: "you" | "invited" | "active";
-}
 
 interface RoleSelectProps {
   value: MemberRole;

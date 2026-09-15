@@ -6,10 +6,8 @@ import type { ReactNode } from "react";
 
 import { AddPostButton } from "@/components/features/calendar/add-post-button";
 import { CalendarDayNumber } from "@/components/features/calendar/calendar-day-number";
-import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
 import {
   EventChip,
-  type EventChipData,
   EventChipDense,
 } from "@/components/features/calendar/event-chip";
 import {
@@ -18,6 +16,7 @@ import {
   PostChipDense,
   type PostOpenOptions,
 } from "@/components/features/calendar/post-chip";
+import type { CalendarDay, EventChipData } from "@/entities/calendar-event";
 import {
   formatDayShort,
   formatWeekdayLong,

@@ -1,11 +1,9 @@
 import type { AssetTileData } from "@/components/features/files/asset-tile";
-import type {
-  FileNode,
-  FileSection,
-} from "@/components/features/files/file-tree";
+import type { FileSection } from "@/components/features/files/file-tree";
 import type { Skill } from "@/components/features/files/skills-list";
 import type { IconName } from "@/components/ui/icon";
 import type { SearchBoxResult } from "@/components/ui/search-box";
+import type { FileNode } from "@/entities/files";
 
 interface SearchHitBase {
   id: string;

@@ -9,7 +9,6 @@ import { WEEKDAYS } from "@/components/features/calendar/calendar-copy";
 import { CalendarDayNumber } from "@/components/features/calendar/calendar-day-number";
 import {
   EventChip,
-  type EventChipData,
   EventChipDense,
   EventChipLine,
 } from "@/components/features/calendar/event-chip";
@@ -23,21 +22,11 @@ import {
   type PostOpenOptions,
 } from "@/components/features/calendar/post-chip";
 import { useLayoutLocked } from "@/components/motion/layout-lock";
+import type { CalendarDay, EventChipData } from "@/entities/calendar-event";
 import { formatDayShort } from "@/lib/format";
 import { type ElementSize, useElementSize } from "@/lib/use-element-size";
 import { fade, stagger } from "@/styles/motion";
 import { spacing, typeScale } from "@/styles/tokens";
-
-export interface CalendarDay {
-  /** ISO date, used as the key. */
-  date: string;
-  dayNumber: number;
-  isToday?: boolean;
-  /** Belongs to the previous or next month in a month view. */
-  isOutside?: boolean;
-  posts: readonly PostChipData[];
-  events?: readonly EventChipData[];
-}
 
 interface CalendarGridBaseProps {
   /** Rows of seven days, starting Monday. */

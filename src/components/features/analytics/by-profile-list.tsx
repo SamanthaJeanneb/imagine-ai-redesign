@@ -5,20 +5,9 @@ import { motion, useReducedMotion } from "motion/react";
 
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { ProfileMetric } from "@/entities/analytics";
 import { pressRow, spring } from "@/styles/motion";
 import { initials } from "@/lib/initials";
-
-export interface ProfileMetric {
-  id: string;
-  name: string;
-  avatarUrl?: string;
-  /** Company pages get a square avatar. Default `person`. */
-  kind?: "person" | "company";
-  /** Raw number, used to size the bar. */
-  value: number;
-  /** Already formatted, e.g. "4.1k". */
-  valueLabel: string;
-}
 
 interface ByProfileListProps {
   items: readonly ProfileMetric[];

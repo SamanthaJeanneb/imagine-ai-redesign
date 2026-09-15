@@ -25,12 +25,12 @@ import {
   ChartTooltipSeries,
   valueText,
 } from "@/components/features/analytics/chart-theme";
+import type { MetricSpec } from "@/components/features/analytics/engagement-metric-tabs";
 import type {
   ExplorerData,
   ExplorerMetric,
   ExplorerPost,
-} from "@/components/features/analytics/engagement-explorer-types";
-import type { MetricSpec } from "@/components/features/analytics/engagement-metric-tabs";
+} from "@/entities/engagement";
 import { formatCompact } from "@/lib/format";
 import { initials } from "@/lib/initials";
 import { fade, stagger } from "@/styles/motion";

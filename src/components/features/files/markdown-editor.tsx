@@ -6,11 +6,8 @@ import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import type { DocumentMeta } from "@/entities/files";
 import { fade, spring } from "@/styles/motion";
-
-export interface DocumentMeta {
-  title: string;
-}
 
 interface MarkdownEditorProps {
   meta: DocumentMeta;

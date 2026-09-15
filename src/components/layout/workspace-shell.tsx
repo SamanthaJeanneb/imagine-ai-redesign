@@ -11,8 +11,6 @@ import {
 import type { FileSection } from "@/components/features/files/file-tree";
 import type { Skill } from "@/components/features/files/skills-list";
 import type { ProfileSummary } from "@/components/features/settings/profile-list";
-import type { AccountUser } from "@/components/layout/account";
-import type { SidebarThread } from "@/components/layout/sidebar";
 import { WorkspaceChatColumn } from "@/components/layout/workspace-chat-column";
 import {
   useWorkspaceChrome,
@@ -35,6 +33,8 @@ import {
 import { WorkspacePage } from "@/components/layout/workspace-page";
 import { WorkspaceSidebar } from "@/components/layout/workspace-sidebar";
 import { WorkspaceTopBar } from "@/components/layout/workspace-top-bar";
+import type { SidebarThread } from "@/entities/agent";
+import type { AccountUser } from "@/entities/workspace";
 import type { ReplyIntent, ScriptedReply } from "@/services/agent";
 import type { OpenDocument } from "@/services/files";
 

@@ -1,6 +1,5 @@
-import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
-import type { EventChipData } from "@/components/features/calendar/event-chip";
-import type { PostChipData } from "@/components/features/calendar/post-chip";
+import type { CalendarDay, EventChipData } from "@/entities/calendar-event";
+import type { PostChipData } from "@/entities/post";
 import { formatDayMonth, formatDayShort, formatMonthYear } from "@/lib/format";
 
 /**

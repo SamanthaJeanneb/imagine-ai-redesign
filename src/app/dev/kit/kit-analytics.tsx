@@ -4,27 +4,20 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { AgentMessage } from "@/components/features/agent/agent-message";
-import {
-  CommentDraft,
-  type CommentDraftContent,
-} from "@/components/features/agent/comment-draft";
+import { CommentDraft } from "@/components/features/agent/comment-draft";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
 import {
   AskImagine,
   AskImaginePending,
-  type Insight,
 } from "@/components/features/analytics/ask-imagine";
 import {
   BenchmarkPanel,
   BenchmarkPanelSkeleton,
-  type BenchmarkData,
 } from "@/components/features/analytics/benchmark-panel";
 import {
   BestTimeGrid,
   BestTimeGridSkeleton,
   formatSlot,
-  type BestTimeData,
-  type TimeSlot,
 } from "@/components/features/analytics/best-time-grid";
 import {
   ChartSkeletonBars,
@@ -37,27 +30,36 @@ import {
 import {
   EngagementExplorer,
   EngagementExplorerSkeleton,
-  type ExplorerData,
-  type ExplorerPoint,
-  type ExplorerPost,
 } from "@/components/features/analytics/engagement-explorer";
 import {
   IcpPosts,
   IcpPostsSkeleton,
-  type Engager,
-  type IcpData,
 } from "@/components/features/analytics/icp-posts";
 import {
   InteractionFeed,
   InteractionFeedSkeleton,
-  type Interaction,
 } from "@/components/features/analytics/interaction-feed";
 import {
   TeamPerformance,
   TeamPerformanceSkeleton,
-  type TeamData,
 } from "@/components/features/analytics/team-performance";
 import { Switch } from "@/components/ui/switch";
+import type { CommentDraftContent } from "@/entities/agent";
+import type {
+  BestTimeData,
+  Insight,
+  TeamData,
+  TimeSlot,
+} from "@/entities/analytics";
+import type { BenchmarkData } from "@/entities/competitor";
+import type {
+  Engager,
+  ExplorerData,
+  ExplorerPoint,
+  ExplorerPost,
+  IcpData,
+  Interaction,
+} from "@/entities/engagement";
 
 /** Same contract as `Demo` in kit-features; local so the two files do not
  *  import each other (kit-features reads the fixtures exported here). */

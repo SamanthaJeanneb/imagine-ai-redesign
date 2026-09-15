@@ -1,6 +1,7 @@
 import { cn } from "cn";
 
 import { BrandMark, isLocalBrand } from "@/components/ui/brand-mark";
+import { ICON_NAMES, type IconName } from "@/styles/icons";
 
 /**
  * Font Awesome Pro 7 Sharp, loaded once from the Kit script (SVG + JS) in the
@@ -13,90 +14,11 @@ import { BrandMark, isLocalBrand } from "@/components/ui/brand-mark";
  * never show the missing glyph. Local marks use a <span>, not <i>: the kit
  * rewrites <i> tags and would replace a custom SVG with the missing-glyph
  * placeholder.
+ *
+ * The names themselves live in `styles/icons`, with the rest of the design
+ * vocabulary. Re-exported here because this is where callers reach for them.
  */
-export const ICON_NAMES = [
-  "arrow-down",
-  "arrow-left",
-  "arrow-right",
-  "arrow-up",
-  "arrows-rotate",
-  "bell",
-  "bookmark",
-  "building",
-  "calendar",
-  "chart-simple",
-  "check",
-  "chevron-down",
-  "chevron-left",
-  "chevron-right",
-  "chevron-up",
-  "circle-check",
-  "circle-info",
-  "circle-xmark",
-  "clock",
-  "clock-rotate-left",
-  "cloud-arrow-up",
-  "comment",
-  "copy",
-  "download",
-  "ellipsis",
-  "envelope",
-  "expand",
-  "eye",
-  "face-smile",
-  "file-lines",
-  "file-pen",
-  "file-plus",
-  "folder",
-  "folder-open",
-  "folder-plus",
-  "gear",
-  "globe",
-  "google",
-  "grip",
-  "handshake",
-  "hands-clapping",
-  "heart",
-  "hubspot",
-  "image",
-  "imagine",
-  "key",
-  "lightbulb",
-  "link",
-  "linkedin-in",
-  "list",
-  "lock",
-  "magnifying-glass",
-  "message",
-  "minus",
-  "moon",
-  "paper-plane",
-  "paperclip",
-  "pen",
-  "pen-to-square",
-  "plug",
-  "plus",
-  "puzzle-piece",
-  "right-from-bracket",
-  "salesforce",
-  "share-nodes",
-  "sidebar",
-  "slack",
-  "spinner",
-  "sun",
-  "thumbs-up",
-  "trash",
-  "triangle-exclamation",
-  "up-right-from-square",
-  "upload",
-  "user",
-  "users",
-  "video",
-  "x-twitter",
-  "xmark",
-] as const;
-
-export type IconName = (typeof ICON_NAMES)[number];
+export { ICON_NAMES, type IconName };
 
 /** Sizes follow the type scale: s 12, m 14, l 16, xl 20. */
 export type IconSize = "s" | "m" | "l" | "xl";

@@ -5,13 +5,8 @@ import { AnimatePresence, motion } from "motion/react";
 
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Icon } from "@/components/ui/icon";
+import type { StatDelta } from "@/entities/analytics";
 import { fade, pop, swapUp } from "@/styles/motion";
-
-export interface StatDelta {
-  /** Already formatted, e.g. "+12%". */
-  label: string;
-  direction: "up" | "down" | "flat";
-}
 
 interface StatTileProps {
   /** Already formatted, e.g. "12.4k". */

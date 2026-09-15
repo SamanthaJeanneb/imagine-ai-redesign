@@ -2,22 +2,10 @@
 
 import { cn } from "cn";
 
-import type { PostChipData } from "@/components/features/calendar/post-chip";
-import { type AssetTileData } from "@/components/features/files/asset-tile";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-
-export interface TopPost {
-  id: string;
-  title: string;
-  /** "Sarah Chen · 3 Sep". */
-  meta: string;
-  thumbnail?: AssetTileData;
-  /** The same post shape the chat attaches from the calendar. */
-  post?: PostChipData;
-  metrics: readonly { label: string; value: string }[];
-}
+import type { TopPost } from "@/entities/analytics";
 
 interface TopPostsProps {
   items: readonly TopPost[];

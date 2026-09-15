@@ -5,11 +5,11 @@ import { useEffect, useRef, type ReactNode } from "react";
 
 import {
   AgentMessage,
-  type MessagePart,
   UserMessage,
 } from "@/components/features/agent/agent-message";
 import { useChat } from "@/components/features/agent/chat-provider";
 import { ThinkingIndicator } from "@/components/motion/thinking-indicator";
+import type { MessagePart } from "@/entities/agent";
 import type { AgentMessage as AgentMessageData } from "@/services/agent";
 import { fade } from "@/styles/motion";
 

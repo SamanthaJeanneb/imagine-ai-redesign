@@ -31,18 +31,11 @@ import {
   type ChatActions,
   type ChatState,
 } from "@/components/features/agent/chat-provider";
-import type {
-  TimelineAction,
-  TimelineEntry,
-} from "@/components/features/agent/timeline";
-import type {
-  ChartDatum,
-  ChartSeries,
-} from "@/components/features/analytics/chart-block";
-import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
-import type { UpNextItem } from "@/components/features/calendar/up-next-list";
 import { PageAside } from "@/components/layout/page-aside";
+import type { TimelineAction, TimelineEntry } from "@/entities/agent";
+import type { ChartDatum, ChartSeries } from "@/entities/analytics";
+import type { CalendarDay, UpNextItem } from "@/entities/calendar-event";
 import type { AgentMessage } from "@/services/agent";
 import { COMPACT_QUERY, useMediaQuery } from "@/lib/use-media-query";
 import { blurOut, fade } from "@/styles/motion";

@@ -1,24 +1,20 @@
-import type { ProfileOption } from "@/components/features/analytics/analytics-toolbar";
-import type { ProfileMetric } from "@/components/features/analytics/by-profile-list";
-import type {
-  ChartDatum,
-  ChartKind,
-  ChartSeries,
-} from "@/components/features/analytics/chart-block";
-import type { Insight } from "@/components/features/analytics/ask-imagine";
-import type { BenchmarkData } from "@/components/features/analytics/benchmark-panel";
-import type { BestTimeData } from "@/components/features/analytics/best-time-grid";
-import type { ExplorerData } from "@/components/features/analytics/engagement-explorer";
-import type { IcpData } from "@/components/features/analytics/icp-posts";
-import type { Interaction } from "@/components/features/analytics/interaction-feed";
-import type { StatDelta } from "@/components/features/analytics/stat-tile";
-import type { TeamData } from "@/components/features/analytics/team-performance";
-import type { TopPost } from "@/components/features/analytics/top-posts";
 import {
   type AnalyticsTotals,
+  type BestTimeData,
+  type ChartDatum,
+  type ChartKind,
+  type ChartSeries,
+  type Insight,
+  type ProfileMetric,
+  type ProfileOption,
   RANGE_DAYS,
+  type StatDelta,
+  type TeamData,
   type TimeRange,
+  type TopPost,
 } from "@/entities/analytics";
+import type { BenchmarkData } from "@/entities/competitor";
+import type { ExplorerData, IcpData, Interaction } from "@/entities/engagement";
 import type { Post } from "@/entities/post";
 import {
   deltaDirection,

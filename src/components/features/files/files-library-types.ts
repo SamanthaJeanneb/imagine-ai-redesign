@@ -1,6 +1,6 @@
 import type { AssetTileData } from "@/components/features/files/asset-tile";
-import type { FileNode } from "@/components/features/files/file-tree";
 import type { LibraryCardKind } from "@/components/features/files/library-card";
+import type { FileNode } from "@/entities/files";
 
 /** What the browser is looking at. */
 export type Place =

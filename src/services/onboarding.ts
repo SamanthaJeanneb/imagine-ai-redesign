@@ -1,5 +1,5 @@
-import type { TeamMember } from "@/components/features/onboarding/invite-team-form";
-import type { ProfileSummary } from "@/components/features/settings/profile-list";
+import type { TeamMember } from "@/entities/onboarding";
+import type { ProfileSummary } from "@/entities/settings";
 import { getDb, getOrganization } from "@/mocks/db";
 
 /**

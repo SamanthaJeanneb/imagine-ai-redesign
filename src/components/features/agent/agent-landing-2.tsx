@@ -3,21 +3,18 @@
 import { cn } from "cn";
 import { motion } from "motion/react";
 
-import {
-  TIMELINE_KIND_LABEL,
-  type TimelineAction,
-  type TimelineEntry,
-  type TimelineKind,
-} from "@/components/features/agent/timeline";
-import {
-  type CalendarDay,
-  CalendarMonth,
-} from "@/components/features/calendar/calendar-grid";
-import type { EventChipData } from "@/components/features/calendar/event-chip";
+import { TIMELINE_KIND_LABEL } from "@/components/features/agent/timeline";
+import { CalendarMonth } from "@/components/features/calendar/calendar-grid";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";
 import { Icon, type IconName } from "@/components/ui/icon";
+import type {
+  TimelineAction,
+  TimelineEntry,
+  TimelineKind,
+} from "@/entities/agent";
+import type { CalendarDay, EventChipData } from "@/entities/calendar-event";
 import { hoverLift, pressRow } from "@/styles/motion";
 
 /**

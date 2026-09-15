@@ -12,7 +12,6 @@ import {
   ProfileDetailCompanyCard,
   ProfileDetailCompanyHeader,
   ProfileDetailConnection,
-  type ProfileDetailData,
   ProfileDetailFacts,
   ProfileDetailFirstConnected,
   ProfileDetailFooter,
@@ -43,6 +42,7 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
+import type { ProfileDetailData } from "@/entities/settings";
 import { wait } from "@/lib/wait";
 import { fade } from "@/styles/motion";
 

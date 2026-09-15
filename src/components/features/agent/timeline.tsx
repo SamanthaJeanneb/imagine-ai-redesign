@@ -5,26 +5,12 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { useLayoutLocked } from "@/components/motion/layout-lock";
 import { Button } from "@/components/ui/button";
+import type {
+  TimelineAction,
+  TimelineEntry,
+  TimelineKind,
+} from "@/entities/agent";
 import { fade, spring, stagger } from "@/styles/motion";
-
-export interface TimelineAction {
-  /** Sent to the agent as the intent when pressed. */
-  intent: string;
-  label: string;
-  primary?: boolean;
-  /** What the press says on the user's behalf, opening a thread with it. */
-  prompt?: string;
-}
-
-/** What the agent did. `activity` stands in for anything newer than this list. */
-export type TimelineKind =
-  | "drafted"
-  | "scheduled"
-  | "published"
-  | "failed"
-  | "reply_drafted"
-  | "persona_updated"
-  | "activity";
 
 export const TIMELINE_KIND_LABEL: Record<TimelineKind, string> = {
   drafted: "Drafted",
@@ -35,19 +21,6 @@ export const TIMELINE_KIND_LABEL: Record<TimelineKind, string> = {
   persona_updated: "Persona updated",
   activity: "Activity",
 };
-
-export interface TimelineEntry {
-  id: string;
-  kind: TimelineKind;
-  /** Relative or absolute, already formatted. */
-  when: string;
-  title: string;
-  /** Optional body preview, e.g. the first lines of a draft. */
-  excerpt?: string;
-  actions: readonly TimelineAction[];
-  /** Happened since the user was last here. */
-  unread?: boolean;
-}
 
 interface TimelineProps {
   entries: readonly TimelineEntry[];

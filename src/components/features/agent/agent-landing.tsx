@@ -4,35 +4,29 @@ import { cn } from "cn";
 import { motion, useReducedMotion } from "motion/react";
 import { useState } from "react";
 
-import {
-  Timeline,
-  type TimelineAction,
-  type TimelineEntry,
-} from "@/components/features/agent/timeline";
+import { Timeline } from "@/components/features/agent/timeline";
 import {
   AreaChartBlock,
-  type ChartDatum,
   ChartFrame,
   ChartHeader,
   ChartHeadline,
   ChartProvider,
-  type ChartSeries,
 } from "@/components/features/analytics/chart-block";
 import { StatTile } from "@/components/features/analytics/stat-tile";
-import {
-  type CalendarDay,
-  CalendarStrip,
-} from "@/components/features/calendar/calendar-grid";
-import type { EventChipData } from "@/components/features/calendar/event-chip";
+import { CalendarStrip } from "@/components/features/calendar/calendar-grid";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
-import {
-  UpNextList,
-  type UpNextItem,
-} from "@/components/features/calendar/up-next-list";
+import { UpNextList } from "@/components/features/calendar/up-next-list";
 import { Stagger } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { ResizeHandle } from "@/components/ui/resize-handle";
+import type { TimelineAction, TimelineEntry } from "@/entities/agent";
+import type { ChartDatum, ChartSeries } from "@/entities/analytics";
+import type {
+  CalendarDay,
+  EventChipData,
+  UpNextItem,
+} from "@/entities/calendar-event";
 import { useResizable } from "@/lib/use-resizable";
 import { fade, spring } from "@/styles/motion";
 

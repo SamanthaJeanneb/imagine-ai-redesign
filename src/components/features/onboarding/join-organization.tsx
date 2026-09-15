@@ -5,13 +5,8 @@ import { motion } from "motion/react";
 
 import { AvatarGroup, AvatarGroupCount } from "@/components/ui/avatar";
 import { PersonAvatar } from "@/components/ui/person-avatar";
+import type { JoinMember } from "@/entities/workspace";
 import { fade } from "@/styles/motion";
-
-export interface JoinMember {
-  id: string;
-  name: string;
-  avatarUrl?: string;
-}
 
 const SHOWN_MEMBERS = 4;
 

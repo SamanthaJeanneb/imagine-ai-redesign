@@ -4,10 +4,7 @@ import { cn } from "cn";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { createContext, useContext, useState, type ReactNode } from "react";
 
-import type {
-  ConnectionStatus,
-  ProfileSummary,
-} from "@/components/features/settings/profile-list";
+import type { ProfileSummary } from "@/components/features/settings/profile-list";
 import { AvatarGroup, AvatarGroupCount } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -18,6 +15,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { SearchField } from "@/components/ui/search-field";
+import type { ConnectionStatus } from "@/entities/settings";
 import { fade, pop, pressRow, spring } from "@/styles/motion";
 import { spacing } from "@/styles/tokens";
 

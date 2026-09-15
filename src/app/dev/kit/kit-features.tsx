@@ -7,7 +7,6 @@ import { toast } from "sonner";
 
 import {
   AgentMessage,
-  type MessagePart,
   UserMessage,
 } from "@/components/features/agent/agent-message";
 import { ChatProvider } from "@/components/features/agent/chat-provider";
@@ -36,7 +35,6 @@ import {
   LinkedInPostFoldButton,
   LinkedInPostMedia,
   LinkedInPostProvider,
-  type PostAuthor,
 } from "@/components/features/agent/linkedin-post-draft";
 import { PostContext } from "@/components/features/agent/post-context";
 import { PreviewSurface } from "@/components/features/agent/preview-surface";
@@ -46,10 +44,7 @@ import {
 } from "@/components/features/agent/resource-context";
 import { ScheduledGraphic } from "@/components/features/agent/scheduled-graphic";
 import { ProfileSelector } from "@/components/features/agent/profile-selector";
-import {
-  Timeline,
-  type TimelineEntry,
-} from "@/components/features/agent/timeline";
+import { Timeline } from "@/components/features/agent/timeline";
 import { AnalyticsToolbar } from "@/components/features/analytics/analytics-toolbar";
 import { AnalyticsPage } from "@/components/features/analytics/analytics-page";
 import { AnalyticsPage2 } from "@/components/features/analytics/analytics-page-2";
@@ -58,7 +53,6 @@ import {
   AreaChartBlock,
   BarChartBlock,
   BarChartPreview,
-  type ChartDatum,
   ChartFrame,
   ChartHeader,
   ChartHeadline,
@@ -77,7 +71,6 @@ import { StatGroup, StatTile } from "@/components/features/analytics/stat-tile";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { TopPosts } from "@/components/features/analytics/top-posts";
 import {
-  type CalendarDay,
   CalendarMonth,
   CalendarPreview,
   CalendarStrip,
@@ -95,10 +88,7 @@ import {
   CalendarToolbar,
   CalendarViewToggle,
 } from "@/components/features/calendar/calendar-toolbar";
-import {
-  EventChip,
-  type EventChipData,
-} from "@/components/features/calendar/event-chip";
+import { EventChip } from "@/components/features/calendar/event-chip";
 import { LinkedInPostEditor } from "@/components/features/calendar/linkedin-post-detail";
 import {
   PostChip,
@@ -157,7 +147,6 @@ import {
 import {
   InviteTeamForm,
   InviteTeamFormActions,
-  type TeamMember,
 } from "@/components/features/onboarding/invite-team-form";
 import { OrganizationForm } from "@/components/features/onboarding/organization-form";
 import { SignInForm } from "@/components/features/onboarding/sign-in-form";
@@ -171,17 +160,13 @@ import {
   IntegrationGrid,
   IntegrationRows,
 } from "@/components/features/settings/integrations";
-import {
-  type Member,
-  MembersList,
-} from "@/components/features/settings/members-list";
+import { MembersList } from "@/components/features/settings/members-list";
 import {
   ProfileDetail,
   ProfileDetailCompany,
   ProfileDetailCompanyCard,
   ProfileDetailCompanyHeader,
   ProfileDetailConnection,
-  type ProfileDetailData,
   ProfileDetailFacts,
   ProfileDetailFirstConnected,
   ProfileDetailFooter,
@@ -231,7 +216,12 @@ import { LogoLoader } from "@/components/motion/logo-loader";
 import { ThinkingIndicator } from "@/components/motion/thinking-indicator";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import type { TimeRange } from "@/entities/analytics";
+import type { MessagePart, TimelineEntry } from "@/entities/agent";
+import type { ChartDatum, TimeRange } from "@/entities/analytics";
+import type { CalendarDay, EventChipData } from "@/entities/calendar-event";
+import type { TeamMember } from "@/entities/onboarding";
+import type { PostAuthor } from "@/entities/post";
+import type { Member, ProfileDetailData } from "@/entities/settings";
 import type { CalendarView, PostsByDay } from "@/lib/calendar";
 import type { ReplyIntent, ScriptedReply } from "@/services/agent";
 import type {

@@ -22,31 +22,11 @@ import { Disclosure } from "@/components/motion/disclosure";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { PersonAvatar } from "@/components/ui/person-avatar";
+import type { FileNode, FileSection } from "@/entities/files";
 import { fade, pressRow, spring, stagger } from "@/styles/motion";
 
-export type FileNode =
-  | {
-      type: "file";
-      id: string;
-      name: string;
-      /** Opening lines of the document, for card previews. */
-      excerpt?: string;
-    }
-  | { type: "folder"; id: string; name: string; children: readonly FileNode[] }
-  | {
-      type: "assets";
-      id: string;
-      name: string;
-      assets: readonly AssetTileData[];
-    };
-
-export interface FileSection {
-  id: string;
-  title: string;
-  kind: "organization" | "person";
-  avatarUrl?: string;
-  nodes: readonly FileNode[];
-}
+/** Re-exported for the components that already reach for it here. */
+export type { FileSection };
 
 /** Asset tiles a tree row shows before folding the rest into "+N". */
 const TREE_ASSET_LIMIT = 2;

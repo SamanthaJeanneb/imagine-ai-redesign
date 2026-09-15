@@ -2,10 +2,10 @@
 
 import {
   EXPLORER_METRICS,
-  type ExplorerMetric,
   isExplorerMetric,
 } from "@/components/features/analytics/engagement-explorer-types";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import type { ExplorerMetric } from "@/entities/engagement";
 import { formatCompact } from "@/lib/format";
 
 export interface MetricSpec {

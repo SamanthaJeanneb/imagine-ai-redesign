@@ -1,5 +1,5 @@
 import type { AssetTileData } from "@/components/features/files/asset-tile";
-import type { FileNode } from "@/components/features/files/file-tree";
+import type { FileNode } from "@/entities/files";
 
 export type FolderNode = Extract<FileNode, { type: "folder" }>;
 

@@ -4,7 +4,7 @@ import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
 
 import type { ProfileSummary } from "@/components/features/settings/profile-list";
-import { SIDEBAR_NAV, type SidebarThread } from "@/components/layout/sidebar";
+import { SIDEBAR_NAV } from "@/components/layout/sidebar";
 import {
   Avatar,
   AvatarFallback,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import { Separator } from "@/components/ui/separator";
+import type { SidebarThread } from "@/entities/agent";
 import { initials } from "@/lib/initials";
 import { fade, spring } from "@/styles/motion";
 

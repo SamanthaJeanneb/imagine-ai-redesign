@@ -4,15 +4,11 @@ import { cn } from "cn";
 import { motion } from "motion/react";
 
 import { Icon } from "@/components/ui/icon";
+import type { AssetTileData } from "@/entities/asset";
 import { hoverLift, press } from "@/styles/motion";
 
-export interface AssetTileData {
-  id: string;
-  kind: "image" | "video";
-  /** Omit for a placeholder tile. */
-  src?: string;
-  caption?: string;
-}
+/** Re-exported for the components that already reach for it here. */
+export type { AssetTileData };
 
 const TILE_CLASS =
   "group/asset relative aspect-square overflow-hidden rounded-control bg-imagine-surface-raised outline-none";

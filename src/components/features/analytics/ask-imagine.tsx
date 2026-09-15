@@ -7,17 +7,8 @@ import { type ReactNode, useEffect, useState } from "react";
 import { Shimmer } from "@/components/motion/shimmer";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import type { Insight } from "@/entities/analytics";
 import { fade, pressRow, swapUp } from "@/styles/motion";
-
-/** One thing the agent noticed, and what to say to follow it up. */
-export interface Insight {
-  id: string;
-  text: string;
-  /** What pressing the insight says on the user's behalf. */
-  prompt: string;
-  /** Which scripted reply answers it. Default `default`. */
-  intent?: string;
-}
 
 interface AskImagineProps {
   insights: readonly Insight[];

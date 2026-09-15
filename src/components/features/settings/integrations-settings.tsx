@@ -5,11 +5,11 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import {
-  type ConnectedIntegration,
   IntegrationGrid,
   IntegrationRows,
 } from "@/components/features/settings/integrations";
 import { SettingsSection } from "@/components/features/settings/settings-section";
+import type { ConnectedIntegration } from "@/entities/settings";
 import type { Integrations } from "@/services/settings";
 import { fade } from "@/styles/motion";
 

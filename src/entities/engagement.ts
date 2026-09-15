@@ -3,6 +3,7 @@
  * `engagement_profiles`, `engagement_profile_tags`, `engagement_comments`, and
  * `engagement_reactions`; snake_case stops here.
  */
+import type { PostChipData } from "@/entities/post";
 import type {
   EngagementCommentRow,
   EngagementProfileRow,
@@ -59,6 +60,111 @@ export interface EngagementReaction {
   profileId: string;
   type: string;
   at: string;
+}
+
+/** Someone who reacted to or commented on a post, with their ICP read. */
+export interface Engager {
+  id: string;
+  name: string;
+  headline: string;
+  avatarUrl?: string;
+  category: IcpCategory;
+  /** 0 to 100. */
+  score: number;
+  signals: readonly string[];
+  action: "commented" | "reacted";
+  /** The comment, when they left one. */
+  excerpt?: string;
+  commentId?: string;
+}
+
+export interface IcpPost {
+  id: string;
+  title: string;
+  /** "2 Sep". */
+  label: string;
+  profileName: string;
+  reach: number;
+  engagers: readonly Engager[];
+  /** Engagers at or above the ICP threshold. */
+  icpCount: number;
+  /** `icpCount / engagers`, 0 to 100. */
+  icpShare: number;
+  chip?: PostChipData;
+}
+
+export interface IcpData {
+  posts: readonly IcpPost[];
+}
+
+/** Someone did something to one of your posts. */
+export interface Interaction {
+  id: string;
+  kind: "comment" | "reaction";
+  profileId: string;
+  name: string;
+  headline: string;
+  avatarUrl?: string;
+  category: IcpCategory;
+  /** In the ICP: the row gets the accent and the reply is worth drafting. */
+  icp: boolean;
+  postId: string;
+  postTitle: string;
+  /** "2h ago". */
+  when: string;
+  /** The comment, or the reaction type ("insightful"). */
+  excerpt: string;
+  commentId?: string;
+}
+
+export type ExplorerMetric = "reach" | "rate" | "followers" | "posts";
+
+/** One day in the window. Rates are percentages, already × 100. */
+export interface ExplorerPoint {
+  /** Axis text, e.g. "2 Sep". */
+  label: string;
+  /** `YYYY-MM-DD`, what posts join on. */
+  day: string;
+  reach: number;
+  rate: number;
+  followers: number;
+  posts: number;
+  /** Running count of CRM contacts who came in through a post. */
+  pipeline: number;
+}
+
+/** A post published inside the window, placed on the chart by `label`. */
+export interface ExplorerPost {
+  id: string;
+  day: string;
+  label: string;
+  title: string;
+  profileName: string;
+  avatarUrl?: string;
+  isCompany: boolean;
+  category?: string;
+  reach: number;
+  rate: number;
+  followers: number;
+  comments: number;
+  /** Lets the post be attached to the conversation. */
+  chip?: PostChipData;
+}
+
+export interface ExplorerData {
+  points: readonly ExplorerPoint[];
+  posts: readonly ExplorerPost[];
+  /** Which labels get an axis tick. */
+  xTicks: readonly string[];
+  totals: Record<ExplorerMetric, number>;
+  pipeline: {
+    /** Contacts attributed to content at the end of the window. */
+    contacts: number;
+    /** Open or won deals with one of those contacts on them. */
+    opportunities: number;
+    /** Their value, summed. */
+    amount: number;
+  };
 }
 
 export function transformEngagementProfileRow(

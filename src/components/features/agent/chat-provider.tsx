@@ -10,11 +10,10 @@ import {
 } from "react";
 
 import type { ComposerPreview } from "@/components/features/agent/composer";
-import type { MessagePart } from "@/components/features/agent/agent-message";
-import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
-import type { EventChipData } from "@/components/features/calendar/event-chip";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
 import type { DraggableResource } from "@/components/features/files/resource-drag";
+import type { MessagePart } from "@/entities/agent";
+import type { CalendarDay, EventChipData } from "@/entities/calendar-event";
 import type {
   AgentMessage,
   ReplyIntent,

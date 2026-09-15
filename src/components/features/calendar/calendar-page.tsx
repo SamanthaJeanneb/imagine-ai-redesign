@@ -8,10 +8,7 @@ import { PREVIEW_LAYOUT_ID } from "@/components/features/agent/chat-dock";
 import { useChat } from "@/components/features/agent/chat-provider";
 import { NOTHING_SCHEDULED } from "@/components/features/calendar/calendar-copy";
 import { CalendarDayNumber } from "@/components/features/calendar/calendar-day-number";
-import {
-  type CalendarDay,
-  CalendarMonthFit,
-} from "@/components/features/calendar/calendar-grid";
+import { CalendarMonthFit } from "@/components/features/calendar/calendar-grid";
 import {
   CalendarDayGrid,
   CalendarWeekGrid,
@@ -24,15 +21,11 @@ import {
   CalendarToolbar,
   CalendarViewToggle,
 } from "@/components/features/calendar/calendar-toolbar";
-import {
-  EventChip,
-  type EventChipData,
-} from "@/components/features/calendar/event-chip";
+import { EventChip } from "@/components/features/calendar/event-chip";
 import {
   PostChip,
   type PostChipData,
   type PostOpenOptions,
-  type PostChipStatus,
 } from "@/components/features/calendar/post-chip";
 import {
   PostEditor,
@@ -44,6 +37,8 @@ import {
 } from "@/components/features/files/editor-tab-strip";
 import type { IconName } from "@/components/ui/icon";
 import type { SearchBoxResult } from "@/components/ui/search-box";
+import type { CalendarDay, EventChipData } from "@/entities/calendar-event";
+import type { PostChipStatus } from "@/entities/post";
 import {
   buildCalendarRange,
   type CalendarView,

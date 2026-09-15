@@ -4,15 +4,10 @@ import { cn } from "cn";
 
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Switch } from "@/components/ui/switch";
+import type { Skill } from "@/entities/files";
 
-export interface Skill {
-  id: string;
-  name: string;
-  description: string;
-  enabled: boolean;
-  /** The instructions behind the skill, e.g. "calendar-gap.md". */
-  fileName: string;
-}
+/** Re-exported for the components that already reach for it here. */
+export type { Skill };
 
 interface SkillsListProps {
   skills: readonly Skill[];

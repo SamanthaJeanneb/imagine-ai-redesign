@@ -1,21 +1,19 @@
-import type {
-  AvailableIntegration,
-  ConnectedIntegration,
-} from "@/components/features/settings/integrations";
-import type {
-  Member,
-  MemberRole,
-} from "@/components/features/settings/members-list";
-import type { ProfileDetailData } from "@/components/features/settings/profile-detail";
-import type { ProfileSummary } from "@/components/features/settings/profile-list";
-import type { IconName } from "@/components/ui/icon";
 import {
   type Client,
   toConnectionState,
   transformClientRow,
 } from "@/entities/client";
+import type {
+  AvailableIntegration,
+  ConnectedIntegration,
+  Member,
+  MemberRole,
+  ProfileDetailData,
+  ProfileSummary,
+} from "@/entities/settings";
 import { getDb, getOrganization } from "@/mocks/db";
 import { getWorkspaceLogoUrl } from "@/services/workspace";
+import type { IconName } from "@/styles/icons";
 
 const MEMBER_ROLES: readonly MemberRole[] = ["admin", "member"];
 

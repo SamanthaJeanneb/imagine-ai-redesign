@@ -4,10 +4,7 @@ import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
-import {
-  CONNECTION_LABEL,
-  type ConnectionStatus,
-} from "@/components/features/settings/profile-list";
+import { CONNECTION_LABEL } from "@/components/features/settings/profile-list";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,24 +22,10 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import type { ConnectionStatus, ProfileDetailData } from "@/entities/settings";
 import { formatDayMonthYear } from "@/lib/format";
 import { initials } from "@/lib/initials";
 import { fade, swapUp } from "@/styles/motion";
-
-export interface ProfileDetailData {
-  id: string;
-  name: string;
-  headline: string;
-  avatarUrl?: string;
-  kind: "person" | "company";
-  status: ConnectionStatus;
-  /** ISO time LinkedIn was first linked. Absent until they connect. */
-  connectedAt?: string;
-  /** Published posts the agent has read for voice and analytics. */
-  postsIndexed?: number;
-  company?: { name: string; logoUrl?: string; url: string };
-  persona?: { fileName: string };
-}
 
 /** A white row on the panel's grey: company and persona. */
 const CARD =

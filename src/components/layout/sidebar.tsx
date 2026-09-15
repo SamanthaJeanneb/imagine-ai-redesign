@@ -32,6 +32,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { SidebarThread } from "@/entities/agent";
 import { useResizable } from "@/lib/use-resizable";
 import { fade, spring, stagger } from "@/styles/motion";
 
@@ -165,15 +166,6 @@ interface SidebarNavItem {
   key: SidebarNavKey;
   label: string;
   icon: IconName;
-}
-
-export interface SidebarThread {
-  id: string;
-  title: string;
-  /** Unread activity since the user last opened it. */
-  unread?: boolean;
-  /** Message text, so search can match more than the title. */
-  preview?: string;
 }
 
 export const SIDEBAR_NAV: readonly SidebarNavItem[] = [

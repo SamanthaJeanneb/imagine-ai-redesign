@@ -2,10 +2,10 @@
 
 import { motion } from "motion/react";
 
-import type { ExplorerPost } from "@/components/features/analytics/engagement-explorer-types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import type { ExplorerPost } from "@/entities/engagement";
 import { initials } from "@/lib/initials";
 import { fade } from "@/styles/motion";
 

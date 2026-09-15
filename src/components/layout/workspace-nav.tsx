@@ -8,13 +8,14 @@ import {
   useChat,
 } from "@/components/features/agent/chat-provider";
 import type { ComposerPreview } from "@/components/features/agent/composer";
-import type { SidebarNavKey, SidebarThread } from "@/components/layout/sidebar";
+import type { SidebarNavKey } from "@/components/layout/sidebar";
 import {
   chatColumnFor,
   navKeyFor,
   threadIdFor,
   titleFrom,
 } from "@/components/layout/workspace-routes";
+import type { SidebarThread } from "@/entities/agent";
 
 interface WorkspaceNavState {
   /** The page the route is on, for the rail and the page frame. */

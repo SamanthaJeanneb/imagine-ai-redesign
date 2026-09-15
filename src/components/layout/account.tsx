@@ -30,15 +30,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { AccountUser } from "@/entities/workspace";
 import { initials } from "@/lib/initials";
 import { THEME_CHOICES, toThemeValue } from "@/lib/theme-choice";
-
-export interface AccountUser {
-  name: string;
-  /** The login the account is under; shown in the account menu. */
-  email?: string;
-  avatarUrl?: string;
-}
 
 interface AccountControlsProps {
   user: AccountUser;

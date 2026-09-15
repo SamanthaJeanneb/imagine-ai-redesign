@@ -1,12 +1,12 @@
 import { cache } from "react";
 
+import { transformClientRow } from "@/entities/client";
 import type {
+  DocumentMeta,
   FileNode,
   FileSection,
-} from "@/components/features/files/file-tree";
-import type { DocumentMeta } from "@/components/features/files/markdown-editor";
-import type { Skill } from "@/components/features/files/skills-list";
-import { transformClientRow } from "@/entities/client";
+  Skill,
+} from "@/entities/files";
 import type { WorkspaceFileRow } from "@/entities/rows";
 import { getDb, getOrganization } from "@/mocks/db";
 import { getClientAssets, toAssetTile } from "@/services/posts";

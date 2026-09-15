@@ -5,8 +5,6 @@ import { toast } from "sonner";
 
 import { InviteLinkField } from "@/components/features/onboarding/invite-team-form";
 import {
-  type Member,
-  type MemberRole,
   MembersList,
   ROLE_LABEL,
 } from "@/components/features/settings/members-list";
@@ -32,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { Member, MemberRole } from "@/entities/settings";
 import type { MembersSettings as MembersSettingsData } from "@/services/settings";
 
 const INVITE_ROLES: readonly MemberRole[] = ["admin", "member"];

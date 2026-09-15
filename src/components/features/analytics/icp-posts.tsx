@@ -29,7 +29,6 @@ import {
   valueText,
 } from "@/components/features/analytics/chart-theme";
 import { Panel } from "@/components/features/analytics/panel";
-import type { PostChipData } from "@/components/features/calendar/post-chip";
 import { Disclosure } from "@/components/motion/disclosure";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { AvatarGroup } from "@/components/ui/avatar";
@@ -42,44 +41,15 @@ import {
 } from "@/components/ui/hover-card";
 import { Icon } from "@/components/ui/icon";
 import { PersonAvatar } from "@/components/ui/person-avatar";
-import { type IcpCategory, ICP_THRESHOLD } from "@/entities/engagement";
+import {
+  type Engager,
+  ICP_THRESHOLD,
+  type IcpCategory,
+  type IcpData,
+  type IcpPost,
+} from "@/entities/engagement";
 import { formatCompact } from "@/lib/format";
 import { spring } from "@/styles/motion";
-
-/** Someone who reacted to or commented on a post, with their ICP read. */
-export interface Engager {
-  id: string;
-  name: string;
-  headline: string;
-  avatarUrl?: string;
-  category: IcpCategory;
-  /** 0 to 100. */
-  score: number;
-  signals: readonly string[];
-  action: "commented" | "reacted";
-  /** The comment, when they left one. */
-  excerpt?: string;
-  commentId?: string;
-}
-
-export interface IcpPost {
-  id: string;
-  title: string;
-  /** "2 Sep". */
-  label: string;
-  profileName: string;
-  reach: number;
-  engagers: readonly Engager[];
-  /** Engagers at or above the ICP threshold. */
-  icpCount: number;
-  /** `icpCount / engagers`, 0 to 100. */
-  icpShare: number;
-  chip?: PostChipData;
-}
-
-export interface IcpData {
-  posts: readonly IcpPost[];
-}
 
 /** What the user wants to do about an engager. */
 type EngageAction = "reply" | "outreach";

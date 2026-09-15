@@ -15,28 +15,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { Interaction } from "@/entities/engagement";
 import { initials } from "@/lib/initials";
-import type { IcpCategory } from "@/entities/engagement";
-
-/** Someone did something to one of your posts. */
-export interface Interaction {
-  id: string;
-  kind: "comment" | "reaction";
-  profileId: string;
-  name: string;
-  headline: string;
-  avatarUrl?: string;
-  category: IcpCategory;
-  /** In the ICP: the row gets the accent and the reply is worth drafting. */
-  icp: boolean;
-  postId: string;
-  postTitle: string;
-  /** "2h ago". */
-  when: string;
-  /** The comment, or the reaction type ("insightful"). */
-  excerpt: string;
-  commentId?: string;
-}
 
 type InteractionAction = "reply" | "outreach";
 

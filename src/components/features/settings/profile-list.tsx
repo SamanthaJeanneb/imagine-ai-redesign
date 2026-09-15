@@ -10,28 +10,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { SearchField } from "@/components/ui/search-field";
+import type { ConnectionStatus, ProfileSummary } from "@/entities/settings";
 import { formatDayMonthYear } from "@/lib/format";
 import { initials } from "@/lib/initials";
 import { pressRow, spring } from "@/styles/motion";
 
-export type ConnectionStatus = "connected" | "disconnected";
+/** Re-exported for the components that already reach for it here. */
+export type { ProfileSummary };
 
 export const CONNECTION_LABEL: Record<ConnectionStatus, string> = {
   connected: "Connected",
   disconnected: "Not connected",
 };
-
-export interface ProfileSummary {
-  id: string;
-  name: string;
-  /** Headline or "Company page". */
-  headline: string;
-  avatarUrl?: string;
-  kind: "person" | "company";
-  status: ConnectionStatus;
-  /** ISO time LinkedIn was first linked. Absent until they connect. */
-  connectedAt?: string;
-}
 
 interface ProfileListProps {
   profiles: readonly ProfileSummary[];

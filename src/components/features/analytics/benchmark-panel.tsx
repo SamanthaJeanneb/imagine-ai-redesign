@@ -26,6 +26,7 @@ import {
 import { Panel } from "@/components/features/analytics/panel";
 import { Badge } from "@/components/ui/badge";
 import { PersonAvatar } from "@/components/ui/person-avatar";
+import type { BenchmarkData, BenchmarkProfile } from "@/entities/competitor";
 import { formatCompact } from "@/lib/format";
 import {
   fade,
@@ -34,29 +35,6 @@ import {
   stagger,
   staggerVariants,
 } from "@/styles/motion";
-
-/** How an account performs per post, averaged over the window. */
-export interface BenchmarkProfile {
-  id: string;
-  name: string;
-  headline: string;
-  avatarUrl?: string;
-  isCompany: boolean;
-  postsPerWeek: number;
-  avgReactions: number;
-  avgComments: number;
-  avgShares: number;
-  /** What they write about, most common first. */
-  topics: readonly string[];
-}
-
-/** An account you watch. The same shape as your own, so the radar can pair them. */
-export type Competitor = BenchmarkProfile;
-
-export interface BenchmarkData {
-  you: BenchmarkProfile;
-  competitors: readonly Competitor[];
-}
 
 interface BenchmarkPanelProps {
   data: BenchmarkData;

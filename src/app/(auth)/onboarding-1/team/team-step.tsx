@@ -7,9 +7,9 @@ import { toast } from "sonner";
 import {
   InviteTeamForm,
   InviteTeamFormActions,
-  type TeamMember,
 } from "@/components/features/onboarding/invite-team-form";
 import { Button } from "@/components/ui/button";
+import type { TeamMember } from "@/entities/onboarding";
 
 interface TeamStepProps {
   inviteUrl: string;

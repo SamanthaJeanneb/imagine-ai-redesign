@@ -13,10 +13,10 @@ import { ChatEmptyMark } from "@/components/features/agent/chat-empty-mark";
 import { useChat } from "@/components/features/agent/chat-provider";
 import type { ComposerPreview } from "@/components/features/agent/composer";
 import { ChatHistoryMenu, ChatTitle } from "@/components/layout/chat-controls";
-import type { SidebarThread } from "@/components/layout/sidebar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { ResizeHandle } from "@/components/ui/resize-handle";
+import type { SidebarThread } from "@/entities/agent";
 import { useResizable } from "@/lib/use-resizable";
 import { fade, spring } from "@/styles/motion";
 

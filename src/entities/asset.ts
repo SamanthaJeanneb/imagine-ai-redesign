@@ -32,6 +32,14 @@ export interface Asset {
 
 export type AssetType = "image" | "video";
 
+export interface AssetTileData {
+  id: string;
+  kind: "image" | "video";
+  /** Omit for a placeholder tile. */
+  src?: string;
+  caption?: string;
+}
+
 export function getAssetType(asset: Asset): AssetType {
   if (asset.mimeType.startsWith("image/")) return "image";
   return "video";

@@ -3,7 +3,7 @@
  * constraint, `MediaFile` from `shared/types`, and the LinkedIn analytics payload
  * that `PostWithAnalytics` reads.
  */
-import type { PostChipStatus } from "@/components/features/calendar/post-chip";
+import type { AssetTileData } from "@/entities/asset";
 import type { ClientPostRow } from "@/entities/rows";
 
 /** Status values allowed by the `client_posts` database constraint. */
@@ -51,6 +51,70 @@ export interface Post {
   postLabel: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export type PostChipStatus =
+  "draft" | "in_review" | "scheduled" | "published" | "failed";
+
+export interface PostEngagementPerson {
+  id: string;
+  name: string;
+  headline: string;
+  avatarUrl?: string;
+}
+
+interface PostEngagementComment {
+  id: string;
+  author: PostEngagementPerson;
+  body: string;
+  when: string;
+}
+
+export interface PostEngagement {
+  reactors: readonly (PostEngagementPerson & { reaction: string })[];
+  comments: readonly PostEngagementComment[];
+}
+
+export interface PostChipData {
+  id: string;
+  /** The first line of the post, for search results, rows, and labels. */
+  title: string;
+  /** "9:00". */
+  time: string;
+  /** Short profile label, e.g. initials or first name. */
+  profile: string;
+  status: PostChipStatus;
+  /** Every label on the post. The first is the one the chip shows. */
+  labels?: readonly string[];
+  /** When present, hovering the chip previews the post as it will appear. */
+  preview?: LinkedInPostContent;
+  /** Captured LinkedIn people and comments, available after publishing. */
+  engagement?: PostEngagement;
+}
+
+export interface PostAuthor {
+  name: string;
+  headline: string;
+  avatarUrl?: string;
+  /** Company pages get a square avatar, as on LinkedIn. Default `person`. */
+  kind?: "person" | "company";
+}
+
+/** Counts LinkedIn reports back after a post goes out. */
+export interface LinkedInPostStats {
+  reactions: number;
+  comments: number;
+  reposts: number;
+  impressions?: number;
+}
+
+/** Everything needed to render a post the way LinkedIn will. */
+export interface LinkedInPostContent {
+  author: PostAuthor;
+  body: string;
+  media?: readonly AssetTileData[];
+  /** Present once the post has gone out and LinkedIn has reported back. */
+  stats?: LinkedInPostStats;
 }
 
 /**

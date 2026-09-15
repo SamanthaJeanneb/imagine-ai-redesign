@@ -18,7 +18,6 @@ import {
   toSearchResults,
 } from "@/components/features/files/file-search";
 import type { FileMoveDest } from "@/components/features/files/file-move";
-import type { FileNode } from "@/components/features/files/file-tree";
 import { useFilesLibrary } from "@/components/features/files/files-library-provider";
 import {
   useFilesBrowse,
@@ -65,6 +64,7 @@ import {
 import { Icon, type IconName } from "@/components/ui/icon";
 import { SearchBox } from "@/components/ui/search-box";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import type { FileNode } from "@/entities/files";
 import { fade } from "@/styles/motion";
 
 function GroupLabel({ children }: { children: React.ReactNode }) {

@@ -1,8 +1,10 @@
-import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
-import type { EventChipData } from "@/components/features/calendar/event-chip";
-import type { PostChipData } from "@/components/features/calendar/post-chip";
-import type { UpNextItem } from "@/components/features/calendar/up-next-list";
-import { transformCalendarEventRow } from "@/entities/calendar-event";
+import {
+  type CalendarDay,
+  type EventChipData,
+  type UpNextItem,
+  transformCalendarEventRow,
+} from "@/entities/calendar-event";
+import type { PostChipData } from "@/entities/post";
 import {
   buildDays,
   type EventsByDay,

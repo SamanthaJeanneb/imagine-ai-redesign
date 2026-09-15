@@ -7,26 +7,18 @@ import { useId, useState } from "react";
 import { AskButton } from "@/components/features/analytics/ask-imagine";
 import { ChartSkeletonLine } from "@/components/features/analytics/chart-theme";
 import { EngagementChartScene } from "@/components/features/analytics/engagement-chart-scene";
-import type {
-  ExplorerData,
-  ExplorerMetric,
-  ExplorerPost,
-} from "@/components/features/analytics/engagement-explorer-types";
 import {
   METRIC,
   MetricTabs,
 } from "@/components/features/analytics/engagement-metric-tabs";
 import { PostDetail } from "@/components/features/analytics/engagement-post-detail";
 import { Panel } from "@/components/features/analytics/panel";
+import type {
+  ExplorerData,
+  ExplorerMetric,
+  ExplorerPost,
+} from "@/entities/engagement";
 import { spring } from "@/styles/motion";
-
-export {
-  EXPLORER_METRICS,
-  type ExplorerData,
-  type ExplorerMetric,
-  type ExplorerPoint,
-  type ExplorerPost,
-} from "@/components/features/analytics/engagement-explorer-types";
 
 interface EngagementExplorerProps {
   data: ExplorerData;

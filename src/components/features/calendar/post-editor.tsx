@@ -5,7 +5,6 @@ import { useState } from "react";
 import { LinkedInPostEditor } from "@/components/features/calendar/linkedin-post-detail";
 import {
   type PostChipData,
-  type PostChipStatus,
   POST_STATUS_LABEL,
   PostStatusPill,
 } from "@/components/features/calendar/post-chip";
@@ -20,6 +19,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { PostChipStatus } from "@/entities/post";
 
 export interface PostEditorValue {
   post: PostChipData;

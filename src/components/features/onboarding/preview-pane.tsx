@@ -7,7 +7,7 @@ import {
   WorkspaceMock,
   type Focus,
 } from "@/components/features/onboarding/workspace-mock";
-import type { SidebarThread } from "@/components/layout/sidebar";
+import type { SidebarThread } from "@/entities/agent";
 
 function focusFor(pathname: string): Focus {
   if (pathname.endsWith("/team")) return "team";

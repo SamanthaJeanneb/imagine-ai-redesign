@@ -3,29 +3,14 @@
 import { motion } from "motion/react";
 import { useState } from "react";
 
-import type { PostAuthor } from "@/components/features/agent/linkedin-post-draft";
 import { useLayoutLocked } from "@/components/motion/layout-lock";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { PersonAvatar } from "@/components/ui/person-avatar";
 import { Textarea } from "@/components/ui/textarea";
+import type { CommentDraftContent } from "@/entities/agent";
+import type { PostAuthor } from "@/entities/post";
 import { spring } from "@/styles/motion";
-
-/** What the agent is replying to: their comment on your post, or their own post. */
-interface CommentTarget {
-  author: PostAuthor;
-  /** The comment, or the opening of their post. */
-  text: string;
-  /** "on your post 'The roadmap review…'" or "their latest post". */
-  context: string;
-}
-
-export interface CommentDraftContent {
-  target: CommentTarget;
-  /** Who the reply is written as. */
-  author: PostAuthor;
-  body: string;
-}
 
 interface CommentDraftProps extends CommentDraftContent {
   /** Post it; the id is whatever the caller needs to act on. */

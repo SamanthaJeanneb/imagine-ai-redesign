@@ -13,12 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import type { TimeRange } from "@/entities/analytics";
-
-export interface ProfileOption {
-  id: string;
-  name: string;
-}
+import type { ProfileOption, TimeRange } from "@/entities/analytics";
 
 interface AnalyticsToolbarProps {
   range: TimeRange;
