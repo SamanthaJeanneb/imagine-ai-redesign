@@ -276,6 +276,7 @@ export function Sidebar({
       </SidebarLabel>
       <motion.span
         aria-hidden="true"
+        initial={false}
         animate={{
           rotate: helpOpen ? 180 : 0,
           opacity: collapsed ? 0 : 1,

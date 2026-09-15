@@ -1,3 +1,5 @@
+import type { AssetTileData } from "@/components/features/files/asset-tile";
+import type { FileNode } from "@/components/features/files/file-tree";
 import type { LibraryCardKind } from "@/components/features/files/library-card";
 
 /** What the browser is looking at. */
@@ -14,3 +16,26 @@ export interface BrowserItem {
 }
 
 export type MediaItem = BrowserItem & { kind: "image" | "video" };
+
+/** Which half of the library the rail and the browser are showing. */
+export type Tab = "files" | "skills";
+
+export type Filter = "all" | "documents" | "images";
+
+export type Sort = "name-asc" | "name-desc";
+
+/** Which library and folder something sits in. */
+export interface ItemHome {
+  sectionId: string;
+  folderId?: string;
+}
+
+/** Enough to put a deleted item back where it was. */
+export interface RemovedItem extends ItemHome {
+  name: string;
+  payload:
+    { type: "node"; node: FileNode } | { type: "asset"; asset: AssetTileData };
+}
+
+export type DialogState =
+  { kind: "new-folder" } | { kind: "rename"; id: string; name: string } | null;

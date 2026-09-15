@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { useFilesLibrary } from "@/components/features/files/files-library-provider";
 import type { BrowserItem } from "@/components/features/files/files-library-types";
 import {
   AlertDialog,
@@ -199,5 +200,40 @@ export function RenameDialog({
       onSubmit={onSubmit}
       onClose={onClose}
     />
+  );
+}
+
+/** Naming and confirming, for whichever change the library is waiting on. */
+export function FilesLibraryDialogs() {
+  const library = useFilesLibrary();
+  const { dialog, pendingDelete } = library;
+
+  return (
+    <>
+      {pendingDelete === null ? null : (
+        <DeleteConfirmDialog
+          item={pendingDelete}
+          onConfirm={library.confirmRemove}
+          onClose={library.cancelRemove}
+        />
+      )}
+
+      {dialog === null ? null : dialog.kind === "rename" ? (
+        <RenameDialog
+          key={dialog.id}
+          name={dialog.name}
+          onSubmit={(name) => {
+            library.rename(dialog.id, name);
+          }}
+          onClose={library.closeDialog}
+        />
+      ) : (
+        <NewFolderDialog
+          locationTitle={library.locationTitle}
+          onSubmit={library.createFolder}
+          onClose={library.closeDialog}
+        />
+      )}
+    </>
   );
 }
