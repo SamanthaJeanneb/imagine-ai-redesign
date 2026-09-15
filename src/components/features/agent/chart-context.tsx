@@ -3,8 +3,12 @@
 import { cn } from "cn";
 import { motion } from "motion/react";
 
+import {
+  CONTEXT_CHIP_LINE,
+  ContextChipInline,
+  ContextChipRemove,
+} from "@/components/features/agent/context-chip";
 import { useLayoutLocked } from "@/components/motion/layout-lock";
-import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import type { PreviewChart } from "@/services/analytics";
 import { spring } from "@/styles/motion";
@@ -32,34 +36,19 @@ export function ChartContext({
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={spring.snappy}
       data-slot="chart-context"
-      className={cn(
-        "flex h-8 w-fit items-center gap-s rounded-control bg-imagine-surface-raised py-xxs pr-xxs pl-xs shadow-control",
-        className,
-      )}
+      className={cn(CONTEXT_CHIP_LINE, "w-fit", className)}
     >
       <Icon
         name="chart-simple"
         size="s"
         className="shrink-0 text-imagine-secondary"
       />
-      <span className="flex min-w-0 items-baseline gap-xs">
-        <span className="max-w-48 truncate type-small font-medium">
-          {chart.title}
-        </span>
-        <span className="shrink-0 type-small text-imagine-foreground-muted">
-          {chart.summary} · {chart.description}
-        </span>
-      </span>
+      <ContextChipInline
+        title={chart.title}
+        detail={`${chart.summary} · ${chart.description}`}
+      />
       {onRemove ? (
-        <Button
-          size="icon-xs"
-          variant="ghost"
-          aria-label={`Remove ${chart.title}`}
-          onClick={onRemove}
-          className="text-imagine-foreground-faint hover:text-imagine-foreground"
-        >
-          <Icon name="xmark" size="s" />
-        </Button>
+        <ContextChipRemove label={chart.title} onClick={onRemove} />
       ) : null}
     </motion.div>
   );

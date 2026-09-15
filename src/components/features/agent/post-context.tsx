@@ -3,19 +3,22 @@
 import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
 
+import {
+  CONTEXT_CHIP_LINE,
+  ContextChipInline,
+  ContextChipRemove,
+} from "@/components/features/agent/context-chip";
 import { LinkedInPost } from "@/components/features/agent/linkedin-post-draft";
 import {
   type PostChipData,
   postChipStyle,
 } from "@/components/features/calendar/post-chip";
 import { useLayoutLocked } from "@/components/motion/layout-lock";
-import { Button } from "@/components/ui/button";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { Icon } from "@/components/ui/icon";
 import { fade, spring } from "@/styles/motion";
 
 interface PostContextProps {
@@ -39,32 +42,23 @@ function PostContextChip({ post, onRemove }: PostContextChipProps) {
       data-slot="post-context-chip"
       data-status={post.status}
       style={postChipStyle(post.status)}
-      className="flex h-8 items-center gap-s rounded-control bg-imagine-surface-raised py-xxs pr-xxs pl-xs shadow-control"
+      className={CONTEXT_CHIP_LINE}
     >
       <span
         aria-hidden="true"
         className="h-4 w-1 shrink-0 rounded-full bg-[var(--chip-color)]"
       />
-      <span className="flex min-w-0 items-baseline gap-xs">
-        <span className="max-w-48 truncate type-small font-medium">
-          {post.title}
-        </span>
-        <span className="shrink-0 type-small text-imagine-foreground-muted">
-          {post.time} · {post.profile}
-        </span>
-      </span>
+      <ContextChipInline
+        title={post.title}
+        detail={`${post.time} · ${post.profile}`}
+      />
       {onRemove ? (
-        <Button
-          size="icon-xs"
-          variant="ghost"
-          aria-label={`Remove ${post.title}`}
+        <ContextChipRemove
+          label={post.title}
           onClick={() => {
             onRemove(post.id);
           }}
-          className="text-imagine-foreground-faint hover:text-imagine-foreground"
-        >
-          <Icon name="xmark" size="s" />
-        </Button>
+        />
       ) : null}
     </div>
   );

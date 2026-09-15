@@ -4,20 +4,9 @@ import { useTheme } from "next-themes";
 import { useSyncExternalStore } from "react";
 
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-
-const THEMES = [
-  { value: "light", label: "Light" },
-  { value: "dark", label: "Dark" },
-  { value: "system", label: "System" },
-] as const;
-
-type ThemeValue = (typeof THEMES)[number]["value"];
+import { THEME_CHOICES, toThemeValue } from "@/lib/theme-choice";
 
 const subscribe = () => () => undefined;
-
-function toThemeValue(value: string | undefined): ThemeValue {
-  return THEMES.find((theme) => theme.value === value)?.value ?? "system";
-}
 
 /**
  * Settings, General: the same switch as the header toggle, spelled out. The
@@ -42,7 +31,7 @@ export function ThemeChoice({ className }: { className?: string }) {
       }}
       {...(className === undefined ? {} : { className })}
     >
-      {THEMES.map((option) => (
+      {THEME_CHOICES.map((option) => (
         <ToggleGroupItem key={option.value} value={option.value}>
           {option.label}
         </ToggleGroupItem>

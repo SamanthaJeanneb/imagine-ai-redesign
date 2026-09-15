@@ -16,12 +16,12 @@ import {
 import { ChartCard } from "@/components/features/analytics/chart-card";
 import { StatGroup, StatTile } from "@/components/features/analytics/stat-tile";
 import { TopPosts } from "@/components/features/analytics/top-posts";
+import {
+  csvCell,
+  snapshotFor,
+} from "@/components/features/analytics/analytics-data";
 import type { TimeRange } from "@/entities/analytics";
-import type {
-  AnalyticsPageData,
-  AnalyticsSnapshot,
-  PreviewChart,
-} from "@/services/analytics";
+import type { AnalyticsPageData, PreviewChart } from "@/services/analytics";
 import { fade } from "@/styles/motion";
 
 interface AnalyticsPageProps {
@@ -33,42 +33,6 @@ const RANGE_DESCRIPTION: Record<"7d" | "1m" | "3m", string> = {
   "1m": "Last 30 days",
   "3m": "Last 90 days",
 };
-
-function snapshotFor(
-  snapshots: readonly AnalyticsSnapshot[],
-  range: TimeRange,
-  profileId: string,
-): AnalyticsSnapshot {
-  return (
-    snapshots.find(
-      (snapshot) =>
-        snapshot.range === range && snapshot.profileId === profileId,
-    ) ??
-    snapshots[0] ?? {
-      range: "1m",
-      profileId: "all",
-      overview: {
-        stats: [],
-        impressions: { data: [], series: [] },
-        byLabel: { data: [], series: [] },
-        byProfile: [],
-        topPosts: [],
-      },
-      explorer: {
-        points: [],
-        posts: [],
-        xTicks: [],
-        totals: { reach: 0, rate: 0, followers: 0, posts: 0 },
-        pipeline: { contacts: 0, opportunities: 0, amount: 0 },
-      },
-    }
-  );
-}
-
-function csvCell(value: string | number): string {
-  const text = String(value);
-  return `"${text.replaceAll('"', '""')}"`;
-}
 
 /**
  * The analytics workspace at `/analytics`: filters, headline totals, trend, post-label and

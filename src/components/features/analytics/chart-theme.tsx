@@ -106,7 +106,8 @@ interface ChartTooltipProps extends Partial<
 }
 
 /** Text for a value Recharts hands back untyped. Anything else renders empty. */
-function text(value: unknown): string {
+/** A Recharts payload value as something printable. */
+export function valueText(value: unknown): string {
   if (typeof value === "string") return value;
   if (typeof value === "number") return String(value);
   return "";
@@ -131,7 +132,7 @@ export function ChartTooltip({
     <TooltipContext.Provider
       value={{
         entries,
-        label: text(label),
+        label: valueText(label),
         datum: asDatum(entries[0]?.payload),
       }}
     >
@@ -193,13 +194,13 @@ export function ChartTooltipSeries({
   return (
     <ChartTooltipList>
       {entries.map((item) => {
-        const key = text(item.dataKey ?? item.name);
+        const key = valueText(item.dataKey ?? item.name);
         const value =
           typeof item.value === "number"
             ? format
               ? format(item.value, key, asDatum(item.payload))
               : item.value.toLocaleString()
-            : text(item.value);
+            : valueText(item.value);
         return (
           <div
             key={key}
@@ -209,7 +210,7 @@ export function ChartTooltipSeries({
               <svg aria-hidden="true" viewBox="0 0 8 8" className="size-2">
                 <rect width="8" height="8" fill={item.color ?? item.fill} />
               </svg>
-              {labelOf?.get(key) ?? text(item.name)}
+              {labelOf?.get(key) ?? valueText(item.name)}
             </dt>
             <dd className="font-medium text-imagine-foreground tabular-nums">
               {value}

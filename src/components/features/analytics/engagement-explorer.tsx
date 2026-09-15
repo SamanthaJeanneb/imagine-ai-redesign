@@ -27,6 +27,7 @@ import {
   ChartTooltip,
   ChartTooltipLabel,
   ChartTooltipSeries,
+  valueText,
 } from "@/components/features/analytics/chart-theme";
 import { Panel } from "@/components/features/analytics/panel";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
@@ -135,12 +136,6 @@ const MARKER_R = 10;
 const MARKER_GAP = 22;
 /** Room above the plot for the markers. */
 const MARKER_TOP = 32;
-
-function text(value: unknown): string {
-  return typeof value === "string" || typeof value === "number"
-    ? String(value)
-    : "";
-}
 
 /** The metric switch, so the panel and its skeleton carry the same header. */
 function MetricTabs({
@@ -411,7 +406,7 @@ export function EngagementExplorer({
                   setHoverLabel(
                     state.activeLabel === undefined
                       ? null
-                      : text(state.activeLabel),
+                      : valueText(state.activeLabel),
                   );
                 }}
               >
@@ -463,7 +458,8 @@ export function EngagementExplorer({
                   active={pinned === null ? undefined : true}
                   defaultIndex={pinnedIndex}
                   content={(props) => {
-                    const posts = postsByLabel.get(text(props.label)) ?? [];
+                    const posts =
+                      postsByLabel.get(valueText(props.label)) ?? [];
                     return (
                       <ChartTooltip
                         active={props.active}

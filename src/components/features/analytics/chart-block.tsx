@@ -41,6 +41,7 @@ import {
   ChartTooltip,
   ChartTooltipLabel,
   ChartTooltipSeries,
+  valueText,
 } from "@/components/features/analytics/chart-theme";
 import { fade } from "@/styles/motion";
 
@@ -280,7 +281,13 @@ function composedColors(
 const MEAN_GUTTER = 44;
 
 /** 1240 → 1.2k, 51000 → 51k, 1200000 → 1.2M. */
-export function formatCompact(value: number): string {
+/**
+ * An axis tick or bar label. Distinct from `formatCompact` in `lib/format`,
+ * which is for stat readouts: this one carries a sign, reaches into millions,
+ * and leaves a value under a thousand exactly as it is so a tick does not
+ * round away from its gridline.
+ */
+function formatTick(value: number): string {
   const abs = Math.abs(value);
   if (abs >= 1_000_000) return trim(value / 1_000_000) + "M";
   if (abs >= 1_000) return trim(value / 1_000) + "k";
@@ -293,16 +300,10 @@ function trim(value: number): string {
 }
 
 /** Text for a value Recharts hands back untyped. Anything else renders empty. */
-function text(value: unknown): string {
-  if (typeof value === "string") return value;
-  if (typeof value === "number") return String(value);
-  return "";
-}
-
 /** Bar value labels: compact, carrying the series unit when it has one. */
 function labelFormatter(unit = "") {
   return (value: unknown): string =>
-    (typeof value === "number" ? formatCompact(value) : text(value)) + unit;
+    (typeof value === "number" ? formatTick(value) : valueText(value)) + unit;
 }
 
 function seriesStats(data: readonly ChartDatum[], key: string): SeriesStats {
@@ -474,7 +475,7 @@ export function ChartHeadline() {
   if (primary === undefined) return null;
   return (
     <span className="shrink-0 type-small font-semibold tabular-nums">
-      {formatCompact(statsOf(primary.key).total)}
+      {formatTick(statsOf(primary.key).total)}
     </span>
   );
 }
@@ -495,7 +496,7 @@ function KeyEntry({ item }: { item: ChartSeries }) {
           off && "text-imagine-foreground-faint",
         )}
       >
-        {formatCompact(summaryOf(item.key))}
+        {formatTick(summaryOf(item.key))}
       </dd>
     </>
   );
@@ -651,7 +652,7 @@ export function BarChartBlock({ highlightIndex, className }: BarPlotProps) {
             tickCount={5}
             domain={[0, "auto"]}
             tick={TICK}
-            tickFormatter={formatCompact}
+            tickFormatter={formatTick}
           />
           {plotTooltip(CHART_CURSOR_BAND, plot.labelOf, plot.unitOf)}
           {showMean && plot.primaryStats ? (
@@ -660,7 +661,7 @@ export function BarChartBlock({ highlightIndex, className }: BarPlotProps) {
               stroke={COLOR.faint}
               strokeDasharray="3 3"
               label={{
-                value: `avg ${formatCompact(Math.round(plot.primaryStats.mean))}`,
+                value: `avg ${formatTick(Math.round(plot.primaryStats.mean))}`,
                 position: "right",
                 ...LABEL,
               }}
@@ -729,7 +730,7 @@ export function BarChartPreview({ highlightIndex, className }: BarPlotProps) {
             tickCount={5}
             domain={[0, "auto"]}
             tick={TICK}
-            tickFormatter={formatCompact}
+            tickFormatter={formatTick}
           />
           {plotTooltip(CHART_CURSOR_BAND, plot.labelOf, plot.unitOf)}
           {plot.visible.map((item) => (
@@ -823,7 +824,7 @@ export function AreaChartBlock({ className }: PlotProps) {
             tickCount={5}
             domain={[0, "auto"]}
             tick={TICK}
-            tickFormatter={formatCompact}
+            tickFormatter={formatTick}
           />
           {splitScale ? (
             <YAxis
@@ -835,7 +836,7 @@ export function AreaChartBlock({ className }: PlotProps) {
               tickCount={5}
               domain={[0, "auto"]}
               tick={TICK}
-              tickFormatter={formatCompact}
+              tickFormatter={formatTick}
             />
           ) : null}
           {plotTooltip(CHART_CURSOR_LINE, plot.labelOf, plot.unitOf)}
@@ -846,7 +847,7 @@ export function AreaChartBlock({ className }: PlotProps) {
               stroke={COLOR.faint}
               strokeDasharray="3 3"
               label={{
-                value: `avg ${formatCompact(Math.round(plot.primaryStats.mean))}`,
+                value: `avg ${formatTick(Math.round(plot.primaryStats.mean))}`,
                 position: splitScale ? "insideBottomLeft" : "insideBottomRight",
                 ...LABEL,
               }}
@@ -897,7 +898,7 @@ export function AreaChartPreview({ className }: PlotProps) {
             tickCount={5}
             domain={[0, "auto"]}
             tick={TICK}
-            tickFormatter={formatCompact}
+            tickFormatter={formatTick}
           />
           {splitScale ? (
             <YAxis
@@ -910,7 +911,7 @@ export function AreaChartPreview({ className }: PlotProps) {
               tickCount={5}
               domain={[0, "auto"]}
               tick={TICK}
-              tickFormatter={formatCompact}
+              tickFormatter={formatTick}
             />
           ) : null}
           {plotTooltip(CHART_CURSOR_LINE, plot.labelOf, plot.unitOf)}
@@ -1097,7 +1098,7 @@ export function ComposedChartBlock({
             tickCount={5}
             domain={[0, "auto"]}
             tick={TICK}
-            tickFormatter={formatCompact}
+            tickFormatter={formatTick}
           />
           {hasRightAxis ? (
             <YAxis
@@ -1109,7 +1110,7 @@ export function ComposedChartBlock({
               tickCount={5}
               domain={[0, "auto"]}
               tick={TICK}
-              tickFormatter={formatCompact}
+              tickFormatter={formatTick}
             />
           ) : null}
           {plotTooltip(CHART_CURSOR_LINE, plot.labelOf, plot.unitOf)}
@@ -1175,7 +1176,7 @@ export function ComposedChartBlock({
                 fill={plot.colorOf(item.key)}
                 stroke="none"
                 label={{
-                  value: formatCompact(value),
+                  value: formatTick(value),
                   position: "top",
                   fontSize: 12,
                   fontWeight: 600,

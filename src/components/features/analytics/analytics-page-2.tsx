@@ -16,50 +16,19 @@ import { IcpPosts } from "@/components/features/analytics/icp-posts";
 import { InteractionFeed } from "@/components/features/analytics/interaction-feed";
 import { StatGroup, StatTile } from "@/components/features/analytics/stat-tile";
 import { TeamPerformance } from "@/components/features/analytics/team-performance";
+import {
+  csvCell,
+  snapshotFor,
+} from "@/components/features/analytics/analytics-data";
 import type { TimeRange } from "@/entities/analytics";
 import type {
   AnalyticsPageData,
   AnalyticsSections,
-  AnalyticsSnapshot,
 } from "@/services/analytics";
 import { fade } from "@/styles/motion";
 
 interface AnalyticsPage2Props {
   data: AnalyticsPageData;
-}
-
-const EMPTY_SNAPSHOT: AnalyticsSnapshot = {
-  range: "1m",
-  profileId: "all",
-  overview: {
-    stats: [],
-    impressions: { data: [], series: [] },
-    byLabel: { data: [], series: [] },
-    byProfile: [],
-    topPosts: [],
-  },
-  explorer: {
-    points: [],
-    posts: [],
-    xTicks: [],
-    totals: { reach: 0, rate: 0, followers: 0, posts: 0 },
-    pipeline: { contacts: 0, opportunities: 0, amount: 0 },
-  },
-};
-
-function snapshotFor(
-  snapshots: readonly AnalyticsSnapshot[],
-  range: TimeRange,
-  profileId: string,
-): AnalyticsSnapshot {
-  return (
-    snapshots.find(
-      (snapshot) =>
-        snapshot.range === range && snapshot.profileId === profileId,
-    ) ??
-    snapshots[0] ??
-    EMPTY_SNAPSHOT
-  );
 }
 
 function sectionsFor(
@@ -69,11 +38,6 @@ function sectionsFor(
   return (
     sections.find((section) => section.profileId === profileId) ?? sections[0]
   );
-}
-
-function csvCell(value: string | number): string {
-  const text = String(value);
-  return `"${text.replaceAll('"', '""')}"`;
 }
 
 /**

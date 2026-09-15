@@ -31,6 +31,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { initials } from "@/lib/initials";
+import { THEME_CHOICES, toThemeValue } from "@/lib/theme-choice";
 
 export interface AccountUser {
   name: string;
@@ -63,19 +64,7 @@ function useAccountUser(): AccountUser {
   return user;
 }
 
-const THEMES = [
-  { value: "light", label: "Light" },
-  { value: "dark", label: "Dark" },
-  { value: "system", label: "System" },
-] as const;
-
-type ThemeValue = (typeof THEMES)[number]["value"];
-
 const subscribe = () => () => undefined;
-
-function toThemeValue(value: string | undefined): ThemeValue {
-  return THEMES.find((theme) => theme.value === value)?.value ?? "system";
-}
 
 /**
  * The theme row of the account menu: the same three choices as Settings,
@@ -104,7 +93,7 @@ function ThemeMenu() {
             setTheme(toThemeValue(next));
           }}
         >
-          {THEMES.map((option) => (
+          {THEME_CHOICES.map((option) => (
             <DropdownMenuRadioItem
               key={option.value}
               value={option.value}

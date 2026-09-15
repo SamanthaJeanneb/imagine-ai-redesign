@@ -6,8 +6,12 @@ import type { ReactNode } from "react";
 
 import type { AssetTileData } from "@/components/features/files/asset-tile";
 import type { FileResource } from "@/components/features/files/resource-drag";
+import {
+  ContextChipGlyph,
+  ContextChipRemove,
+  ContextChipStack,
+} from "@/components/features/agent/context-chip";
 import { useLayoutLocked } from "@/components/motion/layout-lock";
-import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { fade } from "@/styles/motion";
 
@@ -40,56 +44,6 @@ function ContextChip({ kind, className, children }: ContextChipProps) {
   );
 }
 
-/** The chip's square: a thumbnail where there is one, an icon otherwise. */
-function ContextChipGlyph({ children }: { children: ReactNode }) {
-  return (
-    <span className="flex size-7 shrink-0 items-center justify-center rounded-xs bg-imagine-surface text-imagine-foreground-muted">
-      {children}
-    </span>
-  );
-}
-
-function ContextChipText({
-  title,
-  note,
-}: {
-  title: string;
-  /** What kind of thing it is, under the name. */
-  note: string;
-}) {
-  return (
-    <span className="flex min-w-0 flex-1 flex-col">
-      <span className="truncate type-small [line-height:1.15] font-medium">
-        {title}
-      </span>
-      <span className="type-caption [line-height:1.15] text-imagine-foreground-muted">
-        {note}
-      </span>
-    </span>
-  );
-}
-
-/** Takes the thing back off the message. Omitted where it cannot be removed. */
-function ContextChipRemove({
-  label,
-  onClick,
-}: {
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <Button
-      size="icon-xs"
-      variant="ghost"
-      aria-label={`Remove ${label}`}
-      onClick={onClick}
-      className="text-imagine-foreground-faint hover:text-imagine-foreground"
-    >
-      <Icon name="xmark" size="s" />
-    </Button>
-  );
-}
-
 /** A workspace file attached to the next chat message. */
 export function FileContext({
   file,
@@ -105,7 +59,7 @@ export function FileContext({
       <ContextChipGlyph>
         <Icon name="file-lines" size="s" />
       </ContextChipGlyph>
-      <ContextChipText title={file.title} note="Workspace file" />
+      <ContextChipStack title={file.title} note="Workspace file" />
       {onRemove ? (
         <ContextChipRemove label={file.title} onClick={onRemove} />
       ) : null}
@@ -141,7 +95,7 @@ export function AssetContext({
           <Icon name={video ? "video" : "image"} size="s" />
         </ContextChipGlyph>
       )}
-      <ContextChipText
+      <ContextChipStack
         title={title}
         note={video ? "Video asset" : "Image asset"}
       />

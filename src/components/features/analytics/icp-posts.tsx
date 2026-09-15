@@ -26,6 +26,7 @@ import {
   ChartSkeletonRows,
   ChartTooltip,
   ChartTooltipSeries,
+  valueText,
 } from "@/components/features/analytics/chart-theme";
 import { Panel } from "@/components/features/analytics/panel";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
@@ -105,12 +106,6 @@ const CATEGORY_VARIANT: Record<
 
 const AVATAR_STACK = 4;
 
-function text(value: unknown): string {
-  return typeof value === "string" || typeof value === "number"
-    ? String(value)
-    : "";
-}
-
 /** ICP share in words for the tooltip and the rows. */
 function share(value: number): string {
   return `${String(Math.round(value))}% ICP`;
@@ -125,7 +120,7 @@ function bubble(activeId: string | undefined) {
     const datum: unknown = props.payload;
     const id =
       typeof datum === "object" && datum !== null && "id" in datum
-        ? text(datum.id)
+        ? valueText(datum.id)
         : "";
     const active = id === activeId;
     const r = Math.max(4, Math.sqrt(props.size / Math.PI));
@@ -460,7 +455,7 @@ export function IcpPosts({
                       typeof first === "object" &&
                       first !== null &&
                       "title" in first
-                        ? text(first.title)
+                        ? valueText(first.title)
                         : "";
                     return (
                       <ChartTooltip
