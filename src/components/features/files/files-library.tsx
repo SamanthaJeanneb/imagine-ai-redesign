@@ -65,6 +65,9 @@ export function FilesLibrary({
               className,
             )}
           >
+            {/* The breadcrumb says where you are, so the page's own name is
+                only needed by a screen reader. */}
+            <h1 className="sr-only">{title}</h1>
             <FilesLibraryNav />
             {/* Browser, with the editor sheet layered over it. */}
             <div className="relative flex min-h-0 min-w-0 flex-1">

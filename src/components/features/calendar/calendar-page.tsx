@@ -465,27 +465,32 @@ export function CalendarPage({
       : "calendar";
 
   return (
-    <EditorTabStrip
-      home={{ id: "calendar", label: "Calendar", icon: "calendar" }}
-      tabs={tabs}
-      activeId={activeId}
-      onActivate={(id) => {
-        setActiveEditorId(id);
-        setEditingPostId(id === "calendar" ? null : id);
-      }}
-      onClose={(id) => {
-        const index = openPostIds.indexOf(id);
-        const remaining = openPostIds.filter((postId) => postId !== id);
-        setOpenPostIds(remaining);
-        if (activeEditorId !== id) return;
-        const nextId =
-          remaining[Math.max(0, index - 1)] ?? remaining[0] ?? "calendar";
-        setActiveEditorId(nextId);
-        setEditingPostId(nextId === "calendar" ? null : nextId);
-      }}
-      className="min-h-0 flex-1"
-    >
-      {activeId === "calendar" ? calendarContent : editor}
-    </EditorTabStrip>
+    <>
+      {/* The tab strip names the page on screen; this is for a screen reader
+          moving by heading. */}
+      <h1 className="sr-only">Calendar</h1>
+      <EditorTabStrip
+        home={{ id: "calendar", label: "Calendar", icon: "calendar" }}
+        tabs={tabs}
+        activeId={activeId}
+        onActivate={(id) => {
+          setActiveEditorId(id);
+          setEditingPostId(id === "calendar" ? null : id);
+        }}
+        onClose={(id) => {
+          const index = openPostIds.indexOf(id);
+          const remaining = openPostIds.filter((postId) => postId !== id);
+          setOpenPostIds(remaining);
+          if (activeEditorId !== id) return;
+          const nextId =
+            remaining[Math.max(0, index - 1)] ?? remaining[0] ?? "calendar";
+          setActiveEditorId(nextId);
+          setEditingPostId(nextId === "calendar" ? null : nextId);
+        }}
+        className="min-h-0 flex-1"
+      >
+        {activeId === "calendar" ? calendarContent : editor}
+      </EditorTabStrip>
+    </>
   );
 }
