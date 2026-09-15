@@ -7,7 +7,7 @@ import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Spinner } from "@/components/ui/spinner";
-import { fade, spring } from "@/styles/motion";
+import { fade } from "@/styles/motion";
 
 const FRAME = "flex w-full max-w-(--container-xl) flex-col gap-xxl";
 
@@ -121,35 +121,6 @@ export function ConnectLinkedInActions({
         Connect LinkedIn
       </Button>
       {children}
-    </div>
-  );
-}
-
-interface ConnectedLinkedInProps {
-  accountName: string;
-  permissions: readonly string[];
-  className?: string;
-}
-
-/** The same step once the account is linked: a check on the mark, no actions. */
-export function ConnectedLinkedIn({
-  accountName,
-  permissions,
-  className,
-}: ConnectedLinkedInProps) {
-  return (
-    <div data-slot="connected-linkedin" className={cn(FRAME, className)}>
-      <AccountPanel accountName={accountName} note="Connected just now">
-        <motion.span
-          initial={{ scale: 0.6, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={spring.snappy}
-          className="absolute -right-1 -bottom-1 flex size-4 items-center justify-center rounded-full bg-imagine-primary text-imagine-primary-foreground ring-2 ring-imagine-surface"
-        >
-          <Icon name="check" size="s" active className="text-[9px]" />
-        </motion.span>
-      </AccountPanel>
-      <PermissionsList permissions={permissions} />
     </div>
   );
 }

@@ -397,8 +397,3 @@ export function getScriptedReplies(): Record<ReplyIntent, ScriptedReply> {
     outreach: getScriptedReply("outreach"),
   };
 }
-
-/** The title a new thread takes in the sidebar: the first thing the user said. */
-export function toThreadTitle(message: string): string {
-  return toTitle(message, 40);
-}

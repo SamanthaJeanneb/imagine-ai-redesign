@@ -42,22 +42,18 @@ export type ColorToken =
   | "destructive"
   | "warning"
   | "success"
+  /**
+   * Categorical accents, the five colors of a calendar app's events: rose,
+   * green, blue, yellow, plum. The calendar maps them to status (scheduled,
+   * published, in review, draft) and to connected-calendar events. Numbered,
+   * not named for a hue. Solid, each is a chip's rail and legend dot; at 16%
+   * over the surface, its pastel fill.
+   */
   | "tag-1"
   | "tag-2"
   | "tag-3"
   | "tag-4"
   | "tag-5";
-
-/**
- * Categorical accents, the five colors of a calendar app's events: rose,
- * green, blue, yellow, plum. The calendar maps them to status (scheduled,
- * published, in review, draft) and to connected-calendar events. Numbered,
- * not named for a hue. Solid, each is a chip's rail and legend dot; at 16%
- * over the surface, its pastel fill.
- */
-export const TAG_TONES = [1, 2, 3, 4, 5] as const;
-
-export type TagTone = (typeof TAG_TONES)[number];
 
 export const colors = {
   light: {

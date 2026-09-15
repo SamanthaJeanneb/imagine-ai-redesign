@@ -5,7 +5,6 @@ import type { AssetTileData } from "@/components/features/files/asset-tile";
 import type { UpNextItem } from "@/components/features/calendar/up-next-list";
 import { transformCalendarEventRow } from "@/entities/calendar-event";
 import {
-  buildCalendarRange,
   buildDays,
   type EventsByDay,
   type PostsByDay,
@@ -116,26 +115,6 @@ export function getCalendarPosts(): CalendarPosts {
     mediaLibrary: getAssetLibrary(),
     labelOptions: getPostLabelOptions(),
     newPostProfile: getNewPostProfile(),
-  };
-}
-
-/** One month of cells. The landing shows this; the page builds its own. */
-export function getCalendarMonth(month?: string): CalendarMonth {
-  const today = toDateKey(getNow());
-  const anchor = month === undefined ? today : `${month}-01`;
-  const range = buildCalendarRange(
-    "month",
-    anchor,
-    chipsByDay(),
-    today,
-    "",
-    eventsByDay(),
-  );
-
-  return {
-    month: anchor.slice(0, 7),
-    rangeLabel: range.rangeLabel,
-    days: range.days,
   };
 }
 

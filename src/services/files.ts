@@ -219,8 +219,3 @@ export function getDocuments(): readonly OpenDocument[] {
     })),
   ];
 }
-
-/** A workspace file or a skill file, ready for the editor. */
-export function getDocument(id: string): OpenDocument | null {
-  return getDocuments().find((document) => document.id === id) ?? null;
-}
