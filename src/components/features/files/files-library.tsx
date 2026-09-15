@@ -34,6 +34,16 @@ import {
 } from "@/components/features/files/skills-list";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
@@ -276,6 +286,70 @@ function EmptyState({
   );
 }
 
+function deleteCopy(item: BrowserItem): {
+  title: string;
+  description: string;
+} {
+  const title = `Delete “${item.name}”?`;
+  switch (item.kind) {
+    case "folder":
+      return {
+        title,
+        description: "Everything in this folder will be deleted too.",
+      };
+    case "document":
+      return {
+        title,
+        description: "The agent won't be able to use this document.",
+      };
+    case "video":
+      return {
+        title,
+        description: "This video will be removed from the library.",
+      };
+    default:
+      return {
+        title,
+        description: "This image will be removed from the library.",
+      };
+  }
+}
+
+/** Confirm before a file, folder, or image is removed from the library. */
+function DeleteConfirmDialog({
+  item,
+  onConfirm,
+  onClose,
+}: {
+  item: BrowserItem;
+  onConfirm: () => void;
+  onClose: () => void;
+}) {
+  const copy = deleteCopy(item);
+
+  return (
+    <AlertDialog
+      open
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{copy.title}</AlertDialogTitle>
+          <AlertDialogDescription>{copy.description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction variant="destructive" onClick={onConfirm}>
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
 /** Naming a folder, or renaming anything. One field, Enter submits. */
 function NameDialog({
   open,
@@ -359,7 +433,7 @@ function NameDialog({
  * Documents open in an editor sheet over the browser — from the bottom on
  * a phone, from the right on a wider frame, framed like a page of its own;
  * the tree stays live to switch files.
- * Images open in a preview. Deleting is immediate, with an undo on the toast.
+ * Images open in a preview. Deleting asks first, then an undo on the toast.
  */
 export function FilesLibrary({
   title,
@@ -386,6 +460,7 @@ export function FilesLibrary({
   const [sort, setSort] = useState<Sort>("name-asc");
   const [view, setView] = useState<LibraryCardView>("list");
   const [dialog, setDialog] = useState<DialogState>(null);
+  const [pendingDelete, setPendingDelete] = useState<BrowserItem | null>(null);
   const isMobile = useMediaQuery(MOBILE_QUERY);
   const [navOpen, setNavOpen] = useState(false);
   const [values, setValues] = useState<Record<string, string>>({});
@@ -701,6 +776,7 @@ export function FilesLibrary({
         : removeAsset(nodes, item.id),
     );
     if (documentId === item.id) setDocumentId(undefined);
+    if (previewId === item.id) setPreviewId(undefined);
     // Deleting the open folder, or one above it, sends you up to the library.
     if (
       place.kind === "library" &&
@@ -738,7 +814,7 @@ export function FilesLibrary({
         setDialog({ kind: "rename", id: item.id, name: item.name });
         break;
       case "delete":
-        remove(item);
+        setPendingDelete(item);
         break;
     }
   };
@@ -1420,6 +1496,19 @@ export function FilesLibrary({
       </div>
 
       {/* Naming */}
+      {pendingDelete === null ? null : (
+        <DeleteConfirmDialog
+          item={pendingDelete}
+          onConfirm={() => {
+            remove(pendingDelete);
+            setPendingDelete(null);
+          }}
+          onClose={() => {
+            setPendingDelete(null);
+          }}
+        />
+      )}
+
       {dialog === null ? null : (
         <NameDialog
           key={dialog.kind === "rename" ? dialog.id : "new-folder"}
@@ -1480,13 +1569,11 @@ export function FilesLibrary({
                 <Button
                   variant="ghost"
                   onClick={() => {
-                    const item: BrowserItem = {
+                    setPendingDelete({
                       id: previewAsset.id,
                       kind: previewAsset.kind,
                       name: previewAsset.caption ?? "Untitled image",
-                    };
-                    setPreviewId(undefined);
-                    remove(item);
+                    });
                   }}
                 >
                   <Icon name="trash" size="s" data-icon="inline-start" />
