@@ -259,7 +259,7 @@ function WorkspaceFrame({
       return;
     }
     if (activeKey === "agent") return;
-    router.push(chat.messages.length === 0 ? "/landing-2" : "/agent");
+    router.push(chat.messages.length === 0 ? "/new-chat" : "/agent");
   }
 
   function openEditor(id: string) {
@@ -629,7 +629,7 @@ function WorkspaceFrame({
         chat.startNew();
         setPanel(null);
         setMobileNavOpen(false);
-        router.push("/landing-2");
+        router.push("/new-chat");
       }}
       onOpenThread={(id) => {
         setMobileNavOpen(false);

@@ -12,10 +12,8 @@ const NAV_KEYS: readonly SidebarNavKey[] = [
 
 /** `/calendar` and `/agent/t1` both resolve to their nav item; `/settings` to none. */
 export function navKeyFor(pathname: string): SidebarNavKey | undefined {
-  // The alternate agent landing is still the agent.
-  if (pathname === "/landing-2") return "agent";
-  // The alternate file manager is still Files.
-  if (pathname === "/files-2") return "files";
+  // A new chat is still the agent.
+  if (pathname === "/new-chat") return "agent";
   // The engagement analytics page is still Analytics.
   if (pathname === "/analytics-2") return "analytics";
   return NAV_KEYS.find(

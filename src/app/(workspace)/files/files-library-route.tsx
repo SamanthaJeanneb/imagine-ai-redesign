@@ -26,7 +26,7 @@ export function FilesLibraryRoute(props: FilesLibraryRouteProps) {
       onSendToChat={(resource) => {
         chat.startNew();
         chat.attach(resource);
-        router.push("/landing-2");
+        router.push("/new-chat");
       }}
     />
   );

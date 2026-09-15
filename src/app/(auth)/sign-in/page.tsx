@@ -1,16 +1,20 @@
 "use client";
 
 import { motion } from "motion/react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
+import { CloudBackground } from "@/components/features/onboarding/cloud-background";
 import { SignInForm } from "@/components/features/onboarding/sign-in-form";
-import { fade } from "@/styles/motion";
+import { ThinkerPanel } from "@/components/features/onboarding/thinker-panel";
+import { Wordmark } from "@/components/ui/brand-mark";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { fade, spring } from "@/styles/motion";
 
 /**
- * Sign in. Form on the left, brand panel on the right. Any of the three ways in
- * starts onboarding; the mock does not check anything.
+ * Sign in: one floating card over a rose sky of drifting clouds. The form at
+ * left, the thinker among clouds at right. Any of the three ways in starts
+ * onboarding; the mock does not check anything.
  */
 export default function SignInPage() {
   const router = useRouter();
@@ -23,36 +27,45 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="grid min-h-svh w-full min-w-0 flex-1 overflow-x-clip bg-imagine-surface md:grid-cols-[1fr_minmax(0,42%)]">
-      <motion.main
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={fade.slow}
-        className="flex flex-col px-l py-xl md:items-center md:justify-center md:px-xl md:py-section"
-      >
-        <div className="flex w-full max-w-96 flex-col gap-xxl">
-          <span
-            role="img"
-            aria-label="Imagine AI"
-            className="block aspect-[138/43] w-28 bg-imagine-foreground mask-[url(/brand/imagine-logo.png)] mask-contain mask-center mask-no-repeat md:hidden"
-          />
-          <SignInForm
-            pending={pending}
-            onGoogle={enter}
-            onX={enter}
-            onEmail={enter}
-          />
-        </div>
-      </motion.main>
-      <div className="relative hidden overflow-hidden rounded-l-surface md:block">
-        <Image
-          src="/brand/sign-in-graphic.png"
-          alt=""
-          fill
-          sizes="42vw"
-          className="object-cover"
-        />
+    <div className="relative flex min-h-svh w-full min-w-0 flex-1 items-center justify-center overflow-x-clip bg-imagine-background p-l md:p-xl">
+      <div aria-hidden="true" className="absolute inset-0">
+        <CloudBackground />
       </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 16, scale: 0.985 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ ...spring.soft, opacity: fade.slow }}
+        className="relative grid w-full max-w-5xl overflow-hidden rounded-surface bg-imagine-surface/75 shadow-floating backdrop-blur-2xl md:min-h-[40rem] md:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] dark:bg-imagine-surface/70"
+      >
+        <main className="flex flex-col gap-xxl p-xl md:p-xxl">
+          <div className="flex items-center justify-between">
+            <Wordmark className="w-24 text-imagine-foreground" />
+            <div className="md:hidden">
+              <ThemeToggle />
+            </div>
+          </div>
+
+          <div className="flex flex-1 flex-col justify-center py-l">
+            <SignInForm
+              pending={pending}
+              onGoogle={enter}
+              onX={enter}
+              onEmail={enter}
+              className="max-w-none"
+            />
+          </div>
+        </main>
+
+        <ThinkerPanel
+          className="hidden md:flex"
+          corner={
+            <div className="rounded-full bg-imagine-surface/70 p-xxs shadow-control backdrop-blur-md">
+              <ThemeToggle />
+            </div>
+          }
+        />
+      </motion.div>
     </div>
   );
 }

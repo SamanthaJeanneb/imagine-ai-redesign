@@ -316,7 +316,7 @@ export function SplitLandingWorkspace({ landing }: LandingWorkspaceProps) {
 }
 
 /**
- * `/landing-2`: one column with the agent's mark, the composer, three
+ * `/new-chat`: one column with the agent's mark, the composer, three
  * activity cards, and the month. Becomes the thread the same way.
  */
 export function CenteredLandingWorkspace({ landing }: LandingWorkspaceProps) {

@@ -7,12 +7,11 @@ import { getUpcomingWeeks, getUpNext } from "@/services/calendar";
 import { getCurrentUser } from "@/services/workspace";
 
 /**
- * The agent landing, second concept: a single centered column. The agent's
- * mark and greeting, the composer, three cards for what needs the user, and
- * the next two weeks underneath. Sending morphs into the same thread as
- * `/agent`.
+ * A new chat: a single centered column. The agent's mark and greeting, the
+ * composer, three cards for what needs the user, and the next two weeks
+ * underneath. Sending morphs into the same thread as `/agent`.
  */
-export default function LandingTwoPage() {
+export default function NewChatPage() {
   const rail = getLandingRail();
   const [firstName] = getCurrentUser().name.split(" ");
 

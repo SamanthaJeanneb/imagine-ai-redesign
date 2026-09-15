@@ -19,7 +19,7 @@ import { Icon, type IconName } from "@/components/ui/icon";
 import { hoverLift, pressRow } from "@/styles/motion";
 
 /**
- * The centered landing, `/landing-2`. One column, everything on the axis: the
+ * The centered landing, `/new-chat`. One column, everything on the axis: the
  * agent's mark and greeting, the composer, a row of what needs the user, and
  * the next two weeks below. No right rail. The column starts a section down
  * from the top so the composer sits nearer the middle of the viewport. Like the split landing these pieces do not
