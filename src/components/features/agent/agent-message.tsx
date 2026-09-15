@@ -2,7 +2,7 @@
 
 import { cn } from "cn";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 
 import { AssetPicker } from "@/components/features/agent/asset-picker";
 import {
@@ -10,7 +10,16 @@ import {
   type CommentDraftContent,
 } from "@/components/features/agent/comment-draft";
 import {
+  LinkedInPostActions,
+  LinkedInPostActor,
+  LinkedInPostBody,
+  LinkedInPostCard,
   LinkedInPostDraft,
+  LinkedInPostDraftActions,
+  LinkedInPostField,
+  LinkedInPostFoldButton,
+  LinkedInPostMedia,
+  LinkedInPostProvider,
   type PostAuthor,
 } from "@/components/features/agent/linkedin-post-draft";
 import { ScheduledGraphic } from "@/components/features/agent/scheduled-graphic";
@@ -32,7 +41,6 @@ import {
   AssetTile,
   type AssetTileData,
 } from "@/components/features/files/asset-tile";
-import { ThinkingIndicator } from "@/components/motion/thinking-indicator";
 import { Button } from "@/components/ui/button";
 import { fade, stagger } from "@/styles/motion";
 
@@ -74,16 +82,13 @@ export type MessagePart =
 
 interface AgentMessageProps {
   parts: readonly MessagePart[];
-  /** Streaming: show the thinking state under the last part. */
-  thinking?: boolean;
-  thinkingStatuses?: readonly string[];
   onIntent?: (intent: string, postId?: string) => void;
   /** Posts the agent has already put on the calendar in this thread. */
   scheduledPostIds?: ReadonlySet<string>;
+  /** Trails the parts, in the message's own column: the thinking state while the reply is still arriving. */
+  children?: ReactNode;
   className?: string;
 }
-
-const DEFAULT_STATUSES = ["Thinking"] as const;
 
 function assertNever(value: never): never {
   throw new Error(`Unhandled message part: ${JSON.stringify(value)}`);
@@ -112,60 +117,115 @@ function ChartPart({ part }: { part: ChartPartData }) {
 }
 
 /**
- * A draft in the thread. Edit opens the body in place; Done keeps the
- * change in this session. Schedule still goes to the agent. Once that post
- * is on the calendar, the actions go away so the confirmation stands alone.
+ * What a draft's card and the row under it share. The provider sits above
+ * both, so the row can turn the body into a field it does not itself render.
+ */
+interface DraftContextValue {
+  editing: boolean;
+  setEditing: (editing: boolean) => void;
+  setBody: (body: string) => void;
+}
+
+const DraftContext = createContext<DraftContextValue | null>(null);
+
+function useDraft(): DraftContextValue {
+  const draft = useContext(DraftContext);
+  if (draft === null) {
+    throw new Error("Draft parts need a <DraftPart>.");
+  }
+  return draft;
+}
+
+/** The card, with the body swapped for a field while it is being edited. */
+function DraftCard() {
+  const { editing, setBody } = useDraft();
+
+  return (
+    <LinkedInPostCard className={editing ? "ring-2 ring-ring/30" : undefined}>
+      <LinkedInPostActor you />
+      {editing ? (
+        <LinkedInPostField onBodyChange={setBody} />
+      ) : (
+        <LinkedInPostBody />
+      )}
+      <LinkedInPostMedia />
+      <LinkedInPostActions />
+    </LinkedInPostCard>
+  );
+}
+
+/**
+ * A draft in the thread: the card, and whatever acts on it under it. The
+ * edited body keeps for this session, so the card holds what was typed
+ * whether or not there is still a row beneath it.
  */
 function DraftPart({
   part,
-  onIntent,
-  scheduled = false,
+  children,
 }: {
   part: DraftPartData;
-  onIntent?: (intent: string, postId?: string) => void;
-  scheduled?: boolean;
+  children?: ReactNode;
 }) {
   const [editing, setEditing] = useState(false);
   const [body, setBody] = useState(part.body);
-  const [justScheduled, setJustScheduled] = useState(false);
-  const hideActions = scheduled || justScheduled;
 
   return (
-    <LinkedInPostDraft
-      author={part.author}
-      body={body}
-      media={part.media}
-      you
-      editing={editing}
-      onBodyChange={setBody}
-      foldControl={!hideActions}
-      footer={
-        hideActions ? undefined : (
-          <>
-            <Button
-              size="sm"
-              onClick={() => {
-                setEditing(false);
-                setJustScheduled(true);
-                onIntent?.("schedule", part.postId);
-              }}
-            >
-              Schedule
-            </Button>
-            <Button
-              size="sm"
-              variant="soft"
-              aria-pressed={editing}
-              onClick={() => {
-                setEditing((current) => !current);
-              }}
-            >
-              {editing ? "Done" : "Edit"}
-            </Button>
-          </>
-        )
-      }
-    />
+    <DraftContext.Provider value={{ editing, setEditing, setBody }}>
+      <LinkedInPostProvider
+        author={part.author}
+        body={body}
+        media={part.media}
+        defaultExpanded
+      >
+        <LinkedInPostDraft>
+          <DraftCard />
+          {children}
+        </LinkedInPostDraft>
+      </LinkedInPostProvider>
+    </DraftContext.Provider>
+  );
+}
+
+/**
+ * Edit opens the body in place; Done keeps the change in this session.
+ * Schedule still goes to the agent, and the row leaves with it so the
+ * confirmation that follows stands alone.
+ */
+function DraftPartActions({
+  postId,
+  onIntent,
+}: {
+  postId: string;
+  onIntent?: (intent: string, postId?: string) => void;
+}) {
+  const { editing, setEditing } = useDraft();
+  const [scheduled, setScheduled] = useState(false);
+  if (scheduled) return null;
+
+  return (
+    <LinkedInPostDraftActions>
+      <Button
+        size="sm"
+        onClick={() => {
+          setEditing(false);
+          setScheduled(true);
+          onIntent?.("schedule", postId);
+        }}
+      >
+        Schedule
+      </Button>
+      <Button
+        size="sm"
+        variant="soft"
+        aria-pressed={editing}
+        onClick={() => {
+          setEditing(!editing);
+        }}
+      >
+        {editing ? "Done" : "Edit"}
+      </Button>
+      {editing ? null : <LinkedInPostFoldButton />}
+    </LinkedInPostDraftActions>
   );
 }
 
@@ -190,12 +250,14 @@ function Part({
     case "chart":
       return <ChartPart part={part} />;
     case "post_draft":
-      return (
-        <DraftPart
-          part={part}
-          onIntent={onIntent}
-          scheduled={scheduledPostIds?.has(part.postId) ?? false}
-        />
+      // Already on the calendar: the agent's confirmation stands for it, so
+      // the draft keeps showing with nothing left to act on.
+      return scheduledPostIds?.has(part.postId) === true ? (
+        <DraftPart part={part} />
+      ) : (
+        <DraftPart part={part}>
+          <DraftPartActions postId={part.postId} onIntent={onIntent} />
+        </DraftPart>
       );
     case "scheduled":
       return (
@@ -238,10 +300,9 @@ function Part({
  */
 export function AgentMessage({
   parts,
-  thinking = false,
-  thinkingStatuses = DEFAULT_STATUSES,
   onIntent,
   scheduledPostIds,
+  children,
   className,
 }: AgentMessageProps) {
   return (
@@ -263,7 +324,7 @@ export function AgentMessage({
           />
         </motion.div>
       ))}
-      {thinking ? <ThinkingIndicator statuses={thinkingStatuses} /> : null}
+      {children}
     </div>
   );
 }

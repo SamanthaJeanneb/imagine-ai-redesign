@@ -515,24 +515,20 @@ function WorkspaceFrame({
     activeEditorId === WORKSPACE_TAB_ID
       ? undefined
       : documents.find((document) => document.id === activeEditorId);
-  const editorTabs: readonly EditorTab[] = [
-    { id: WORKSPACE_TAB_ID, label: "Current chat" },
-    ...openDocumentIds.flatMap((id) => {
-      const document = documents.find((candidate) => candidate.id === id);
-      return document === undefined
-        ? []
-        : [
-            {
-              id,
-              label: document.meta.title,
-              closable: true,
-              dirty:
-                (documentValues[id] ?? document.value) !==
-                (savedDocumentValues[id] ?? document.value),
-            },
-          ];
-    }),
-  ];
+  const editorTabs: readonly EditorTab[] = openDocumentIds.flatMap((id) => {
+    const document = documents.find((candidate) => candidate.id === id);
+    return document === undefined
+      ? []
+      : [
+          {
+            id,
+            label: document.meta.title,
+            dirty:
+              (documentValues[id] ?? document.value) !==
+              (savedDocumentValues[id] ?? document.value),
+          },
+        ];
+  });
   const attachedAssetId = chat.attached
     .flatMap((item) => (item.kind === "asset" ? [item.asset.id] : []))
     .at(-1);
@@ -657,6 +653,7 @@ function WorkspaceFrame({
         )}
       >
         <EditorTabStrip
+          home={{ id: WORKSPACE_TAB_ID, label: "Current chat" }}
           tabs={editorTabs}
           activeId={activeEditorId}
           onActivate={setActiveEditorId}

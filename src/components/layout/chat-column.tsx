@@ -4,7 +4,10 @@ import { cn } from "cn";
 import { motion, useReducedMotion, type Transition } from "motion/react";
 import type { ReactNode } from "react";
 
-import { AgentThread } from "@/components/features/agent/agent-thread";
+import {
+  AgentThinking,
+  AgentThread,
+} from "@/components/features/agent/agent-thread";
 import { ThreadChatDock } from "@/components/features/agent/chat-dock";
 import { ChatEmptyMark } from "@/components/features/agent/chat-empty-mark";
 import { useChat } from "@/components/features/agent/chat-provider";
@@ -137,14 +140,9 @@ function ChatColumnBody({
             </motion.p>
           </>
         ) : (
-          <AgentThread
-            messages={chat.messages}
-            thinking={chat.thinking}
-            {...(chat.thinkingStatuses === undefined
-              ? {}
-              : { thinkingStatuses: chat.thinkingStatuses })}
-            onIntent={chat.sendIntent}
-          />
+          <AgentThread messages={chat.messages} onIntent={chat.sendIntent}>
+            <AgentThinking />
+          </AgentThread>
         )}
         <ThreadChatDock
           previews={previews}

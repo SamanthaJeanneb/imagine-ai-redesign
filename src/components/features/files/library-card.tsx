@@ -253,12 +253,13 @@ function Footer({
   kind,
   name,
   row,
-  reserveMenu,
+  children,
 }: {
   kind: LibraryCardKind;
   name: string;
   row: boolean;
-  reserveMenu: boolean;
+  /** Keeps the name clear of the hover menu, which floats over this row. */
+  children?: ReactNode;
 }) {
   return (
     <span
@@ -273,9 +274,7 @@ function Footer({
       <span className="min-w-0 flex-1 truncate type-small font-medium">
         {name}
       </span>
-      {reserveMenu ? (
-        <span aria-hidden="true" className="w-7 shrink-0" />
-      ) : null}
+      {children}
     </span>
   );
 }
@@ -350,7 +349,11 @@ function Shell({
           )}
         >
           {face}
-          <Footer kind={kind} name={name} row={row} reserveMenu={hasMenu} />
+          <Footer kind={kind} name={name} row={row}>
+            {hasMenu ? (
+              <span aria-hidden="true" className="w-7 shrink-0" />
+            ) : null}
+          </Footer>
         </button>
         {hasMenu ? (
           <span

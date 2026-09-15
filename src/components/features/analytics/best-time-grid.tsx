@@ -54,7 +54,6 @@ export interface BestTimeData {
 interface BestTimeGridProps {
   data: BestTimeData;
   description?: string;
-  loading?: boolean;
   /** A slot was chosen: hand it to the agent to schedule into. */
   onPick?: (slot: TimeSlot) => void;
   onAsk?: (prompt: string, intent?: string) => void;
@@ -187,7 +186,6 @@ function SlotTooltipRows() {
 export function BestTimeGrid({
   data,
   description,
-  loading = false,
   onPick,
   onAsk,
   className,
@@ -216,18 +214,6 @@ export function BestTimeGrid({
     { length: Math.ceil(columns / 3) },
     (_, index) => firstHour + index * 3,
   ).filter((hour) => hour <= lastHour);
-
-  if (loading) {
-    return (
-      <Panel
-        title="Best time to post"
-        description={description}
-        className={className}
-      >
-        <ChartSkeletonGrid height="h-52" />
-      </Panel>
-    );
-  }
 
   return (
     <Panel
@@ -356,6 +342,25 @@ export function BestTimeGrid({
           </ol>
         </div>
       </div>
+    </Panel>
+  );
+}
+
+/** The grid's frame while the window's slots are still being scored. */
+export function BestTimeGridSkeleton({
+  description,
+  className,
+}: {
+  description?: string;
+  className?: string;
+}) {
+  return (
+    <Panel
+      title="Best time to post"
+      description={description}
+      className={className}
+    >
+      <ChartSkeletonGrid height="h-52" />
     </Panel>
   );
 }

@@ -98,7 +98,6 @@ interface EngagementExplorerProps {
   data: ExplorerData;
   /** The window, e.g. "Last 30 days". */
   description?: string;
-  loading?: boolean;
   /** The post attached to the conversation, if any. */
   selectedPostId?: string;
   /** Pressing a post, on the chart or in the rail. */
@@ -140,6 +139,34 @@ function text(value: unknown): string {
   return typeof value === "string" || typeof value === "number"
     ? String(value)
     : "";
+}
+
+/** The metric switch, so the panel and its skeleton carry the same header. */
+function MetricTabs({
+  value,
+  onValueChange,
+}: {
+  value: ExplorerMetric;
+  onValueChange: (metric: ExplorerMetric) => void;
+}) {
+  return (
+    <ToggleGroup
+      size="sm"
+      value={value}
+      onValueChange={(next) => {
+        if (EXPLORER_METRICS.includes(next as ExplorerMetric)) {
+          onValueChange(next as ExplorerMetric);
+        }
+      }}
+      aria-label="Metric"
+    >
+      {EXPLORER_METRICS.map((key) => (
+        <ToggleGroupItem key={key} value={key}>
+          {METRIC[key].short}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
+  );
 }
 
 /**
@@ -315,7 +342,6 @@ function PostDetail({
 export function EngagementExplorer({
   data,
   description,
-  loading = false,
   selectedPostId,
   onSelectPost,
   onAsk,
@@ -350,45 +376,13 @@ export function EngagementExplorer({
     pinned === null ? undefined : labelIndex.get(pinned.label);
   const labelOf = new Map<string, string>([[metric, spec.label]]);
 
-  const tabs = (
-    <ToggleGroup
-      size="sm"
-      value={metric}
-      onValueChange={(value) => {
-        if (EXPLORER_METRICS.includes(value as ExplorerMetric)) {
-          setMetric(value as ExplorerMetric);
-        }
-      }}
-      aria-label="Metric"
-    >
-      {EXPLORER_METRICS.map((key) => (
-        <ToggleGroupItem key={key} value={key}>
-          {METRIC[key].short}
-        </ToggleGroupItem>
-      ))}
-    </ToggleGroup>
-  );
-
-  if (loading) {
-    return (
-      <Panel
-        title="Engagement"
-        description={description}
-        actions={tabs}
-        className={className}
-      >
-        <ChartSkeletonLine height="h-72" />
-      </Panel>
-    );
-  }
-
   return (
     <Panel
       title="Engagement"
       description={description}
       actions={
         <>
-          {tabs}
+          <MetricTabs value={metric} onValueChange={setMetric} />
           {onAsk ? (
             <AskButton
               prompt={`Walk me through ${spec.label.toLowerCase()} over ${(description ?? "this window").toLowerCase()} and what drove it.`}
@@ -585,6 +579,30 @@ export function EngagementExplorer({
           ) : null}
         </aside>
       </div>
+    </Panel>
+  );
+}
+
+/**
+ * The same panel while the window is still being read: the header and the
+ * metric switch stand, the curve and the post rail do not.
+ */
+export function EngagementExplorerSkeleton({
+  description,
+  className,
+}: {
+  description?: string;
+  className?: string;
+}) {
+  const [metric, setMetric] = useState<ExplorerMetric>("reach");
+  return (
+    <Panel
+      title="Engagement"
+      description={description}
+      actions={<MetricTabs value={metric} onValueChange={setMetric} />}
+      className={className}
+    >
+      <ChartSkeletonLine height="h-72" />
     </Panel>
   );
 }

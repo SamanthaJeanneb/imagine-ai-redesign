@@ -8,7 +8,16 @@ import type {
   PostChipData,
   PostEngagementPerson,
 } from "@/components/features/calendar/post-chip";
-import { LinkedInPost } from "@/components/features/agent/linkedin-post-draft";
+import {
+  LinkedInPostActions,
+  LinkedInPostActor,
+  LinkedInPostEditableMedia,
+  LinkedInPostImpressions,
+  LinkedInPostMedia,
+  LinkedInPostPlainCard,
+  LinkedInPostPlainField,
+  LinkedInPostProvider,
+} from "@/components/features/agent/linkedin-post-draft";
 import {
   LinkedInReaction,
   LinkedInReactionCluster,
@@ -107,27 +116,33 @@ export function LinkedInPostEditor({
 
   return (
     <div className="mx-auto flex w-full max-w-[680px] flex-col gap-l">
-      <LinkedInPost
+      {/* The post as the feed will show it, typed into in place. It stays
+          unfolded: this is the whole post, not a preview of it. */}
+      <LinkedInPostProvider
         author={preview.author}
         body={body}
         media={media}
         stats={stats}
-        timestamp={post.time}
-        you
-        editing
-        plainEditing
-        expanded
-        onBodyChange={onBodyChange}
-        onRemoveMedia={
-          onMediaChange === undefined
-            ? undefined
-            : (id) => {
+        defaultExpanded
+      >
+        <LinkedInPostPlainCard>
+          <LinkedInPostActor timestamp={post.time} you />
+          <LinkedInPostPlainField onBodyChange={onBodyChange} />
+          {onMediaChange === undefined ? (
+            <LinkedInPostMedia />
+          ) : (
+            <LinkedInPostEditableMedia
+              onRemoveMedia={(id) => {
                 const removed = media.find((item) => item.id === id);
                 revokeBlobSrc(removed?.src);
                 onMediaChange(media.filter((item) => item.id !== id));
-              }
-        }
-      />
+              }}
+            />
+          )}
+          <LinkedInPostActions />
+          <LinkedInPostImpressions />
+        </LinkedInPostPlainCard>
+      </LinkedInPostProvider>
 
       {onMediaChange === undefined || media.length >= MEDIA_LIMIT ? null : (
         <>

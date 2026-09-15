@@ -11,14 +11,17 @@ import {
 import type { PostChipData } from "@/components/features/calendar/post-chip";
 import {
   AskImagine,
+  AskImaginePending,
   type Insight,
 } from "@/components/features/analytics/ask-imagine";
 import {
   BenchmarkPanel,
+  BenchmarkPanelSkeleton,
   type BenchmarkData,
 } from "@/components/features/analytics/benchmark-panel";
 import {
   BestTimeGrid,
+  BestTimeGridSkeleton,
   formatSlot,
   type BestTimeData,
   type TimeSlot,
@@ -33,21 +36,25 @@ import {
 } from "@/components/features/analytics/chart-theme";
 import {
   EngagementExplorer,
+  EngagementExplorerSkeleton,
   type ExplorerData,
   type ExplorerPoint,
   type ExplorerPost,
 } from "@/components/features/analytics/engagement-explorer";
 import {
   IcpPosts,
+  IcpPostsSkeleton,
   type Engager,
   type IcpData,
 } from "@/components/features/analytics/icp-posts";
 import {
   InteractionFeed,
+  InteractionFeedSkeleton,
   type Interaction,
 } from "@/components/features/analytics/interaction-feed";
 import {
   TeamPerformance,
+  TeamPerformanceSkeleton,
   type TeamData,
 } from "@/components/features/analytics/team-performance";
 import { Switch } from "@/components/ui/switch";
@@ -855,7 +862,11 @@ export function AskImagineDemo() {
   return (
     <div className="flex flex-col gap-m">
       <LoadingToggle loading={loading} onChange={setLoading} />
-      <AskImagine insights={KIT_INSIGHTS} onAsk={ask} loading={loading} />
+      {loading ? (
+        <AskImaginePending onAsk={ask} />
+      ) : (
+        <AskImagine insights={KIT_INSIGHTS} onAsk={ask} />
+      )}
     </div>
   );
 }
@@ -866,15 +877,20 @@ export function EngagementExplorerDemo() {
   return (
     <div className="flex flex-col gap-m">
       <LoadingToggle loading={loading} onChange={setLoading} />
-      <EngagementExplorer
-        data={KIT_EXPLORER}
-        loading={loading}
-        {...(selected === undefined ? {} : { selectedPostId: selected })}
-        onSelectPost={(post) => {
-          setSelected((current) => (current === post.id ? undefined : post.id));
-        }}
-        onAsk={ask}
-      />
+      {loading ? (
+        <EngagementExplorerSkeleton />
+      ) : (
+        <EngagementExplorer
+          data={KIT_EXPLORER}
+          {...(selected === undefined ? {} : { selectedPostId: selected })}
+          onSelectPost={(post) => {
+            setSelected((current) =>
+              current === post.id ? undefined : post.id,
+            );
+          }}
+          onAsk={ask}
+        />
+      )}
     </div>
   );
 }
@@ -884,7 +900,11 @@ export function BenchmarkDemo() {
   return (
     <div className="flex flex-col gap-m">
       <LoadingToggle loading={loading} onChange={setLoading} />
-      <BenchmarkPanel data={KIT_BENCHMARK} loading={loading} onAsk={ask} />
+      {loading ? (
+        <BenchmarkPanelSkeleton />
+      ) : (
+        <BenchmarkPanel data={KIT_BENCHMARK} onAsk={ask} />
+      )}
     </div>
   );
 }
@@ -894,14 +914,17 @@ export function IcpPostsDemo() {
   return (
     <div className="flex flex-col gap-m">
       <LoadingToggle loading={loading} onChange={setLoading} />
-      <IcpPosts
-        data={KIT_ICP}
-        loading={loading}
-        onEngage={(engager, post, action) => {
-          toast(`${action}: ${engager.name} · ${post.title}`);
-        }}
-        onAsk={ask}
-      />
+      {loading ? (
+        <IcpPostsSkeleton />
+      ) : (
+        <IcpPosts
+          data={KIT_ICP}
+          onEngage={(engager, post, action) => {
+            toast(`${action}: ${engager.name} · ${post.title}`);
+          }}
+          onAsk={ask}
+        />
+      )}
     </div>
   );
 }
@@ -912,15 +935,23 @@ export function TeamAndBestTimeDemo() {
     <div className="flex flex-col gap-m">
       <LoadingToggle loading={loading} onChange={setLoading} />
       <div className="@container grid min-w-0 gap-xl @5xl:grid-cols-2">
-        <TeamPerformance data={KIT_TEAM} loading={loading} onAsk={ask} />
-        <BestTimeGrid
-          data={KIT_BEST_TIMES}
-          loading={loading}
-          onPick={(slot) => {
-            toast(`Schedule for ${formatSlot(slot)}`);
-          }}
-          onAsk={ask}
-        />
+        {loading ? (
+          <>
+            <TeamPerformanceSkeleton />
+            <BestTimeGridSkeleton />
+          </>
+        ) : (
+          <>
+            <TeamPerformance data={KIT_TEAM} onAsk={ask} />
+            <BestTimeGrid
+              data={KIT_BEST_TIMES}
+              onPick={(slot) => {
+                toast(`Schedule for ${formatSlot(slot)}`);
+              }}
+              onAsk={ask}
+            />
+          </>
+        )}
       </div>
     </div>
   );
@@ -957,14 +988,17 @@ export function InteractionFeedDemo() {
     <div className="flex flex-col gap-m">
       <LoadingToggle loading={loading} onChange={setLoading} />
       <div className="@container grid min-w-0 gap-xl @5xl:grid-cols-2">
-        <InteractionFeed
-          items={KIT_INTERACTIONS}
-          loading={loading}
-          onAct={(item, action) => {
-            toast(`${action}: ${item.name}`);
-          }}
-          onAsk={ask}
-        />
+        {loading ? (
+          <InteractionFeedSkeleton />
+        ) : (
+          <InteractionFeed
+            items={KIT_INTERACTIONS}
+            onAct={(item, action) => {
+              toast(`${action}: ${item.name}`);
+            }}
+            onAsk={ask}
+          />
+        )}
         <div className="flex flex-col gap-xl">
           <Demo label="Comment draft, standalone">
             <CommentDraft

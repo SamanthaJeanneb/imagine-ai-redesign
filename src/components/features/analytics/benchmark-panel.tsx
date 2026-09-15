@@ -72,7 +72,6 @@ export interface BenchmarkData {
 interface BenchmarkPanelProps {
   data: BenchmarkData;
   description?: string;
-  loading?: boolean;
   onAsk?: (prompt: string, intent?: string) => void;
   className?: string;
 }
@@ -122,7 +121,6 @@ function ProfileAvatar({
 export function BenchmarkPanel({
   data,
   description,
-  loading = false,
   onAsk,
   className,
 }: BenchmarkPanelProps) {
@@ -133,14 +131,11 @@ export function BenchmarkPanel({
     data.competitors.find((item) => item.id === selectedId) ??
     data.competitors[0];
 
-  if (loading || them === undefined) {
+  // Nobody to compare against: there are no two shapes to put on the axes,
+  // so the frame stands empty rather than drawing half a radar.
+  if (them === undefined) {
     return (
-      <Panel title="Benchmark" description={description} className={className}>
-        <div className="grid gap-l @3xl/panel:grid-cols-[16rem_minmax(0,1fr)]">
-          <ChartSkeletonRadar height="h-56" />
-          <ChartSkeletonRows height="h-56" />
-        </div>
-      </Panel>
+      <BenchmarkPanelSkeleton description={description} className={className} />
     );
   }
 
@@ -361,6 +356,24 @@ export function BenchmarkPanel({
             </motion.div>
           </AnimatePresence>
         </div>
+      </div>
+    </Panel>
+  );
+}
+
+/** The panel's frame while the accounts you watch are still being read. */
+export function BenchmarkPanelSkeleton({
+  description,
+  className,
+}: {
+  description?: string;
+  className?: string;
+}) {
+  return (
+    <Panel title="Benchmark" description={description} className={className}>
+      <div className="grid gap-l @3xl/panel:grid-cols-[16rem_minmax(0,1fr)]">
+        <ChartSkeletonRadar height="h-56" />
+        <ChartSkeletonRows height="h-56" />
       </div>
     </Panel>
   );

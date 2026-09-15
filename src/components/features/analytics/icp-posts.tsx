@@ -85,7 +85,6 @@ export type EngageAction = "reply" | "outreach";
 interface IcpPostsProps {
   data: IcpData;
   description?: string;
-  loading?: boolean;
   /** Draft a reply to their comment, or a comment on their post. */
   onEngage?: (engager: Engager, post: IcpPost, action: EngageAction) => void;
   onAsk?: (prompt: string, intent?: string) => void;
@@ -382,7 +381,6 @@ function PostRow({
 export function IcpPosts({
   data,
   description,
-  loading = false,
   onEngage,
   onAsk,
   className,
@@ -395,21 +393,6 @@ export function IcpPosts({
     ["icpShare", "ICP share"],
     ["engagerCount", "Engagers"],
   ]);
-
-  if (loading) {
-    return (
-      <Panel
-        title="Posts and who they reached"
-        description={description}
-        className={className}
-      >
-        <div className="grid gap-l @3xl/panel:grid-cols-[18rem_minmax(0,1fr)]">
-          <ChartSkeletonLine height="h-52" />
-          <ChartSkeletonRows height="h-52" />
-        </div>
-      </Panel>
-    );
-  }
 
   const points = data.posts.map((post) => ({
     id: post.id,
@@ -531,6 +514,28 @@ export function IcpPosts({
             />
           ))}
         </Stagger>
+      </div>
+    </Panel>
+  );
+}
+
+/** The panel's frame while the engagers are still being scored against the ICP. */
+export function IcpPostsSkeleton({
+  description,
+  className,
+}: {
+  description?: string;
+  className?: string;
+}) {
+  return (
+    <Panel
+      title="Posts and who they reached"
+      description={description}
+      className={className}
+    >
+      <div className="grid gap-l @3xl/panel:grid-cols-[18rem_minmax(0,1fr)]">
+        <ChartSkeletonLine height="h-52" />
+        <ChartSkeletonRows height="h-52" />
       </div>
     </Panel>
   );

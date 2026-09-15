@@ -42,7 +42,6 @@ export type InteractionAction = "reply" | "outreach";
 interface InteractionFeedProps {
   items: readonly Interaction[];
   description?: string;
-  loading?: boolean;
   /** Draft a reply to their comment, or a comment on their latest post. */
   onAct?: (item: Interaction, action: InteractionAction) => void;
   onAsk?: (prompt: string, intent?: string) => void;
@@ -95,23 +94,10 @@ function RowAction({
 export function InteractionFeed({
   items,
   description,
-  loading = false,
   onAct,
   onAsk,
   className,
 }: InteractionFeedProps) {
-  if (loading) {
-    return (
-      <Panel
-        title="Interactions"
-        description={description}
-        className={className}
-      >
-        <ChartSkeletonRows height="h-64" />
-      </Panel>
-    );
-  }
-
   return (
     <Panel
       title="Interactions"
@@ -196,6 +182,21 @@ export function InteractionFeed({
           </StaggerItem>
         ))}
       </Stagger>
+    </Panel>
+  );
+}
+
+/** The feed's frame while this week's interactions are still coming in. */
+export function InteractionFeedSkeleton({
+  description,
+  className,
+}: {
+  description?: string;
+  className?: string;
+}) {
+  return (
+    <Panel title="Interactions" description={description} className={className}>
+      <ChartSkeletonRows height="h-64" />
     </Panel>
   );
 }

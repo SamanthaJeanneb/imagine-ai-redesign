@@ -1,15 +1,19 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import {
   AgentMessage,
   type MessagePart,
   UserMessage,
 } from "@/components/features/agent/agent-message";
+import { useChat } from "@/components/features/agent/chat-provider";
+import { ThinkingIndicator } from "@/components/motion/thinking-indicator";
 import type { AgentMessage as AgentMessageData } from "@/services/agent";
 import { fade } from "@/styles/motion";
+
+const DEFAULT_STATUSES = ["Thinking"] as const;
 
 /** A user turn is only ever text, whatever else the part list allows. */
 function userText(parts: readonly MessagePart[]): string {
@@ -22,10 +26,9 @@ function userText(parts: readonly MessagePart[]): string {
 
 interface AgentThreadProps {
   messages: readonly AgentMessageData[];
-  /** Rotating lines under the last reply while it is still arriving. */
-  thinking?: boolean;
-  thinkingStatuses?: readonly string[];
   onIntent?: (intent: string, postId?: string) => void;
+  /** Trails the last reply, in its own column: `AgentThinking` while it arrives. */
+  children?: ReactNode;
 }
 
 /** The overflow box that actually scrolls the thread, page or column. */
@@ -45,9 +48,8 @@ function scrollParent(node: HTMLElement): HTMLElement | null {
  */
 export function AgentThread({
   messages,
-  thinking = false,
-  thinkingStatuses,
   onIntent,
+  children,
 }: AgentThreadProps) {
   const endRef = useRef<HTMLDivElement>(null);
   const last = messages.at(-1);
@@ -80,7 +82,7 @@ export function AgentThread({
     return () => {
       observer.disconnect();
     };
-  }, [messages.length, last?.parts.length, thinking]);
+  }, [messages.length, last?.parts.length]);
 
   return (
     <motion.div
@@ -96,14 +98,27 @@ export function AgentThread({
           <AgentMessage
             key={message.id}
             parts={message.parts}
-            thinking={thinking && index === messages.length - 1}
-            {...(thinkingStatuses === undefined ? {} : { thinkingStatuses })}
             {...(onIntent === undefined ? {} : { onIntent })}
             scheduledPostIds={scheduledPostIds}
-          />
+          >
+            {index === messages.length - 1 ? children : null}
+          </AgentMessage>
         ),
       )}
       <div ref={endRef} aria-hidden="true" className="h-px shrink-0" />
     </motion.div>
+  );
+}
+
+/**
+ * The conversation's thinking state, for the foot of the thread: the rotating
+ * lines the reply arrives with, and nothing once it has landed.
+ */
+export function AgentThinking() {
+  const chat = useChat();
+  if (!chat.thinking) return null;
+
+  return (
+    <ThinkingIndicator statuses={chat.thinkingStatuses ?? DEFAULT_STATUSES} />
   );
 }

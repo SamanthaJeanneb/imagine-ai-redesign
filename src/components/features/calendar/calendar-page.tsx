@@ -10,7 +10,10 @@ import {
   type CalendarDay,
   CalendarMonthFit,
 } from "@/components/features/calendar/calendar-grid";
-import { CalendarTimeGrid } from "@/components/features/calendar/calendar-time-grid";
+import {
+  CalendarDayGrid,
+  CalendarWeekGrid,
+} from "@/components/features/calendar/calendar-time-grid";
 import {
   CalendarRange,
   CalendarRangeLabel,
@@ -408,9 +411,26 @@ export function CalendarPage({
             className="h-full p-0"
           />
         </div>
+      ) : view === "day" ? (
+        <div className="min-h-0 min-w-0 flex-1">
+          {/* The day range is the one day; it takes a column of its own. */}
+          {range.days.map((day) => (
+            <CalendarDayGrid
+              key={day.date}
+              day={day}
+              onOpenPost={openPost}
+              onOpenEvent={draftFromEvent}
+              {...(newPostProfile === undefined
+                ? {}
+                : { onCreatePost: createPost })}
+              {...(selected === undefined ? {} : { selectedPostId: selected })}
+              className="h-full p-0"
+            />
+          ))}
+        </div>
       ) : (
         <div className="min-h-0 min-w-0 flex-1">
-          <CalendarTimeGrid
+          <CalendarWeekGrid
             days={range.days}
             onOpenPost={openPost}
             onOpenEvent={draftFromEvent}
@@ -456,21 +476,12 @@ export function CalendarPage({
   // Keep one stable content frame so opening a post does not remount the
   // entire calendar before the editor enters. The chrome reveals only when
   // there is a post tab.
-  const tabs: readonly EditorTab[] =
-    openEditorValues.length === 0
-      ? []
-      : [
-          { id: "calendar", label: "Calendar", icon: "calendar" },
-          ...openEditorValues.map(({ post }) => ({
-            id: post.id,
-            label: post.title,
-            icon:
-              post.status === "published"
-                ? ("linkedin-in" as const)
-                : ("pen" as const),
-            closable: true,
-          })),
-        ];
+  const tabs: readonly EditorTab[] = openEditorValues.map(({ post }) => ({
+    id: post.id,
+    label: post.title,
+    icon:
+      post.status === "published" ? ("linkedin-in" as const) : ("pen" as const),
+  }));
   const activeId =
     activeEditorId !== "calendar" &&
     openEditorValues.some(({ post }) => post.id === activeEditorId)
@@ -479,6 +490,7 @@ export function CalendarPage({
 
   return (
     <EditorTabStrip
+      home={{ id: "calendar", label: "Calendar", icon: "calendar" }}
       tabs={tabs}
       activeId={activeId}
       onActivate={(id) => {

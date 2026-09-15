@@ -18,17 +18,17 @@ interface SkillsListProps {
   skills: readonly Skill[];
   /** The skill whose file is open in an editor tab. */
   openSkillId?: string;
-  onToggle?: (id: string, enabled: boolean) => void;
+  onToggle: (id: string, enabled: boolean) => void;
   /** Opens the skill's markdown for editing. */
-  onOpenFile?: (id: string) => void;
+  onOpenFile: (id: string) => void;
   className?: string;
 }
 
 interface SkillRowProps {
   skill: Skill;
   open: boolean;
-  onToggle?: (id: string, enabled: boolean) => void;
-  onOpenFile?: (id: string) => void;
+  onToggle: (id: string, enabled: boolean) => void;
+  onOpenFile: (id: string) => void;
 }
 
 /**
@@ -40,27 +40,23 @@ function SkillRow({ skill, open, onToggle, onOpenFile }: SkillRowProps) {
     <div
       className={cn(
         "relative grid grid-cols-[auto_1fr] items-center gap-x-m gap-y-xxs rounded-control px-s py-s transition-colors",
-        open
-          ? "bg-imagine-surface-raised"
-          : "hover:bg-imagine-surface-raised",
+        open ? "bg-imagine-surface-raised" : "hover:bg-imagine-surface-raised",
       )}
     >
-      {onOpenFile === undefined ? null : (
-        <button
-          type="button"
-          aria-label={`Open ${skill.name}`}
-          aria-current={open ? "true" : undefined}
-          onClick={() => {
-            onOpenFile(skill.id);
-          }}
-          className="absolute inset-0 rounded-control outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-        />
-      )}
+      <button
+        type="button"
+        aria-label={`Open ${skill.name}`}
+        aria-current={open ? "true" : undefined}
+        onClick={() => {
+          onOpenFile(skill.id);
+        }}
+        className="absolute inset-0 rounded-control outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+      />
       <Switch
         checked={skill.enabled}
         aria-label={skill.name}
         onCheckedChange={(next) => {
-          onToggle?.(skill.id, next);
+          onToggle(skill.id, next);
         }}
         className="relative z-10"
       />

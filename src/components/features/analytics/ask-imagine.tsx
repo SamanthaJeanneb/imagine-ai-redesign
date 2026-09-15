@@ -2,7 +2,7 @@
 
 import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 
 import { Shimmer } from "@/components/motion/shimmer";
 import { Button } from "@/components/ui/button";
@@ -23,8 +23,6 @@ interface AskImagineProps {
   insights: readonly Insight[];
   /** Ask something: the strip's own field, or the insight itself. */
   onAsk: (prompt: string, intent?: string) => void;
-  /** While the insights are being computed. */
-  loading?: boolean;
   className?: string;
 }
 
@@ -32,29 +30,20 @@ interface AskImagineProps {
 const ROTATE_MS = 6000;
 
 /**
- * The agent's presence on the analytics page: a strip that reads the numbers
- * out loud. One insight shows at a time and rotates; pressing it asks about
- * it. A field on the right takes any other question about what is on screen.
+ * The strip both states share: the agent's mark, whatever it has to say in
+ * the middle, and a field on the right that takes any other question about
+ * what is on screen.
  */
-export function AskImagine({
-  insights,
+function AskImagineStrip({
   onAsk,
-  loading = false,
   className,
-}: AskImagineProps) {
-  const [index, setIndex] = useState(0);
+  children,
+}: {
+  onAsk: (prompt: string, intent?: string) => void;
+  className?: string;
+  children: ReactNode;
+}) {
   const [question, setQuestion] = useState("");
-  const current = insights[index % Math.max(insights.length, 1)];
-
-  useEffect(() => {
-    if (insights.length < 2) return;
-    const timer = window.setInterval(() => {
-      setIndex((value) => (value + 1) % insights.length);
-    }, ROTATE_MS);
-    return () => {
-      window.clearInterval(timer);
-    };
-  }, [insights.length]);
 
   return (
     <motion.div
@@ -71,59 +60,7 @@ export function AskImagine({
         <span className="flex size-8 shrink-0 items-center justify-center rounded-control bg-imagine-secondary text-imagine-secondary-foreground">
           <Icon name="imagine" size="l" />
         </span>
-        <div className="relative grid min-w-0 flex-1">
-          <AnimatePresence initial={false} mode="popLayout">
-            {loading || current === undefined ? (
-              <motion.p
-                key="loading"
-                {...swapUp}
-                transition={fade.base}
-                className="col-start-1 row-start-1 type-small"
-              >
-                <Shimmer>Reading this week&apos;s numbers</Shimmer>
-              </motion.p>
-            ) : (
-              <motion.button
-                key={current.id}
-                type="button"
-                {...swapUp}
-                whileTap={pressRow.whileTap}
-                transition={fade.base}
-                onClick={() => {
-                  onAsk(current.prompt, current.intent);
-                }}
-                className="col-start-1 row-start-1 -mx-xs truncate rounded-control px-xs text-left type-small text-imagine-foreground transition-colors hover:bg-imagine-secondary/10"
-              >
-                {current.text}
-                <Icon
-                  name="arrow-right"
-                  size="s"
-                  className="ml-s text-imagine-secondary"
-                />
-              </motion.button>
-            )}
-          </AnimatePresence>
-        </div>
-        {insights.length > 1 ? (
-          <span className="flex shrink-0 items-center gap-xxs">
-            {insights.map((insight, dot) => (
-              <button
-                key={insight.id}
-                type="button"
-                aria-label={`Insight ${String(dot + 1)}`}
-                onClick={() => {
-                  setIndex(dot);
-                }}
-                className={cn(
-                  "size-1.5 rounded-full transition-colors",
-                  dot === index % insights.length
-                    ? "bg-imagine-secondary"
-                    : "bg-imagine-secondary/30 hover:bg-imagine-secondary/60",
-                )}
-              />
-            ))}
-          </span>
-        ) : null}
+        {children}
       </div>
 
       <form
@@ -153,6 +90,108 @@ export function AskImagine({
         </label>
       </form>
     </motion.div>
+  );
+}
+
+/**
+ * The agent's presence on the analytics page: a strip that reads the numbers
+ * out loud. One insight shows at a time and rotates; pressing it asks about
+ * it. The field still takes any other question while it rotates.
+ */
+export function AskImagine({ insights, onAsk, className }: AskImagineProps) {
+  const [index, setIndex] = useState(0);
+  const current = insights[index % Math.max(insights.length, 1)];
+
+  useEffect(() => {
+    if (insights.length < 2) return;
+    const timer = window.setInterval(() => {
+      setIndex((value) => (value + 1) % insights.length);
+    }, ROTATE_MS);
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [insights.length]);
+
+  // Nothing noticed in the window: there is no insight to read out, so the
+  // strip says it is still reading rather than showing an empty line.
+  if (current === undefined) {
+    return <AskImaginePending onAsk={onAsk} className={className} />;
+  }
+
+  return (
+    <AskImagineStrip onAsk={onAsk} className={className}>
+      <div className="relative grid min-w-0 flex-1">
+        <AnimatePresence initial={false} mode="popLayout">
+          <motion.button
+            key={current.id}
+            type="button"
+            {...swapUp}
+            whileTap={pressRow.whileTap}
+            transition={fade.base}
+            onClick={() => {
+              onAsk(current.prompt, current.intent);
+            }}
+            className="col-start-1 row-start-1 -mx-xs truncate rounded-control px-xs text-left type-small text-imagine-foreground transition-colors hover:bg-imagine-secondary/10"
+          >
+            {current.text}
+            <Icon
+              name="arrow-right"
+              size="s"
+              className="ml-s text-imagine-secondary"
+            />
+          </motion.button>
+        </AnimatePresence>
+      </div>
+      {insights.length > 1 ? (
+        <span className="flex shrink-0 items-center gap-xxs">
+          {insights.map((insight, dot) => (
+            <button
+              key={insight.id}
+              type="button"
+              aria-label={`Insight ${String(dot + 1)}`}
+              onClick={() => {
+                setIndex(dot);
+              }}
+              className={cn(
+                "size-1.5 rounded-full transition-colors",
+                dot === index % insights.length
+                  ? "bg-imagine-secondary"
+                  : "bg-imagine-secondary/30 hover:bg-imagine-secondary/60",
+              )}
+            />
+          ))}
+        </span>
+      ) : null}
+    </AskImagineStrip>
+  );
+}
+
+/**
+ * The same strip while the insights are still being computed: the field is
+ * live, and the line shimmers in place of the insight that will land there.
+ */
+export function AskImaginePending({
+  onAsk,
+  className,
+}: {
+  onAsk: (prompt: string, intent?: string) => void;
+  className?: string;
+}) {
+  return (
+    <AskImagineStrip onAsk={onAsk} className={className}>
+      <div className="relative grid min-w-0 flex-1">
+        <AnimatePresence initial={false} mode="popLayout">
+          <motion.p
+            key="loading"
+            {...swapUp}
+            transition={fade.base}
+            className="col-start-1 row-start-1 type-small"
+          >
+            <Shimmer>Reading this week&apos;s numbers</Shimmer>
+          </motion.p>
+        </AnimatePresence>
+      </div>
+    </AskImagineStrip>
   );
 }
 

@@ -363,21 +363,17 @@ function DeleteConfirmDialog({
   );
 }
 
-/** Naming a folder, or renaming anything. One field, Enter submits. */
+/** The shared frame for naming something: one field, Enter submits. */
 function NameDialog({
-  open,
   title,
   description,
-  label,
   initialValue,
   submitLabel,
   onSubmit,
   onClose,
 }: {
-  open: boolean;
   title: string;
   description: string;
-  label: string;
   initialValue: string;
   submitLabel: string;
   onSubmit: (name: string) => void;
@@ -388,7 +384,7 @@ function NameDialog({
 
   return (
     <Dialog
-      open={open}
+      open
       onOpenChange={(next) => {
         if (!next) onClose();
       }}
@@ -407,7 +403,7 @@ function NameDialog({
             <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
           <Field>
-            <FieldLabel htmlFor="files-name">{label}</FieldLabel>
+            <FieldLabel htmlFor="files-name">Name</FieldLabel>
             <Input
               id="files-name"
               autoFocus
@@ -432,6 +428,50 @@ function NameDialog({
         <DialogCloseButton />
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** A folder in the browsed location, named before it is made. */
+function NewFolderDialog({
+  locationTitle,
+  onSubmit,
+  onClose,
+}: {
+  locationTitle: string;
+  onSubmit: (name: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <NameDialog
+      title="New folder"
+      description={`Goes into ${locationTitle}.`}
+      initialValue="New folder"
+      submitLabel="Create"
+      onSubmit={onSubmit}
+      onClose={onClose}
+    />
+  );
+}
+
+/** Renaming a folder, a document, or an image. Opens on its current name. */
+function RenameDialog({
+  name,
+  onSubmit,
+  onClose,
+}: {
+  name: string;
+  onSubmit: (name: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <NameDialog
+      title="Rename"
+      description="The agent finds files by name, so keep it descriptive."
+      initialValue={name}
+      submitLabel="Rename"
+      onSubmit={onSubmit}
+      onClose={onClose}
+    />
   );
 }
 
@@ -1905,23 +1945,21 @@ export function FilesLibrary({
         />
       )}
 
-      {dialog === null ? null : (
-        <NameDialog
-          key={dialog.kind === "rename" ? dialog.id : "new-folder"}
-          open
-          title={dialog.kind === "rename" ? "Rename" : "New folder"}
-          description={
-            dialog.kind === "rename"
-              ? "The agent finds files by name, so keep it descriptive."
-              : `Goes into ${locationTitle}.`
-          }
-          label="Name"
-          initialValue={dialog.kind === "rename" ? dialog.name : "New folder"}
-          submitLabel={dialog.kind === "rename" ? "Rename" : "Create"}
+      {dialog === null ? null : dialog.kind === "rename" ? (
+        <RenameDialog
+          key={dialog.id}
+          name={dialog.name}
           onSubmit={(name) => {
-            if (dialog.kind === "rename") rename(dialog.id, name);
-            else createFolder(name);
+            rename(dialog.id, name);
           }}
+          onClose={() => {
+            setDialog(null);
+          }}
+        />
+      ) : (
+        <NewFolderDialog
+          locationTitle={locationTitle}
+          onSubmit={createFolder}
           onClose={() => {
             setDialog(null);
           }}

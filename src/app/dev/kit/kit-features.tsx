@@ -26,7 +26,16 @@ import {
 import { AssetPicker } from "@/components/features/agent/asset-picker";
 import {
   LinkedInPost,
+  LinkedInPostActions,
+  LinkedInPostActor,
+  LinkedInPostBody,
+  LinkedInPostCard,
   LinkedInPostDraft,
+  LinkedInPostDraftActions,
+  LinkedInPostField,
+  LinkedInPostFoldButton,
+  LinkedInPostMedia,
+  LinkedInPostProvider,
   type PostAuthor,
 } from "@/components/features/agent/linkedin-post-draft";
 import { PostContext } from "@/components/features/agent/post-context";
@@ -74,7 +83,10 @@ import {
   CalendarStrip,
 } from "@/components/features/calendar/calendar-grid";
 import { CalendarPage } from "@/components/features/calendar/calendar-page";
-import { CalendarTimeGrid } from "@/components/features/calendar/calendar-time-grid";
+import {
+  CalendarDayGrid,
+  CalendarWeekGrid,
+} from "@/components/features/calendar/calendar-time-grid";
 import {
   CalendarRange,
   CalendarRangeLabel,
@@ -222,6 +234,7 @@ import {
   type SidebarNavKey,
 } from "@/components/layout/sidebar";
 import { LogoLoader } from "@/components/motion/logo-loader";
+import { ThinkingIndicator } from "@/components/motion/thinking-indicator";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import type { TimeRange } from "@/entities/analytics";
@@ -1368,7 +1381,6 @@ export function FilesPanelDemo() {
   const skillTabs: EditorTab[] = openSkills.map((id) => ({
     id,
     label: skillById.get(id)?.fileName ?? id,
-    closable: true,
     dirty: (text[id] ?? "") !== (savedText[id] ?? ""),
   }));
   const openSkill =
@@ -2228,16 +2240,18 @@ export function CalendarTimeGridDemo() {
   return (
     <div className="flex flex-col gap-xl">
       <Demo label="Day view, hours down the side">
-        <CalendarTimeGrid
-          days={selectedDay === undefined ? [] : [selectedDay]}
-          selectedPostId="p1"
-          onOpenPost={(post) => {
-            toast(post.title);
-          }}
-        />
+        {selectedDay === undefined ? null : (
+          <CalendarDayGrid
+            day={selectedDay}
+            selectedPostId="p1"
+            onOpenPost={(post) => {
+              toast(post.title);
+            }}
+          />
+        )}
       </Demo>
       <Demo label="Week view, compact posts in their time slots">
-        <CalendarTimeGrid
+        <CalendarWeekGrid
           days={TWO_WEEKS.slice(0, 7)}
           onOpenPost={(post) => {
             toast(post.title);
@@ -2382,13 +2396,17 @@ export function MessagesDemo() {
         <div className="flex flex-col gap-m">
           <AgentMessage
             parts={[{ type: "text", text: "Looking at your calendar." }]}
-            thinking={thinking}
-            thinkingStatuses={[
-              "Reading your calendar",
-              "Checking last week's numbers",
-              "Drafting",
-            ]}
-          />
+          >
+            {thinking ? (
+              <ThinkingIndicator
+                statuses={[
+                  "Reading your calendar",
+                  "Checking last week's numbers",
+                  "Drafting",
+                ]}
+              />
+            ) : null}
+          </AgentMessage>
           <Button
             size="sm"
             variant="ghost"
@@ -2416,19 +2434,28 @@ export function PostDraftDemo() {
   return (
     <div className="grid gap-xl lg:grid-cols-2">
       <Demo label="Draft with media">
-        <LinkedInPostDraft
+        <LinkedInPostProvider
           author={DRAFT_AUTHOR}
           body={DRAFT_BODY}
           media={ASSETS.slice(0, 2)}
-          footer={
-            <div className="flex gap-s">
+          defaultExpanded
+        >
+          <LinkedInPostDraft>
+            <LinkedInPostCard>
+              <LinkedInPostActor you />
+              <LinkedInPostBody />
+              <LinkedInPostMedia />
+              <LinkedInPostActions />
+            </LinkedInPostCard>
+            <LinkedInPostDraftActions>
               <Button size="sm">Schedule</Button>
               <Button size="sm" variant="soft">
                 Edit
               </Button>
-            </div>
-          }
-        />
+              <LinkedInPostFoldButton />
+            </LinkedInPostDraftActions>
+          </LinkedInPostDraft>
+        </LinkedInPostProvider>
       </Demo>
       <Demo label="Published, with analytics">
         {/* The feed's own cut: folded behind "…more", one row of actions
@@ -2450,23 +2477,33 @@ export function PostDraftDemo() {
         />
       </Demo>
       <Demo label={editing ? "Editing" : "Text only"}>
-        <LinkedInPostDraft
-          author={AUTHOR_ACME}
-          body={body}
-          editing={editing}
-          onBodyChange={setBody}
-          footer={
-            <Button
-              size="sm"
-              variant="soft"
-              onClick={() => {
-                setEditing((e) => !e);
-              }}
+        <LinkedInPostProvider author={AUTHOR_ACME} body={body} defaultExpanded>
+          <LinkedInPostDraft>
+            <LinkedInPostCard
+              className={editing ? "ring-2 ring-ring/30" : undefined}
             >
-              {editing ? "Done" : "Edit"}
-            </Button>
-          }
-        />
+              <LinkedInPostActor you />
+              {editing ? (
+                <LinkedInPostField onBodyChange={setBody} />
+              ) : (
+                <LinkedInPostBody />
+              )}
+              <LinkedInPostActions />
+            </LinkedInPostCard>
+            <LinkedInPostDraftActions>
+              <Button
+                size="sm"
+                variant="soft"
+                onClick={() => {
+                  setEditing((e) => !e);
+                }}
+              >
+                {editing ? "Done" : "Edit"}
+              </Button>
+              {editing ? null : <LinkedInPostFoldButton />}
+            </LinkedInPostDraftActions>
+          </LinkedInPostDraft>
+        </LinkedInPostProvider>
       </Demo>
       <Demo label="Post editor, with reactions" className="lg:col-span-2">
         <LinkedInPostEditor
@@ -2710,9 +2747,8 @@ export function ComposedWorkspacePagesDemo() {
 
 export function EditorDemo() {
   const [tabs, setTabs] = useState<EditorTab[]>([
-    { id: "thread", label: "Current post" },
-    { id: "f6", label: "sarah-persona.md", closable: true },
-    { id: "f1", label: "brand-voice.md", closable: true },
+    { id: "f6", label: "sarah-persona.md" },
+    { id: "f1", label: "brand-voice.md" },
   ]);
   const [activeTab, setActiveTab] = useState("f6");
   const [saved, setSaved] = useState(PERSONA_MD);
@@ -2723,6 +2759,7 @@ export function EditorDemo() {
     <Demo label="Editor tab strip with the markdown editor open (dirty dot on the persona file)">
       <OnBackground className="p-s">
         <EditorTabStrip
+          home={{ id: "thread", label: "Current post" }}
           tabs={tabs.map((tab) => (tab.id === "f6" ? { ...tab, dirty } : tab))}
           activeId={activeTab}
           onActivate={setActiveTab}

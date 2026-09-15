@@ -17,7 +17,10 @@ import {
   CenteredIntro,
   MonthCalendar,
 } from "@/components/features/agent/agent-landing-2";
-import { AgentThread } from "@/components/features/agent/agent-thread";
+import {
+  AgentThinking,
+  AgentThread,
+} from "@/components/features/agent/agent-thread";
 import {
   HeroChatDock,
   ThreadChatDock,
@@ -90,14 +93,9 @@ function ThreadBody({
 }) {
   if (messages.length === 0) return <ChatEmptyMark />;
   return (
-    <AgentThread
-      messages={messages}
-      thinking={chat.thinking}
-      {...(chat.thinkingStatuses === undefined
-        ? {}
-        : { thinkingStatuses: chat.thinkingStatuses })}
-      onIntent={chat.sendIntent}
-    />
+    <AgentThread messages={messages} onIntent={chat.sendIntent}>
+      <AgentThinking />
+    </AgentThread>
   );
 }
 

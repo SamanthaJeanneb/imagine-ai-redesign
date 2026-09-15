@@ -67,7 +67,6 @@ export interface TeamData {
 interface TeamPerformanceProps {
   data: TeamData;
   description?: string;
-  loading?: boolean;
   onAsk?: (prompt: string, intent?: string) => void;
   className?: string;
 }
@@ -104,6 +103,29 @@ function opacityClass(rank: number): string {
   return OPACITY_CLASS[rank] ?? OPACITY_CLASS[OPACITY_CLASS.length - 1] ?? "";
 }
 
+/** The metric switch, so the panel and its skeleton carry the same header. */
+function MetricTabs({
+  value,
+  onValueChange,
+}: {
+  value: TeamMetric;
+  onValueChange: (metric: TeamMetric) => void;
+}) {
+  return (
+    <ToggleGroup
+      size="sm"
+      value={value}
+      onValueChange={(next) => {
+        if (next === "reach" || next === "rate") onValueChange(next);
+      }}
+      aria-label="Metric"
+    >
+      <ToggleGroupItem value="reach">Reach</ToggleGroupItem>
+      <ToggleGroupItem value="rate">Eng. rate</ToggleGroupItem>
+    </ToggleGroup>
+  );
+}
+
 /** The stock rectangle with the member's opacity; dimmed when another member is hovered. */
 function memberBar(opacity: number, dimmed: boolean) {
   return function MemberBar(props: BarShapeProps) {
@@ -126,7 +148,6 @@ function memberBar(opacity: number, dimmed: boolean) {
 export function TeamPerformance({
   data,
   description,
-  loading = false,
   onAsk,
   className,
 }: TeamPerformanceProps) {
@@ -134,36 +155,6 @@ export function TeamPerformance({
   const [metric, setMetric] = useState<TeamMetric>("reach");
   const [hoverId, setHoverId] = useState<string | null>(null);
   const spec = METRIC[metric];
-
-  const tabs = (
-    <ToggleGroup
-      size="sm"
-      value={metric}
-      onValueChange={(value) => {
-        if (value === "reach" || value === "rate") setMetric(value);
-      }}
-      aria-label="Metric"
-    >
-      <ToggleGroupItem value="reach">Reach</ToggleGroupItem>
-      <ToggleGroupItem value="rate">Eng. rate</ToggleGroupItem>
-    </ToggleGroup>
-  );
-
-  if (loading) {
-    return (
-      <Panel
-        title="Team"
-        description={description}
-        actions={tabs}
-        className={className}
-      >
-        <div className="grid gap-l @2xl/panel:grid-cols-[minmax(0,1fr)_15rem]">
-          <ChartSkeletonBars height="h-56" />
-          <ChartSkeletonRows height="h-56" />
-        </div>
-      </Panel>
-    );
-  }
 
   const ranked = data.members.toSorted((a, b) => b[metric] - a[metric]);
   const rankOf = new Map(ranked.map((member, index) => [member.id, index]));
@@ -178,7 +169,7 @@ export function TeamPerformance({
       description={description}
       actions={
         <>
-          {tabs}
+          <MetricTabs value={metric} onValueChange={setMetric} />
           {onAsk ? (
             <AskIconButton
               prompt={`Who on the team should own which kind of post, going by ${spec.label.toLowerCase()} per category?`}
@@ -301,6 +292,33 @@ export function TeamPerformance({
             </StaggerItem>
           ))}
         </Stagger>
+      </div>
+    </Panel>
+  );
+}
+
+/**
+ * The same panel while the team's numbers are still being worked out: the
+ * header and the metric switch stand, the chart and the leaderboard do not.
+ */
+export function TeamPerformanceSkeleton({
+  description,
+  className,
+}: {
+  description?: string;
+  className?: string;
+}) {
+  const [metric, setMetric] = useState<TeamMetric>("reach");
+  return (
+    <Panel
+      title="Team"
+      description={description}
+      actions={<MetricTabs value={metric} onValueChange={setMetric} />}
+      className={className}
+    >
+      <div className="grid gap-l @2xl/panel:grid-cols-[minmax(0,1fr)_15rem]">
+        <ChartSkeletonBars height="h-56" />
+        <ChartSkeletonRows height="h-56" />
       </div>
     </Panel>
   );
