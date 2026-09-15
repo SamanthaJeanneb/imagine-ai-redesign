@@ -7,3 +7,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+# React composition
+
+All React components follow `.cursor/skills/react-composition/SKILL.md`
+(compound parts over flag props; omission over negation; lift providers above
+the widest consumer). Read it before writing, refactoring, or reviewing any
+`.tsx` component.

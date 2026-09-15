@@ -1,0 +1,24 @@
+---
+description: Always follow the React composition conventions (compound parts over flag props) when touching React components
+alwaysApply: true
+---
+
+# React composition conventions
+
+Before writing, refactoring, or reviewing any React component, read and follow
+`.cursor/skills/react-composition/SKILL.md`. Restate the relevant rules in your
+plan before writing code.
+
+Non-negotiable defaults from that skill:
+
+- A component's API is its children, not its flags. Never add a boolean or enum
+  prop that selects which subtree renders (`isEditing`, `mode="compact"`).
+- Omission, not negation: no `hideX` / `showX` / `withX` / `allowX` props.
+- JSX children over config arrays; `render*` props are a last resort.
+- Lift the provider above the widest consumer instead of syncing state upward
+  with `useEffect`, refs, or `onXChange` callbacks.
+- No preemptive `memo` / `useMemo` / `useCallback`; assume the React Compiler.
+
+Reject generated code that reintroduces boolean-prop branching, even if it
+works. When you find an existing violation in a file you are editing, fix it as
+part of the change.
