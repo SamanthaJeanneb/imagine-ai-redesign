@@ -3,11 +3,22 @@
 import { cn } from "cn";
 import { motion } from "motion/react";
 import { useId, useState } from "react";
+import type { DragEvent } from "react";
 
 import type {
   FileNode,
   FileSection,
 } from "@/components/features/files/file-tree";
+import {
+  beginFileMove,
+  canMoveLibraryItem,
+  endFileMove,
+  fileMoveId,
+  isFileMove,
+  isLeavingDropTarget,
+  preventFileMove,
+  type FileMoveDest,
+} from "@/components/features/files/file-move";
 import { Disclosure } from "@/components/motion/disclosure";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
@@ -25,6 +36,8 @@ interface FileTreeNavProps {
   selectedId?: string;
   onSelectLocation: (location: TreeLocation) => void;
   onOpenFile: (id: string) => void;
+  /** Drop a dragged file onto a library or folder to move it. */
+  onMoveFile?: (id: string, dest: FileMoveDest) => void;
   className?: string;
 }
 
@@ -80,6 +93,20 @@ function SectionMark({ section }: { section: FileSection }) {
   );
 }
 
+function destKey(dest: FileMoveDest): string {
+  return dest.folderId ?? dest.sectionId;
+}
+
+interface FileMoveUi {
+  draggingId: string | null;
+  dropKey: string | null;
+  start: (id: string, event: DragEvent<HTMLElement>) => void;
+  end: () => void;
+  over: (dest: FileMoveDest, event: DragEvent<HTMLElement>) => void;
+  leave: (key: string, event: DragEvent<HTMLElement>) => void;
+  drop: (dest: FileMoveDest, event: DragEvent<HTMLElement>) => void;
+}
+
 interface RowProps {
   selected: boolean;
   indicatorId: string;
@@ -90,6 +117,10 @@ interface RowProps {
   leading: React.ReactNode;
   label: string;
   emphasis?: boolean;
+  movable?: boolean;
+  moveId?: string;
+  dropDest?: FileMoveDest;
+  move?: FileMoveUi;
 }
 
 /**
@@ -106,16 +137,59 @@ function Row({
   leading,
   label,
   emphasis = false,
+  movable = false,
+  moveId,
+  dropDest,
+  move,
 }: RowProps) {
+  const dropKey = dropDest === undefined ? undefined : destKey(dropDest);
+  const dropActive = dropKey !== undefined && move?.dropKey === dropKey;
+  const dragging = movable && moveId !== undefined && move?.draggingId === moveId;
+
   return (
     <div
       data-selected={selected || undefined}
+      draggable={movable}
+      onDragStart={
+        movable && moveId !== undefined && move !== undefined
+          ? (event) => {
+              event.stopPropagation();
+              move.start(moveId, event);
+            }
+          : undefined
+      }
+      onDragEnd={movable ? move?.end : undefined}
+      onDragOver={
+        dropDest !== undefined && move !== undefined
+          ? (event) => {
+              move.over(dropDest, event);
+            }
+          : undefined
+      }
+      onDragLeave={
+        dropKey !== undefined && move !== undefined
+          ? (event) => {
+              move.leave(dropKey, event);
+            }
+          : undefined
+      }
+      onDrop={
+        dropDest !== undefined && move !== undefined
+          ? (event) => {
+              move.drop(dropDest, event);
+            }
+          : undefined
+      }
       className={cn(
         "group/row relative flex h-8 items-center rounded-control pl-xs transition-colors",
         onToggle === undefined && "pr-xs",
         selected
           ? "text-imagine-foreground"
           : "text-imagine-foreground-muted hover:bg-imagine-foreground/5 hover:text-imagine-foreground",
+        movable && "cursor-grab active:cursor-grabbing",
+        dragging && "opacity-40",
+        dropActive &&
+          "bg-imagine-secondary-soft text-imagine-secondary hover:bg-imagine-secondary-soft hover:text-imagine-secondary",
       )}
     >
       {selected ? (
@@ -130,6 +204,37 @@ function Row({
       <motion.button
         type="button"
         aria-current={selected ? "location" : undefined}
+        draggable={movable}
+        onDragStart={
+          movable && moveId !== undefined && move !== undefined
+            ? (event) => {
+                event.stopPropagation();
+                move.start(moveId, event);
+              }
+            : undefined
+        }
+        onDragEnd={movable ? move?.end : undefined}
+        onDragOver={
+          dropDest !== undefined && move !== undefined
+            ? (event) => {
+                move.over(dropDest, event);
+              }
+            : undefined
+        }
+        onDragLeave={
+          dropKey !== undefined && move !== undefined
+            ? (event) => {
+                move.leave(dropKey, event);
+              }
+            : undefined
+        }
+        onDrop={
+          dropDest !== undefined && move !== undefined
+            ? (event) => {
+                move.drop(dropDest, event);
+              }
+            : undefined
+        }
         whileTap={pressRow.whileTap}
         transition={pressRow.transition}
         onClick={onClick}
@@ -178,6 +283,7 @@ interface BranchProps {
   toggle: (id: string) => void;
   onSelectLocation: (location: TreeLocation) => void;
   onOpenFile: (id: string) => void;
+  move?: FileMoveUi;
 }
 
 /** Folders and files under one parent. Asset rows belong to the browser, not here. */
@@ -191,6 +297,7 @@ function Branch({
   toggle,
   onSelectLocation,
   onOpenFile,
+  move,
 }: BranchProps) {
   const visible = nodes.filter((node) => node.type !== "assets");
   if (visible.length === 0) return null;
@@ -221,6 +328,7 @@ function Branch({
               toggle={toggle}
               onSelectLocation={onSelectLocation}
               onOpenFile={onOpenFile}
+              {...(move === undefined ? {} : { move })}
             />
           ) : (
             <Row
@@ -231,6 +339,9 @@ function Branch({
               }}
               leading={<Icon name="file-lines" size="s" />}
               label={node.name}
+              movable={move !== undefined}
+              moveId={node.id}
+              {...(move === undefined ? {} : { move })}
             />
           )}
         </motion.li>
@@ -249,8 +360,10 @@ function FolderRows({
   toggle,
   onSelectLocation,
   onOpenFile,
+  move,
 }: Omit<BranchProps, "nodes"> & { folder: FolderNode }) {
   const open = isOpen(folder.id);
+  const dest: FileMoveDest = { sectionId, folderId: folder.id };
   return (
     <>
       <Row
@@ -265,6 +378,10 @@ function FolderRows({
         }}
         leading={<Icon name={open ? "folder-open" : "folder"} size="s" />}
         label={folder.name}
+        movable={move !== undefined}
+        moveId={folder.id}
+        dropDest={dest}
+        {...(move === undefined ? {} : { move })}
       />
       <Disclosure open={open}>
         <Branch
@@ -277,6 +394,7 @@ function FolderRows({
           toggle={toggle}
           onSelectLocation={onSelectLocation}
           onOpenFile={onOpenFile}
+          {...(move === undefined ? {} : { move })}
         />
       </Disclosure>
     </>
@@ -294,6 +412,7 @@ export function FileTreeNav({
   selectedId,
   onSelectLocation,
   onOpenFile,
+  onMoveFile,
   className,
 }: FileTreeNavProps) {
   const indicatorId = useId();
@@ -301,6 +420,49 @@ export function FileTreeNav({
   const [overrides, setOverrides] = useState<ReadonlyMap<string, boolean>>(
     new Map(),
   );
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dropKey, setDropKey] = useState<string | null>(null);
+
+  const move: FileMoveUi | undefined =
+    onMoveFile === undefined
+      ? undefined
+      : {
+          draggingId,
+          dropKey,
+          start: (id, event) => {
+            beginFileMove(event, id);
+            setDraggingId(id);
+          },
+          end: () => {
+            endFileMove();
+            setDraggingId(null);
+            setDropKey(null);
+          },
+          over: (dest, event) => {
+            const id = fileMoveId();
+            if (id === null || !isFileMove(Array.from(event.dataTransfer.types))) {
+              return;
+            }
+            if (!canMoveLibraryItem(sections, id, dest)) {
+              event.dataTransfer.dropEffect = "none";
+              return;
+            }
+            preventFileMove(event);
+            setDropKey(destKey(dest));
+          },
+          leave: (key, event) => {
+            if (!isFileMove(Array.from(event.dataTransfer.types))) return;
+            if (!isLeavingDropTarget(event)) return;
+            setDropKey((current) => (current === key ? null : current));
+          },
+          drop: (dest, event) => {
+            const id = fileMoveId();
+            if (id === null) return;
+            event.preventDefault();
+            setDropKey(null);
+            onMoveFile(id, dest);
+          },
+        };
 
   const selectedPath = new Set<string>();
   if (selectedId !== undefined) {
@@ -346,6 +508,8 @@ export function FileTreeNav({
               leading={<SectionMark section={section} />}
               label={section.title}
               emphasis
+              dropDest={{ sectionId: section.id }}
+              {...(move === undefined ? {} : { move })}
             />
             <Disclosure open={open}>
               <Branch
@@ -358,6 +522,7 @@ export function FileTreeNav({
                 toggle={toggle}
                 onSelectLocation={onSelectLocation}
                 onOpenFile={onOpenFile}
+                {...(move === undefined ? {} : { move })}
               />
             </Disclosure>
           </div>

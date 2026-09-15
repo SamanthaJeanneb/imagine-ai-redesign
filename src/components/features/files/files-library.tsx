@@ -3,6 +3,7 @@
 import { cn } from "cn";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import type { DragEvent } from "react";
 import { toast } from "sonner";
 
 import type { AssetTileData } from "@/components/features/files/asset-tile";
@@ -15,6 +16,17 @@ import type {
   FileNode,
   FileSection,
 } from "@/components/features/files/file-tree";
+import {
+  beginFileMove,
+  canMoveLibraryItem,
+  endFileMove,
+  fileMoveId,
+  isFileMove,
+  isLeavingDropTarget,
+  moveLibraryItem,
+  preventFileMove,
+  type FileMoveDest,
+} from "@/components/features/files/file-move";
 import {
   FileTreeNav,
   type TreeLocation,
@@ -461,6 +473,8 @@ export function FilesLibrary({
   const [view, setView] = useState<LibraryCardView>("list");
   const [dialog, setDialog] = useState<DialogState>(null);
   const [pendingDelete, setPendingDelete] = useState<BrowserItem | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
   const isMobile = useMediaQuery(MOBILE_QUERY);
   const [navOpen, setNavOpen] = useState(false);
   const [values, setValues] = useState<Record<string, string>>({});
@@ -797,6 +811,43 @@ export function FilesLibrary({
     });
   };
 
+  const moveTo = (itemId: string, dest: FileMoveDest) => {
+    const result = moveLibraryItem(sections, itemId, dest);
+    if (result === null) return;
+    setSections(result.sections);
+    setDraggingId(null);
+    setDropTargetId(null);
+    toast(`Moved “${result.name}” to ${result.destName}`);
+  };
+
+  const overMoveDest =
+    (dest: FileMoveDest, key: string) => (event: DragEvent<HTMLElement>) => {
+      const id = fileMoveId();
+      if (id === null || !isFileMove(Array.from(event.dataTransfer.types))) {
+        return;
+      }
+      if (!canMoveLibraryItem(sections, id, dest)) {
+        event.dataTransfer.dropEffect = "none";
+        return;
+      }
+      preventFileMove(event);
+      setDropTargetId(key);
+    };
+
+  const leaveMoveDest = (key: string) => (event: DragEvent<HTMLElement>) => {
+    if (!isFileMove(Array.from(event.dataTransfer.types))) return;
+    if (!isLeavingDropTarget(event)) return;
+    setDropTargetId((current) => (current === key ? null : current));
+  };
+
+  const dropMoveDest =
+    (dest: FileMoveDest) => (event: DragEvent<HTMLElement>) => {
+      const id = fileMoveId();
+      if (id === null) return;
+      event.preventDefault();
+      moveTo(id, dest);
+    };
+
   const onCardAction = (item: BrowserItem, action: string) => {
     switch (action) {
       case "open":
@@ -903,24 +954,52 @@ export function FilesLibrary({
       ? "skills"
       : `${place.kind}:${currentSection?.id ?? ""}:${currentFolder?.id ?? ""}:${filter}:${view}`;
 
-  const renderCard = (item: BrowserItem) => (
-    <StaggerItem key={item.id}>
-      <LibraryCard
-        kind={item.kind}
-        name={item.name}
-        {...(item.excerpt === undefined ? {} : { excerpt: item.excerpt })}
-        {...(item.src === undefined ? {} : { src: item.src })}
-        view={view}
-        onPress={() => {
-          pressItem(item);
-        }}
-        actions={actionsFor(item)}
-        onAction={(action) => {
-          onCardAction(item, action);
-        }}
-      />
-    </StaggerItem>
-  );
+  const renderCard = (item: BrowserItem) => {
+    const libraryRoot = place.kind === "root" && item.kind === "folder";
+    const dest: FileMoveDest | undefined = libraryRoot
+      ? { sectionId: item.id }
+      : place.kind === "library" && item.kind === "folder"
+        ? { sectionId: place.sectionId, folderId: item.id }
+        : undefined;
+    return (
+      <StaggerItem key={item.id}>
+        <LibraryCard
+          kind={item.kind}
+          name={item.name}
+          {...(item.excerpt === undefined ? {} : { excerpt: item.excerpt })}
+          {...(item.src === undefined ? {} : { src: item.src })}
+          view={view}
+          onPress={() => {
+            pressItem(item);
+          }}
+          actions={actionsFor(item)}
+          onAction={(action) => {
+            onCardAction(item, action);
+          }}
+          movable={!libraryRoot}
+          dragging={draggingId === item.id}
+          onMoveStart={(event) => {
+            beginFileMove(event, item.id);
+            setDraggingId(item.id);
+          }}
+          onMoveEnd={() => {
+            endFileMove();
+            setDraggingId(null);
+            setDropTargetId(null);
+          }}
+          droppable={dest !== undefined}
+          dropActive={dest !== undefined && dropTargetId === item.id}
+          {...(dest === undefined
+            ? {}
+            : {
+                onMoveOver: overMoveDest(dest, item.id),
+                onMoveLeave: leaveMoveDest(item.id),
+                onMoveDrop: dropMoveDest(dest),
+              })}
+        />
+      </StaggerItem>
+    );
+  };
 
   const gridClass =
     view === "grid"
@@ -1018,6 +1097,7 @@ export function FilesLibrary({
                     : { selectedId: treeSelectedId })}
                   onSelectLocation={goToLocation}
                   onOpenFile={open}
+                  onMoveFile={moveTo}
                 />
               </motion.div>
             ) : (
@@ -1125,6 +1205,19 @@ export function FilesLibrary({
                             sectionId: currentSection.id,
                           });
                         }}
+                        onDragOver={overMoveDest(
+                          { sectionId: currentSection.id },
+                          `crumb:${currentSection.id}`,
+                        )}
+                        onDragLeave={leaveMoveDest(
+                          `crumb:${currentSection.id}`,
+                        )}
+                        onDrop={dropMoveDest({ sectionId: currentSection.id })}
+                        className={
+                          dropTargetId === `crumb:${currentSection.id}`
+                            ? "text-imagine-secondary"
+                            : undefined
+                        }
                       >
                         {currentSection.title}
                       </BreadcrumbLink>
@@ -1452,6 +1545,22 @@ export function FilesLibrary({
                                       sectionId: openDocumentSection.id,
                                     });
                                   }}
+                                  onDragOver={overMoveDest(
+                                    { sectionId: openDocumentSection.id },
+                                    `crumb:${openDocumentSection.id}`,
+                                  )}
+                                  onDragLeave={leaveMoveDest(
+                                    `crumb:${openDocumentSection.id}`,
+                                  )}
+                                  onDrop={dropMoveDest({
+                                    sectionId: openDocumentSection.id,
+                                  })}
+                                  className={
+                                    dropTargetId ===
+                                    `crumb:${openDocumentSection.id}`
+                                      ? "text-imagine-secondary"
+                                      : undefined
+                                  }
                                 >
                                   {openDocumentSection.title}
                                 </BreadcrumbLink>

@@ -2,6 +2,7 @@
 
 import { cn } from "cn";
 import { motion } from "motion/react";
+import type { DragEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -40,6 +41,16 @@ interface LibraryCardProps {
   onOpen?: () => void;
   actions?: readonly LibraryCardAction[];
   onAction?: (id: string) => void;
+  /** Drag this card to a folder to move it in the library. */
+  movable?: boolean;
+  onMoveStart?: (event: DragEvent<HTMLElement>) => void;
+  onMoveEnd?: (event: DragEvent<HTMLElement>) => void;
+  droppable?: boolean;
+  dropActive?: boolean;
+  onMoveOver?: (event: DragEvent<HTMLElement>) => void;
+  onMoveLeave?: (event: DragEvent<HTMLElement>) => void;
+  onMoveDrop?: (event: DragEvent<HTMLElement>) => void;
+  dragging?: boolean;
   className?: string;
 }
 
@@ -190,6 +201,15 @@ export function LibraryCard({
   onOpen,
   actions,
   onAction,
+  movable = false,
+  onMoveStart,
+  onMoveEnd,
+  droppable = false,
+  dropActive = false,
+  onMoveOver,
+  onMoveLeave,
+  onMoveDrop,
+  dragging = false,
   className,
 }: LibraryCardProps) {
   const row = view === "list" || kind === "folder";
@@ -218,8 +238,22 @@ export function LibraryCard({
       data-kind={kind}
       data-view={view}
       data-selected={selected || undefined}
-      whileHover={hoverLift.whileHover}
-      whileTap={pressRow.whileTap}
+      data-drop-active={dropActive || undefined}
+      draggable={movable}
+      onDragStart={
+        movable
+          ? (event) => {
+              event.stopPropagation();
+              onMoveStart?.(event);
+            }
+          : undefined
+      }
+      onDragEnd={movable ? onMoveEnd : undefined}
+      onDragOver={droppable ? onMoveOver : undefined}
+      onDragLeave={droppable ? onMoveLeave : undefined}
+      onDrop={droppable ? onMoveDrop : undefined}
+      whileHover={dragging ? undefined : hoverLift.whileHover}
+      whileTap={dragging ? undefined : pressRow.whileTap}
       transition={pressRow.transition}
       className={cn(
         "group/card relative min-w-0 transition-[background-color,border-color,box-shadow]",
@@ -229,12 +263,29 @@ export function LibraryCard({
           : "bg-imagine-surface hover:shadow-raised",
         view === "list" && "border-transparent",
         selected && "border-imagine-foreground shadow-control",
+        movable && "cursor-grab active:cursor-grabbing",
+        dragging && "opacity-40",
+        dropActive &&
+          "border-imagine-secondary bg-imagine-secondary-soft shadow-none",
         className,
       )}
     >
       <button
         type="button"
         aria-pressed={onOpen === undefined ? undefined : selected}
+        draggable={movable}
+        onDragStart={
+          movable
+            ? (event) => {
+                event.stopPropagation();
+                onMoveStart?.(event);
+              }
+            : undefined
+        }
+        onDragEnd={movable ? onMoveEnd : undefined}
+        onDragOver={droppable ? onMoveOver : undefined}
+        onDragLeave={droppable ? onMoveLeave : undefined}
+        onDrop={droppable ? onMoveDrop : undefined}
         onClick={onPress}
         onDoubleClick={onOpen}
         onKeyDown={(event) => {
