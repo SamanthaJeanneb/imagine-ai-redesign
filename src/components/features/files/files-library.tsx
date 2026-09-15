@@ -483,7 +483,6 @@ type MoveHandler = (event: DragEvent<HTMLElement>) => void;
 
 /** What every card in the browser can do, supplied by the page. */
 interface BrowserApi {
-  view: LibraryCardView;
   draggingId: string | null;
   dropTargetId: string | null;
   press: (item: BrowserItem) => void;
@@ -642,101 +641,209 @@ function MediaMenu({ item }: { item: BrowserItem }) {
   );
 }
 
-/** A library at the root: things drop into it, but it stays put and has no menu. */
-function RootLibraryCard({ item }: { item: BrowserItem }) {
-  const browser = useBrowser();
-  const press = () => {
-    browser.press(item);
-  };
-  return (
-    <ItemDropTarget item={item} dest={{ sectionId: item.id }}>
-      {browser.view === "list" ? (
-        <LibraryCardRow kind="folder" name={item.name} onPress={press} />
-      ) : (
-        <LibraryCardFolder name={item.name} onPress={press} />
-      )}
-    </ItemDropTarget>
-  );
-}
-
-/** A folder inside a library: movable, and a place to drop things. */
-function FolderCard({
+/**
+ * How an item behaves where it sits, which is the same whichever way the
+ * browser draws it: a library at the root takes drops but stays put, a folder
+ * inside one also moves, and documents and images only move.
+ */
+function ItemFrame({
   item,
-  sectionId,
+  place,
+  children,
 }: {
   item: BrowserItem;
-  sectionId: string;
+  place: Place;
+  children: ReactNode;
 }) {
-  const browser = useBrowser();
-  const press = () => {
-    browser.press(item);
-  };
-  const menu = <FolderMenu item={item} />;
-  return (
-    <MovableItem item={item}>
-      <ItemDropTarget item={item} dest={{ sectionId, folderId: item.id }}>
-        {browser.view === "list" ? (
-          <LibraryCardRow kind="folder" name={item.name} onPress={press}>
-            {menu}
-          </LibraryCardRow>
-        ) : (
-          <LibraryCardFolder name={item.name} onPress={press}>
-            {menu}
-          </LibraryCardFolder>
-        )}
+  if (place.kind === "root") {
+    return (
+      <ItemDropTarget item={item} dest={{ sectionId: item.id }}>
+        {children}
       </ItemDropTarget>
-    </MovableItem>
+    );
+  }
+  if (item.kind === "folder") {
+    return (
+      <MovableItem item={item}>
+        <ItemDropTarget
+          item={item}
+          dest={{ sectionId: place.sectionId, folderId: item.id }}
+        >
+          {children}
+        </ItemDropTarget>
+      </MovableItem>
+    );
+  }
+  return <MovableItem item={item}>{children}</MovableItem>;
+}
+
+/** A labelled run of cards, laid out however the view arranges them. */
+function CardGroup({
+  label,
+  arrangement,
+  children,
+}: {
+  label: string;
+  arrangement: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-s">
+      <GroupLabel>{label}</GroupLabel>
+      <Stagger kind="grid" className={arrangement}>
+        {children}
+      </Stagger>
+    </div>
   );
 }
 
-function DocumentCard({ item }: { item: BrowserItem }) {
+interface BrowserContentProps {
+  place: Place;
+  folders: readonly BrowserItem[];
+  docs: readonly BrowserItem[];
+  media: readonly MediaItem[];
+}
+
+const ROWS = "flex flex-col gap-px";
+const TILES =
+  "grid grid-cols-[repeat(auto-fill,minmax(min(100%,12rem),1fr))] gap-m";
+
+/** Everything in the open location as one name per line. */
+function BrowserRows({ place, folders, docs, media }: BrowserContentProps) {
   const browser = useBrowser();
-  const press = () => {
+  const press = (item: BrowserItem) => () => {
     browser.press(item);
   };
-  const menu = <DocumentMenu item={item} />;
+
   return (
-    <MovableItem item={item}>
-      {browser.view === "list" ? (
-        <LibraryCardRow kind="document" name={item.name} onPress={press}>
-          {menu}
-        </LibraryCardRow>
-      ) : (
-        <LibraryCardDocument
-          name={item.name}
-          {...(item.excerpt === undefined ? {} : { excerpt: item.excerpt })}
-          onPress={press}
+    <>
+      {folders.length > 0 ? (
+        <CardGroup
+          label={place.kind === "root" ? "Libraries" : "Folders"}
+          arrangement={ROWS}
         >
-          {menu}
-        </LibraryCardDocument>
-      )}
-    </MovableItem>
+          {folders.map((item) => (
+            <StaggerItem key={item.id}>
+              <ItemFrame item={item} place={place}>
+                <LibraryCardRow
+                  kind="folder"
+                  name={item.name}
+                  onPress={press(item)}
+                >
+                  {/* A library at the root has no menu: it is not the
+                      user's to rename or delete from here. */}
+                  {place.kind === "root" ? null : <FolderMenu item={item} />}
+                </LibraryCardRow>
+              </ItemFrame>
+            </StaggerItem>
+          ))}
+        </CardGroup>
+      ) : null}
+
+      {docs.length > 0 ? (
+        <CardGroup label="Documents" arrangement={ROWS}>
+          {docs.map((item) => (
+            <StaggerItem key={item.id}>
+              <ItemFrame item={item} place={place}>
+                <LibraryCardRow
+                  kind="document"
+                  name={item.name}
+                  onPress={press(item)}
+                >
+                  <DocumentMenu item={item} />
+                </LibraryCardRow>
+              </ItemFrame>
+            </StaggerItem>
+          ))}
+        </CardGroup>
+      ) : null}
+
+      {media.length > 0 ? (
+        <CardGroup label="Images" arrangement={ROWS}>
+          {media.map((item) => (
+            <StaggerItem key={item.id}>
+              <ItemFrame item={item} place={place}>
+                <LibraryCardRow
+                  kind={item.kind}
+                  name={item.name}
+                  onPress={press(item)}
+                >
+                  <MediaMenu item={item} />
+                </LibraryCardRow>
+              </ItemFrame>
+            </StaggerItem>
+          ))}
+        </CardGroup>
+      ) : null}
+    </>
   );
 }
 
-function MediaCard({ item }: { item: MediaItem }) {
+/** Everything in the open location as cards with a face. */
+function BrowserTiles({ place, folders, docs, media }: BrowserContentProps) {
   const browser = useBrowser();
-  const press = () => {
+  const press = (item: BrowserItem) => () => {
     browser.press(item);
   };
-  const menu = <MediaMenu item={item} />;
+
   return (
-    <MovableItem item={item}>
-      {browser.view === "list" ? (
-        <LibraryCardRow kind={item.kind} name={item.name} onPress={press}>
-          {menu}
-        </LibraryCardRow>
-      ) : (
-        <LibraryCardMedia
-          kind={item.kind}
-          name={item.name}
-          {...(item.src === undefined ? {} : { src: item.src })}
-          onPress={press}
+    <>
+      {folders.length > 0 ? (
+        <CardGroup
+          label={place.kind === "root" ? "Libraries" : "Folders"}
+          arrangement={TILES}
         >
-          {menu}
-        </LibraryCardMedia>
-      )}
-    </MovableItem>
+          {folders.map((item) => (
+            <StaggerItem key={item.id}>
+              <ItemFrame item={item} place={place}>
+                <LibraryCardFolder name={item.name} onPress={press(item)}>
+                  {place.kind === "root" ? null : <FolderMenu item={item} />}
+                </LibraryCardFolder>
+              </ItemFrame>
+            </StaggerItem>
+          ))}
+        </CardGroup>
+      ) : null}
+
+      {docs.length > 0 ? (
+        <CardGroup label="Documents" arrangement={TILES}>
+          {docs.map((item) => (
+            <StaggerItem key={item.id}>
+              <ItemFrame item={item} place={place}>
+                <LibraryCardDocument
+                  name={item.name}
+                  {...(item.excerpt === undefined
+                    ? {}
+                    : { excerpt: item.excerpt })}
+                  onPress={press(item)}
+                >
+                  <DocumentMenu item={item} />
+                </LibraryCardDocument>
+              </ItemFrame>
+            </StaggerItem>
+          ))}
+        </CardGroup>
+      ) : null}
+
+      {media.length > 0 ? (
+        <CardGroup label="Images" arrangement={TILES}>
+          {media.map((item) => (
+            <StaggerItem key={item.id}>
+              <ItemFrame item={item} place={place}>
+                <LibraryCardMedia
+                  kind={item.kind}
+                  name={item.name}
+                  {...(item.src === undefined ? {} : { src: item.src })}
+                  onPress={press(item)}
+                >
+                  <MediaMenu item={item} />
+                </LibraryCardMedia>
+              </ItemFrame>
+            </StaggerItem>
+          ))}
+        </CardGroup>
+      ) : null}
+    </>
   );
 }
 
@@ -1242,7 +1349,6 @@ export function FilesLibrary({
       : `${place.kind}:${currentSection?.id ?? ""}:${currentFolder?.id ?? ""}:${filter}:${view}`;
 
   const browser: BrowserApi = {
-    view,
     draggingId,
     dropTargetId,
     press: pressItem,
@@ -1267,11 +1373,6 @@ export function FilesLibrary({
     leaveMoveDest,
     dropMoveDest,
   };
-
-  const gridClass =
-    view === "grid"
-      ? "grid grid-cols-[repeat(auto-fill,minmax(min(100%,12rem),1fr))] gap-m"
-      : "flex flex-col gap-px";
 
   return (
     <div
@@ -1661,53 +1762,21 @@ export function FilesLibrary({
                   />
                 ) : (
                   <BrowserContext value={browser}>
-                    {folders.length > 0 ? (
-                      <div className="flex flex-col gap-s">
-                        <GroupLabel>
-                          {place.kind === "root" ? "Libraries" : "Folders"}
-                        </GroupLabel>
-                        <Stagger kind="grid" className={gridClass}>
-                          {folders.map((item) => (
-                            <StaggerItem key={item.id}>
-                              {place.kind === "root" ? (
-                                <RootLibraryCard item={item} />
-                              ) : (
-                                <FolderCard
-                                  item={item}
-                                  sectionId={place.sectionId}
-                                />
-                              )}
-                            </StaggerItem>
-                          ))}
-                        </Stagger>
-                      </div>
-                    ) : null}
-
-                    {docs.length > 0 ? (
-                      <div className="flex flex-col gap-s">
-                        <GroupLabel>Documents</GroupLabel>
-                        <Stagger kind="grid" className={gridClass}>
-                          {docs.map((item) => (
-                            <StaggerItem key={item.id}>
-                              <DocumentCard item={item} />
-                            </StaggerItem>
-                          ))}
-                        </Stagger>
-                      </div>
-                    ) : null}
-
-                    {media.length > 0 ? (
-                      <div className="flex flex-col gap-s">
-                        <GroupLabel>Images</GroupLabel>
-                        <Stagger kind="grid" className={gridClass}>
-                          {media.map((item) => (
-                            <StaggerItem key={item.id}>
-                              <MediaCard item={item} />
-                            </StaggerItem>
-                          ))}
-                        </Stagger>
-                      </div>
-                    ) : null}
+                    {view === "list" ? (
+                      <BrowserRows
+                        place={place}
+                        folders={folders}
+                        docs={docs}
+                        media={media}
+                      />
+                    ) : (
+                      <BrowserTiles
+                        place={place}
+                        folders={folders}
+                        docs={docs}
+                        media={media}
+                      />
+                    )}
 
                     {docs.length === 0 &&
                     media.length === 0 &&

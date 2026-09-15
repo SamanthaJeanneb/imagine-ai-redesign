@@ -78,7 +78,12 @@ export function ProfileList({
           className="min-w-0 flex-1"
         />
         {onAdd ? (
-          <Button variant="soft" size="sm" className="ml-auto shrink-0" onClick={onAdd}>
+          <Button
+            variant="soft"
+            size="sm"
+            className="ml-auto shrink-0"
+            onClick={onAdd}
+          >
             <Icon name="plus" size="s" data-icon="inline-start" />
             Add profile
           </Button>

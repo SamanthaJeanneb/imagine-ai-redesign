@@ -2,6 +2,7 @@
 
 import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
+import type { ReactNode } from "react";
 
 import type { ProfileSummary } from "@/components/features/settings/profile-list";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -25,11 +26,15 @@ export interface AccountSlot {
   note?: string;
   /** Set once LinkedIn answers. */
   profile?: ProfileSummary;
-  /** `false` for the first row: the member's own account stays put. */
-  removable?: boolean;
 }
 
 interface ConnectAccountsProps {
+  /**
+   * The signed-in member's own LinkedIn. It leads the list and has no remove
+   * control, because the org posts as them.
+   */
+  own: AccountSlot;
+  /** The accounts added after it. Each one can be taken back off. */
   slots: readonly AccountSlot[];
   onConnect: (id: string) => void;
   onAdd: () => void;
@@ -60,11 +65,12 @@ function noteFor(slot: AccountSlot): string {
 function SlotRow({
   slot,
   onConnect,
-  onRemove,
+  children,
 }: {
   slot: AccountSlot;
   onConnect: () => void;
-  onRemove: () => void;
+  /** Sits after the sign-in control. The member's own row leaves it empty. */
+  children?: ReactNode;
 }) {
   const connected = slot.status === "connected";
   const profile = slot.profile;
@@ -155,16 +161,7 @@ function SlotRow({
             Connect
           </Button>
         )}
-        {slot.removable === true && slot.status === "idle" ? (
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Remove"
-            onClick={onRemove}
-          >
-            <Icon name="xmark" size="s" />
-          </Button>
-        ) : null}
+        {children}
       </div>
     </motion.li>
   );
@@ -176,6 +173,7 @@ function SlotRow({
  * once, and "Add another" appends a row for the next one.
  */
 export function ConnectAccounts({
+  own,
   slots,
   onConnect,
   onAdd,
@@ -193,6 +191,13 @@ export function ConnectAccounts({
     >
       <ul className="flex flex-col gap-s">
         <AnimatePresence initial={false}>
+          <SlotRow
+            key={own.id}
+            slot={own}
+            onConnect={() => {
+              onConnect(own.id);
+            }}
+          />
           {slots.map((slot) => (
             <SlotRow
               key={slot.id}
@@ -200,10 +205,22 @@ export function ConnectAccounts({
               onConnect={() => {
                 onConnect(slot.id);
               }}
-              onRemove={() => {
-                onRemove(slot.id);
-              }}
-            />
+            >
+              {/* A row mid-sign-in has no cancel, so it cannot be pulled out
+                  from under LinkedIn's answer. */}
+              {slot.status === "idle" ? (
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Remove"
+                  onClick={() => {
+                    onRemove(slot.id);
+                  }}
+                >
+                  <Icon name="xmark" size="s" />
+                </Button>
+              ) : null}
+            </SlotRow>
           ))}
         </AnimatePresence>
         <motion.li layout="position" transition={fade.base}>

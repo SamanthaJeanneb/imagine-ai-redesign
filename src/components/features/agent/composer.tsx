@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "cn";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   createContext,
   useContext,
@@ -77,8 +77,6 @@ interface ComposerProviderProps {
   onSend: (value: string) => void;
   /** Files and assets can be dropped onto the frame. */
   onResourceDrop?: (resource: DraggableResource) => void;
-  /** Off for reduced motion, where the hero should not slide into the dock. */
-  animateLayout?: boolean;
   children: ReactNode;
 }
 
@@ -92,12 +90,14 @@ export function ComposerProvider({
   onValueChange,
   onSend,
   onResourceDrop,
-  animateLayout = true,
   children,
 }: ComposerProviderProps) {
   const [focused, setFocused] = useState(false);
   const [dropActive, setDropActive] = useState(false);
   const layoutLocked = useLayoutLocked();
+  // The hero should not slide into the dock for a reader who asked for less
+  // motion, and nothing should animate mid-resize.
+  const reduceMotion = useReducedMotion();
   const canSend = value.trim().length > 0;
 
   function submit() {
@@ -117,7 +117,7 @@ export function ComposerProvider({
         setFocused,
         dropActive,
         setDropActive,
-        layoutActive: animateLayout && !layoutLocked,
+        layoutActive: !reduceMotion && !layoutLocked,
       }}
     >
       {children}

@@ -344,7 +344,7 @@ function EndpointSection({ endpoint }: { endpoint: Endpoint }) {
         <h2 className="type-heading">{endpoint.title}</h2>
         <div className="flex flex-wrap items-center gap-s">
           <Badge variant="success">{endpoint.method}</Badge>
-          <code className="break-all font-mono type-small">
+          <code className="font-mono type-small break-all">
             {endpoint.path}
           </code>
         </div>

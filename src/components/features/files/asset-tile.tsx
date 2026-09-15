@@ -12,8 +12,6 @@ export interface AssetTileData {
   /** Omit for a placeholder tile. */
   src?: string;
   caption?: string;
-  /** Attached to at least one post. */
-  inUse?: boolean;
 }
 
 const TILE_CLASS =

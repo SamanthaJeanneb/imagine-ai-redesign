@@ -936,7 +936,6 @@ const FILE_SECTIONS: FileSection[] = [
         name: "brand-voice.md",
         excerpt:
           "Brand voice\nAcme writes the way its engineers talk in a review: plainly, with the number attached.\nAlways\nSay what changed before saying why it matters.",
-        usedByAgent: true,
       },
       {
         type: "file",
@@ -951,7 +950,6 @@ const FILE_SECTIONS: FileSection[] = [
         name: "audience.md",
         excerpt:
           "Audience\nEngineering leads at Series A to C companies who own a roadmap and a budget.",
-        usedByAgent: true,
       },
       {
         type: "folder",

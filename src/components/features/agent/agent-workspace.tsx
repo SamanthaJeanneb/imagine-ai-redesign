@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useState, type ReactNode } from "react";
 
@@ -101,12 +101,8 @@ function ThreadBody({
 
 /** The composer at the foot of a thread, in the message column. */
 function ThreadComposer() {
-  const reduceMotion = useReducedMotion();
   return (
-    <ThreadChatDock
-      animateLayout={!reduceMotion}
-      className="sticky bottom-l z-10 mx-auto mt-xl w-full max-w-3xl min-w-0"
-    />
+    <ThreadChatDock className="sticky bottom-l z-10 mx-auto mt-xl w-full max-w-3xl min-w-0" />
   );
 }
 
@@ -242,7 +238,6 @@ interface LandingWorkspaceProps {
  */
 export function SplitLandingWorkspace({ landing }: LandingWorkspaceProps) {
   const router = useRouter();
-  const reduceMotion = useReducedMotion();
   const isCompact = useMediaQuery(COMPACT_QUERY);
   const {
     chat,
@@ -289,10 +284,7 @@ export function SplitLandingWorkspace({ landing }: LandingWorkspaceProps) {
 
       {onLanding ? (
         // The landing's column, so it lines up with the calendar under it.
-        <HeroChatDock
-          animateLayout={!reduceMotion}
-          className={LANDING_COLUMN}
-        />
+        <HeroChatDock className={LANDING_COLUMN} />
       ) : (
         <ThreadComposer />
       )}
@@ -329,7 +321,6 @@ export function SplitLandingWorkspace({ landing }: LandingWorkspaceProps) {
  */
 export function CenteredLandingWorkspace({ landing }: LandingWorkspaceProps) {
   const router = useRouter();
-  const reduceMotion = useReducedMotion();
   const {
     chat,
     onLanding,
@@ -358,10 +349,7 @@ export function CenteredLandingWorkspace({ landing }: LandingWorkspaceProps) {
       {onLanding ? (
         // Narrower than the cards and the month, so it reads as the prompt
         // and not another block.
-        <HeroChatDock
-          animateLayout={!reduceMotion}
-          className="mx-auto w-full max-w-2xl min-w-0"
-        />
+        <HeroChatDock className="mx-auto w-full max-w-2xl min-w-0" />
       ) : (
         <ThreadComposer />
       )}

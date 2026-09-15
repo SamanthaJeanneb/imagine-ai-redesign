@@ -119,7 +119,6 @@ export function toAssetTile(asset: Asset): AssetTileData {
       ? {}
       : { src: EXAMPLE_ASSET_SRC[asset.id] }),
     ...(asset.caption === null ? {} : { caption: asset.caption }),
-    ...(asset.usedCount > 0 ? { inUse: true } : {}),
   };
 }
 

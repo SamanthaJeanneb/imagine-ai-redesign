@@ -29,7 +29,6 @@ interface GroupedFile {
   id: string;
   sourceFile: string;
   content: string;
-  usedByAgent: boolean;
 }
 
 /** `workspace_search` stores chunks; the UI works with one document per source. */
@@ -46,7 +45,6 @@ function groupFiles(rows: readonly WorkspaceFileRow[]): readonly GroupedFile[] {
     id: chunks[0]?.id ?? sourceFile,
     sourceFile,
     content: chunks.map((chunk) => chunk.content).join("\n\n"),
-    usedByAgent: chunks.some((chunk) => chunk.metadata.usedAt !== undefined),
   }));
 }
 
@@ -77,7 +75,6 @@ function toNodes(rows: readonly GroupedFile[]): readonly FileNode[] {
       id: row.id,
       name: fileName(row.sourceFile),
       excerpt: excerpt(row.content),
-      ...(row.usedByAgent ? { usedByAgent: true } : {}),
     };
     const folder = directory(row.sourceFile);
     if (folder === "") {

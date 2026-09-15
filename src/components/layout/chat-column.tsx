@@ -102,7 +102,6 @@ function ChatColumnBody({
   width,
   children,
 }: ChatColumnBodyProps) {
-  const reduceMotion = useReducedMotion();
   const chat = useChat();
   const previews: readonly ComposerPreview[] =
     page === "calendar" ? ["analytics"] : ["calendar"];
@@ -146,7 +145,6 @@ function ChatColumnBody({
         )}
         <ThreadChatDock
           previews={previews}
-          animateLayout={!reduceMotion}
           className="sticky bottom-l z-10 mt-xl"
         />
       </div>

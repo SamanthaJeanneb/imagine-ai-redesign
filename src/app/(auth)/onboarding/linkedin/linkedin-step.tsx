@@ -43,25 +43,24 @@ export function LinkedInStep({
 }: LinkedInStepProps) {
   const router = useRouter();
   const { accounts, setAccounts } = useOnboarding();
-  const [slots, setSlots] = useState<readonly AccountSlot[]>(() =>
-    // Coming back to this step, the rows are whatever already connected.
-    accounts.length > 0
-      ? accounts.map((profile) => ({
-          id: profile.id,
-          status: "connected",
-          profile,
-          removable: profile.id !== ownAccount.id,
-        }))
-      : [
-          {
-            id: ownAccount.id,
-            status: "idle",
-            name: ownAccount.name,
-            note: ownAccountNote,
-            removable: false,
-          },
-        ],
+  // Coming back to this step, each row is whatever already connected.
+  const [own, setOwn] = useState<AccountSlot>(() => {
+    const profile = accounts.find((account) => account.id === ownAccount.id);
+    return profile === undefined
+      ? {
+          id: ownAccount.id,
+          status: "idle",
+          name: ownAccount.name,
+          note: ownAccountNote,
+        }
+      : { id: ownAccount.id, status: "connected", profile };
+  });
+  const [added, setAdded] = useState<readonly AccountSlot[]>(() =>
+    accounts
+      .filter((profile) => profile.id !== ownAccount.id)
+      .map((profile) => ({ id: profile.id, status: "connected", profile })),
   );
+  const slots = [own, ...added];
   // Which mock identity the next sign-in hands back, and a counter for row ids.
   const nextIdentity = useRef(
     accounts.filter((profile) => profile.id !== ownAccount.id).length,
@@ -72,7 +71,11 @@ export function LinkedInStep({
   const connecting = slots.some((slot) => slot.status === "connecting");
 
   function update(id: string, patch: Partial<AccountSlot>) {
-    setSlots((current) =>
+    if (id === ownAccount.id) {
+      setOwn((current) => ({ ...current, ...patch }));
+      return;
+    }
+    setAdded((current) =>
       current.map((slot) => (slot.id === id ? { ...slot, ...patch } : slot)),
     );
   }
@@ -110,14 +113,14 @@ export function LinkedInStep({
 
   function add() {
     nextRow.current += 1;
-    setSlots((current) => [
+    setAdded((current) => [
       ...current,
-      { id: `row-${String(nextRow.current)}`, status: "idle", removable: true },
+      { id: `row-${String(nextRow.current)}`, status: "idle" },
     ]);
   }
 
   function remove(id: string) {
-    setSlots((current) => current.filter((slot) => slot.id !== id));
+    setAdded((current) => current.filter((slot) => slot.id !== id));
   }
 
   function next() {
@@ -171,7 +174,8 @@ export function LinkedInStep({
       }
     >
       <ConnectAccounts
-        slots={slots}
+        own={own}
+        slots={added}
         permissions={PERMISSIONS}
         onConnect={connect}
         onAdd={add}

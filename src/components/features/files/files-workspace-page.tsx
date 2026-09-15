@@ -158,9 +158,17 @@ export function FilesWorkspacePage({
   const files = locationNodes.flatMap((node) =>
     node.type === "file" ? [node] : [],
   );
-  const assets = locationNodes.flatMap((node) =>
-    node.type === "assets" ? node.assets : [],
-  );
+  // One tile per asset. Across "All files" the same asset can hang off more
+  // than one person's assets row, and showing it twice would read as two
+  // uploads.
+  const assetsById = new Map<string, AssetTileData>();
+  for (const node of locationNodes) {
+    if (node.type !== "assets") continue;
+    for (const asset of node.assets) {
+      if (!assetsById.has(asset.id)) assetsById.set(asset.id, asset);
+    }
+  }
+  const assets = [...assetsById.values()];
   const hits =
     view === "skills"
       ? searchSkills(skills, query)

@@ -100,7 +100,10 @@ export function PostContext({ posts, onRemove, className }: PostContextProps) {
       data-slot="post-context"
       className={cn("flex flex-wrap gap-xs empty:hidden", className)}
     >
-      <AnimatePresence initial={false} mode={layoutLocked ? "sync" : "popLayout"}>
+      <AnimatePresence
+        initial={false}
+        mode={layoutLocked ? "sync" : "popLayout"}
+      >
         {posts.map((post) => (
           <motion.div
             key={post.id}

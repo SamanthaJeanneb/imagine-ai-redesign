@@ -8,11 +8,7 @@ import type { IconName } from "@/components/ui/icon";
 import type { SearchBoxResult } from "@/components/ui/search-box";
 
 export type FileSearchKind =
-  | "folder"
-  | "document"
-  | "image"
-  | "video"
-  | "skill";
+  "folder" | "document" | "image" | "video" | "skill";
 
 /** One hit in the shared search dropdown. Callers decide what a click does. */
 export interface FileSearchHit {
@@ -58,13 +54,7 @@ function walk(
           : [];
       return [
         ...self,
-        ...walk(
-          node.children,
-          needle,
-          sectionId,
-          sectionTitle,
-          includeFolders,
-        ),
+        ...walk(node.children, needle, sectionId, sectionTitle, includeFolders),
       ];
     }
     if (node.type === "file") {

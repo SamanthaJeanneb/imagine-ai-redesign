@@ -32,8 +32,6 @@ export type FileNode =
       name: string;
       /** Opening lines of the document, for card previews. */
       excerpt?: string;
-      /** The agent has read this file into a reply. */
-      usedByAgent?: boolean;
     }
   | { type: "folder"; id: string; name: string; children: readonly FileNode[] }
   | {

@@ -60,15 +60,11 @@ const EXPAND_LABEL: Record<ComposerPreview, string> = {
 /* -------------------------------------------------------------------------- */
 
 interface ChatComposerProviderProps {
-  animateLayout: boolean;
   children: ReactNode;
 }
 
 /** The composer parts, backed by the conversation in `ChatProvider`. */
-function ChatComposerProvider({
-  animateLayout,
-  children,
-}: ChatComposerProviderProps) {
+function ChatComposerProvider({ children }: ChatComposerProviderProps) {
   const chat = useChat();
   return (
     <ComposerProvider
@@ -76,7 +72,6 @@ function ChatComposerProvider({
       onValueChange={chat.setDraft}
       onSend={chat.send}
       onResourceDrop={chat.attach}
-      animateLayout={animateLayout}
     >
       {children}
     </ComposerProvider>
@@ -191,17 +186,13 @@ function ChatAttachments({ className }: { className: string }) {
 /* -------------------------------------------------------------------------- */
 
 interface HeroChatDockProps {
-  animateLayout?: boolean;
   className?: string;
 }
 
 /** The landing's prompt box: larger type, no previews. */
-export function HeroChatDock({
-  animateLayout = true,
-  className,
-}: HeroChatDockProps) {
+export function HeroChatDock({ className }: HeroChatDockProps) {
   return (
-    <ChatComposerProvider animateLayout={animateLayout}>
+    <ChatComposerProvider>
       <ComposerFrame
         layoutId={COMPOSER_LAYOUT_ID}
         layoutDependency="hero"
@@ -229,7 +220,6 @@ interface ThreadChatDockProps {
    * a calendar preview.
    */
   previews?: readonly ComposerPreview[];
-  animateLayout?: boolean;
   className?: string;
 }
 
@@ -238,11 +228,7 @@ interface ThreadChatDockProps {
  * `Activity`, so their cells and bars keep their state between opens; the
  * surface only shows the one whose chip is on.
  */
-export function ThreadChatDock({
-  previews,
-  animateLayout = true,
-  className,
-}: ThreadChatDockProps) {
+export function ThreadChatDock({ previews, className }: ThreadChatDockProps) {
   const router = useRouter();
   const chat = useChat();
   const shown = chat.lastPreview;
@@ -251,7 +237,7 @@ export function ThreadChatDock({
   );
 
   return (
-    <ChatComposerProvider animateLayout={animateLayout}>
+    <ChatComposerProvider>
       <ComposerFrame
         layoutId={COMPOSER_LAYOUT_ID}
         layoutDependency="dock"
