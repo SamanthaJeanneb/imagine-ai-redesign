@@ -104,7 +104,7 @@ function useTreeNav(part: string): TreeNavState {
  * The rail's tree frame. The path to the selection is held open unless the
  * user has closed it themselves; other rows open on demand.
  */
-export function TreeNav({
+function TreeNav({
   sections,
   selectedId,
   className,
@@ -164,7 +164,7 @@ const DragContext = createContext<{ dragging: boolean } | null>(null);
 const DropContext = createContext<{ active: boolean } | null>(null);
 
 /** Makes the row inside a native drag source for moving it between folders. */
-export function TreeNavDraggable({
+function TreeNavDraggable({
   dragging = false,
   onDragStart,
   onDragEnd,
@@ -198,7 +198,7 @@ export function TreeNavDraggable({
 }
 
 /** Lets a library or folder row accept a dragged item; `active` lights it. */
-export function TreeNavDropTarget({
+function TreeNavDropTarget({
   active = false,
   onDragOver,
   onDragLeave,
@@ -329,7 +329,7 @@ function Toggle({ id, label }: { id: string; label: string }) {
 }
 
 /** A library's row: its mark, its name in bold, and a chevron. */
-export function TreeNavSection({
+function TreeNavSection({
   section,
   onSelect,
 }: {
@@ -350,7 +350,7 @@ export function TreeNavSection({
 }
 
 /** A folder's row: the folder mark reflects whether it is open. */
-export function TreeNavFolder({
+function TreeNavFolder({
   id,
   name,
   onSelect,
@@ -372,7 +372,7 @@ export function TreeNavFolder({
 }
 
 /** A document's row. Opens on click. */
-export function TreeNavFile({
+function TreeNavFile({
   id,
   name,
   onOpen,
@@ -393,7 +393,7 @@ export function TreeNavFile({
 }
 
 /** What sits under a section or folder row; folds with it. */
-export function TreeNavBranch({
+function TreeNavBranch({
   id,
   children,
 }: {
@@ -405,7 +405,7 @@ export function TreeNavBranch({
 }
 
 /** The rows under one parent, indented behind a guide line. */
-export function TreeNavList({ children }: { children: ReactNode }) {
+function TreeNavList({ children }: { children: ReactNode }) {
   return (
     <ul className="ml-l flex flex-col gap-px border-l border-imagine-border pl-s">
       {children}
@@ -414,7 +414,7 @@ export function TreeNavList({ children }: { children: ReactNode }) {
 }
 
 /** One row's slot in a `TreeNavList`; enters staggered by its position. */
-export function TreeNavItem({
+function TreeNavItem({
   index,
   children,
 }: {

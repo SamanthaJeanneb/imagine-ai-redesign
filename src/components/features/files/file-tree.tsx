@@ -72,7 +72,7 @@ function Chevron({ open }: { open: boolean }) {
 /* ------------------------------------------------------------------------ */
 
 /** The tree's frame. Holds `FileTreeSection`s. */
-export function FileTree({
+function FileTree({
   className,
   children,
 }: {
@@ -90,7 +90,7 @@ export function FileTree({
  * A library: an organization or a person, collapsible under its mark. The
  * children (a `FileTreeList`) sit inside a guide line.
  */
-export function FileTreeSection({
+function FileTreeSection({
   section,
   children,
 }: {
@@ -147,12 +147,12 @@ export function FileTreeSection({
 }
 
 /** The rows under one parent. */
-export function FileTreeList({ children }: { children: ReactNode }) {
+function FileTreeList({ children }: { children: ReactNode }) {
   return <ul className="flex flex-col gap-xxs">{children}</ul>;
 }
 
 /** One row's slot in a `FileTreeList`; enters staggered by its position. */
-export function FileTreeItem({
+function FileTreeItem({
   index,
   children,
 }: {
@@ -171,7 +171,7 @@ export function FileTreeItem({
 }
 
 /** A collapsible folder row; its children (a `FileTreeList`) indent under it. */
-export function FileTreeFolder({
+function FileTreeFolder({
   name,
   children,
 }: {
@@ -222,7 +222,7 @@ function useFileTreeFile(part: string) {
  * A document row. The open one carries a left bar. Children are the actions
  * that appear on hover: `FileTreeFileAttachAction`, `FileTreeFileEditAction`.
  */
-export function FileTreeFile({
+function FileTreeFile({
   name,
   active = false,
   onOpen,
@@ -274,7 +274,7 @@ export function FileTreeFile({
   );
 }
 
-export function FileTreeFileAttachAction({ onPress }: { onPress: () => void }) {
+function FileTreeFileAttachAction({ onPress }: { onPress: () => void }) {
   const { name } = useFileTreeFile("FileTreeFileAttachAction");
   return (
     <Button
@@ -289,7 +289,7 @@ export function FileTreeFileAttachAction({ onPress }: { onPress: () => void }) {
   );
 }
 
-export function FileTreeFileEditAction({ onPress }: { onPress: () => void }) {
+function FileTreeFileEditAction({ onPress }: { onPress: () => void }) {
   const { name } = useFileTreeFile("FileTreeFileEditAction");
   return (
     <Button
@@ -305,7 +305,7 @@ export function FileTreeFileEditAction({ onPress }: { onPress: () => void }) {
 }
 
 /** An assets row: a label over whatever grid the caller puts under it. */
-export function FileTreeAssets({
+function FileTreeAssets({
   name,
   children,
 }: {
