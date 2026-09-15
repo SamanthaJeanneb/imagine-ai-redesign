@@ -27,10 +27,11 @@ import {
   type Skill,
   SkillsList,
 } from "@/components/features/files/skills-list";
-import { findFolder } from "@/components/features/files/file-tree-ops";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { findFolder, leaves } from "@/components/features/files/file-tree-ops";
 import { Icon } from "@/components/ui/icon";
+import { PersonAvatar } from "@/components/ui/person-avatar";
 import { SearchBox } from "@/components/ui/search-box";
+import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -42,7 +43,6 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { OpenDocument } from "@/services/files";
 import { fade, pressRow } from "@/styles/motion";
-import { initials } from "@/lib/initials";
 import { useDocumentDrafts } from "@/lib/use-document-drafts";
 
 interface FilesWorkspacePageProps {
@@ -74,14 +74,8 @@ function countLibrary(nodes: readonly FileNode[]): {
   return { documents, assets };
 }
 
-function flattenContent(nodes: readonly FileNode[]): readonly FileNode[] {
-  return nodes.flatMap((node) =>
-    node.type === "folder" ? flattenContent(node.children) : [node],
-  );
-}
-
 function firstDocument(nodes: readonly FileNode[]) {
-  return flattenContent(nodes).find((node) => node.type === "file");
+  return leaves(nodes).find((node) => node.type === "file");
 }
 
 /**
@@ -113,15 +107,13 @@ export function FilesWorkspacePage({
   const library = countLibrary(allNodes);
   const ownerByFileId = new Map<string, string>();
   for (const section of sections) {
-    for (const node of flattenContent(section.nodes)) {
+    for (const node of leaves(section.nodes)) {
       if (node.type === "file") ownerByFileId.set(node.id, section.title);
     }
   }
   const currentSection = sections.find((section) => section.id === sectionId);
   const scopeNodes =
-    currentSection === undefined
-      ? flattenContent(allNodes)
-      : currentSection.nodes;
+    currentSection === undefined ? leaves(allNodes) : currentSection.nodes;
   const currentFolder =
     folderId === undefined ? undefined : findFolder(scopeNodes, folderId);
   const locationNodes = currentFolder?.children ?? scopeNodes;
@@ -169,18 +161,14 @@ export function FilesWorkspacePage({
       return;
     }
     setView("files");
-    if (hit.kind === "folder" && hit.sectionId !== undefined) {
-      setSectionId(hit.sectionId);
+    setSectionId(hit.sectionId);
+    if (hit.kind === "folder") {
       setFolderId(id);
-      return;
-    }
-    if (hit.asset !== undefined) {
-      if (hit.sectionId !== undefined) setSectionId(hit.sectionId);
+    } else if (hit.kind === "document") {
+      openDocument(id);
+    } else {
       setSelection({ kind: "asset", asset: hit.asset });
-      return;
     }
-    if (hit.sectionId !== undefined) setSectionId(hit.sectionId);
-    openDocument(id);
   };
 
   return (
@@ -239,7 +227,7 @@ export function FilesWorkspacePage({
             </span>
           </motion.button>
 
-          <div className="my-s border-t border-imagine-border" />
+          <Separator className="my-s" />
 
           {sections.map((section) => {
             const active = section.id === sectionId;
@@ -267,14 +255,12 @@ export function FilesWorkspacePage({
                 )}
               >
                 {section.kind === "person" ? (
-                  <Avatar size="sm" className="size-6">
-                    {avatarUrl ? (
-                      <AvatarImage src={avatarUrl} alt={section.title} />
-                    ) : null}
-                    <AvatarFallback className="text-xs">
-                      {initials(section.title)}
-                    </AvatarFallback>
-                  </Avatar>
+                  <PersonAvatar
+                    name={section.title}
+                    {...(avatarUrl === undefined ? {} : { avatarUrl })}
+                    size="sm"
+                    className="size-6 text-xs"
+                  />
                 ) : avatarUrl ? (
                   // Organization images stay square.
                   // eslint-disable-next-line @next/next/no-img-element

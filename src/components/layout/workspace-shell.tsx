@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "cn";
 import { AnimatePresence, LayoutGroup } from "motion/react";
 import { type ReactNode } from "react";
 
@@ -118,13 +119,13 @@ function WorkspaceFrame({
   const { docked } = useWorkspaceNav();
   const { isMobile, isCompact, chatOverlayOpen, setChatOverlayOpen } =
     useWorkspaceChrome();
-  const { panelOpen, setPanel } = useWorkspaceFiles();
+  const { panelOpen, setFilesPanelOpen } = useWorkspaceFiles();
   // Too narrow to hold both, the chat comes over the page instead of beside
   // it, and the files panel follows it there.
   const chatOverlaid = docked && isCompact;
-  const chatInFlow = docked && !chatOverlaid;
+  const chatInFlow = docked && !isCompact;
   const panelsInFlow = !isCompact;
-  const panelsOverlaid = isCompact && !chatOverlaid;
+  const panelsOverlaid = isCompact && !docked;
   const header = <WorkspaceTopBar user={user} profiles={profiles} />;
   const page = <WorkspacePage>{children}</WorkspacePage>;
   const filesPanel = panelOpen ? (
@@ -141,12 +142,24 @@ function WorkspaceFrame({
           />
         </WorkspaceNavSheet>
         <div className="relative flex min-w-0 flex-1 flex-col rounded-none bg-imagine-surface shadow-raised md:rounded-l-surface">
-          {docked ? (
-            <div className="flex min-h-0 min-w-0 flex-1">
-              <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-                {header}
-                {page}
-              </div>
+          {/* One tree in both arrangements: flipping `docked` only moves the
+              header and the side column with grid placement, so the page and
+              the aside slot are never unmounted. */}
+          <div className="relative grid min-h-0 min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto] grid-rows-[auto_minmax(0,1fr)]">
+            <div
+              className={cn("min-w-0", docked ? "col-start-1" : "col-span-2")}
+            >
+              {header}
+            </div>
+            <div className="col-start-1 row-start-2 flex min-h-0 min-w-0 flex-col">
+              {page}
+            </div>
+            <div
+              className={cn(
+                "col-start-2 flex min-h-0",
+                docked ? "row-span-2 row-start-1" : "row-start-2",
+              )}
+            >
               <WorkspacePageAsideSlot />
               {chatInFlow ? (
                 <AnimatePresence initial={false}>
@@ -157,56 +170,28 @@ function WorkspaceFrame({
                 <AnimatePresence initial={false}>{filesPanel}</AnimatePresence>
               ) : null}
             </div>
-          ) : (
-            <>
-              {header}
-              <div className="relative flex min-h-0 min-w-0 flex-1">
-                {page}
-                <WorkspacePageAsideSlot />
-                {chatInFlow ? (
-                  <AnimatePresence initial={false}>
-                    <WorkspaceChatColumn key="chat" />
-                  </AnimatePresence>
-                ) : null}
-                {panelsInFlow ? (
-                  <AnimatePresence initial={false}>
-                    {filesPanel}
-                  </AnimatePresence>
-                ) : null}
-              </div>
-            </>
-          )}
-          <AnimatePresence initial={false}>
-            {chatOverlaid && chatOverlayOpen ? (
-              <WorkspaceScrim
-                key="chat-overlay"
-                onDismiss={() => {
-                  setChatOverlayOpen(false);
-                }}
-              >
-                {isMobile && filesPanel !== null ? (
-                  filesPanel
-                ) : (
-                  <>
-                    <WorkspaceChatColumn key="chat" />
-                    {filesPanel}
-                  </>
-                )}
-              </WorkspaceScrim>
-            ) : null}
-          </AnimatePresence>
-          <AnimatePresence initial={false}>
-            {panelsOverlaid && filesPanel !== null ? (
-              <WorkspaceScrim
-                key="panel-overlay"
-                onDismiss={() => {
-                  setPanel(null);
-                }}
-              >
+          </div>
+          <WorkspaceScrim
+            open={chatOverlaid && chatOverlayOpen}
+            onOpenChange={setChatOverlayOpen}
+            label="Chat"
+          >
+            {isMobile && filesPanel !== null ? (
+              filesPanel
+            ) : (
+              <>
+                <WorkspaceChatColumn key="chat" />
                 {filesPanel}
-              </WorkspaceScrim>
-            ) : null}
-          </AnimatePresence>
+              </>
+            )}
+          </WorkspaceScrim>
+          <WorkspaceScrim
+            open={panelsOverlaid && filesPanel !== null}
+            onOpenChange={setFilesPanelOpen}
+            label="Files"
+          >
+            {filesPanel}
+          </WorkspaceScrim>
         </div>
       </div>
     </LayoutGroup>

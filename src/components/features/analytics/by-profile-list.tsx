@@ -21,7 +21,6 @@ export interface ProfileMetric {
 }
 
 interface ByProfileListProps {
-  title?: string;
   items: readonly ProfileMetric[];
   onOpen?: (item: ProfileMetric) => void;
   selectedId?: string;
@@ -33,7 +32,6 @@ interface ByProfileListProps {
  * the accent on a hairline track, and the value. Bars grow in from the left.
  */
 export function ByProfileList({
-  title = "By profile",
   items,
   onOpen,
   selectedId,
@@ -51,7 +49,7 @@ export function ByProfileList({
         className,
       )}
     >
-      <span className="type-heading">{title}</span>
+      <span className="type-heading">By profile</span>
       <Stagger kind="list" className="flex flex-col gap-m">
         {items.map((item) => {
           const ratio = max > 0 ? item.value / max : 0;

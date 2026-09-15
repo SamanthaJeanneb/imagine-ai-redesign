@@ -25,10 +25,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Chip, ChipGroup } from "@/components/ui/chip-group";
-import {
-  DashedActionRow,
-  DashedActionTile,
-} from "@/components/ui/dashed-action";
+import { DashedActionRow } from "@/components/ui/dashed-action";
 import {
   Dialog,
   DialogClose,
@@ -65,9 +62,6 @@ import {
 import {
   Popover,
   PopoverContent,
-  PopoverDescription,
-  PopoverHeader,
-  PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { SearchBox } from "@/components/ui/search-box";
@@ -345,12 +339,14 @@ export function OverlayDemo() {
           <Button variant="outline">Post details</Button>
         </PopoverTrigger>
         <PopoverContent>
-          <PopoverHeader>
-            <PopoverTitle>Why founders should post weekly</PopoverTitle>
-            <PopoverDescription>
+          <div className="flex flex-col gap-xxs">
+            <p className="type-small font-medium">
+              Why founders should post weekly
+            </p>
+            <p className="type-small text-imagine-foreground-muted">
               Scheduled for Tue, 9 Sep at 9:00 from Sarah Chen.
-            </PopoverDescription>
-          </PopoverHeader>
+            </p>
+          </div>
           <Button size="sm" className="self-start">
             Open in chat
           </Button>
@@ -508,14 +504,14 @@ export function FileChromeDemo() {
         >
           New folder
         </DashedActionRow>
-        <DashedActionTile
+        <DashedActionRow
           icon="file-plus"
           onClick={() => {
             toast("New document");
           }}
         >
           New document
-        </DashedActionTile>
+        </DashedActionRow>
       </div>
     </div>
   );

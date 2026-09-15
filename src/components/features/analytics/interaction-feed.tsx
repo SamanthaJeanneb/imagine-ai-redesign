@@ -38,7 +38,7 @@ export interface Interaction {
   commentId?: string;
 }
 
-export type InteractionAction = "reply" | "outreach";
+type InteractionAction = "reply" | "outreach";
 
 interface InteractionFeedProps {
   items: readonly Interaction[];

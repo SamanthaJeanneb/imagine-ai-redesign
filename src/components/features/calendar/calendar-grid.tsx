@@ -5,6 +5,8 @@ import { motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 
 import { AddPostButton } from "@/components/features/calendar/add-post-button";
+import { WEEKDAYS } from "@/components/features/calendar/calendar-copy";
+import { CalendarDayNumber } from "@/components/features/calendar/calendar-day-number";
 import {
   EventChip,
   type EventChipData,
@@ -13,6 +15,7 @@ import {
 } from "@/components/features/calendar/event-chip";
 import {
   PostChip,
+  type PostChipBaseProps,
   type PostChipData,
   PostChipDense,
   PostChipLine,
@@ -45,8 +48,6 @@ interface CalendarGridBaseProps {
   className?: string;
 }
 
-const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
-
 /**
  * How a chip is drawn: a card with the name, label, excerpt, and time; a dense
  * card with the name and a two-line excerpt; or one truncated line.
@@ -66,16 +67,19 @@ const LINES: ChipVariants = { post: "line", event: "line" };
 /** Cells narrower than this show line chips: a card's text would wrap to a word a line. */
 const LINE_CELL_WIDTH = 96;
 
+/** The excerpt a full card shows, and the most posts a cell lists. */
+const FULL_LINES: PostChipLines = 3;
+
 /**
  * How much of the post each variant shows, given the room a full card has:
  * the dense card keeps two lines, the line chip one.
  */
-function linesFor(variant: ChipVariant, full: PostChipLines): PostChipLines {
+function linesFor(variant: ChipVariant): PostChipLines {
   switch (variant) {
     case "card":
-      return full;
+      return FULL_LINES;
     case "dense":
-      return full > 2 ? 2 : full;
+      return FULL_LINES > 2 ? 2 : FULL_LINES;
     case "line":
       return 1;
   }
@@ -148,13 +152,12 @@ const VARIANTS: readonly ChipVariant[] = ["card", "dense", "line"];
 function variantsForRow(
   cellWidth: number | undefined,
   rowHeight: number | undefined,
-  full: PostChipLines,
 ): ChipVariants {
   if (cellWidth !== undefined && cellWidth < LINE_CELL_WIDTH) return LINES;
   if (rowHeight === undefined) return CARDS;
   const room = rowHeight - CELL_OVERHEAD - 2 * CELL_GAP;
   for (const [index, post] of VARIANTS.entries()) {
-    const height = postChipHeight(post, linesFor(post, full));
+    const height = postChipHeight(post, linesFor(post));
     for (const event of VARIANTS.slice(index)) {
       if (height + eventChipHeight(event) <= room) return { post, event };
     }
@@ -188,10 +191,9 @@ function planFittedCell(
   day: CalendarDay,
   variants: ChipVariants,
   lines: number,
-  chipLimit: number,
   rowHeight: number | undefined,
 ): CellPlan {
-  if (rowHeight === undefined) return planCell(day, chipLimit);
+  if (rowHeight === undefined) return planCell(day, FULL_LINES);
   const events = day.events ?? [];
   const posts = day.posts;
 
@@ -208,7 +210,7 @@ function planFittedCell(
     used += height + CELL_GAP;
     shown += 1;
   }
-  const shownPosts = Math.min(chipLimit, Math.max(0, shown - events.length));
+  const shownPosts = Math.min(FULL_LINES, Math.max(0, shown - events.length));
   return {
     events: events.slice(0, Math.min(shown, events.length)),
     posts: posts.slice(0, shownPosts),
@@ -245,6 +247,9 @@ function CalendarWeekdays() {
   );
 }
 
+/** Which calendar below is being drawn; feeds the morph's re-measure. */
+type CalendarVariant = "strip" | "preview" | "month" | "month-fit";
+
 /**
  * The rounded frame, with the weekday row along the top. Carries the shared
  * layout id when it morphs to or from the composer preview; the `variant`
@@ -257,7 +262,7 @@ function CalendarFrame({
   className,
   children,
 }: {
-  variant: string;
+  variant: CalendarVariant;
   /** The post chip the cells are drawing, for anything that styles by it. */
   chips: ChipVariant;
   layoutId?: string;
@@ -341,9 +346,22 @@ function CalendarCell({
       initial={reduceMotion ? false : { opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ ...fade.slow, delay: wave * stagger.calendar }}
+      tabIndex={onSelectDay ? 0 : undefined}
       onClick={
         onSelectDay
           ? () => {
+              onSelectDay(day);
+            }
+          : undefined
+      }
+      onKeyDown={
+        onSelectDay
+          ? (event) => {
+              // Only the cell's own keys: a chip or the plus inside it
+              // answers Enter and Space itself.
+              if (event.target !== event.currentTarget) return;
+              if (event.key !== "Enter" && event.key !== " ") return;
+              event.preventDefault();
               onSelectDay(day);
             }
           : undefined
@@ -352,7 +370,7 @@ function CalendarCell({
         "group/cell @container/chip relative flex flex-col gap-xs bg-imagine-surface p-xs",
         day.isOutside && "bg-imagine-surface/60",
         onSelectDay &&
-          "cursor-pointer transition-colors hover:bg-imagine-surface-raised/50",
+          "cursor-pointer transition-colors outline-none hover:bg-imagine-surface-raised/50 focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-inset",
         className,
       )}
     >
@@ -364,34 +382,37 @@ function CalendarCell({
           }}
         />
       )}
-      <span
-        className={cn(
-          "flex size-5 items-center justify-center rounded-full type-small tabular-nums",
-          day.isToday
-            ? "bg-imagine-primary font-semibold text-imagine-primary-foreground"
-            : day.isOutside
-              ? "text-imagine-foreground-faint"
-              : "text-imagine-foreground-muted",
-        )}
-      >
-        {day.dayNumber}
-      </span>
+      <CalendarDayNumber day={day} />
       {children}
     </motion.div>
   );
 }
 
-/** The chip components, by the variant a cell has measured room for. */
+/** The event chips, by the variant a cell has measured room for. */
 const EVENT_CHIP: Record<ChipVariant, typeof EventChip> = {
   card: EventChip,
   dense: EventChipDense,
   line: EventChipLine,
 };
-const POST_CHIP: Record<ChipVariant, typeof PostChip> = {
-  card: PostChip,
-  dense: PostChipDense,
-  line: PostChipLine,
-};
+
+/**
+ * The post chip for the variant a cell has measured room for. The line chip
+ * shows one line whatever the excerpt, so it is given none.
+ */
+function CellPostChip({
+  variant,
+  lines,
+  ...props
+}: PostChipBaseProps & { variant: ChipVariant; lines: PostChipLines }) {
+  switch (variant) {
+    case "card":
+      return <PostChip lines={lines} {...props} />;
+    case "dense":
+      return <PostChipDense lines={lines} {...props} />;
+    case "line":
+      return <PostChipLine {...props} />;
+  }
+}
 
 /**
  * A cell's chips: its events, then its posts, then "+N more" for whatever the
@@ -414,15 +435,15 @@ function CalendarCellChips({
   onOpenEvent?: (event: EventChipData) => void;
 }) {
   const Event = EVENT_CHIP[variants.event];
-  const Post = POST_CHIP[variants.post];
   return (
     <>
       {plan.events.map((event) => (
         <Event key={event.id} event={event} onOpen={onOpenEvent} />
       ))}
       {plan.posts.map((post) => (
-        <Post
+        <CellPostChip
           key={post.id}
+          variant={variants.post}
           post={post}
           lines={lines}
           selected={post.id === selectedPostId}
@@ -460,7 +481,7 @@ export function CalendarStrip({
 }: CalendarGridBaseProps) {
   const [rowsRef, size] = useElementSize();
   const variants = variantsForWidth(cellWidthOf(size));
-  const lines = linesFor(variants.post, 3);
+  const lines = linesFor(variants.post);
 
   return (
     <div className={cn("min-w-0 overflow-x-auto p-m", className)}>
@@ -555,7 +576,7 @@ export function CalendarMonth({
 }) {
   const [rowsRef, size] = useElementSize();
   const variants = variantsForWidth(cellWidthOf(size));
-  const lines = linesFor(variants.post, 3);
+  const lines = linesFor(variants.post);
 
   return (
     <div className={cn("min-w-0 overflow-x-auto p-m", className)}>
@@ -619,8 +640,8 @@ export function CalendarMonthFit({
     size !== undefined && rows > 0
       ? (size.height - (rows - 1)) / rows
       : undefined;
-  const variants = variantsForRow(cellWidthOf(size), rowHeight, 3);
-  const lines = linesFor(variants.post, 3);
+  const variants = variantsForRow(cellWidthOf(size), rowHeight);
+  const lines = linesFor(variants.post);
 
   return (
     <div
@@ -652,7 +673,7 @@ export function CalendarMonthFit({
               onCreatePost={onCreatePost}
             >
               <CalendarCellChips
-                plan={planFittedCell(day, variants, lines, 3, rowHeight)}
+                plan={planFittedCell(day, variants, lines, rowHeight)}
                 variants={variants}
                 lines={lines}
                 selectedPostId={selectedPostId}

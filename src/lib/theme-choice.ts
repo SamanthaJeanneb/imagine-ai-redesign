@@ -9,7 +9,7 @@ export const THEME_CHOICES = [
   { value: "system", label: "System" },
 ] as const;
 
-export type ThemeValue = (typeof THEME_CHOICES)[number]["value"];
+type ThemeValue = (typeof THEME_CHOICES)[number]["value"];
 
 /** Whatever `next-themes` hands back, narrowed to a choice we offer. */
 export function toThemeValue(value: string | undefined): ThemeValue {

@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "cn";
 import { useState } from "react";
 
 import {
@@ -18,7 +17,6 @@ interface AssetPickerProps {
   onSelectedChange?: (id: string | undefined) => void;
   onConfirm?: (asset: AssetTileData) => void;
   onBrowse?: () => void;
-  className?: string;
 }
 
 /**
@@ -32,7 +30,6 @@ export function AssetPicker({
   onSelectedChange,
   onConfirm,
   onBrowse,
-  className,
 }: AssetPickerProps) {
   const [uncontrolledId, setUncontrolledId] = useState<string | undefined>();
   const selectedId = controlledId ?? uncontrolledId;
@@ -41,7 +38,7 @@ export function AssetPicker({
   return (
     <div
       data-slot="asset-picker"
-      className={cn("flex w-full max-w-lg flex-col gap-m", className)}
+      className="flex w-full max-w-lg flex-col gap-m"
     >
       <span className="type-body font-medium">{prompt}</span>
       <Stagger kind="grid" className="grid grid-cols-4 gap-s p-xs">

@@ -210,10 +210,6 @@ import { ThemeChoice } from "@/components/features/settings/theme-choice";
 import { AccountControls, AccountName } from "@/components/layout/account";
 import { DockedChatColumn } from "@/components/layout/chat-column";
 import {
-  ChatContextPanel,
-  type ChatPanelMode,
-} from "@/components/layout/chat-context-panel";
-import {
   ChatControls,
   ChatHistoryMenu,
   ChatTitle,
@@ -294,7 +290,7 @@ const THREADS = [
 const TIMELINE: TimelineEntry[] = [
   {
     id: "e1",
-    kind: "Drafted",
+    kind: "drafted",
     when: "2h ago",
     title: "Onboarding launch post for Sarah Chen",
     excerpt:
@@ -307,7 +303,7 @@ const TIMELINE: TimelineEntry[] = [
   },
   {
     id: "e2",
-    kind: "Published",
+    kind: "published",
     when: "Yesterday, 9:00",
     title: "Hiring post reached 4.1k people",
     actions: [
@@ -317,7 +313,7 @@ const TIMELINE: TimelineEntry[] = [
   },
   {
     id: "e3",
-    kind: "Reply drafted",
+    kind: "reply_drafted",
     when: "Yesterday",
     title: "Comment on Sarah's hiring post",
     excerpt:
@@ -502,7 +498,7 @@ const POST_LAUNCH: PostChipData = {
   time: "9:00",
   profile: "Sarah",
   status: "scheduled",
-  label: "Product",
+  labels: ["Product"],
   preview: {
     author: AUTHOR_SARAH,
     body: "We rebuilt onboarding from scratch.\n\nThree steps instead of nine. The first post goes out in under ten minutes.\n\nWhat we cut, and why it was harder than adding.",
@@ -515,7 +511,7 @@ const POST_FOUNDERS: PostChipData = {
   time: "12:30",
   profile: "Acme",
   status: "in_review",
-  label: "Thought leadership",
+  labels: ["Thought leadership"],
   preview: {
     author: AUTHOR_ACME,
     body: "Founders who post once a week grow their audience 3x faster than those who post when inspired.\n\nConsistency beats brilliance. Here is the cadence we recommend.",
@@ -527,7 +523,7 @@ const POST_HIRING: PostChipData = {
   time: "9:00",
   profile: "Ravi",
   status: "published",
-  label: "Hiring",
+  labels: ["Hiring"],
   preview: {
     author: AUTHOR_RAVI,
     body: "We are hiring a senior product designer.\n\nSmall team, real ownership, and a product people use every day. Remote across Europe.\n\nDM me or apply below.",
@@ -598,7 +594,7 @@ const POST_NORTHWIND: PostChipData = {
   time: "10:00",
   profile: "Sarah",
   status: "failed",
-  label: "Case study",
+  labels: ["Case study"],
   preview: {
     author: AUTHOR_SARAH,
     body: "Northwind cut their onboarding time from three weeks to four days.\n\nHere is how their ops team did it, in their own words.",
@@ -1288,11 +1284,11 @@ export function SidebarDemo() {
 }
 
 export function ChatChromeDemo() {
-  const [panel, setPanel] = useState<ChatPanelMode | null>(null);
+  const [filesOpen, setFilesOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-xl">
-      <Demo label="Chat title with history, and files panel">
+      <Demo label="Chat title with history, and the files toggle">
         <LayoutGroup id="kit-chat-context">
           <div className="flex h-96 overflow-hidden border border-imagine-border bg-imagine-surface">
             <div className="flex min-w-0 flex-1 flex-col p-l">
@@ -1308,27 +1304,17 @@ export function ChatChromeDemo() {
                   />
                 </ChatTitle>
                 <ChatControls
-                  panel={panel}
-                  onPanelChange={setPanel}
+                  filesOpen={filesOpen}
+                  onFilesOpenChange={setFilesOpen}
                   className="ml-auto"
                 />
               </div>
               <p className="mt-auto max-w-sm type-small text-imagine-foreground-muted">
-                Open history from the arrow beside the name. Toggle files for
-                the working panel.
+                Open history from the arrow beside the name. The files toggle
+                reads {filesOpen ? "on" : "off"}; the panel it opens is its own
+                demo below.
               </p>
             </div>
-            <AnimatePresence initial={false}>
-              {panel === "files" ? (
-                <ChatContextPanel
-                  key="kit-context-panel"
-                  fileSections={FILE_SECTIONS}
-                  onClose={() => {
-                    setPanel(null);
-                  }}
-                />
-              ) : null}
-            </AnimatePresence>
           </div>
         </LayoutGroup>
       </Demo>
@@ -1870,7 +1856,7 @@ export function ComposerDemo() {
                 <ComposerAttachments className="px-xs pt-xs">
                   {attached ? (
                     <PostContext
-                      posts={[attached]}
+                      post={attached}
                       onRemove={() => {
                         setAttached(null);
                       }}
@@ -2338,9 +2324,6 @@ export function CalendarToolbarDemo() {
               profileName: "Acme",
             },
           ]}
-          onOpen={(item) => {
-            toast(item.title);
-          }}
           onViewAll={() => {
             toast("Open calendar");
           }}
@@ -2698,9 +2681,6 @@ export function AnalyticsPartsDemo() {
             ]}
             onOpen={(post) => {
               toast(post.title);
-            }}
-            onViewAll={() => {
-              toast("All posts");
             }}
           />
         </Demo>
@@ -3179,7 +3159,6 @@ export function OnboardingPartsDemo() {
             title="Invite your team"
             description="Add the people who write, review, or approve posts."
             step={step + 1}
-            total={STEPS.length}
           />
         </Demo>
       </div>

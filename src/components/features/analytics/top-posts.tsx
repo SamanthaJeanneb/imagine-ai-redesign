@@ -22,7 +22,6 @@ export interface TopPost {
 interface TopPostsProps {
   items: readonly TopPost[];
   onOpen?: (post: TopPost) => void;
-  onViewAll?: () => void;
   selectedId?: string;
   className?: string;
 }
@@ -34,7 +33,6 @@ interface TopPostsProps {
 export function TopPosts({
   items,
   onOpen,
-  onViewAll,
   selectedId,
   className,
 }: TopPostsProps) {
@@ -46,19 +44,7 @@ export function TopPosts({
         className,
       )}
     >
-      <div className="flex items-center justify-between">
-        <span className="type-heading">Top posts</span>
-        {onViewAll ? (
-          <Button
-            variant="ghost"
-            size="xs"
-            className="text-imagine-foreground-muted"
-            onClick={onViewAll}
-          >
-            View all
-          </Button>
-        ) : null}
-      </div>
+      <span className="type-heading">Top posts</span>
       <Stagger kind="list" className="flex flex-col">
         {items.map((post, index) => (
           <StaggerItem key={post.id}>

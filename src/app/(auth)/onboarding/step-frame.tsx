@@ -1,12 +1,17 @@
-import { cn } from "cn";
+"use client";
+
+import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+
+/** Every step of this flow, counting sign-in as the first. */
+const TOTAL_STEPS = 6;
 
 interface StepFrameProps {
   /** 1-based, counting sign-in as the first step. */
   step: number;
-  total: number;
   title: string;
   description: string;
   /** The form or panel for this step. */
@@ -16,7 +21,6 @@ interface StepFrameProps {
    * action at the right, with a skip link just before it.
    */
   actions: ReactNode;
-  className?: string;
 }
 
 /**
@@ -27,26 +31,21 @@ interface StepFrameProps {
  */
 export function StepFrame({
   step,
-  total,
   title,
   description,
   children,
   actions,
-  className,
 }: StepFrameProps) {
   return (
     <div
       data-slot="step-frame"
-      className={cn(
-        "flex min-h-0 flex-1 flex-col gap-xxl pt-xl md:justify-between md:gap-section md:pt-section",
-        className,
-      )}
+      className="flex min-h-0 flex-1 flex-col gap-xxl pt-xl md:justify-between md:gap-section md:pt-section"
     >
       <div className="flex flex-col gap-xxl">
         <div className="flex flex-col gap-l md:gap-xl">
           <Progress
-            value={total > 0 ? step / total : 0}
-            aria-label={`Step ${String(step)} of ${String(total)}`}
+            value={step / TOTAL_STEPS}
+            aria-label={`Step ${String(step)} of ${String(TOTAL_STEPS)}`}
             className="w-40"
           />
           <div className="flex flex-col gap-s">
@@ -58,14 +57,28 @@ export function StepFrame({
         </div>
         {children}
       </div>
-      <div
-        className={cn(
-          "flex items-center justify-between gap-l",
-          "max-md:sticky max-md:bottom-0 max-md:z-10 max-md:-mx-l max-md:mt-auto max-md:flex-col-reverse max-md:items-stretch max-md:gap-s max-md:border-t max-md:border-imagine-border max-md:bg-imagine-surface max-md:px-l max-md:pt-m max-md:pb-[max(var(--spacing-m),env(safe-area-inset-bottom))]",
-        )}
-      >
+      <div className="flex items-center justify-between gap-l max-md:sticky max-md:bottom-0 max-md:z-10 max-md:-mx-l max-md:mt-auto max-md:flex-col-reverse max-md:items-stretch max-md:gap-s max-md:border-t max-md:border-imagine-border max-md:bg-imagine-surface max-md:px-l max-md:pt-m max-md:pb-[max(var(--spacing-m),env(safe-area-inset-bottom))]">
         {actions}
       </div>
     </div>
   );
 }
+
+/** The way out of a step. Give it the step it goes back to. */
+function StepFrameBack({ to, disabled }: { to: string; disabled?: boolean }) {
+  const router = useRouter();
+  return (
+    <Button
+      variant="link"
+      disabled={disabled}
+      className="text-imagine-foreground-muted max-md:self-start"
+      onClick={() => {
+        router.push(to);
+      }}
+    >
+      Back
+    </Button>
+  );
+}
+
+StepFrame.Back = StepFrameBack;

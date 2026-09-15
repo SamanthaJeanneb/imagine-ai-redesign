@@ -24,10 +24,9 @@ import {
   ChartTooltipSeries,
 } from "@/components/features/analytics/chart-theme";
 import { Panel } from "@/components/features/analytics/panel";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { PersonAvatar } from "@/components/ui/person-avatar";
 import { formatCompact } from "@/lib/format";
-import { initials } from "@/lib/initials";
 import {
   fade,
   pressRow,
@@ -51,19 +50,8 @@ export interface BenchmarkProfile {
   topics: readonly string[];
 }
 
-export interface CompetitorPost {
-  id: string;
-  excerpt: string;
-  /** "2 Sep". */
-  label: string;
-  reactions: number;
-  comments: number;
-}
-
-export interface Competitor extends BenchmarkProfile {
-  /** Their latest few posts, newest first. */
-  recent: readonly CompetitorPost[];
-}
+/** An account you watch. The same shape as your own, so the radar can pair them. */
+export type Competitor = BenchmarkProfile;
 
 export interface BenchmarkData {
   you: BenchmarkProfile;
@@ -97,20 +85,14 @@ const AXES: readonly Axis[] = [
   { key: "avgShares", label: "Shares", format: formatCompact },
 ];
 
-function ProfileAvatar({
-  profile,
-  size = "sm",
-}: {
-  profile: BenchmarkProfile;
-  size?: "sm" | "default";
-}) {
+function ProfileAvatar({ profile }: { profile: BenchmarkProfile }) {
   return (
-    <Avatar size={size} shape={profile.isCompany ? "square" : "circle"}>
-      {profile.avatarUrl ? (
-        <AvatarImage src={profile.avatarUrl} alt={profile.name} />
-      ) : null}
-      <AvatarFallback>{initials(profile.name)}</AvatarFallback>
-    </Avatar>
+    <PersonAvatar
+      name={profile.name}
+      avatarUrl={profile.avatarUrl}
+      shape={profile.isCompany ? "square" : "circle"}
+      size="sm"
+    />
   );
 }
 

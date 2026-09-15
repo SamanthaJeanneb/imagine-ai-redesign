@@ -64,8 +64,9 @@ function Tab({
     >
       <button
         type="button"
-        role="tab"
-        aria-selected={active}
+        // Plain buttons, not an ARIA tablist: the strip has no roving focus
+        // or arrow-key contract to back the role up.
+        aria-current={active ? "true" : undefined}
         onClick={onActivate}
         className="flex min-h-8 min-w-0 flex-1 items-center gap-xs type-small font-medium whitespace-nowrap outline-none focus-visible:underline"
       >
@@ -197,10 +198,7 @@ export function EditorTabStrip({
             {/* Tabs start past the page's corner radius so the active tab meets
                 a flat edge. The rule sits behind the tabs; the open tab paints
                 over it so its name is not underlined. */}
-            <div
-              role="tablist"
-              className="relative flex h-9 min-w-0 items-end gap-xxs overflow-x-auto overflow-y-hidden pt-xs pr-xs pl-l"
-            >
+            <div className="relative flex h-9 min-w-0 items-end gap-xxs overflow-x-auto overflow-y-hidden pt-xs pr-xs pl-l">
               <span
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-px bg-imagine-border"

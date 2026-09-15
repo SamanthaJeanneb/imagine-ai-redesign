@@ -1,7 +1,6 @@
 import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
 import type { EventChipData } from "@/components/features/calendar/event-chip";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
-import type { AssetTileData } from "@/components/features/files/asset-tile";
 import type { UpNextItem } from "@/components/features/calendar/up-next-list";
 import { transformCalendarEventRow } from "@/entities/calendar-event";
 import {
@@ -20,7 +19,6 @@ import {
 } from "@/lib/format";
 import { getDb, getNow } from "@/mocks/db";
 import {
-  getAssetLibrary,
   getNewPostProfile,
   getPostLabelOptions,
   indexAssetsByPath,
@@ -46,8 +44,6 @@ export interface CalendarPosts {
   eventsByDay: EventsByDay;
   /** The mock's fixed clock, as a date key. */
   today: string;
-  /** Assets the editor can attach to a post. */
-  mediaLibrary: readonly AssetTileData[];
   /** The labels a post can be filed under. */
   labelOptions: readonly string[];
   /** Who a post drafted from an empty slot goes out as. */
@@ -112,7 +108,6 @@ export function getCalendarPosts(): CalendarPosts {
     postsByDay: chipsByDay(),
     eventsByDay: eventsByDay(),
     today: toDateKey(getNow()),
-    mediaLibrary: getAssetLibrary(),
     labelOptions: getPostLabelOptions(),
     newPostProfile: getNewPostProfile(),
   };

@@ -316,32 +316,6 @@ export const KIT_BENCHMARK: BenchmarkData = {
       avgComments: 18,
       avgShares: 14,
       topics: ["Pipeline", "Forecasting", "Sales ops", "Webinars"],
-      recent: [
-        {
-          id: "t1p1",
-          excerpt:
-            "Forecast accuracy is a people problem before it is a data problem. Here is how we coach reps to update deals honestly.",
-          label: "3 Sep",
-          reactions: 284,
-          comments: 26,
-        },
-        {
-          id: "t1p2",
-          excerpt:
-            "Join us Thursday: three RevOps leads on the reports they killed this year, and what replaced them.",
-          label: "29 Aug",
-          reactions: 96,
-          comments: 7,
-        },
-        {
-          id: "t1p3",
-          excerpt:
-            "Pipeline coverage of 3x is a myth we keep repeating. The teams that hit plan run closer to 2.2x with better hygiene.",
-          label: "26 Aug",
-          reactions: 341,
-          comments: 33,
-        },
-      ],
     },
     {
       id: "t2",
@@ -354,24 +328,6 @@ export const KIT_BENCHMARK: BenchmarkData = {
       avgComments: 41,
       avgShares: 12,
       topics: ["Founder lessons", "Fundraising", "Hiring", "Pricing"],
-      recent: [
-        {
-          id: "t2p1",
-          excerpt:
-            "We raised our Series A on a deck with two slides of product and eleven of customers. That ratio was the point.",
-          label: "4 Sep",
-          reactions: 612,
-          comments: 74,
-        },
-        {
-          id: "t2p2",
-          excerpt:
-            "Pricing lesson: the plan nobody buys still does work. It anchors the plan everybody buys.",
-          label: "1 Sep",
-          reactions: 445,
-          comments: 38,
-        },
-      ],
     },
     {
       id: "t3",
@@ -384,16 +340,6 @@ export const KIT_BENCHMARK: BenchmarkData = {
       avgComments: 9,
       avgShares: 4,
       topics: ["Research", "Interviews", "Product"],
-      recent: [
-        {
-          id: "t3p1",
-          excerpt:
-            "Five interviews a week, every week, for a year. Here is what changed about how we build.",
-          label: "2 Sep",
-          reactions: 131,
-          comments: 15,
-        },
-      ],
     },
   ],
 };

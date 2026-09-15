@@ -7,19 +7,24 @@ import type { Skill } from "@/components/features/files/skills-list";
 import type { IconName } from "@/components/ui/icon";
 import type { SearchBoxResult } from "@/components/ui/search-box";
 
-export type FileSearchKind =
-  "folder" | "document" | "image" | "video" | "skill";
-
-/** One hit in the shared search dropdown. Callers decide what a click does. */
-export interface FileSearchHit {
+interface SearchHitBase {
   id: string;
   icon: IconName;
   title: string;
   detail?: string;
-  kind: FileSearchKind;
-  sectionId?: string;
-  asset?: AssetTileData;
 }
+
+/** One hit in the shared search dropdown. Callers decide what a click does. */
+export type FileSearchHit =
+  | (SearchHitBase & { kind: "skill" })
+  | (SearchHitBase & { kind: "folder"; sectionId: string })
+  | (SearchHitBase & { kind: "document"; sectionId: string })
+  | (SearchHitBase & { kind: "image"; sectionId: string; asset: AssetTileData })
+  | (SearchHitBase & {
+      kind: "video";
+      sectionId: string;
+      asset: AssetTileData;
+    });
 
 interface SearchFileOptions {
   /** Folders are listed on the Files page, not in the compact panel. */

@@ -6,14 +6,8 @@ import { toast } from "sonner";
 
 import type { AssetTileData } from "@/components/features/files/asset-tile";
 import {
-  canMoveLibraryItem,
-  fileMoveId,
-  isFileMove,
-  isLeavingDropTarget,
   moveLibraryItem,
-  preventFileMove,
-  beginFileMove,
-  endFileMove,
+  useFileMoveTargets,
   type FileMoveDest,
 } from "@/components/features/files/file-move";
 import type {
@@ -46,8 +40,6 @@ import type { OpenDocument } from "@/services/files";
 type MoveHandler = (event: DragEvent<HTMLElement>) => void;
 
 export interface FilesLibraryState {
-  /** Workspace name, the organization library's title. */
-  title: string;
   sections: readonly FileSection[];
   skills: readonly Skill[];
   documentById: ReadonlyMap<string, OpenDocument>;
@@ -132,8 +124,6 @@ export function FilesLibraryProvider({
   const [documents, setDocuments] = useState(initialDocuments);
   const [dialog, setDialog] = useState<DialogState>(null);
   const [pendingDelete, setPendingDelete] = useState<BrowserItem | null>(null);
-  const [draggingId, setDraggingId] = useState<string | null>(null);
-  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
   // Ids for things made here; only ever read inside event handlers.
   const counter = useRef(0);
   const nextId = () => {
@@ -373,43 +363,14 @@ export function FilesLibraryProvider({
     const result = moveLibraryItem(sections, itemId, dest);
     if (result === null) return;
     setSections(result.sections);
-    setDraggingId(null);
-    setDropTargetId(null);
     toast(`Moved “${result.name}” to ${result.destName}`);
   };
 
-  const overMoveDest =
-    (dest: FileMoveDest, key: string) => (event: DragEvent<HTMLElement>) => {
-      const id = fileMoveId();
-      if (id === null || !isFileMove(Array.from(event.dataTransfer.types))) {
-        return;
-      }
-      if (!canMoveLibraryItem(sections, id, dest)) {
-        event.dataTransfer.dropEffect = "none";
-        return;
-      }
-      preventFileMove(event);
-      setDropTargetId(key);
-    };
-
-  const leaveMoveDest = (key: string) => (event: DragEvent<HTMLElement>) => {
-    if (!isFileMove(Array.from(event.dataTransfer.types))) return;
-    if (!isLeavingDropTarget(event)) return;
-    setDropTargetId((current) => (current === key ? null : current));
-  };
-
-  const dropMoveDest =
-    (dest: FileMoveDest) => (event: DragEvent<HTMLElement>) => {
-      const id = fileMoveId();
-      if (id === null) return;
-      event.preventDefault();
-      move(id, dest);
-    };
+  const moveTargets = useFileMoveTargets(sections, move);
 
   return (
     <FilesLibraryContext
       value={{
-        title,
         sections,
         skills,
         documentById,
@@ -422,8 +383,8 @@ export function FilesLibraryProvider({
         canCreate,
         dialog,
         pendingDelete,
-        draggingId,
-        dropTargetId,
+        draggingId: moveTargets.draggingId,
+        dropTargetId: moveTargets.dropKey,
         open,
         press,
         openResult,
@@ -449,7 +410,9 @@ export function FilesLibraryProvider({
         closeDialog: () => {
           setDialog(null);
         },
-        askRemove: setPendingDelete,
+        askRemove: (item) => {
+          setPendingDelete(item);
+        },
         cancelRemove: () => {
           setPendingDelete(null);
         },
@@ -459,17 +422,18 @@ export function FilesLibraryProvider({
           setPendingDelete(null);
         },
         startMove: (item, event) => {
-          beginFileMove(event, item.id);
-          setDraggingId(item.id);
+          moveTargets.start(item.id, event);
         },
-        endMove: () => {
-          endFileMove();
-          setDraggingId(null);
-          setDropTargetId(null);
+        endMove: moveTargets.end,
+        overMoveDest: (dest, key) => (event) => {
+          moveTargets.over(dest, key, event);
         },
-        overMoveDest,
-        leaveMoveDest,
-        dropMoveDest,
+        leaveMoveDest: (key) => (event) => {
+          moveTargets.leave(key, event);
+        },
+        dropMoveDest: (dest) => (event) => {
+          moveTargets.drop(dest, event);
+        },
       }}
     >
       {children}

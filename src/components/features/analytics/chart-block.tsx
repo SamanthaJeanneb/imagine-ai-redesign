@@ -53,7 +53,7 @@ import { fade } from "@/styles/motion";
  */
 export type ChartKind = "bar" | "area" | "hbar";
 
-export type ChartMark = "bar" | "line" | "step";
+type ChartMark = "bar" | "line" | "step";
 
 export interface ChartSeries {
   key: string;
@@ -73,7 +73,7 @@ export interface ComposedChartSeries extends ChartSeries {
 }
 
 /** A vertical rule through one category, captioned above the plot. */
-export interface ChartAnnotation {
+interface ChartAnnotation {
   /** The `label` of the datum to mark. */
   at: string;
   label: string;
@@ -82,7 +82,7 @@ export interface ChartAnnotation {
 export type ChartDatum = { label: string } & Record<string, string | number>;
 
 /** Pink fills for the agent and landing; neutral for the analytics page. */
-export type ChartTone = "accent" | "neutral";
+type ChartTone = "accent" | "neutral";
 
 interface SeriesStats {
   total: number;
@@ -863,7 +863,7 @@ export function AreaChartBlock({ className }: PlotProps) {
 }
 
 /** The short area strip for the composer preview: a baseline, no axes. */
-export function AreaChartPreview({ className }: PlotProps) {
+function AreaChartPreview({ className }: PlotProps) {
   const plot = usePlot();
   const blockId = useId().replace(/:/g, "");
   const splitScale = splitScaleFor(plot);
@@ -924,11 +924,23 @@ export function AreaChartPreview({ className }: PlotProps) {
   );
 }
 
-/** Bars across, one per category, the primary series' value at each end. */
-export function HorizontalBarChartBlock({
+/**
+ * Bars across, one per category, the primary series' value at each end. The
+ * plot is one shape at two sizes, so the caller supplies the measurements:
+ * how tall the strip is, how much room the category names get, and how thick
+ * a bar may grow.
+ */
+function HorizontalBars({
+  height,
+  axisWidth,
+  barSize,
   highlightIndex,
   className,
-}: BarPlotProps) {
+}: BarPlotProps & {
+  height: string;
+  axisWidth: number;
+  barSize: number;
+}) {
   const plot = usePlot();
   const barShape =
     highlightIndex === undefined
@@ -936,7 +948,7 @@ export function HorizontalBarChartBlock({
       : highlightBar(highlightIndex, plot.highlightColor);
 
   return (
-    <div className={cn("h-48 w-full", className)}>
+    <div className={cn(height, "w-full", className)}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={plot.rows}
@@ -950,7 +962,7 @@ export function HorizontalBarChartBlock({
             dataKey="label"
             type="category"
             {...AXIS}
-            width={112}
+            width={axisWidth}
             interval={0}
             tick={{ fontSize: 12, fill: COLOR.foreground }}
           />
@@ -962,7 +974,7 @@ export function HorizontalBarChartBlock({
                 key={item.key}
                 dataKey={item.key}
                 fill={plot.colorOf(item.key)}
-                maxBarSize={14}
+                maxBarSize={barSize}
                 shape={isPrimary ? barShape : undefined}
                 isAnimationActive={plot.animate}
                 {...CHART_ANIMATION}
@@ -986,65 +998,17 @@ export function HorizontalBarChartBlock({
   );
 }
 
-/** The short horizontal bar strip for the composer preview. */
-export function HorizontalBarChartPreview({
-  highlightIndex,
-  className,
-}: BarPlotProps) {
-  const plot = usePlot();
-  const barShape =
-    highlightIndex === undefined
-      ? undefined
-      : highlightBar(highlightIndex, plot.highlightColor);
-
+/** Bars across, one per category, the primary series' value at each end. */
+export function HorizontalBarChartBlock(props: BarPlotProps) {
   return (
-    <div className={cn("h-16 w-full", className)}>
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={plot.rows}
-          layout="vertical"
-          margin={{ left: 0, right: 44, top: 0, bottom: 0 }}
-          barCategoryGap="34%"
-        >
-          <CartesianGrid horizontal={false} {...GRID} />
-          <XAxis type="number" hide domain={[0, "auto"]} />
-          <YAxis
-            dataKey="label"
-            type="category"
-            {...AXIS}
-            width={56}
-            interval={0}
-            tick={{ fontSize: 12, fill: COLOR.foreground }}
-          />
-          {plotTooltip(CHART_CURSOR_BAND, plot.labelOf, plot.unitOf)}
-          {plot.visible.map((item) => {
-            const isPrimary = item.key === plot.primary?.key;
-            return (
-              <Bar
-                key={item.key}
-                dataKey={item.key}
-                fill={plot.colorOf(item.key)}
-                maxBarSize={10}
-                shape={isPrimary ? barShape : undefined}
-                isAnimationActive={plot.animate}
-                {...CHART_ANIMATION}
-              >
-                {isPrimary ? (
-                  <LabelList
-                    dataKey={item.key}
-                    position="right"
-                    offset={8}
-                    formatter={labelFormatter(item.unit)}
-                    fontSize={11}
-                    fill={COLOR.foreground}
-                  />
-                ) : null}
-              </Bar>
-            );
-          })}
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+    <HorizontalBars height="h-48" axisWidth={112} barSize={14} {...props} />
+  );
+}
+
+/** The short horizontal bar strip for the composer preview. */
+function HorizontalBarChartPreview(props: BarPlotProps) {
+  return (
+    <HorizontalBars height="h-16" axisWidth={56} barSize={10} {...props} />
   );
 }
 

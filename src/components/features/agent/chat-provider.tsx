@@ -5,12 +5,14 @@ import {
   type ReactNode,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 
 import type { ComposerPreview } from "@/components/features/agent/composer";
 import type { MessagePart } from "@/components/features/agent/agent-message";
 import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
+import type { EventChipData } from "@/components/features/calendar/event-chip";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
 import type { DraggableResource } from "@/components/features/files/resource-drag";
 import type {
@@ -69,6 +71,8 @@ export interface ChatState {
   attached: readonly ChatAttachment[];
   /** Every attached id, in attachment order. */
   attachedIds: readonly string[];
+  /** Just the attached posts, in attachment order. */
+  attachedPosts: readonly PostChipData[];
   preview: ComposerPreview | null;
   /**
    * The preview last opened. The surface keeps showing it while it closes,
@@ -90,6 +94,8 @@ export interface ChatActions {
   /** A button in a reply, pressed: says the intent on the user's behalf. */
   sendIntent: (intent: string) => void;
   setDraft: (draft: string) => void;
+  /** Fill the composer with a post about a calendar event, ready to send. */
+  draftFromEvent: (event: EventChipData) => void;
   /** Add next-message context unless it is already attached. */
   attach: (next: ChatAttachment) => void;
   /** Attach context. Attaching the current subject again detaches it. */
@@ -99,8 +105,6 @@ export interface ChatActions {
   setPreview: (preview: ComposerPreview | null) => void;
   /** Show a stored thread. No-op when it is already the open one. */
   open: (threadId: string, messages: readonly AgentMessage[]) => void;
-  /** Back to no conversation: the landing with an empty composer. */
-  reset: () => void;
   /**
    * A fresh, empty conversation that already counts as open: it takes a row
    * in the sidebar as "New chat" and the landing keeps showing until the
@@ -129,31 +133,58 @@ function postDraftPart(post: PostChipData): MessagePart {
   };
 }
 
+/** The intents that have something to say on the user's behalf. */
+type PromptIntent =
+  | "schedule"
+  | "browse-files"
+  | "comment"
+  | "reply"
+  | "post-comment"
+  | "outreach";
+
 /** What pressing a button in a reply says on the user's behalf. */
-const INTENT_PROMPT: Record<string, string> = {
+const INTENT_PROMPT = {
   schedule: "Schedule it.",
   "browse-files": "Let me pick from the files.",
   comment: "Draft a reply to this comment.",
   reply: "Draft a reply to this comment.",
   "post-comment": "Post it.",
   outreach: "Draft a comment on their latest post.",
-};
+} as const satisfies Record<PromptIntent, string>;
+
+function isPromptIntent(value: string): value is PromptIntent {
+  return Object.hasOwn(INTENT_PROMPT, value);
+}
 
 /**
  * Which canned reply answers an intent. Mirrors `toReplyIntent` in
  * `services/agent`, kept here so the provider stays free of server imports.
  */
-const REPLY_FOR_INTENT: Record<string, ReplyIntent> = {
+type ScriptedIntent = "schedule" | "approve" | "comment" | "reply" | "outreach";
+
+const REPLY_FOR_INTENT = {
   schedule: "schedule",
   approve: "schedule",
   comment: "comment",
   reply: "comment",
   outreach: "outreach",
-};
+} as const satisfies Record<ScriptedIntent, ReplyIntent>;
+
+function isScriptedIntent(value: string): value is ScriptedIntent {
+  return Object.hasOwn(REPLY_FOR_INTENT, value);
+}
 
 /** How long the thinking state holds, then the gap between parts. */
 const THINK_MS = 1400;
 const PART_MS = 700;
+
+/**
+ * The landings whose first send becomes a thread. There is no navigation on
+ * that send — the composer has to survive the morph — so the URL catches up
+ * instead, and a reload of the live thread lands back on it. Sending from a
+ * page that has a URL of its own, the calendar or analytics, leaves it alone.
+ */
+const LANDING_PATHS = new Set(["/agent", "/new-chat"]);
 
 interface ChatProviderProps {
   /**
@@ -189,7 +220,8 @@ export function ChatProvider({
     setPreviewState(next);
     if (next !== null) setLastPreview(next);
   }
-  const [turns, setTurns] = useState(0);
+  // Only ever read to mint the next pair of message ids, never rendered.
+  const turns = useRef(0);
 
   // The reply arrives a part at a time: the thinking state holds, then the rest.
   useEffect(() => {
@@ -221,7 +253,8 @@ export function ChatProvider({
   }, [streaming]);
 
   function send(text: string, intent = "default") {
-    const turn = String(turns + 1);
+    turns.current += 1;
+    const turn = String(turns.current);
     const messageId = `reply-${turn}`;
     // What is attached rides along in the message, the way a person would say it.
     const about = attached.map(subject);
@@ -230,7 +263,9 @@ export function ChatProvider({
         ? text
         : `About ${about.map((item) => `"${item.title}"`).join(", ")}: ${text}`;
 
-    setTurns(turns + 1);
+    if (threadId === null && LANDING_PATHS.has(window.location.pathname)) {
+      window.history.replaceState(null, "", `/agent/${NEW_THREAD_ID}`);
+    }
     setThreadId((current) => current ?? NEW_THREAD_ID);
     setMessages((current) => [
       ...current,
@@ -244,7 +279,10 @@ export function ChatProvider({
     setStreaming({
       messageId,
       revealed: 0,
-      reply: replies[REPLY_FOR_INTENT[intent] ?? "default"],
+      reply:
+        replies[
+          isScriptedIntent(intent) ? REPLY_FOR_INTENT[intent] : "default"
+        ],
     });
     setDraft("");
     setAttached([]);
@@ -275,7 +313,14 @@ export function ChatProvider({
   }
 
   function sendIntent(intent: string) {
-    send(INTENT_PROMPT[intent] ?? "Go ahead.", intent);
+    send(isPromptIntent(intent) ? INTENT_PROMPT[intent] : "Go ahead.", intent);
+  }
+
+  function draftFromEvent(event: EventChipData) {
+    const where = event.location === undefined ? "" : ` at ${event.location}`;
+    setDraft(
+      `Write a LinkedIn post about ${event.title}${where} (${event.whenLabel}).`,
+    );
   }
 
   function open(id: string, stored: readonly AgentMessage[]) {
@@ -284,15 +329,6 @@ export function ChatProvider({
     setMessages(stored);
     setStreaming(null);
     setAttached([]);
-  }
-
-  function reset() {
-    setThreadId(null);
-    setMessages([]);
-    setStreaming(null);
-    setDraft("");
-    setAttached([]);
-    setPreviewState(null);
   }
 
   function startNew() {
@@ -336,6 +372,9 @@ export function ChatProvider({
     draft,
     attached,
     attachedIds: attached.map((item) => subject(item).id),
+    attachedPosts: attached.flatMap((item) =>
+      item.kind === "post" ? [item.post] : [],
+    ),
     preview,
     lastPreview,
     handoff,
@@ -343,12 +382,12 @@ export function ChatProvider({
     send,
     sendIntent,
     setDraft,
+    draftFromEvent,
     attach,
     toggleAttached,
     clearAttached,
     setPreview,
     open,
-    reset,
     startNew,
     startPostChat,
     expand,

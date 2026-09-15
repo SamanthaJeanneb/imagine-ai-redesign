@@ -135,21 +135,11 @@ export function LinkedInStep({
   return (
     <StepFrame
       step={4}
-      total={6}
       title="Connect your LinkedIn accounts"
       description="Connect your own, your company page, and anyone else you'll post for. The agent drafts for each and publishes only what you approve."
       actions={
         <>
-          <Button
-            variant="link"
-            className="text-imagine-foreground-muted max-md:self-start"
-            disabled={connecting}
-            onClick={() => {
-              router.push("/onboarding/team");
-            }}
-          >
-            Back
-          </Button>
+          <StepFrame.Back to="/onboarding/team" disabled={connecting} />
           <div className="flex items-center gap-l max-md:w-full max-md:flex-col-reverse max-md:gap-s">
             {connected.length === 0 ? (
               <Button

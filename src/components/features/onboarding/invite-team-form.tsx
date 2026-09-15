@@ -3,13 +3,17 @@
 import { cn } from "cn";
 import { useState } from "react";
 
+import {
+  type MemberRole,
+  ROLE_LABEL,
+} from "@/components/features/settings/members-list";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { STEP_LABEL } from "@/components/features/onboarding/organization-form";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
+import { PersonAvatar } from "@/components/ui/person-avatar";
 import {
   InputGroup,
   InputGroupAddon,
@@ -19,13 +23,12 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { contactInitials } from "@/lib/initials";
-
-export type MemberRole = "admin" | "member";
 
 export interface TeamMember {
   id: string;
@@ -35,11 +38,6 @@ export interface TeamMember {
   role: MemberRole;
   status: "you" | "invited" | "active";
 }
-
-const ROLE_LABEL: Record<MemberRole, string> = {
-  admin: "Admin",
-  member: "Member",
-};
 
 interface RoleSelectProps {
   value: MemberRole;
@@ -69,8 +67,10 @@ function RoleSelect({
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="admin">Admin</SelectItem>
-        <SelectItem value="member">Member</SelectItem>
+        <SelectGroup>
+          <SelectItem value="admin">Admin</SelectItem>
+          <SelectItem value="member">Member</SelectItem>
+        </SelectGroup>
       </SelectContent>
     </Select>
   );
@@ -130,20 +130,19 @@ interface TeamMemberRowProps {
   onResend: (id: string) => void;
 }
 
-export function TeamMemberRow({
-  member,
-  onRoleChange,
-  onResend,
-}: TeamMemberRowProps) {
+function TeamMemberRow({ member, onRoleChange, onResend }: TeamMemberRowProps) {
   const label = member.name ?? member.email;
   return (
     <div className="flex min-w-0 items-center gap-m py-xs max-sm:flex-wrap">
-      <Avatar size="sm">
-        {member.avatarUrl ? (
-          <AvatarImage src={member.avatarUrl} alt={label} />
-        ) : null}
-        <AvatarFallback>{contactInitials(label)}</AvatarFallback>
-      </Avatar>
+      <PersonAvatar
+        size="sm"
+        name={label}
+        {...(member.avatarUrl === undefined
+          ? {}
+          : { avatarUrl: member.avatarUrl })}
+      >
+        {contactInitials(label)}
+      </PersonAvatar>
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate type-small font-medium">{label}</span>
         <span className="type-small text-imagine-foreground-muted">

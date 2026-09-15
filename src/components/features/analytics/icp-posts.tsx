@@ -32,7 +32,7 @@ import { Panel } from "@/components/features/analytics/panel";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
 import { Disclosure } from "@/components/motion/disclosure";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AvatarGroup } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,9 +41,9 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { Icon } from "@/components/ui/icon";
+import { PersonAvatar } from "@/components/ui/person-avatar";
 import { type IcpCategory, ICP_THRESHOLD } from "@/entities/engagement";
 import { formatCompact } from "@/lib/format";
-import { initials } from "@/lib/initials";
 import { spring } from "@/styles/motion";
 
 /** Someone who reacted to or commented on a post, with their ICP read. */
@@ -82,7 +82,7 @@ export interface IcpData {
 }
 
 /** What the user wants to do about an engager. */
-export type EngageAction = "reply" | "outreach";
+type EngageAction = "reply" | "outreach";
 
 interface IcpPostsProps {
   data: IcpData;
@@ -139,25 +139,6 @@ function bubble(activeId: string | undefined) {
   };
 }
 
-function EngagerAvatar({
-  engager,
-  size = "sm",
-  className,
-}: {
-  engager: Engager;
-  size?: "sm" | "default";
-  className?: string;
-}) {
-  return (
-    <Avatar size={size} className={className}>
-      {engager.avatarUrl ? (
-        <AvatarImage src={engager.avatarUrl} alt={engager.name} />
-      ) : null}
-      <AvatarFallback>{initials(engager.name)}</AvatarFallback>
-    </Avatar>
-  );
-}
-
 /** Who this is and where they sit against the ICP. */
 function EngagerCard({
   engager,
@@ -171,7 +152,7 @@ function EngagerCard({
   return (
     <div className="flex flex-col gap-m p-m">
       <div className="flex items-start gap-s">
-        <EngagerAvatar engager={engager} size="default" />
+        <PersonAvatar name={engager.name} avatarUrl={engager.avatarUrl} />
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="truncate type-small font-medium">
             {engager.name}
@@ -270,16 +251,23 @@ function PostRow({
           </span>
         </div>
         <div className="flex shrink-0 items-center">
-          <div className="flex -space-x-2">
+          <AvatarGroup>
             {stack.map((engager) => (
               <HoverCard key={engager.id}>
                 <HoverCardTrigger asChild>
+                  {/* The faces are hover-card triggers rather than bare
+                      avatars, so the group's own ring rule cannot reach them
+                      and the raised face needs to come forward itself. */}
                   <button
                     type="button"
                     aria-label={engager.name}
                     className="rounded-full ring-2 ring-imagine-surface transition-transform hover:z-10 hover:-translate-y-0.5 focus-visible:z-10 focus-visible:ring-ring/40"
                   >
-                    <EngagerAvatar engager={engager} />
+                    <PersonAvatar
+                      name={engager.name}
+                      avatarUrl={engager.avatarUrl}
+                      size="sm"
+                    />
                   </button>
                 </HoverCardTrigger>
                 <HoverCardContent className="w-72 p-0">
@@ -291,7 +279,7 @@ function PostRow({
                 </HoverCardContent>
               </HoverCard>
             ))}
-          </div>
+          </AvatarGroup>
           <Button
             size="xs"
             variant="ghost"
@@ -321,7 +309,11 @@ function PostRow({
               key={engager.id}
               className="flex items-center gap-s rounded-control bg-imagine-background px-s py-xs"
             >
-              <EngagerAvatar engager={engager} />
+              <PersonAvatar
+                name={engager.name}
+                avatarUrl={engager.avatarUrl}
+                size="sm"
+              />
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate type-small font-medium">
                   {engager.name}

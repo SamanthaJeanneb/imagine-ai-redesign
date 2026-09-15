@@ -16,18 +16,13 @@ import { spring } from "@/styles/motion";
 interface ChartContextProps {
   chart: PreviewChart;
   onRemove?: () => void;
-  className?: string;
 }
 
 /**
  * A chart attached to the composer as context: the title, the number it adds
  * up to, and a remove action. The post equivalent is `PostContext`.
  */
-export function ChartContext({
-  chart,
-  onRemove,
-  className,
-}: ChartContextProps) {
+export function ChartContext({ chart, onRemove }: ChartContextProps) {
   const layoutLocked = useLayoutLocked();
   return (
     <motion.div
@@ -36,7 +31,7 @@ export function ChartContext({
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={spring.snappy}
       data-slot="chart-context"
-      className={cn(CONTEXT_CHIP_LINE, "w-fit", className)}
+      className={cn(CONTEXT_CHIP_LINE, "w-fit")}
     >
       <Icon
         name="chart-simple"

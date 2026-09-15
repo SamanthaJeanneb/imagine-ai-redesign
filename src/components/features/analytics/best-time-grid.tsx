@@ -77,7 +77,7 @@ const X_AXIS_HEIGHT = 24;
 const MARGIN = { top: 4, right: 4, bottom: 0, left: 0 } as const;
 const CELL_GAP = 2;
 
-export function formatHour(hour: number): string {
+function formatHour(hour: number): string {
   if (hour === 0) return "12am";
   if (hour === 12) return "12pm";
   return hour < 12 ? `${String(hour)}am` : `${String(hour - 12)}pm`;
@@ -85,6 +85,19 @@ export function formatHour(hour: number): string {
 
 export function formatSlot(slot: Pick<TimeSlot, "day" | "hour">): string {
   return `${DAYS_LONG[slot.day] ?? ""} at ${formatHour(slot.hour)}`;
+}
+
+/** Recharts hands its shapes and tooltip an untyped row; this is what a cell needs. */
+function isTimeSlot(value: unknown): value is TimeSlot {
+  if (typeof value !== "object" || value === null) return false;
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row["day"] === "number" &&
+    typeof row["hour"] === "number" &&
+    typeof row["score"] === "number" &&
+    typeof row["rate"] === "number" &&
+    typeof row["posts"] === "number"
+  );
 }
 
 /** Pixel size of the wrapper, kept current with a ResizeObserver. */
@@ -120,12 +133,8 @@ function cell(
   bestKeys: ReadonlySet<string>,
 ) {
   return function Cell(props: ScatterShapeProps) {
-    const slot = props.payload as TimeSlot | undefined;
-    if (
-      slot === undefined ||
-      props.cx === undefined ||
-      props.cy === undefined
-    ) {
+    const slot: unknown = props.payload;
+    if (!isTimeSlot(slot) || props.cx === undefined || props.cy === undefined) {
       return <g />;
     }
     const key = `${String(slot.day)}-${String(slot.hour)}`;
@@ -165,8 +174,8 @@ function cell(
  * from the series.
  */
 function SlotTooltipRows() {
-  const slot = useChartTooltipDatum() as unknown as TimeSlot | undefined;
-  if (slot === undefined) return null;
+  const slot = useChartTooltipDatum();
+  if (!isTimeSlot(slot)) return null;
   return (
     <ChartTooltipList>
       <ChartTooltipRow label="Slot" value={formatSlot(slot)} />

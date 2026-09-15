@@ -231,15 +231,20 @@ export function CloudBackground({ className }: { className?: string }) {
 
     const vertex = compile(gl, gl.VERTEX_SHADER, VERTEX);
     const fragment = compile(gl, gl.FRAGMENT_SHADER, FRAGMENT);
-    const program = gl.createProgram();
     if (!vertex || !fragment) {
+      gl.deleteShader(vertex);
+      gl.deleteShader(fragment);
       paintFallback(canvas, palette);
       return;
     }
+    const program = gl.createProgram();
     gl.attachShader(program, vertex);
     gl.attachShader(program, fragment);
     gl.linkProgram(program);
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      gl.deleteProgram(program);
+      gl.deleteShader(vertex);
+      gl.deleteShader(fragment);
       paintFallback(canvas, palette);
       return;
     }

@@ -4,10 +4,7 @@ import { cn } from "cn";
 import { useRef } from "react";
 
 import type { AssetTileData } from "@/components/features/files/asset-tile";
-import type {
-  PostChipData,
-  PostEngagementPerson,
-} from "@/components/features/calendar/post-chip";
+import type { PostChipData } from "@/components/features/calendar/post-chip";
 import {
   LinkedInPostActions,
   LinkedInPostActor,
@@ -24,16 +21,15 @@ import {
   linkedInReactionType,
   linkedInReactionTypes,
 } from "@/components/features/agent/linkedin-reaction";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DashedActionRow } from "@/components/ui/dashed-action";
 import { Icon } from "@/components/ui/icon";
-import { initials } from "@/lib/initials";
+import { PersonAvatar } from "@/components/ui/person-avatar";
+import { COUNT } from "@/lib/format";
 
 interface LinkedInPostEditorProps {
   post: PostChipData;
   body: string;
   onBodyChange: (body: string) => void;
-  mediaLibrary?: readonly AssetTileData[];
   onMediaChange?: (media: readonly AssetTileData[]) => void;
 }
 
@@ -67,25 +63,6 @@ function assetsFromFiles(
 
 function revokeBlobSrc(src: string | undefined) {
   if (src?.startsWith("blob:")) URL.revokeObjectURL(src);
-}
-
-const COUNT = new Intl.NumberFormat("en-US");
-
-function PersonAvatar({
-  person,
-  className,
-}: {
-  person: PostEngagementPerson;
-  className?: string;
-}) {
-  return (
-    <Avatar className={className}>
-      {person.avatarUrl ? (
-        <AvatarImage src={person.avatarUrl} alt={person.name} />
-      ) : null}
-      <AvatarFallback>{initials(person.name)}</AvatarFallback>
-    </Avatar>
-  );
 }
 
 export function LinkedInPostEditor({
@@ -179,7 +156,8 @@ export function LinkedInPostEditor({
                   className={cn("relative block", index > 0 && "-ml-xs")}
                 >
                   <PersonAvatar
-                    person={reactor}
+                    name={reactor.name}
+                    avatarUrl={reactor.avatarUrl}
                     className="size-8 ring-2 ring-imagine-surface"
                   />
                   <LinkedInReaction
@@ -206,21 +184,17 @@ export function LinkedInPostEditor({
           </div>
 
           <div className="flex items-center gap-s">
-            <Avatar className="size-9">
-              {preview.author.avatarUrl ? (
-                <AvatarImage
-                  src={preview.author.avatarUrl}
-                  alt={preview.author.name}
-                />
-              ) : null}
-              <AvatarFallback>{initials(preview.author.name)}</AvatarFallback>
-            </Avatar>
-            <button
-              type="button"
-              className="min-h-10 flex-1 rounded-full bg-imagine-surface-raised px-m text-left type-small text-imagine-foreground-muted transition-colors hover:bg-imagine-border"
-            >
+            <PersonAvatar
+              name={preview.author.name}
+              avatarUrl={preview.author.avatarUrl}
+              className="size-9"
+            />
+            {/* Commenting from here is not wired up yet, so the field, Like,
+                and Reply below read as the feed's chrome rather than controls
+                that answer a click. */}
+            <span className="flex min-h-10 flex-1 items-center rounded-full bg-imagine-surface-raised px-m type-small text-imagine-foreground-muted">
               Add a comment…
-            </button>
+            </span>
           </div>
 
           <div className="my-m flex items-center gap-xs type-small font-semibold">
@@ -236,7 +210,8 @@ export function LinkedInPostEditor({
             {comments.map((comment) => (
               <article key={comment.id} className="flex items-start gap-s">
                 <PersonAvatar
-                  person={comment.author}
+                  name={comment.author.name}
+                  avatarUrl={comment.author.avatarUrl}
                   className="mt-xxs size-9 shrink-0"
                 />
                 <div className="min-w-0 flex-1">
@@ -259,19 +234,9 @@ export function LinkedInPostEditor({
                     </p>
                   </div>
                   <div className="mt-xs flex items-center gap-xs px-s type-caption font-semibold text-imagine-foreground-muted">
-                    <button
-                      type="button"
-                      className="hover:text-imagine-foreground"
-                    >
-                      Like
-                    </button>
+                    <span>Like</span>
                     <span aria-hidden="true">·</span>
-                    <button
-                      type="button"
-                      className="hover:text-imagine-foreground"
-                    >
-                      Reply
-                    </button>
+                    <span>Reply</span>
                   </div>
                 </div>
               </article>

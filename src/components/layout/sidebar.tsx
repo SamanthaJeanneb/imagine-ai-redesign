@@ -161,7 +161,7 @@ const HELP_ITEM: Variants = {
   show: { y: 0, transition: spring.soft },
 };
 
-export interface SidebarNavItem {
+interface SidebarNavItem {
   key: SidebarNavKey;
   label: string;
   icon: IconName;

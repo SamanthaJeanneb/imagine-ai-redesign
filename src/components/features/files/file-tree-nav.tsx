@@ -7,29 +7,28 @@ import {
   useContext,
   useId,
   useState,
-  type DragEvent,
   type ReactNode,
 } from "react";
 
+import {
+  FileDragSource,
+  FileDropTarget,
+  useFileDrag,
+  useFileDrop,
+} from "@/components/features/files/file-drag";
 import type {
   FileNode,
   FileSection,
 } from "@/components/features/files/file-tree";
 import {
-  beginFileMove,
-  canMoveLibraryItem,
-  endFileMove,
-  fileMoveId,
-  isFileMove,
-  isLeavingDropTarget,
-  preventFileMove,
+  useFileMoveTargets,
   type FileMoveDest,
+  type FileMoveTargets,
 } from "@/components/features/files/file-move";
 import { Disclosure } from "@/components/motion/disclosure";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
+import { PersonAvatar } from "@/components/ui/person-avatar";
 import { fade, pressRow, spring, stagger } from "@/styles/motion";
-import { initials } from "@/lib/initials";
 
 /** Where the browser should go: a library, or a folder inside one. */
 export interface TreeLocation {
@@ -51,14 +50,14 @@ function pathTo(nodes: readonly FileNode[], id: string): readonly string[] {
 function SectionMark({ section }: { section: FileSection }) {
   if (section.kind === "person") {
     return (
-      <Avatar size="sm" className="size-5">
-        {section.avatarUrl ? (
-          <AvatarImage src={section.avatarUrl} alt="" />
-        ) : null}
-        <AvatarFallback className="text-xs">
-          {initials(section.title)}
-        </AvatarFallback>
-      </Avatar>
+      <PersonAvatar
+        name={section.title}
+        {...(section.avatarUrl === undefined
+          ? {}
+          : { avatarUrl: section.avatarUrl })}
+        size="sm"
+        className="size-5 text-xs"
+      />
     );
   }
   if (section.avatarUrl) {
@@ -157,76 +156,6 @@ function TreeNav({
 }
 
 /* ------------------------------------------------------------------------ */
-/* Moving: wrap a row to drag it, or to catch what is dragged onto it       */
-/* ------------------------------------------------------------------------ */
-
-const DragContext = createContext<{ dragging: boolean } | null>(null);
-const DropContext = createContext<{ active: boolean } | null>(null);
-
-/** Makes the row inside a native drag source for moving it between folders. */
-function TreeNavDraggable({
-  dragging = false,
-  onDragStart,
-  onDragEnd,
-  children,
-}: {
-  dragging?: boolean;
-  onDragStart: (event: DragEvent<HTMLElement>) => void;
-  onDragEnd: (event: DragEvent<HTMLElement>) => void;
-  children: ReactNode;
-}) {
-  return (
-    <DragContext value={{ dragging }}>
-      <div
-        draggable
-        data-slot="tree-nav-draggable"
-        data-dragging={dragging || undefined}
-        onDragStart={(event) => {
-          event.stopPropagation();
-          onDragStart(event);
-        }}
-        onDragEnd={onDragEnd}
-        className={cn(
-          "cursor-grab transition-opacity active:cursor-grabbing",
-          dragging && "opacity-40",
-        )}
-      >
-        {children}
-      </div>
-    </DragContext>
-  );
-}
-
-/** Lets a library or folder row accept a dragged item; `active` lights it. */
-function TreeNavDropTarget({
-  active = false,
-  onDragOver,
-  onDragLeave,
-  onDrop,
-  children,
-}: {
-  active?: boolean;
-  onDragOver: (event: DragEvent<HTMLElement>) => void;
-  onDragLeave: (event: DragEvent<HTMLElement>) => void;
-  onDrop: (event: DragEvent<HTMLElement>) => void;
-  children: ReactNode;
-}) {
-  return (
-    <DropContext value={{ active }}>
-      <div
-        data-slot="tree-nav-drop-target"
-        data-drop-active={active || undefined}
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        onDrop={onDrop}
-      >
-        {children}
-      </div>
-    </DropContext>
-  );
-}
-
-/* ------------------------------------------------------------------------ */
 /* Rows                                                                     */
 /* ------------------------------------------------------------------------ */
 
@@ -251,8 +180,8 @@ function Row({
   trailing?: ReactNode;
 }) {
   const { indicatorId } = useTreeNav("TreeNav row");
-  const drag = useContext(DragContext);
-  const dropActive = useContext(DropContext)?.active ?? false;
+  const drag = useFileDrag();
+  const dropActive = useFileDrop()?.active ?? false;
 
   return (
     <div
@@ -393,13 +322,7 @@ function TreeNavFile({
 }
 
 /** What sits under a section or folder row; folds with it. */
-function TreeNavBranch({
-  id,
-  children,
-}: {
-  id: string;
-  children: ReactNode;
-}) {
+function TreeNavBranch({ id, children }: { id: string; children: ReactNode }) {
   const { isOpen } = useTreeNav("TreeNavBranch");
   return <Disclosure open={isOpen(id)}>{children}</Disclosure>;
 }
@@ -545,18 +468,8 @@ function destKey(dest: FileMoveDest): string {
   return dest.folderId ?? dest.sectionId;
 }
 
-interface FileMoveUi {
-  draggingId: string | null;
-  dropKey: string | null;
-  start: (id: string, event: DragEvent<HTMLElement>) => void;
-  end: () => void;
-  over: (dest: FileMoveDest, event: DragEvent<HTMLElement>) => void;
-  leave: (key: string, event: DragEvent<HTMLElement>) => void;
-  drop: (dest: FileMoveDest, event: DragEvent<HTMLElement>) => void;
-}
-
 const MoveContext = createContext<
-  (TreeNavActions & { move: FileMoveUi }) | null
+  (TreeNavActions & { move: FileMoveTargets }) | null
 >(null);
 
 function useMove() {
@@ -576,10 +489,10 @@ function MoveDropTarget({
   const { move } = useMove();
   const key = destKey(dest);
   return (
-    <TreeNavDropTarget
+    <FileDropTarget
       active={move.dropKey === key}
       onDragOver={(event) => {
-        move.over(dest, event);
+        move.over(dest, key, event);
       }}
       onDragLeave={(event) => {
         move.leave(key, event);
@@ -589,7 +502,7 @@ function MoveDropTarget({
       }}
     >
       {children}
-    </TreeNavDropTarget>
+    </FileDropTarget>
   );
 }
 
@@ -597,15 +510,16 @@ function MoveDropTarget({
 function MoveSource({ id, children }: { id: string; children: ReactNode }) {
   const { move } = useMove();
   return (
-    <TreeNavDraggable
+    <FileDragSource
       dragging={move.draggingId === id}
       onDragStart={(event) => {
         move.start(id, event);
       }}
       onDragEnd={move.end}
+      className="transition-opacity data-dragging:opacity-40"
     >
       {children}
-    </TreeNavDraggable>
+    </FileDragSource>
   );
 }
 
@@ -675,46 +589,7 @@ export function MovableFileTreeNav({
   /** Drop a dragged item onto a library or folder to move it. */
   onMoveFile: (id: string, dest: FileMoveDest) => void;
 }) {
-  const [draggingId, setDraggingId] = useState<string | null>(null);
-  const [dropKey, setDropKey] = useState<string | null>(null);
-
-  const move: FileMoveUi = {
-    draggingId,
-    dropKey,
-    start: (id, event) => {
-      beginFileMove(event, id);
-      setDraggingId(id);
-    },
-    end: () => {
-      endFileMove();
-      setDraggingId(null);
-      setDropKey(null);
-    },
-    over: (dest, event) => {
-      const id = fileMoveId();
-      if (id === null || !isFileMove(Array.from(event.dataTransfer.types))) {
-        return;
-      }
-      if (!canMoveLibraryItem(sections, id, dest)) {
-        event.dataTransfer.dropEffect = "none";
-        return;
-      }
-      preventFileMove(event);
-      setDropKey(destKey(dest));
-    },
-    leave: (key, event) => {
-      if (!isFileMove(Array.from(event.dataTransfer.types))) return;
-      if (!isLeavingDropTarget(event)) return;
-      setDropKey((current) => (current === key ? null : current));
-    },
-    drop: (dest, event) => {
-      const id = fileMoveId();
-      if (id === null) return;
-      event.preventDefault();
-      setDropKey(null);
-      onMoveFile(id, dest);
-    },
-  };
+  const move = useFileMoveTargets(sections, onMoveFile);
 
   return (
     <MoveContext value={{ onSelectLocation, onOpenFile, move }}>

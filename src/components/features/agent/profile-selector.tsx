@@ -1,22 +1,17 @@
 "use client";
 
 import { cn } from "cn";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { createContext, useContext, useState, type ReactNode } from "react";
 
 import type {
   ConnectionStatus,
   ProfileSummary,
 } from "@/components/features/settings/profile-list";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarGroup,
-  AvatarGroupCount,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { AvatarGroup, AvatarGroupCount } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { PersonAvatar } from "@/components/ui/person-avatar";
 import {
   Popover,
   PopoverContent,
@@ -25,7 +20,6 @@ import {
 import { SearchField } from "@/components/ui/search-field";
 import { fade, pop, pressRow, spring } from "@/styles/motion";
 import { spacing } from "@/styles/tokens";
-import { initials } from "@/lib/initials";
 
 interface ProfileSelectorProps {
   profiles: readonly ProfileSummary[];
@@ -74,6 +68,9 @@ const LABEL = {
   transition: { ...spring.snappy, opacity: fade.fast },
 } as const;
 
+/** Reduced motion still folds, it just does not spend time on it. */
+const INSTANT = { duration: 0 } as const;
+
 /** The lead-in folds on its own so the name can stay when the sentence shortens. */
 const PREFIX = {
   initial: { width: 0, marginRight: 0, opacity: 0 },
@@ -94,21 +91,16 @@ function ProfileAvatar({
   size: "sm" | "default";
 }) {
   return (
-    <Avatar
-      size={size}
+    <PersonAvatar
+      name={profile.name}
+      {...(profile.avatarUrl === undefined
+        ? {}
+        : { avatarUrl: profile.avatarUrl })}
       shape={profile.kind === "company" ? "square" : "circle"}
+      size={size}
     >
-      {profile.avatarUrl ? (
-        <AvatarImage src={profile.avatarUrl} alt="" />
-      ) : null}
-      <AvatarFallback>
-        {profile.kind === "company" ? (
-          <Icon name="building" size="s" />
-        ) : (
-          initials(profile.name)
-        )}
-      </AvatarFallback>
-    </Avatar>
+      {profile.kind === "company" ? <Icon name="building" size="s" /> : null}
+    </PersonAvatar>
   );
 }
 
@@ -379,9 +371,13 @@ export function ProfileSelector({
  */
 export function ProfileSelectorLabel({ children }: { children?: ReactNode }) {
   const { summary } = useProfileSelector();
+  const reduceMotion = useReducedMotion();
   return (
     <motion.span
       {...LABEL}
+      // The fold is a width spring, which no `MotionConfig` can stand down:
+      // reduced motion takes the same shapes without the reflow.
+      transition={reduceMotion ? INSTANT : LABEL.transition}
       className="flex items-baseline overflow-hidden whitespace-nowrap"
     >
       <AnimatePresence initial={false}>{children}</AnimatePresence>
@@ -392,9 +388,11 @@ export function ProfileSelectorLabel({ children }: { children?: ReactNode }) {
 
 /** "Posting as", ahead of the name. Omit it when the header is tight. */
 export function ProfileSelectorPrefix() {
+  const reduceMotion = useReducedMotion();
   return (
     <motion.span
       {...PREFIX}
+      transition={reduceMotion ? INSTANT : PREFIX.transition}
       className="overflow-hidden font-normal text-imagine-foreground-muted"
     >
       Posting as

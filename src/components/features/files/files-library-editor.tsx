@@ -10,6 +10,7 @@ import {
   useFilesEditor,
 } from "@/components/features/files/files-library-state";
 import { MarkdownEditor } from "@/components/features/files/markdown-editor";
+import { SectionCrumbLink } from "@/components/features/files/section-crumb";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -31,7 +32,7 @@ import { Icon } from "@/components/ui/icon";
 import { ResizeHandle } from "@/components/ui/resize-handle";
 import { useResizable } from "@/lib/use-resizable";
 import type { OpenDocument } from "@/services/files";
-import { fade, spring } from "@/styles/motion";
+import { fade } from "@/styles/motion";
 
 /** Where the open document lives, so the sheet can say and offer the way back. */
 function DocumentLocation({ openDocument }: { openDocument: OpenDocument }) {
@@ -72,25 +73,13 @@ function DocumentLocation({ openDocument }: { openDocument: OpenDocument }) {
             {folder === undefined ? (
               <BreadcrumbPage>{section.title}</BreadcrumbPage>
             ) : (
-              <BreadcrumbLink
-                onClick={() => {
+              <SectionCrumbLink
+                section={section}
+                onSelect={() => {
                   browse.setTab("files");
                   browse.goTo({ kind: "library", sectionId: section.id });
                 }}
-                onDragOver={library.overMoveDest(
-                  { sectionId: section.id },
-                  `crumb:${section.id}`,
-                )}
-                onDragLeave={library.leaveMoveDest(`crumb:${section.id}`)}
-                onDrop={library.dropMoveDest({ sectionId: section.id })}
-                className={
-                  library.dropTargetId === `crumb:${section.id}`
-                    ? "text-imagine-secondary"
-                    : undefined
-                }
-              >
-                {section.title}
-              </BreadcrumbLink>
+              />
             )}
           </BreadcrumbItem>
         </>
@@ -108,11 +97,10 @@ function DocumentLocation({ openDocument }: { openDocument: OpenDocument }) {
 }
 
 /**
- * The document editor: a sheet over the browser. On a phone it rises from the
- * bottom; on a wider frame it slides in from the right, framed the way a page
- * is (rounded left corners on a dimmed backdrop). The tree stays reachable to
- * switch documents; the scrim, Escape, and the close button all put the
- * browser back.
+ * The document editor: a modal sheet over the browser. On a phone it rises
+ * from the bottom; on a wider frame it slides in from the right, framed the
+ * way a page is (rounded left corners on a dimmed backdrop). The scrim,
+ * Escape, and the close button all put the browser back.
  */
 export function FilesLibraryEditor() {
   const { documentById, send } = useFilesLibrary();
@@ -131,50 +119,35 @@ export function FilesLibraryEditor() {
     documentId === undefined ? undefined : documentById.get(documentId);
 
   return (
-    <AnimatePresence initial={false}>
-      {openDocument === undefined ? null : (
-        <motion.div
-          key="editor"
-          data-slot="files-editor-scrim"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={fade.fast}
-          className="absolute inset-0 z-20 flex bg-imagine-foreground/10 max-md:items-end md:justify-end"
-          onClick={close}
-        >
-          <motion.div
-            role="dialog"
-            aria-label={openDocument.meta.title}
-            data-slot="files-editor"
-            initial={
-              reduceMotion
-                ? { opacity: 0 }
-                : isMobile
-                  ? { y: "100%" }
-                  : { x: "100%" }
-            }
-            animate={
-              reduceMotion ? { opacity: 1 } : isMobile ? { y: 0 } : { x: 0 }
-            }
-            exit={
-              reduceMotion
-                ? { opacity: 0 }
-                : isMobile
-                  ? { y: "100%" }
-                  : { x: "100%" }
-            }
-            transition={reduceMotion ? fade.fast : spring.sheet}
-            style={isMobile ? undefined : { width: resize.width }}
-            className={cn(
-              "relative flex h-full max-w-full flex-col overflow-hidden bg-imagine-surface shadow-raised",
-              "max-md:h-[calc(100%-var(--spacing-l))] max-md:w-full max-md:rounded-t-surface",
-              "md:rounded-l-surface",
-            )}
-            onClick={(event) => {
-              event.stopPropagation();
-            }}
-          >
+    <Dialog
+      open={openDocument !== undefined}
+      onOpenChange={(next) => {
+        if (!next) close();
+      }}
+    >
+      <DialogContent
+        data-slot="files-editor"
+        aria-describedby={undefined}
+        overlayClassName="bg-imagine-foreground/10 supports-backdrop-filter:backdrop-blur-none"
+        style={isMobile ? undefined : { width: resize.width }}
+        className={cn(
+          "inset-y-0 right-0 left-auto flex h-full w-full max-w-full translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden rounded-none bg-imagine-surface p-0 text-imagine-foreground shadow-raised duration-200 sm:max-w-full",
+          "max-md:inset-x-0 max-md:inset-y-auto max-md:bottom-0 max-md:h-[calc(100%-var(--spacing-l))] max-md:rounded-t-surface",
+          "md:rounded-l-surface",
+          // The sheet's own entrance replaces the dialog's zoom.
+          "data-open:zoom-in-100 data-closed:zoom-out-100",
+          reduceMotion
+            ? null
+            : isMobile
+              ? "data-open:slide-in-from-bottom-full data-closed:slide-out-to-bottom-full"
+              : "data-open:slide-in-from-right-full data-closed:slide-out-to-right-full",
+        )}
+      >
+        {openDocument === undefined ? null : (
+          <>
+            <DialogTitle className="sr-only">
+              {openDocument.meta.title}
+            </DialogTitle>
             <ResizeHandle
               edge="start"
               binding={resize.handle}
@@ -249,10 +222,10 @@ export function FilesLibraryEditor() {
                 </motion.div>
               </AnimatePresence>
             </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 

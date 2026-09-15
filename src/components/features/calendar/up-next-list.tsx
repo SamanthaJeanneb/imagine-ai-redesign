@@ -1,11 +1,8 @@
 "use client";
 
-import { cn } from "cn";
-import { motion } from "motion/react";
-
+import { NOTHING_SCHEDULED } from "@/components/features/calendar/calendar-copy";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";
-import { pressRow } from "@/styles/motion";
 
 export interface UpNextItem {
   id: string;
@@ -17,36 +14,23 @@ export interface UpNextItem {
 
 interface UpNextListProps {
   items: readonly UpNextItem[];
-  onOpen?: (item: UpNextItem) => void;
   onViewAll?: () => void;
-  className?: string;
 }
 
 /** The right rail's "Up next": time column, title, profile. */
-export function UpNextList({
-  items,
-  onOpen,
-  onViewAll,
-  className,
-}: UpNextListProps) {
+export function UpNextList({ items, onViewAll }: UpNextListProps) {
   return (
-    <div data-slot="up-next" className={cn("flex flex-col gap-m", className)}>
+    <div data-slot="up-next" className="flex flex-col gap-m">
       <span className="type-heading">Up next</span>
       {items.length === 0 ? (
         <p className="type-small text-imagine-foreground-muted">
-          Nothing scheduled. Ask the agent to draft something.
+          {NOTHING_SCHEDULED}
         </p>
       ) : (
         <Stagger kind="list" className="flex flex-col">
           {items.map((item) => (
             <StaggerItem key={item.id}>
-              <motion.button
-                type="button"
-                onClick={() => onOpen?.(item)}
-                whileTap={pressRow.whileTap}
-                transition={pressRow.transition}
-                className="group/row -mx-s flex w-[calc(100%+var(--spacing-l))] items-start gap-m rounded-control px-s py-s text-left transition-colors outline-none hover:bg-imagine-surface-raised focus-visible:ring-2 focus-visible:ring-ring/40"
-              >
+              <div className="flex items-start gap-m py-s">
                 <span className="w-14 shrink-0 pt-px type-small text-imagine-foreground-muted tabular-nums">
                   {item.when}
                 </span>
@@ -56,7 +40,7 @@ export function UpNextList({
                     {item.profileName}
                   </span>
                 </span>
-              </motion.button>
+              </div>
             </StaggerItem>
           ))}
         </Stagger>

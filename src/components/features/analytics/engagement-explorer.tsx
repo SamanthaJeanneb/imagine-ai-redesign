@@ -196,7 +196,8 @@ export function EngagementExplorer({
 
 /**
  * The same panel while the window is still being read: the header and the
- * metric switch stand, the curve and the post rail do not.
+ * metric switch stand, the curve and the post rail do not. The switch is
+ * inert until there is a window for it to switch between.
  */
 export function EngagementExplorerSkeleton({
   description,
@@ -205,12 +206,11 @@ export function EngagementExplorerSkeleton({
   description?: string;
   className?: string;
 }) {
-  const [metric, setMetric] = useState<ExplorerMetric>("reach");
   return (
     <Panel
       title="Engagement"
       description={description}
-      actions={<MetricTabs value={metric} onValueChange={setMetric} />}
+      actions={<MetricTabs value="reach" disabled />}
       className={className}
     >
       <ChartSkeletonLine height="h-72" />

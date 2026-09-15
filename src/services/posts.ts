@@ -139,10 +139,10 @@ function toProfileLabel(client: Client): string {
   return client.name.split(" ", 1)[0] ?? client.name;
 }
 
-/** The chip's label, when the post has one. Color comes from status. */
-function toPostLabel(post: Post): Pick<PostChipData, "label"> {
+/** The labels the post is filed under. Color comes from status, not these. */
+function toPostLabel(post: Post): Pick<PostChipData, "labels"> {
   if (post.postLabel === null) return {};
-  return { label: post.postLabel };
+  return { labels: [post.postLabel] };
 }
 
 function toEngagementPerson(

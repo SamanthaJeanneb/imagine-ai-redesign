@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import {
   Avatar,
   AvatarFallback,
@@ -13,29 +15,40 @@ interface PersonAvatarProps {
   /** A company posts under a squared mark, a person under a round one. */
   shape?: AvatarShape;
   size?: "default" | "sm" | "lg";
+  /**
+   * What stands in when there is no picture. Defaults to the initials of
+   * `name`; pass an icon for a company page, or `contactInitials` where the
+   * name may arrive as an email address.
+   */
+  children?: ReactNode;
+  /** For a face in a group, where the name is not written beside it. */
+  title?: string;
   className?: string;
 }
 
 /**
  * Somebody's face wherever one is shown: an author, a teammate, a competitor,
- * an engager. Always resolves to something, so a missing picture leaves
- * initials rather than an empty well.
+ * an engager. Always resolves to something, so a missing picture leaves a
+ * mark rather than an empty well.
  */
 export function PersonAvatar({
   name,
   avatarUrl,
   shape = "circle",
   size = "default",
+  children,
+  title,
   className,
 }: PersonAvatarProps) {
   return (
     <Avatar
       size={size}
       shape={shape}
+      {...(title === undefined ? {} : { title })}
       {...(className === undefined ? {} : { className })}
     >
       {avatarUrl === undefined ? null : <AvatarImage src={avatarUrl} alt="" />}
-      <AvatarFallback>{initials(name)}</AvatarFallback>
+      <AvatarFallback>{children ?? initials(name)}</AvatarFallback>
     </Avatar>
   );
 }

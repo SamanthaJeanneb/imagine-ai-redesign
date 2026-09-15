@@ -4,7 +4,6 @@ import { createContext, type ReactNode, useContext, useState } from "react";
 
 import type { FileSection } from "@/components/features/files/file-tree";
 import type { Skill } from "@/components/features/files/skills-list";
-import type { ChatPanelMode } from "@/components/layout/chat-context-panel";
 import { FilesPanelApiProvider } from "@/components/layout/files-panel";
 import { useWorkspaceNav } from "@/components/layout/workspace-nav";
 import { useResizable } from "@/lib/use-resizable";
@@ -13,8 +12,8 @@ interface WorkspaceFilesState {
   orgName: string;
   orgLogoUrl: string | undefined;
   fileSections: readonly FileSection[];
-  panel: ChatPanelMode | null;
-  setPanel: (panel: ChatPanelMode | null) => void;
+  filesPanelOpen: boolean;
+  setFilesPanelOpen: (open: boolean) => void;
   /** Whether the panel has a row to open into on this route. */
   panelOpen: boolean;
   skills: readonly Skill[];
@@ -56,7 +55,7 @@ export function WorkspaceFilesProvider({
   children: ReactNode;
 }) {
   const { activeKey, docked } = useWorkspaceNav();
-  const [panel, setPanel] = useState<ChatPanelMode | null>(null);
+  const [filesPanelOpen, setFilesPanelOpen] = useState(false);
   const [skills, setSkills] = useState(initialSkills);
   const [activeFileId, setActiveFileId] = useState<string>();
   const resize = useResizable({
@@ -69,10 +68,10 @@ export function WorkspaceFilesProvider({
   return (
     <FilesPanelApiProvider
       open={() => {
-        setPanel("files");
+        setFilesPanelOpen(true);
       }}
       close={() => {
-        setPanel(null);
+        setFilesPanelOpen(false);
       }}
     >
       <WorkspaceFilesContext
@@ -80,9 +79,9 @@ export function WorkspaceFilesProvider({
           orgName,
           orgLogoUrl,
           fileSections,
-          panel,
-          setPanel,
-          panelOpen: panel === "files" && (activeKey === "agent" || docked),
+          filesPanelOpen,
+          setFilesPanelOpen,
+          panelOpen: filesPanelOpen && (activeKey === "agent" || docked),
           skills,
           setSkillEnabled(id, enabled) {
             setSkills((current) =>

@@ -1,11 +1,10 @@
 "use client";
 
-import { cn } from "cn";
 import type { ReactNode } from "react";
 
 import type { AssetTileData } from "@/components/features/files/asset-tile";
 import {
-  type DraggableResource as DraggableResourcePayload,
+  type DraggableResource,
   type FileResource,
   writeResourceDrag,
 } from "@/components/features/files/resource-drag";
@@ -15,13 +14,11 @@ import {
  * Native HTML drag on a plain element; the wrapped content is untouched. Fades
  * while the drag is in flight.
  */
-export function DraggableResource({
+function ResourceDragSource({
   resource,
-  className,
   children,
 }: {
-  resource: DraggableResourcePayload;
-  className?: string;
+  resource: DraggableResource;
   children: ReactNode;
 }) {
   return (
@@ -36,10 +33,7 @@ export function DraggableResource({
       onDragEnd={(event) => {
         delete event.currentTarget.dataset["dragging"];
       }}
-      className={cn(
-        "cursor-grab transition-opacity active:cursor-grabbing data-[dragging=true]:opacity-40",
-        className,
-      )}
+      className="cursor-grab transition-opacity active:cursor-grabbing data-[dragging=true]:opacity-40"
     >
       {children}
     </div>
@@ -48,35 +42,28 @@ export function DraggableResource({
 
 export function DraggableFile({
   file,
-  className,
   children,
 }: {
   file: FileResource;
-  className?: string;
   children: ReactNode;
 }) {
   return (
-    <DraggableResource resource={{ kind: "file", file }} className={className}>
+    <ResourceDragSource resource={{ kind: "file", file }}>
       {children}
-    </DraggableResource>
+    </ResourceDragSource>
   );
 }
 
 export function DraggableAsset({
   asset,
-  className,
   children,
 }: {
   asset: AssetTileData;
-  className?: string;
   children: ReactNode;
 }) {
   return (
-    <DraggableResource
-      resource={{ kind: "asset", asset }}
-      className={className}
-    >
+    <ResourceDragSource resource={{ kind: "asset", asset }}>
       {children}
-    </DraggableResource>
+    </ResourceDragSource>
   );
 }

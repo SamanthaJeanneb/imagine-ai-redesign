@@ -17,7 +17,7 @@ import { ChartCard } from "@/components/features/analytics/chart-card";
 import { StatGroup, StatTile } from "@/components/features/analytics/stat-tile";
 import { TopPosts } from "@/components/features/analytics/top-posts";
 import {
-  csvCell,
+  downloadCsv,
   snapshotFor,
 } from "@/components/features/analytics/analytics-data";
 import type { TimeRange } from "@/entities/analytics";
@@ -86,17 +86,7 @@ export function AnalyticsPage({ data }: AnalyticsPageProps) {
                   : 0,
               ]),
             ];
-            const csv = rows
-              .map((row) => row.map(csvCell).join(","))
-              .join("\n");
-            const url = URL.createObjectURL(
-              new Blob([csv], { type: "text/csv;charset=utf-8" }),
-            );
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = `imagine-analytics-${range}-${profileId}.csv`;
-            link.click();
-            URL.revokeObjectURL(url);
+            downloadCsv(rows, `imagine-analytics-${range}-${profileId}.csv`);
           }}
         />
       </div>

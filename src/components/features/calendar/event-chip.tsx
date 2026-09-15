@@ -1,17 +1,16 @@
 "use client";
 
 import { cn } from "cn";
-import { motion } from "motion/react";
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 
-import { Button } from "@/components/ui/button";
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { Icon } from "@/components/ui/icon";
-import { hoverLift, press } from "@/styles/motion";
+  ChipHoverCard,
+  ChipRail,
+  ChipShell,
+  chipStyle,
+} from "@/components/features/calendar/chip-shell";
+import { Button } from "@/components/ui/button";
+import { Icon, type IconName } from "@/components/ui/icon";
 
 export interface EventChipData {
   id: string;
@@ -35,18 +34,20 @@ interface EventChipProps {
   className?: string;
 }
 
-const EVENT_STYLE: CSSProperties & {
-  "--chip-color": string;
-  "--chip-contrast": string;
-} = {
-  "--chip-color": "var(--imagine-tag-5)",
-  "--chip-contrast": "var(--imagine-surface)",
-};
+/** The glyph for the calendar the event came from. */
+const SOURCE_ICON = {
+  google: "google",
+} as const satisfies Record<EventChipData["source"], IconName>;
 
 /**
- * The chip's chrome, shared by every variant: the plum chip, the one color no
- * post status uses, so events read apart from posts at a glance. Hovering it
- * is how you draft a post about what is coming up.
+ * Plum, the one color no post status uses, so events read apart from posts at
+ * a glance.
+ */
+const EVENT_STYLE = chipStyle("var(--imagine-tag-5)", "var(--imagine-surface)");
+
+/**
+ * The chip's chrome, shared by every variant: the plum chip and its rail.
+ * Hovering it is how you draft a post about what is coming up.
  */
 function EventChipButton({
   event,
@@ -54,40 +55,28 @@ function EventChipButton({
   className,
   children,
 }: EventChipProps & { children: ReactNode }) {
-  const chip = (
-    <motion.button
-      type="button"
-      whileTap={press.whileTap}
-      whileHover={hoverLift.whileHover}
-      transition={press.transition}
-      onClick={() => onOpen?.(event)}
-      data-slot="event-chip"
-      aria-label={`${event.title}, ${event.whenLabel}, ${event.calendarName}`}
-      style={EVENT_STYLE}
-      className={cn(
-        "relative flex w-full min-w-0 flex-col gap-xxs overflow-hidden rounded-control px-s pl-m text-left text-imagine-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-imagine-surface",
-        "chip-wash @max-[6rem]/chip:pr-xs @max-[6rem]/chip:pl-s",
-        className,
-      )}
-    >
-      <span
-        aria-hidden="true"
-        className="absolute inset-y-0 left-0 w-1 bg-[var(--chip-color)]"
-      />
-      {children}
-    </motion.button>
-  );
-
   return (
-    <HoverCard>
-      <HoverCardTrigger asChild>{chip}</HoverCardTrigger>
-      <HoverCardContent
-        aria-label={`Event: ${event.title}`}
-        className="w-[26rem] p-l"
-      >
-        <EventPreview event={event} onDraft={onOpen} />
-      </HoverCardContent>
-    </HoverCard>
+    <ChipHoverCard
+      chip={
+        <ChipShell
+          onClick={() => onOpen?.(event)}
+          data-slot="event-chip"
+          aria-label={`${event.title}, ${event.whenLabel}, ${event.calendarName}`}
+          style={EVENT_STYLE}
+          className={cn(
+            "flex-col gap-xxs chip-wash text-imagine-foreground @max-[6rem]/chip:pr-xs",
+            className,
+          )}
+        >
+          <ChipRail />
+          {children}
+        </ChipShell>
+      }
+      label={`Event: ${event.title}`}
+      className="w-[26rem] p-l"
+    >
+      <EventPreview event={event} onDraft={onOpen} />
+    </ChipHoverCard>
   );
 }
 
@@ -174,7 +163,7 @@ function EventPreview({
         </p>
       )}
       <span className="inline-flex items-center gap-xs type-caption text-imagine-foreground-faint">
-        <Icon name="google" size="s" />
+        <Icon name={SOURCE_ICON[event.source]} size="s" />
         {event.calendarName}
       </span>
       {onDraft === undefined ? null : (

@@ -24,7 +24,6 @@ export default function AccountsStepPage() {
   return (
     <StepFrame
       step={5}
-      total={6}
       title={
         count === 0
           ? "No accounts connected yet"
@@ -39,15 +38,7 @@ export default function AccountsStepPage() {
       }
       actions={
         <>
-          <Button
-            variant="link"
-            className="text-imagine-foreground-muted max-md:self-start"
-            onClick={() => {
-              router.push("/onboarding/linkedin");
-            }}
-          >
-            Back
-          </Button>
+          <StepFrame.Back to="/onboarding/linkedin" />
           <Button
             size="lg"
             className="max-md:w-full"

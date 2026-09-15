@@ -57,7 +57,7 @@ export const CHART_ANIMATION = {
 } as const;
 
 /** `datum` is the row the value came from, for formats that need a sibling field. */
-export type TooltipValueFormatter = (
+type TooltipValueFormatter = (
   value: number,
   key: string,
   datum: Record<string, unknown> | undefined,

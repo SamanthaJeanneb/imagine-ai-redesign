@@ -16,8 +16,8 @@ import { Icon } from "@/components/ui/icon";
 import { fade } from "@/styles/motion";
 
 interface ContextChipProps {
-  /** `file` or `asset`, for styling hooks on the chip. */
-  kind: string;
+  /** What is attached, for styling hooks on the chip. */
+  kind: "file" | "asset";
   className?: string;
   children: ReactNode;
 }

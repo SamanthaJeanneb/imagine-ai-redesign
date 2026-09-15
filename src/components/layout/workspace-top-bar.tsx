@@ -61,7 +61,7 @@ export function WorkspaceTopBar({
     chatOverlayOpen,
     setChatOverlayOpen,
   } = useWorkspaceChrome();
-  const { panel, setPanel } = useWorkspaceFiles();
+  const { filesPanelOpen, setFilesPanelOpen } = useWorkspaceFiles();
   // Everyone still connected, to start. Disconnected profiles need connecting
   // before the agent can post as them, so they wait to be chosen on purpose.
   const [selectedProfileIds, setSelectedProfileIds] = useState<
@@ -131,7 +131,10 @@ export function WorkspaceTopBar({
       <AnimatePresence initial={false} mode="wait">
         {chatOpen ? (
           <WorkspaceHeaderEnd key="chat">
-            <ChatControls panel={panel} onPanelChange={setPanel} />
+            <ChatControls
+              filesOpen={filesPanelOpen}
+              onFilesOpenChange={setFilesPanelOpen}
+            />
           </WorkspaceHeaderEnd>
         ) : (
           <WorkspaceHeaderEnd key="account" className="items-center gap-xxs">

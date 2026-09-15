@@ -1,20 +1,18 @@
 "use client";
 
-import { cn } from "cn";
 import { motion } from "motion/react";
 import { useState } from "react";
 
 import type { PostAuthor } from "@/components/features/agent/linkedin-post-draft";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLayoutLocked } from "@/components/motion/layout-lock";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { PersonAvatar } from "@/components/ui/person-avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { spring } from "@/styles/motion";
-import { initials } from "@/lib/initials";
 
 /** What the agent is replying to: their comment on your post, or their own post. */
-export interface CommentTarget {
+interface CommentTarget {
   author: PostAuthor;
   /** The comment, or the opening of their post. */
   text: string;
@@ -32,23 +30,16 @@ export interface CommentDraftContent {
 interface CommentDraftProps extends CommentDraftContent {
   /** Post it; the id is whatever the caller needs to act on. */
   onPost?: (body: string) => void;
-  className?: string;
 }
 
-function Person({
-  author,
-  size = "sm",
-}: {
-  author: PostAuthor;
-  size?: "sm" | "default";
-}) {
+function Person({ author }: { author: PostAuthor }) {
   return (
-    <Avatar size={size} shape={author.kind === "company" ? "square" : "circle"}>
-      {author.avatarUrl ? (
-        <AvatarImage src={author.avatarUrl} alt={author.name} />
-      ) : null}
-      <AvatarFallback>{initials(author.name)}</AvatarFallback>
-    </Avatar>
+    <PersonAvatar
+      name={author.name}
+      avatarUrl={author.avatarUrl}
+      shape={author.kind === "company" ? "square" : "circle"}
+      size="sm"
+    />
   );
 }
 
@@ -62,7 +53,6 @@ export function CommentDraft({
   author,
   body: initialBody,
   onPost,
-  className,
 }: CommentDraftProps) {
   const [editing, setEditing] = useState(false);
   const [body, setBody] = useState(initialBody);
@@ -75,10 +65,7 @@ export function CommentDraft({
       layoutDependency={`${String(editing)}:${String(posted)}`}
       transition={spring.settle}
       data-slot="comment-draft"
-      className={cn(
-        "flex max-w-lg flex-col gap-m rounded-panel bg-imagine-surface p-l shadow-raised",
-        className,
-      )}
+      className="flex max-w-lg flex-col gap-m rounded-panel bg-imagine-surface p-l shadow-raised"
     >
       <div className="flex items-start gap-s">
         <Person author={target.author} />

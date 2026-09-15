@@ -1,7 +1,5 @@
 "use client";
 
-import { cn } from "cn";
-
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,12 +9,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Icon, type IconName } from "@/components/ui/icon";
 
-export type NewMenuIntent = "document" | "folder";
+type NewMenuIntent = "document" | "folder";
 
 interface NewMenuProps {
   onIntent: (intent: NewMenuIntent) => void;
   disabled?: boolean;
-  className?: string;
 }
 
 const ITEMS: readonly {
@@ -33,11 +30,7 @@ const ITEMS: readonly {
  * new folder in the current location. The menu opens under the button at the
  * button's width so it reads as the button unfolding.
  */
-export function NewMenu({
-  onIntent,
-  disabled = false,
-  className,
-}: NewMenuProps) {
+export function NewMenu({ onIntent, disabled = false }: NewMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -45,7 +38,7 @@ export function NewMenu({
           size="sm"
           data-slot="new-menu"
           disabled={disabled}
-          className={cn("w-full justify-center", className)}
+          className="w-full justify-center"
         >
           <Icon name="plus" size="s" data-icon="inline-start" />
           New

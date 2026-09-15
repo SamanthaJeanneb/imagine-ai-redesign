@@ -31,13 +31,12 @@ import {
 } from "@/components/features/analytics/chart-theme";
 import { Panel } from "@/components/features/analytics/panel";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { PersonAvatar } from "@/components/ui/person-avatar";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { formatCompact } from "@/lib/format";
-import { initials } from "@/lib/initials";
 import { fade, swapUp } from "@/styles/motion";
 
-export type TeamMetric = "reach" | "rate";
+type TeamMetric = "reach" | "rate";
 
 export interface TeamMember {
   id: string;
@@ -108,16 +107,19 @@ function opacityClass(rank: number): string {
 function MetricTabs({
   value,
   onValueChange,
+  disabled,
 }: {
   value: TeamMetric;
-  onValueChange: (metric: TeamMetric) => void;
+  onValueChange?: (metric: TeamMetric) => void;
+  disabled?: boolean;
 }) {
   return (
     <ToggleGroup
       size="sm"
       value={value}
+      disabled={disabled}
       onValueChange={(next) => {
-        if (next === "reach" || next === "rate") onValueChange(next);
+        if (next === "reach" || next === "rate") onValueChange?.(next);
       }}
       aria-label="Metric"
     >
@@ -269,12 +271,12 @@ export function TeamPerformance({
                   opacityClass(rank),
                 )}
               />
-              <Avatar size="sm" shape={member.isCompany ? "square" : "circle"}>
-                {member.avatarUrl ? (
-                  <AvatarImage src={member.avatarUrl} alt={member.name} />
-                ) : null}
-                <AvatarFallback>{initials(member.name)}</AvatarFallback>
-              </Avatar>
+              <PersonAvatar
+                name={member.name}
+                avatarUrl={member.avatarUrl}
+                shape={member.isCompany ? "square" : "circle"}
+                size="sm"
+              />
               <span className="min-w-0 flex-1 truncate type-small font-medium">
                 {member.name}
               </span>
@@ -301,6 +303,7 @@ export function TeamPerformance({
 /**
  * The same panel while the team's numbers are still being worked out: the
  * header and the metric switch stand, the chart and the leaderboard do not.
+ * The switch is inert until there are numbers for it to switch between.
  */
 export function TeamPerformanceSkeleton({
   description,
@@ -309,12 +312,11 @@ export function TeamPerformanceSkeleton({
   description?: string;
   className?: string;
 }) {
-  const [metric, setMetric] = useState<TeamMetric>("reach");
   return (
     <Panel
       title="Team"
       description={description}
-      actions={<MetricTabs value={metric} onValueChange={setMetric} />}
+      actions={<MetricTabs value="reach" disabled />}
       className={className}
     >
       <div className="grid gap-l @2xl/panel:grid-cols-[minmax(0,1fr)_15rem]">

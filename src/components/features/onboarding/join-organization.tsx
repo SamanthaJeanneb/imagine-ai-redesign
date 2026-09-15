@@ -3,15 +3,9 @@
 import { cn } from "cn";
 import { motion } from "motion/react";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarGroup,
-  AvatarGroupCount,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { AvatarGroup, AvatarGroupCount } from "@/components/ui/avatar";
+import { PersonAvatar } from "@/components/ui/person-avatar";
 import { fade } from "@/styles/motion";
-import { initials } from "@/lib/initials";
 
 export interface JoinMember {
   id: string;
@@ -107,10 +101,12 @@ export function JoinOrganizationPanel({
       className="flex flex-col gap-l rounded-panel bg-imagine-surface p-l shadow-raised"
     >
       <div className="flex items-center gap-m">
-        <Avatar size="lg" shape="square">
-          {orgLogoUrl ? <AvatarImage src={orgLogoUrl} alt="" /> : null}
-          <AvatarFallback>{initials(orgName)}</AvatarFallback>
-        </Avatar>
+        <PersonAvatar
+          name={orgName}
+          avatarUrl={orgLogoUrl}
+          shape="square"
+          size="lg"
+        />
         <div className="flex min-w-0 flex-col">
           <span className="truncate type-heading">{orgName}</span>
           <span className="truncate type-small text-imagine-foreground-muted">
@@ -146,12 +142,15 @@ export function JoinOrganizationMembers({
     >
       <AvatarGroup>
         {shown.map((member) => (
-          <Avatar key={member.id} size="sm" title={member.name}>
-            {member.avatarUrl ? (
-              <AvatarImage src={member.avatarUrl} alt={member.name} />
-            ) : null}
-            <AvatarFallback>{initials(member.name)}</AvatarFallback>
-          </Avatar>
+          <PersonAvatar
+            key={member.id}
+            size="sm"
+            name={member.name}
+            title={member.name}
+            {...(member.avatarUrl === undefined
+              ? {}
+              : { avatarUrl: member.avatarUrl })}
+          />
         ))}
         {overflow > 0 ? (
           <AvatarGroupCount className="size-6 bg-imagine-surface-raised type-micro text-imagine-foreground-muted">
@@ -178,12 +177,11 @@ export function JoinOrganizationInvitee({
 }: JoinOrganizationInviteeProps) {
   return (
     <div className="flex items-center gap-m pl-xs">
-      <Avatar size="sm">
-        {invitedBy.avatarUrl ? (
-          <AvatarImage src={invitedBy.avatarUrl} alt="" />
-        ) : null}
-        <AvatarFallback>{initials(invitedBy.name)}</AvatarFallback>
-      </Avatar>
+      <PersonAvatar
+        name={invitedBy.name}
+        avatarUrl={invitedBy.avatarUrl}
+        size="sm"
+      />
       <p className="type-small text-imagine-foreground-muted">
         <span className="font-medium text-imagine-foreground">
           {invitedBy.name}

@@ -16,10 +16,29 @@ export interface TimelineAction {
   prompt?: string;
 }
 
+/** What the agent did. `activity` stands in for anything newer than this list. */
+export type TimelineKind =
+  | "drafted"
+  | "scheduled"
+  | "published"
+  | "failed"
+  | "reply_drafted"
+  | "persona_updated"
+  | "activity";
+
+export const TIMELINE_KIND_LABEL: Record<TimelineKind, string> = {
+  drafted: "Drafted",
+  scheduled: "Scheduled",
+  published: "Published",
+  failed: "Failed",
+  reply_drafted: "Reply drafted",
+  persona_updated: "Persona updated",
+  activity: "Activity",
+};
+
 export interface TimelineEntry {
   id: string;
-  /** What the agent did, e.g. "Drafted", "Published", "Needs a decision". */
-  kind: string;
+  kind: TimelineKind;
   /** Relative or absolute, already formatted. */
   when: string;
   title: string;
@@ -91,7 +110,7 @@ export function Timeline({ entries, onAction, className }: TimelineProps) {
               <div className="flex flex-col gap-s sm:flex-row sm:items-center sm:justify-between sm:gap-l">
                 <div className="flex min-w-0 flex-col gap-xxs">
                   <span className="type-small text-imagine-foreground-muted">
-                    {entry.kind}
+                    {TIMELINE_KIND_LABEL[entry.kind]}
                     <span className="text-imagine-foreground-faint"> · </span>
                     {entry.when}
                   </span>

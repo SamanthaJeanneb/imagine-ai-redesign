@@ -1,12 +1,20 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { OnboardingProvider } from "@/components/features/onboarding/onboarding-provider";
 import { PreviewPane } from "@/components/features/onboarding/preview-pane";
+import { MAIN_LANDMARK_ID } from "@/lib/landmark";
 import { getThreads } from "@/services/agent";
 import { getOwner } from "@/services/onboarding";
 
 /** Enough recent chats to fill the rail's list without scrolling. */
 const RECENT_CHATS = 6;
+
+// The steps are client components, so the flow's title lives here.
+export const metadata: Metadata = {
+  title: "Set up",
+  description: "Name your workspace, invite your team, and connect LinkedIn.",
+};
 
 /**
  * Setup as a split: the step on a surface at left, a live preview of the
@@ -31,7 +39,7 @@ export default function Onboarding2Layout({
   return (
     <OnboardingProvider>
       <div className="grid min-h-svh w-full min-w-0 flex-1 overflow-x-clip bg-imagine-surface lg:grid-cols-[minmax(26rem,42%)_minmax(0,1fr)] 2xl:grid-cols-[40rem_minmax(0,1fr)]">
-        <div className="flex min-w-0 flex-col">
+        <main id={MAIN_LANDMARK_ID} className="flex min-w-0 flex-col">
           <div className="mx-auto flex w-full max-w-lg flex-1 flex-col px-l pt-xl pb-0 md:px-xl md:pt-xxl md:pb-xxl lg:pt-xxxl xl:px-xxxl">
             <span
               role="img"
@@ -40,7 +48,7 @@ export default function Onboarding2Layout({
             />
             {children}
           </div>
-        </div>
+        </main>
         <PreviewPane
           threads={threads}
           owner={{

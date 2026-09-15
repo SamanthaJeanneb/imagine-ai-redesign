@@ -84,6 +84,7 @@ function AskImagineStrip({
             onChange={(event) => {
               setQuestion(event.target.value);
             }}
+            aria-label="Ask Imagine about these numbers"
             placeholder="Ask Imagine about these numbers"
             className="min-w-0 flex-1 bg-transparent type-small outline-none placeholder:text-imagine-foreground-faint"
           />

@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { CenteredLandingWorkspace } from "@/components/features/agent/agent-workspace";
 import { formatFullDate } from "@/lib/format";
 import { getNow } from "@/mocks/db";
@@ -5,6 +7,11 @@ import { getTimeline } from "@/services/agent";
 import { getLandingRail } from "@/services/analytics";
 import { getUpcomingWeeks, getUpNext } from "@/services/calendar";
 import { getCurrentUser } from "@/services/workspace";
+
+export const metadata: Metadata = {
+  title: "New chat",
+  description: "Start a conversation with the LinkedIn content agent.",
+};
 
 /**
  * A new chat: a single centered column. The agent's mark and greeting, the

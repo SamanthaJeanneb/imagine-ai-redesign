@@ -82,7 +82,7 @@ export type MessagePart =
 
 interface AgentMessageProps {
   parts: readonly MessagePart[];
-  onIntent?: (intent: string, postId?: string) => void;
+  onIntent?: (intent: string) => void;
   /** Posts the agent has already put on the calendar in this thread. */
   scheduledPostIds?: ReadonlySet<string>;
   /** Trails the parts, in the message's own column: the thinking state while the reply is still arriving. */
@@ -92,6 +92,16 @@ interface AgentMessageProps {
 
 function assertNever(value: never): never {
   throw new Error(`Unhandled message part: ${JSON.stringify(value)}`);
+}
+
+/**
+ * A part's identity in the message. A draft keys on its post, since the body
+ * it seeds its field with only reaches that field on a fresh instance.
+ */
+function partKey(part: MessagePart, index: number): string {
+  return part.type === "post_draft"
+    ? `post_draft:${part.postId}`
+    : `${part.type}:${String(index)}`;
 }
 
 type DraftPartData = Extract<MessagePart, { type: "post_draft" }>;
@@ -192,11 +202,9 @@ function DraftPart({
  * confirmation that follows stands alone.
  */
 function DraftPartActions({
-  postId,
   onIntent,
 }: {
-  postId: string;
-  onIntent?: (intent: string, postId?: string) => void;
+  onIntent?: (intent: string) => void;
 }) {
   const { editing, setEditing } = useDraft();
   const [scheduled, setScheduled] = useState(false);
@@ -209,7 +217,7 @@ function DraftPartActions({
         onClick={() => {
           setEditing(false);
           setScheduled(true);
-          onIntent?.("schedule", postId);
+          onIntent?.("schedule");
         }}
       >
         Schedule
@@ -235,7 +243,7 @@ function Part({
   scheduledPostIds,
 }: {
   part: MessagePart;
-  onIntent?: (intent: string, postId?: string) => void;
+  onIntent?: (intent: string) => void;
   scheduledPostIds?: ReadonlySet<string>;
 }) {
   switch (part.type) {
@@ -256,7 +264,7 @@ function Part({
         <DraftPart part={part} />
       ) : (
         <DraftPart part={part}>
-          <DraftPartActions postId={part.postId} onIntent={onIntent} />
+          <DraftPartActions onIntent={onIntent} />
         </DraftPart>
       );
     case "scheduled":
@@ -286,7 +294,7 @@ function Part({
           target={part.target}
           author={part.author}
           body={part.body}
-          onPost={() => onIntent?.("post-comment", part.commentId)}
+          onPost={() => onIntent?.("post-comment")}
         />
       );
     default:
@@ -312,7 +320,7 @@ export function AgentMessage({
     >
       {parts.map((part, index) => (
         <motion.div
-          key={index}
+          key={partKey(part, index)}
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...fade.base, delay: index * stagger.list }}

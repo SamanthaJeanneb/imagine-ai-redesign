@@ -1,17 +1,24 @@
 "use client";
 
 import { cn } from "cn";
-import { motion } from "motion/react";
 import { usePathname } from "next/navigation";
 import { createContext, type ReactNode, useContext, useState } from "react";
 
 import { useWorkspaceFiles } from "@/components/layout/workspace-files";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   COMPACT_QUERY,
   MOBILE_QUERY,
   useMediaQuery,
 } from "@/lib/use-media-query";
-import { fade } from "@/styles/motion";
+
+/**
+ * `DialogContent` is a centered panel; an overlaid column takes the whole
+ * surface and anchors to an edge instead. It stays transparent to the pointer
+ * so a press beside the column reaches the scrim under it.
+ */
+const OVERLAY_SURFACE =
+  "pointer-events-none top-0 left-0 flex h-dvh w-full max-w-full translate-x-0 translate-y-0 gap-0 rounded-none bg-transparent p-0 text-inherit shadow-none data-open:zoom-in-100 data-closed:zoom-out-100 sm:max-w-full";
 
 interface WorkspaceChromeState {
   /** A phone: the rail is a sheet and the chat fills the surface. */
@@ -47,7 +54,7 @@ export function useWorkspaceChrome(): WorkspaceChromeState {
  */
 export function WorkspaceChromeProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { panel } = useWorkspaceFiles();
+  const { filesPanelOpen } = useWorkspaceFiles();
   const isMobile = useMediaQuery(MOBILE_QUERY);
   const isCompact = useMediaQuery(COMPACT_QUERY);
   const [collapsed, setCollapsed] = useState(false);
@@ -83,7 +90,7 @@ export function WorkspaceChromeProvider({ children }: { children: ReactNode }) {
   // on the way in and given back only once neither still wants the width: with
   // a memory each, leaving the calendar with the files panel open would hand
   // the panel the calendar's own collapsed rail and leave it stuck shut.
-  const railTaken = pathname.startsWith("/calendar") || panel === "files";
+  const railTaken = pathname.startsWith("/calendar") || filesPanelOpen;
   const [seenRailTaken, setSeenRailTaken] = useState(railTaken);
   if (railTaken !== seenRailTaken) {
     setSeenRailTaken(railTaken);
@@ -118,30 +125,27 @@ export function WorkspaceChromeProvider({ children }: { children: ReactNode }) {
 /** The rail, as a sheet over the page on a phone and a column above it. */
 export function WorkspaceNavSheet({ children }: { children: ReactNode }) {
   const { isMobile, mobileNavOpen, setMobileNavOpen } = useWorkspaceChrome();
-  const asSheet = isMobile && mobileNavOpen;
+
+  if (isMobile) {
+    return (
+      <Dialog open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+        <DialogContent
+          overlayClassName="bg-imagine-foreground/10 supports-backdrop-filter:backdrop-blur-none"
+          className={OVERLAY_SURFACE}
+          aria-describedby={undefined}
+        >
+          <DialogTitle className="sr-only">Navigation</DialogTitle>
+          <div className="pointer-events-auto h-full max-w-full">
+            {children}
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
-    <div
-      className={cn(
-        asSheet
-          ? "fixed inset-0 z-50 flex bg-imagine-foreground/10"
-          : "hidden h-full md:flex",
-      )}
-      onClick={
-        asSheet
-          ? () => {
-              setMobileNavOpen(false);
-            }
-          : undefined
-      }
-    >
-      <div
-        className="h-full"
-        onClick={(event) => {
-          event.stopPropagation();
-        }}
-      >
-        {children}
-      </div>
+    <div className="hidden h-full md:flex">
+      <div className="h-full">{children}</div>
     </div>
   );
 }
@@ -157,31 +161,35 @@ export function WorkspacePageAsideSlot() {
   return <div ref={setAsideHost} className="hidden xl:contents" />;
 }
 
-/** What an overlaid column or panel sits on, dismissed by a press outside. */
+/**
+ * What an overlaid column or panel sits on, dismissed by a press outside. The
+ * panel itself takes the pointer back, so a press anywhere else reaches the
+ * scrim under it and closes.
+ */
 export function WorkspaceScrim({
-  onDismiss,
+  open,
+  onOpenChange,
+  label,
   children,
 }: {
-  onDismiss: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  /** Names the overlay for assistive technology. */
+  label: string;
   children: ReactNode;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={fade.fast}
-      className="absolute inset-0 z-40 flex justify-end bg-imagine-foreground/10"
-      onClick={onDismiss}
-    >
-      <div
-        className="flex h-full max-w-full"
-        onClick={(event) => {
-          event.stopPropagation();
-        }}
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        overlayClassName="bg-imagine-foreground/10 supports-backdrop-filter:backdrop-blur-none"
+        className={cn(OVERLAY_SURFACE, "justify-end")}
+        aria-describedby={undefined}
       >
-        {children}
-      </div>
-    </motion.div>
+        <DialogTitle className="sr-only">{label}</DialogTitle>
+        <div className="pointer-events-auto flex h-full max-w-full">
+          {children}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

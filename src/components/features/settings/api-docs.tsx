@@ -9,6 +9,7 @@ import {
   type Param,
 } from "@/components/features/settings/api-docs-data";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 const linkClass = "text-imagine-secondary underline-offset-4 hover:underline";
 
@@ -258,10 +259,13 @@ export function ApiDocs() {
           />
         </section>
 
-        <p className="border-t border-imagine-border pt-l type-small text-imagine-foreground-muted">
-          Questions or missing data you need? Contact your Imagine AI account
-          manager.
-        </p>
+        <div className="flex flex-col gap-l">
+          <Separator />
+          <p className="type-small text-imagine-foreground-muted">
+            Questions or missing data you need? Contact your Imagine AI account
+            manager.
+          </p>
+        </div>
       </main>
     </div>
   );

@@ -14,11 +14,12 @@ import {
   type AssetTileData,
 } from "@/components/features/files/asset-tile";
 import { useLayoutLocked } from "@/components/motion/layout-lock";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Icon, type IconName } from "@/components/ui/icon";
+import { PersonAvatar } from "@/components/ui/person-avatar";
+import { Separator } from "@/components/ui/separator";
 import { fade } from "@/styles/motion";
-import { initials } from "@/lib/initials";
+import { COUNT } from "@/lib/format";
 
 export interface PostAuthor {
   name: string;
@@ -29,7 +30,7 @@ export interface PostAuthor {
 }
 
 /** Counts LinkedIn reports back after a post goes out. */
-export interface LinkedInPostStats {
+interface LinkedInPostStats {
   reactions: number;
   comments: number;
   reposts: number;
@@ -69,8 +70,6 @@ const ACTIONS: readonly {
   { icon: "arrows-rotate", label: "Repost", count: "reposts" },
   { icon: "paper-plane", label: "Send" },
 ];
-
-const COUNT = new Intl.NumberFormat("en-US");
 
 /**
  * The part of the body that shows before "…more". Cuts at the fold length,
@@ -253,15 +252,14 @@ export function LinkedInPostActor({
 
   return (
     <header className="flex items-start gap-s px-l pt-l">
-      <Avatar
-        className="size-12 after:hidden"
+      <PersonAvatar
+        name={author.name}
+        {...(author.avatarUrl === undefined
+          ? {}
+          : { avatarUrl: author.avatarUrl })}
         shape={author.kind === "company" ? "square" : "circle"}
-      >
-        {author.avatarUrl ? (
-          <AvatarImage src={author.avatarUrl} alt={author.name} />
-        ) : null}
-        <AvatarFallback>{initials(author.name)}</AvatarFallback>
-      </Avatar>
+        className="size-12 after:hidden"
+      />
       <div className="min-w-0 flex-1 leading-none">
         <p className="truncate type-body leading-5 font-semibold">
           {author.name}
@@ -514,23 +512,26 @@ export function LinkedInPostImpressions() {
     <motion.div
       layout={layoutLocked ? false : "position"}
       transition={fade.base}
-      className="flex items-center justify-between gap-m border-t border-imagine-border px-l py-s"
+      className="flex flex-col"
     >
-      <span className="inline-flex items-center gap-xs type-small font-semibold tabular-nums">
-        <Icon name="chart-simple" size="m" />
-        {COUNT.format(stats.impressions)} impressions
-      </span>
-      <Link
-        href="/analytics"
-        className="group/analytics inline-flex items-center gap-xs rounded-[2px] type-small font-semibold text-imagine-secondary underline-offset-4 outline-none hover:text-imagine-secondary-strong hover:underline focus-visible:ring-2 focus-visible:ring-ring/40"
-      >
-        View analytics
-        <Icon
-          name="arrow-right"
-          size="s"
-          className="transition-transform duration-150 ease-out group-hover/analytics:translate-x-0.5"
-        />
-      </Link>
+      <Separator />
+      <div className="flex items-center justify-between gap-m px-l py-s">
+        <span className="inline-flex items-center gap-xs type-small font-semibold tabular-nums">
+          <Icon name="chart-simple" size="m" />
+          {COUNT.format(stats.impressions)} impressions
+        </span>
+        <Link
+          href="/analytics"
+          className="group/analytics inline-flex items-center gap-xs rounded-[2px] type-small font-semibold text-imagine-secondary underline-offset-4 outline-none hover:text-imagine-secondary-strong hover:underline focus-visible:ring-2 focus-visible:ring-ring/40"
+        >
+          View analytics
+          <Icon
+            name="arrow-right"
+            size="s"
+            className="transition-transform duration-150 ease-out group-hover/analytics:translate-x-0.5"
+          />
+        </Link>
+      </div>
     </motion.div>
   );
 }

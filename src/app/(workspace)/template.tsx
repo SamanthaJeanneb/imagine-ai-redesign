@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useEffectEvent, useState, type ReactNode } from "react";
 
 import { useOptionalChat } from "@/components/features/agent/chat-provider";
 import { PageEntrance, PageHandoff } from "@/components/motion/page-transition";
@@ -20,11 +20,13 @@ export default function WorkspaceTemplate({
   const chat = useOptionalChat();
   // Read once, on mount: the handoff is for this arrival only.
   const [handoff] = useState(() => chat?.handoff ?? null);
-  const landed = chat?.landed;
+  const land = useEffectEvent(() => {
+    if (handoff !== null) chat?.landed();
+  });
 
   useEffect(() => {
-    if (handoff !== null) landed?.();
-  }, [handoff, landed]);
+    land();
+  }, []);
 
   if (handoff !== null) {
     return <PageHandoff className={FRAME}>{children}</PageHandoff>;

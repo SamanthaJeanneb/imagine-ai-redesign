@@ -21,7 +21,6 @@ interface SkillsListProps {
   onToggle: (id: string, enabled: boolean) => void;
   /** Opens the skill's markdown for editing. */
   onOpenFile: (id: string) => void;
-  className?: string;
 }
 
 interface SkillRowProps {
@@ -89,13 +88,12 @@ export function SkillsList({
   openSkillId,
   onToggle,
   onOpenFile,
-  className,
 }: SkillsListProps) {
   return (
     <Stagger
       kind="list"
       data-slot="skills-list"
-      className={cn("flex flex-col gap-xxs", className)}
+      className="flex flex-col gap-xxs"
     >
       {skills.map((skill) => (
         <StaggerItem key={skill.id}>

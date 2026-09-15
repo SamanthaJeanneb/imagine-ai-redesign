@@ -9,6 +9,10 @@ import {
 } from "react";
 
 import {
+  FileDragSource,
+  FileDropTarget,
+} from "@/components/features/files/file-drag";
+import {
   searchFiles,
   searchSkills,
   toSearchResults,
@@ -29,8 +33,6 @@ import type {
 } from "@/components/features/files/files-library-types";
 import {
   LibraryCardDocument,
-  LibraryCardDraggable,
-  LibraryCardDropTarget,
   LibraryCardFolder,
   LibraryCardMedia,
   LibraryCardMenu,
@@ -39,6 +41,7 @@ import {
   LibraryCardMenuSeparator,
   LibraryCardRow,
 } from "@/components/features/files/library-card";
+import { SectionCrumbLink } from "@/components/features/files/section-crumb";
 import { SkillsList } from "@/components/features/files/skills-list";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import {
@@ -102,6 +105,14 @@ function useBrowser(): BrowserApi {
   return context;
 }
 
+/** What a click on any card does. */
+function usePress() {
+  const browser = useBrowser();
+  return (item: BrowserItem) => () => {
+    browser.press(item);
+  };
+}
+
 /** Picks the item up to move it somewhere else. */
 function MovableItem({
   item,
@@ -112,15 +123,16 @@ function MovableItem({
 }) {
   const browser = useBrowser();
   return (
-    <LibraryCardDraggable
+    <FileDragSource
       dragging={browser.draggingId === item.id}
       onDragStart={(event) => {
         browser.startMove(item, event);
       }}
       onDragEnd={browser.endMove}
+      className="min-w-0"
     >
       {children}
-    </LibraryCardDraggable>
+    </FileDragSource>
   );
 }
 
@@ -136,14 +148,15 @@ function ItemDropTarget({
 }) {
   const browser = useBrowser();
   return (
-    <LibraryCardDropTarget
+    <FileDropTarget
       active={browser.dropTargetId === item.id}
       onDragOver={browser.overMoveDest(dest, item.id)}
       onDragLeave={browser.leaveMoveDest(item.id)}
       onDrop={browser.dropMoveDest(dest)}
+      className="min-w-0"
     >
       {children}
-    </LibraryCardDropTarget>
+    </FileDropTarget>
   );
 }
 
@@ -274,6 +287,25 @@ function ItemFrame({
   return <MovableItem item={item}>{children}</MovableItem>;
 }
 
+/** One card's slot in a group: how it enters, and how it moves. */
+function BrowserCell({
+  item,
+  place,
+  children,
+}: {
+  item: BrowserItem;
+  place: Place;
+  children: ReactNode;
+}) {
+  return (
+    <StaggerItem>
+      <ItemFrame item={item} place={place}>
+        {children}
+      </ItemFrame>
+    </StaggerItem>
+  );
+}
+
 /** A labelled run of cards, laid out however the view arranges them. */
 function CardGroup({
   label,
@@ -305,34 +337,29 @@ const ROWS = "flex flex-col gap-px";
 const TILES =
   "grid grid-cols-[repeat(auto-fill,minmax(min(100%,12rem),1fr))] gap-m";
 
+/** A library at the root has no menu: it is not the user's to change here. */
+function foldersLabel(place: Place) {
+  return place.kind === "root" ? "Libraries" : "Folders";
+}
+
 /** Everything in the open location as one name per line. */
 function BrowserRows({ place, folders, docs, media }: BrowserContentProps) {
-  const browser = useBrowser();
-  const press = (item: BrowserItem) => () => {
-    browser.press(item);
-  };
+  const press = usePress();
 
   return (
     <>
       {folders.length > 0 ? (
-        <CardGroup
-          label={place.kind === "root" ? "Libraries" : "Folders"}
-          arrangement={ROWS}
-        >
+        <CardGroup label={foldersLabel(place)} arrangement={ROWS}>
           {folders.map((item) => (
-            <StaggerItem key={item.id}>
-              <ItemFrame item={item} place={place}>
-                <LibraryCardRow
-                  kind="folder"
-                  name={item.name}
-                  onPress={press(item)}
-                >
-                  {/* A library at the root has no menu: it is not the
-                      user's to rename or delete from here. */}
-                  {place.kind === "root" ? null : <FolderMenu item={item} />}
-                </LibraryCardRow>
-              </ItemFrame>
-            </StaggerItem>
+            <BrowserCell key={item.id} item={item} place={place}>
+              <LibraryCardRow
+                kind="folder"
+                name={item.name}
+                onPress={press(item)}
+              >
+                {place.kind === "root" ? null : <FolderMenu item={item} />}
+              </LibraryCardRow>
+            </BrowserCell>
           ))}
         </CardGroup>
       ) : null}
@@ -340,17 +367,15 @@ function BrowserRows({ place, folders, docs, media }: BrowserContentProps) {
       {docs.length > 0 ? (
         <CardGroup label="Documents" arrangement={ROWS}>
           {docs.map((item) => (
-            <StaggerItem key={item.id}>
-              <ItemFrame item={item} place={place}>
-                <LibraryCardRow
-                  kind="document"
-                  name={item.name}
-                  onPress={press(item)}
-                >
-                  <DocumentMenu item={item} />
-                </LibraryCardRow>
-              </ItemFrame>
-            </StaggerItem>
+            <BrowserCell key={item.id} item={item} place={place}>
+              <LibraryCardRow
+                kind="document"
+                name={item.name}
+                onPress={press(item)}
+              >
+                <DocumentMenu item={item} />
+              </LibraryCardRow>
+            </BrowserCell>
           ))}
         </CardGroup>
       ) : null}
@@ -358,17 +383,15 @@ function BrowserRows({ place, folders, docs, media }: BrowserContentProps) {
       {media.length > 0 ? (
         <CardGroup label="Images" arrangement={ROWS}>
           {media.map((item) => (
-            <StaggerItem key={item.id}>
-              <ItemFrame item={item} place={place}>
-                <LibraryCardRow
-                  kind={item.kind}
-                  name={item.name}
-                  onPress={press(item)}
-                >
-                  <MediaMenu item={item} />
-                </LibraryCardRow>
-              </ItemFrame>
-            </StaggerItem>
+            <BrowserCell key={item.id} item={item} place={place}>
+              <LibraryCardRow
+                kind={item.kind}
+                name={item.name}
+                onPress={press(item)}
+              >
+                <MediaMenu item={item} />
+              </LibraryCardRow>
+            </BrowserCell>
           ))}
         </CardGroup>
       ) : null}
@@ -378,26 +401,18 @@ function BrowserRows({ place, folders, docs, media }: BrowserContentProps) {
 
 /** Everything in the open location as cards with a face. */
 function BrowserTiles({ place, folders, docs, media }: BrowserContentProps) {
-  const browser = useBrowser();
-  const press = (item: BrowserItem) => () => {
-    browser.press(item);
-  };
+  const press = usePress();
 
   return (
     <>
       {folders.length > 0 ? (
-        <CardGroup
-          label={place.kind === "root" ? "Libraries" : "Folders"}
-          arrangement={TILES}
-        >
+        <CardGroup label={foldersLabel(place)} arrangement={TILES}>
           {folders.map((item) => (
-            <StaggerItem key={item.id}>
-              <ItemFrame item={item} place={place}>
-                <LibraryCardFolder name={item.name} onPress={press(item)}>
-                  {place.kind === "root" ? null : <FolderMenu item={item} />}
-                </LibraryCardFolder>
-              </ItemFrame>
-            </StaggerItem>
+            <BrowserCell key={item.id} item={item} place={place}>
+              <LibraryCardFolder name={item.name} onPress={press(item)}>
+                {place.kind === "root" ? null : <FolderMenu item={item} />}
+              </LibraryCardFolder>
+            </BrowserCell>
           ))}
         </CardGroup>
       ) : null}
@@ -405,19 +420,17 @@ function BrowserTiles({ place, folders, docs, media }: BrowserContentProps) {
       {docs.length > 0 ? (
         <CardGroup label="Documents" arrangement={TILES}>
           {docs.map((item) => (
-            <StaggerItem key={item.id}>
-              <ItemFrame item={item} place={place}>
-                <LibraryCardDocument
-                  name={item.name}
-                  {...(item.excerpt === undefined
-                    ? {}
-                    : { excerpt: item.excerpt })}
-                  onPress={press(item)}
-                >
-                  <DocumentMenu item={item} />
-                </LibraryCardDocument>
-              </ItemFrame>
-            </StaggerItem>
+            <BrowserCell key={item.id} item={item} place={place}>
+              <LibraryCardDocument
+                name={item.name}
+                {...(item.excerpt === undefined
+                  ? {}
+                  : { excerpt: item.excerpt })}
+                onPress={press(item)}
+              >
+                <DocumentMenu item={item} />
+              </LibraryCardDocument>
+            </BrowserCell>
           ))}
         </CardGroup>
       ) : null}
@@ -425,18 +438,16 @@ function BrowserTiles({ place, folders, docs, media }: BrowserContentProps) {
       {media.length > 0 ? (
         <CardGroup label="Images" arrangement={TILES}>
           {media.map((item) => (
-            <StaggerItem key={item.id}>
-              <ItemFrame item={item} place={place}>
-                <LibraryCardMedia
-                  kind={item.kind}
-                  name={item.name}
-                  {...(item.src === undefined ? {} : { src: item.src })}
-                  onPress={press(item)}
-                >
-                  <MediaMenu item={item} />
-                </LibraryCardMedia>
-              </ItemFrame>
-            </StaggerItem>
+            <BrowserCell key={item.id} item={item} place={place}>
+              <LibraryCardMedia
+                kind={item.kind}
+                name={item.name}
+                {...(item.src === undefined ? {} : { src: item.src })}
+                onPress={press(item)}
+              >
+                <MediaMenu item={item} />
+              </LibraryCardMedia>
+            </BrowserCell>
           ))}
         </CardGroup>
       ) : null}
@@ -460,9 +471,17 @@ const SORTS: readonly { value: Sort; label: string }[] = [
 ];
 
 const SORT_SHORT: Record<Sort, string> = {
-  "name-asc": "Name",
-  "name-desc": "Name",
+  "name-asc": "Name, A–Z",
+  "name-desc": "Name, Z–A",
 };
+
+function isFilter(value: string): value is Filter {
+  return FILTERS.some((entry) => entry.value === value);
+}
+
+function isSort(value: string): value is Sort {
+  return SORTS.some((entry) => entry.value === value);
+}
 
 function toItems(nodes: readonly FileNode[]): BrowserItem[] {
   const items: BrowserItem[] = [];
@@ -569,29 +588,15 @@ function BrowserCrumbs() {
             {currentFolder === undefined ? (
               <BreadcrumbPage>{currentSection.title}</BreadcrumbPage>
             ) : (
-              <BreadcrumbLink
-                onClick={() => {
+              <SectionCrumbLink
+                section={currentSection}
+                onSelect={() => {
                   goTo({
                     kind: "library",
                     sectionId: currentSection.id,
                   });
                 }}
-                onDragOver={library.overMoveDest(
-                  { sectionId: currentSection.id },
-                  `crumb:${currentSection.id}`,
-                )}
-                onDragLeave={library.leaveMoveDest(
-                  `crumb:${currentSection.id}`,
-                )}
-                onDrop={library.dropMoveDest({ sectionId: currentSection.id })}
-                className={
-                  library.dropTargetId === `crumb:${currentSection.id}`
-                    ? "text-imagine-secondary"
-                    : undefined
-                }
-              >
-                {currentSection.title}
-              </BreadcrumbLink>
+              />
             )}
             {currentFolder === undefined ? (
               <BreadcrumbMenu
@@ -665,15 +670,6 @@ export function FilesLibraryBrowser() {
   const { place, tab, query, filter, sort, view } = browse;
   const { sections, currentSection, currentFolder } = library;
 
-  const scopeNodes =
-    place.kind === "library"
-      ? (currentSection?.nodes ?? [])
-      : sections.flatMap((section) => section.nodes);
-  const locationNodes =
-    place.kind === "library"
-      ? (currentFolder?.children ?? scopeNodes)
-      : scopeNodes;
-
   const items: BrowserItem[] =
     place.kind === "root"
       ? sections.map((section) => ({
@@ -681,7 +677,7 @@ export function FilesLibraryBrowser() {
           kind: "folder",
           name: section.title,
         }))
-      : toItems(locationNodes);
+      : toItems(currentFolder?.children ?? currentSection?.nodes ?? []);
 
   const passesFilter = (item: BrowserItem) => {
     switch (filter) {
@@ -794,7 +790,7 @@ export function FilesLibraryBrowser() {
           <ChipGroup
             value={filter}
             onValueChange={(next) => {
-              browse.setFilter(next as Filter);
+              if (isFilter(next)) browse.setFilter(next);
             }}
             aria-label="Filter"
           >
@@ -819,7 +815,7 @@ export function FilesLibraryBrowser() {
               <DropdownMenuRadioGroup
                 value={sort}
                 onValueChange={(next) => {
-                  browse.setSort(next as Sort);
+                  if (isSort(next)) browse.setSort(next);
                 }}
               >
                 {SORTS.map((entry) => (

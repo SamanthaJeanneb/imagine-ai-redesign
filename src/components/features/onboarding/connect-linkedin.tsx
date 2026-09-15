@@ -40,8 +40,12 @@ function AccountPanel({
   );
 }
 
-/** What the agent gets access to, one bullet per line. */
-function PermissionsList({ permissions }: { permissions: readonly string[] }) {
+/** What the agent gets access to, one bullet per line. Shared with the accounts step. */
+export function PermissionsList({
+  permissions,
+}: {
+  permissions: readonly string[];
+}) {
   if (permissions.length === 0) return null;
   return (
     <Stagger kind="list" className="flex flex-col gap-s pl-xs">

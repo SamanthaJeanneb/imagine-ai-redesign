@@ -178,7 +178,7 @@ export function FilesPanelSearch({
       return;
     }
     setTab("files");
-    if (hit.asset !== undefined) {
+    if (hit.kind === "image" || hit.kind === "video") {
       onOpenAsset(hit.asset);
       return;
     }

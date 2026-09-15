@@ -3,6 +3,7 @@
 import {
   EXPLORER_METRICS,
   type ExplorerMetric,
+  isExplorerMetric,
 } from "@/components/features/analytics/engagement-explorer-types";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { formatCompact } from "@/lib/format";
@@ -32,18 +33,19 @@ export const METRIC: Record<ExplorerMetric, MetricSpec> = {
 export function MetricTabs({
   value,
   onValueChange,
+  disabled,
 }: {
   value: ExplorerMetric;
-  onValueChange: (metric: ExplorerMetric) => void;
+  onValueChange?: (metric: ExplorerMetric) => void;
+  disabled?: boolean;
 }) {
   return (
     <ToggleGroup
       size="sm"
       value={value}
+      disabled={disabled}
       onValueChange={(next) => {
-        if (EXPLORER_METRICS.includes(next as ExplorerMetric)) {
-          onValueChange(next as ExplorerMetric);
-        }
+        if (isExplorerMetric(next)) onValueChange?.(next);
       }}
       aria-label="Metric"
     >

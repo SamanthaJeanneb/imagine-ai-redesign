@@ -57,7 +57,7 @@ function deleteCopy(item: BrowserItem): {
 }
 
 /** Confirm before a file, folder, or image is removed from the library. */
-export function DeleteConfirmDialog({
+function DeleteConfirmDialog({
   item,
   onConfirm,
   onClose,
@@ -160,7 +160,7 @@ function NameDialog({
 }
 
 /** A folder in the browsed location, named before it is made. */
-export function NewFolderDialog({
+function NewFolderDialog({
   locationTitle,
   onSubmit,
   onClose,
@@ -182,7 +182,7 @@ export function NewFolderDialog({
 }
 
 /** Renaming a folder, a document, or an image. Opens on its current name. */
-export function RenameDialog({
+function RenameDialog({
   name,
   onSubmit,
   onClose,

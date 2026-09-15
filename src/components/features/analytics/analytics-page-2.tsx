@@ -17,7 +17,7 @@ import { InteractionFeed } from "@/components/features/analytics/interaction-fee
 import { StatGroup, StatTile } from "@/components/features/analytics/stat-tile";
 import { TeamPerformance } from "@/components/features/analytics/team-performance";
 import {
-  csvCell,
+  downloadCsv,
   snapshotFor,
 } from "@/components/features/analytics/analytics-data";
 import type { TimeRange } from "@/entities/analytics";
@@ -96,17 +96,7 @@ export function AnalyticsPage2({ data }: AnalyticsPage2Props) {
                 point.pipeline,
               ]),
             ];
-            const csv = rows
-              .map((row) => row.map(csvCell).join(","))
-              .join("\n");
-            const url = URL.createObjectURL(
-              new Blob([csv], { type: "text/csv;charset=utf-8" }),
-            );
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = `imagine-analytics-${range}-${profileId}.csv`;
-            link.click();
-            URL.revokeObjectURL(url);
+            downloadCsv(rows, `imagine-analytics-${range}-${profileId}.csv`);
           }}
         />
       </div>

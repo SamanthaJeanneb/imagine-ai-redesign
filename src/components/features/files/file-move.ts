@@ -1,4 +1,4 @@
-import type { DragEvent } from "react";
+import { useState, type DragEvent } from "react";
 
 import type {
   FileNode,
@@ -13,7 +13,7 @@ import {
   insertNode,
 } from "@/components/features/files/file-tree-ops";
 
-export const FILE_MOVE_TYPE = "application/x-imagine-file-move";
+const FILE_MOVE_TYPE = "application/x-imagine-file-move";
 
 export interface FileMoveDest {
   sectionId: string;
@@ -23,22 +23,22 @@ export interface FileMoveDest {
 /** Browsers hide custom MIME types during dragover; this is the live payload. */
 let movingId: string | null = null;
 
-export function beginFileMove(event: DragEvent<HTMLElement>, id: string) {
+function beginFileMove(event: DragEvent<HTMLElement>, id: string) {
   movingId = id;
   event.dataTransfer.effectAllowed = "move";
   event.dataTransfer.setData(FILE_MOVE_TYPE, id);
   event.dataTransfer.setData("text/plain", id);
 }
 
-export function endFileMove() {
+function endFileMove() {
   movingId = null;
 }
 
-export function fileMoveId(): string | null {
+function fileMoveId(): string | null {
   return movingId;
 }
 
-export function isFileMove(types: readonly string[]): boolean {
+function isFileMove(types: readonly string[]): boolean {
   return movingId !== null || types.includes(FILE_MOVE_TYPE);
 }
 
@@ -77,7 +77,7 @@ function samePlace(a: FileMoveDest, b: FileMoveDest): boolean {
   return a.sectionId === b.sectionId && a.folderId === b.folderId;
 }
 
-export function canMoveLibraryItem(
+function canMoveLibraryItem(
   sections: readonly FileSection[],
   itemId: string,
   dest: FileMoveDest,
@@ -148,14 +148,83 @@ export function moveLibraryItem(
   );
 }
 
-export function preventFileMove(event: DragEvent<HTMLElement>) {
+function preventFileMove(event: DragEvent<HTMLElement>) {
   if (!isFileMove(Array.from(event.dataTransfer.types))) return false;
   event.preventDefault();
   event.dataTransfer.dropEffect = "move";
   return true;
 }
 
-export function isLeavingDropTarget(event: DragEvent<HTMLElement>): boolean {
+function isLeavingDropTarget(event: DragEvent<HTMLElement>): boolean {
   const next = event.relatedTarget;
   return !(next instanceof Node && event.currentTarget.contains(next));
+}
+
+export interface FileMoveTargets {
+  /** The item in flight, so its source can fade. */
+  draggingId: string | null;
+  /** Which target is lit; the caller names them. */
+  dropKey: string | null;
+  start: (id: string, event: DragEvent<HTMLElement>) => void;
+  end: () => void;
+  over: (
+    dest: FileMoveDest,
+    key: string,
+    event: DragEvent<HTMLElement>,
+  ) => void;
+  leave: (key: string, event: DragEvent<HTMLElement>) => void;
+  drop: (dest: FileMoveDest, event: DragEvent<HTMLElement>) => void;
+}
+
+/**
+ * Dragging a file, folder, or image onto a library or folder. Holds what is
+ * in flight and which target is lit; `onMove` is what actually moves it.
+ */
+export function useFileMoveTargets(
+  sections: readonly FileSection[],
+  onMove: (id: string, dest: FileMoveDest) => void,
+): FileMoveTargets {
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dropKey, setDropKey] = useState<string | null>(null);
+
+  return {
+    draggingId,
+    dropKey,
+    start: (id, event) => {
+      beginFileMove(event, id);
+      setDraggingId(id);
+    },
+    end: () => {
+      endFileMove();
+      setDraggingId(null);
+      setDropKey(null);
+    },
+    over: (dest, key, event) => {
+      const id = fileMoveId();
+      if (id === null || !isFileMove(Array.from(event.dataTransfer.types))) {
+        return;
+      }
+      if (!canMoveLibraryItem(sections, id, dest)) {
+        event.dataTransfer.dropEffect = "none";
+        return;
+      }
+      preventFileMove(event);
+      setDropKey(key);
+    },
+    leave: (key, event) => {
+      if (!isFileMove(Array.from(event.dataTransfer.types))) return;
+      if (!isLeavingDropTarget(event)) return;
+      setDropKey((current) => (current === key ? null : current));
+    },
+    drop: (dest, event) => {
+      const id = fileMoveId();
+      // `dragleave` never fires after a drop, so the highlight has to go
+      // whether or not the move turns out to be allowed.
+      setDraggingId(null);
+      setDropKey(null);
+      if (id === null) return;
+      event.preventDefault();
+      onMove(id, dest);
+    },
+  };
 }

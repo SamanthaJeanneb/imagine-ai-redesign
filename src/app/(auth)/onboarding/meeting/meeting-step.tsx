@@ -43,25 +43,18 @@ export function MeetingStep({ bookingUrl }: MeetingStepProps) {
   return (
     <StepFrame
       step={6}
-      total={6}
       title="Book a strategy meeting"
       description="Thirty minutes with the team before your first posts go out. We'll look at your accounts, set goals, and tune the agent's voice."
       actions={
         <>
-          <Button
-            variant="link"
-            className="text-imagine-foreground-muted max-md:self-start"
+          <StepFrame.Back
+            to={
+              accounts.length > 0
+                ? "/onboarding/accounts"
+                : "/onboarding/linkedin"
+            }
             disabled={pending}
-            onClick={() => {
-              router.push(
-                accounts.length > 0
-                  ? "/onboarding/accounts"
-                  : "/onboarding/linkedin",
-              );
-            }}
-          >
-            Back
-          </Button>
+          />
           <div className="flex items-center gap-l max-md:w-full max-md:flex-col-reverse max-md:gap-s">
             {opened ? null : (
               <Button

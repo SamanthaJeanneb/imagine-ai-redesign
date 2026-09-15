@@ -4,16 +4,16 @@ import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
 import type { ReactNode } from "react";
 
+import { PermissionsList } from "@/components/features/onboarding/connect-linkedin";
 import type { ProfileSummary } from "@/components/features/settings/profile-list";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { PersonAvatar } from "@/components/ui/person-avatar";
 import { Spinner } from "@/components/ui/spinner";
 import { fade, spring } from "@/styles/motion";
-import { initials } from "@/lib/initials";
 
-export type AccountSlotStatus = "idle" | "connecting" | "connected";
+type AccountSlotStatus = "idle" | "connecting" | "connected";
 
 /**
  * One LinkedIn sign-in. Starts as a row with a Connect button, spends a
@@ -88,21 +88,18 @@ function SlotRow({
               transition={spring.snappy}
               className="flex"
             >
-              <Avatar
+              <PersonAvatar
                 size="lg"
+                name={name}
                 shape={profile?.kind === "company" ? "square" : "circle"}
+                {...(profile?.avatarUrl === undefined
+                  ? {}
+                  : { avatarUrl: profile.avatarUrl })}
               >
-                {profile?.avatarUrl ? (
-                  <AvatarImage src={profile.avatarUrl} alt="" />
+                {profile?.kind === "company" ? (
+                  <Icon name="building" size="s" />
                 ) : null}
-                <AvatarFallback>
-                  {profile?.kind === "company" ? (
-                    <Icon name="building" size="s" />
-                  ) : (
-                    initials(name)
-                  )}
-                </AvatarFallback>
-              </Avatar>
+              </PersonAvatar>
             </motion.span>
           ) : (
             <motion.span
@@ -227,22 +224,7 @@ export function ConnectAccounts({
         </motion.li>
       </ul>
 
-      {permissions.length > 0 ? (
-        <ul className="flex flex-col gap-s pl-xs">
-          {permissions.map((permission) => (
-            <li
-              key={permission}
-              className="flex items-center gap-m type-small text-imagine-foreground-muted"
-            >
-              <span
-                aria-hidden="true"
-                className="size-1.5 shrink-0 rounded-full bg-imagine-foreground-faint"
-              />
-              {permission}
-            </li>
-          ))}
-        </ul>
-      ) : null}
+      <PermissionsList permissions={permissions} />
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -23,10 +23,17 @@ interface MarkdownEditorProps {
   className?: string;
 }
 
-type Block =
+interface Line {
+  /** Where the line sits in the source: stable while its text is edited. */
+  id: number;
+  text: string;
+}
+
+type Block = { id: number } & (
   | { kind: "heading"; text: string }
   | { kind: "paragraph"; text: string }
-  | { kind: "list"; items: readonly string[] };
+  | { kind: "list"; items: readonly Line[] }
+);
 
 const HEADING = /^#{1,6}\s+(.*)$/;
 const BULLET = /^[-*]\s+(.*)$/;
@@ -34,23 +41,29 @@ const BULLET = /^[-*]\s+(.*)$/;
 /** Minimal markdown to blocks: headings, bullets, paragraphs. */
 function parseBlocks(source: string): Block[] {
   const blocks: Block[] = [];
-  let list: string[] | null = null;
-  let paragraph: string[] = [];
+  let list: Line[] | null = null;
+  let paragraph: Line[] = [];
 
   const flushParagraph = () => {
-    if (paragraph.length > 0) {
-      blocks.push({ kind: "paragraph", text: paragraph.join(" ") });
+    const first = paragraph[0];
+    if (first !== undefined) {
+      blocks.push({
+        id: first.id,
+        kind: "paragraph",
+        text: paragraph.map((line) => line.text).join(" "),
+      });
       paragraph = [];
     }
   };
   const flushList = () => {
-    if (list) {
-      blocks.push({ kind: "list", items: list });
+    const first = list?.[0];
+    if (list !== null && first !== undefined) {
+      blocks.push({ id: first.id, kind: "list", items: list });
       list = null;
     }
   };
 
-  for (const raw of source.split("\n")) {
+  source.split("\n").forEach((raw, index) => {
     const line = raw.trim();
     const heading = HEADING.exec(line);
     const bullet = BULLET.exec(line);
@@ -60,16 +73,16 @@ function parseBlocks(source: string): Block[] {
     } else if (heading?.[1] !== undefined) {
       flushParagraph();
       flushList();
-      blocks.push({ kind: "heading", text: heading[1] });
+      blocks.push({ id: index, kind: "heading", text: heading[1] });
     } else if (bullet?.[1] !== undefined) {
       flushParagraph();
       list ??= [];
-      list.push(bullet[1]);
+      list.push({ id: index, text: bullet[1] });
     } else {
       flushList();
-      paragraph.push(line);
+      paragraph.push({ id: index, text: line });
     }
-  }
+  });
   flushParagraph();
   flushList();
   return blocks;
@@ -90,8 +103,16 @@ export function MarkdownEditor({
 }: MarkdownEditorProps) {
   const [editing, setEditing] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
+  const flashTimer = useRef<number>(undefined);
   const dirty = value !== savedValue;
   const blocks = parseBlocks(value);
+
+  useEffect(
+    () => () => {
+      window.clearTimeout(flashTimer.current);
+    },
+    [],
+  );
 
   return (
     <div
@@ -135,7 +156,8 @@ export function MarkdownEditor({
               onSave();
               setEditing(false);
               setSavedFlash(true);
-              window.setTimeout(() => {
+              window.clearTimeout(flashTimer.current);
+              flashTimer.current = window.setTimeout(() => {
                 setSavedFlash(false);
               }, 1800);
             }}
@@ -165,52 +187,55 @@ export function MarkdownEditor({
             className="field-sizing-content min-h-64 w-full resize-none rounded-panel bg-imagine-surface-raised/60 p-l font-mono type-small leading-6 outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
           />
         ) : (
-          <button
-            type="button"
-            aria-label="Edit document"
-            onClick={() => {
-              setEditing(true);
-            }}
-            className="flex w-full flex-col gap-l rounded-panel p-l text-left transition-colors outline-none hover:bg-imagine-surface-raised/40 focus-visible:ring-2 focus-visible:ring-ring/30"
-          >
+          // A button may only hold phrasing content, and the preview has
+          // lists in it, so the press target lies over the preview instead.
+          <div className="relative flex w-full flex-col gap-l rounded-panel p-l transition-colors hover:bg-imagine-surface-raised/40">
             {blocks.length === 0 ? (
-              <span className="type-body text-imagine-foreground-faint">
+              <p className="type-body text-imagine-foreground-faint">
                 Empty document. Click to start writing.
-              </span>
+              </p>
             ) : null}
-            {blocks.map((block, index) => {
+            {blocks.map((block) => {
               switch (block.kind) {
                 case "heading":
                   return (
-                    <span
-                      key={index}
+                    <p
+                      key={block.id}
                       className="pt-xs type-micro text-imagine-foreground-muted first:pt-0"
                     >
                       {block.text}
-                    </span>
+                    </p>
                   );
                 case "paragraph":
                   return (
-                    <span key={index} className="max-w-prose type-body">
+                    <p key={block.id} className="max-w-prose type-body">
                       {block.text}
-                    </span>
+                    </p>
                   );
                 case "list":
                   return (
-                    <ul key={index} className="flex flex-col gap-xs">
-                      {block.items.map((item, itemIndex) => (
+                    <ul key={block.id} className="flex flex-col gap-xs">
+                      {block.items.map((item) => (
                         <li
-                          key={itemIndex}
+                          key={item.id}
                           className="flex gap-m type-body before:mt-2.5 before:size-1 before:shrink-0 before:rounded-full before:bg-imagine-foreground-faint"
                         >
-                          {item}
+                          {item.text}
                         </li>
                       ))}
                     </ul>
                   );
               }
             })}
-          </button>
+            <button
+              type="button"
+              aria-label="Edit document"
+              onClick={() => {
+                setEditing(true);
+              }}
+              className="absolute inset-0 rounded-panel outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+            />
+          </div>
         )}
       </motion.div>
     </div>

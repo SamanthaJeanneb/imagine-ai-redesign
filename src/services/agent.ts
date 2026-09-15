@@ -2,6 +2,7 @@ import type { MessagePart } from "@/components/features/agent/agent-message";
 import type {
   TimelineAction,
   TimelineEntry,
+  TimelineKind,
 } from "@/components/features/agent/timeline";
 import type { SidebarThread } from "@/components/layout/sidebar";
 import type { Client } from "@/entities/client";
@@ -50,13 +51,13 @@ export interface ScriptedReply {
 }
 
 /** `activity_type` read as a headline. Unknown types fall back to the raw value. */
-const ACTIVITY_KIND: Record<string, string> = {
-  post_drafted: "Drafted",
-  post_scheduled: "Scheduled",
-  post_published: "Published",
-  post_failed: "Failed",
-  comment_drafted: "Reply drafted",
-  persona_updated: "Persona updated",
+const ACTIVITY_KIND: Record<string, TimelineKind> = {
+  post_drafted: "drafted",
+  post_scheduled: "scheduled",
+  post_published: "published",
+  post_failed: "failed",
+  comment_drafted: "reply_drafted",
+  persona_updated: "persona_updated",
 };
 
 /**
@@ -136,7 +137,7 @@ export function getTimeline(): readonly TimelineEntry[] {
     )
     .map((activity) => ({
       id: activity.id,
-      kind: ACTIVITY_KIND[activity.activity_type] ?? activity.activity_type,
+      kind: ACTIVITY_KIND[activity.activity_type] ?? "activity",
       when: formatRelative(activity.created_at, now),
       title: activity.metadata.title,
       ...(activity.metadata.excerpt === undefined

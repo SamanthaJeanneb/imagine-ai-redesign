@@ -26,7 +26,7 @@ function userText(parts: readonly MessagePart[]): string {
 
 interface AgentThreadProps {
   messages: readonly AgentMessageData[];
-  onIntent?: (intent: string, postId?: string) => void;
+  onIntent?: (intent: string) => void;
   /** Trails the last reply, in its own column: `AgentThinking` while it arrives. */
   children?: ReactNode;
 }

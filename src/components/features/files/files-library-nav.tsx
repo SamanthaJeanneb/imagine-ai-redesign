@@ -11,6 +11,7 @@ import {
   useFilesEditor,
 } from "@/components/features/files/files-library-state";
 import { NewMenu } from "@/components/features/files/new-menu";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { ResizeHandle } from "@/components/ui/resize-handle";
@@ -52,9 +53,7 @@ function SkillsRail() {
             >
               {skill.name}
             </span>
-            {skill.enabled ? null : (
-              <span className="text-xs text-imagine-foreground-faint">Off</span>
-            )}
+            {skill.enabled ? null : <Badge variant="soft">Off</Badge>}
           </button>
         );
       })}

@@ -71,12 +71,10 @@ export function AssetTileButton({
   asset,
   selected = false,
   onSelect,
-  className,
 }: {
   asset: AssetTileData;
   selected?: boolean;
   onSelect: (asset: AssetTileData) => void;
-  className?: string;
 }) {
   return (
     <motion.button
@@ -96,7 +94,6 @@ export function AssetTileButton({
         "focus-visible:ring-2 focus-visible:ring-ring/40",
         selected &&
           "ring-2 ring-imagine-foreground ring-offset-2 ring-offset-imagine-surface",
-        className,
       )}
     >
       <AssetTileContent asset={asset} />

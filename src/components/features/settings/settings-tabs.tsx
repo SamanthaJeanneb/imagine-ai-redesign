@@ -8,7 +8,7 @@ import { useId } from "react";
 
 import { press, spring } from "@/styles/motion";
 
-export interface SettingsTab {
+interface SettingsTab {
   href: string;
   label: string;
 }

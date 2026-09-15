@@ -13,7 +13,7 @@ export type DraggableResource =
   | { kind: "file"; file: FileResource }
   | { kind: "asset"; asset: AssetTileData };
 
-export function resourceTitle(resource: DraggableResource): string {
+function resourceTitle(resource: DraggableResource): string {
   return resource.kind === "file"
     ? resource.file.title
     : (resource.asset.caption ?? "Untitled asset");
@@ -29,7 +29,7 @@ export function writeResourceDrag(
   event.dataTransfer.setData("text/plain", resourceTitle(resource));
 }
 
-export function hasResourceDrag(types: readonly string[]): boolean {
+function hasResourceDrag(types: readonly string[]): boolean {
   return types.includes(RESOURCE_DRAG_TYPE);
 }
 
@@ -50,7 +50,7 @@ export function readComposerDrop(
 }
 
 /** Treat drag payloads as untrusted input even though the current source is local. */
-export function readResourceDrag(
+function readResourceDrag(
   dataTransfer: DataTransfer,
 ): DraggableResource | null {
   const encoded = dataTransfer.getData(RESOURCE_DRAG_TYPE);

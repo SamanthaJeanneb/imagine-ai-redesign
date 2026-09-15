@@ -36,7 +36,7 @@ function toKey(time: number): string {
   return new Date(time).toISOString().slice(0, 10);
 }
 
-export function addDays(key: string, days: number): string {
+function addDays(key: string, days: number): string {
   return toKey(parse(key) + days * DAY_MS);
 }
 
@@ -61,13 +61,13 @@ function matchesEvent(event: EventChipData, query: string): boolean {
   );
 }
 
-export interface PostHit {
+interface PostHit {
   /** The day the post sits on, as a date key. */
   date: string;
   post: PostChipData;
 }
 
-export interface EventHit {
+interface EventHit {
   date: string;
   event: EventChipData;
 }

@@ -20,11 +20,10 @@ import {
 } from "@/components/features/files/draggable-resource";
 import type { FileResource } from "@/components/features/files/resource-drag";
 import { Disclosure } from "@/components/motion/disclosure";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { PersonAvatar } from "@/components/ui/person-avatar";
 import { fade, pressRow, spring, stagger } from "@/styles/motion";
-import { initials } from "@/lib/initials";
 
 export type FileNode =
   | {
@@ -125,14 +124,14 @@ function FileTreeSection({
             </span>
           )
         ) : (
-          <Avatar size="sm" className="size-6">
-            {section.avatarUrl ? (
-              <AvatarImage src={section.avatarUrl} alt={section.title} />
-            ) : null}
-            <AvatarFallback className="text-xs">
-              {initials(section.title)}
-            </AvatarFallback>
-          </Avatar>
+          <PersonAvatar
+            name={section.title}
+            {...(section.avatarUrl === undefined
+              ? {}
+              : { avatarUrl: section.avatarUrl })}
+            size="sm"
+            className="size-6 text-xs"
+          />
         )}
         <span className="truncate type-body font-medium">{section.title}</span>
         <Chevron open={open} />

@@ -6,21 +6,20 @@ import { LinkedInPostEditor } from "@/components/features/calendar/linkedin-post
 import {
   type PostChipData,
   type PostChipStatus,
-  postChipStyle,
+  POST_STATUS_LABEL,
+  PostStatusPill,
 } from "@/components/features/calendar/post-chip";
-import type { AssetTileData } from "@/components/features/files/asset-tile";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
+import { PersonAvatar } from "@/components/ui/person-avatar";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { initials } from "@/lib/initials";
 
 export interface PostEditorValue {
   post: PostChipData;
@@ -37,21 +36,10 @@ interface PostEditorProps {
   /** The editor asking for its tab to go away, after a delete. */
   onClose: () => void;
   onDelete?: (postId: string) => void;
-  /** Assets the editor can attach to the post. */
-  mediaLibrary?: readonly AssetTileData[];
 }
 
 function labelsOf(post: PostChipData): readonly string[] {
-  if (post.labels !== undefined) return post.labels;
-  return post.label === undefined ? [] : [post.label];
-}
-
-function withLabels(
-  labels: readonly string[],
-): Pick<PostChipData, "label" | "labels"> {
-  const [first, ...rest] = labels;
-  if (first === undefined) return { label: undefined, labels: [] };
-  return { labels: [first, ...rest], label: first };
+  return post.labels ?? [];
 }
 
 /** The value with part of its post changed. */
@@ -70,17 +58,16 @@ function withLabelAdded(value: PostEditorValue, name: string): PostEditorValue {
       item.localeCompare(name, undefined, { sensitivity: "accent" }) === 0,
   );
   if (exists) return value;
-  return withPost(value, withLabels([...labels, name]));
+  return withPost(value, { labels: [...labels, name] });
 }
 
 function withLabelRemoved(
   value: PostEditorValue,
   name: string,
 ): PostEditorValue {
-  return withPost(
-    value,
-    withLabels(labelsOf(value.post).filter((item) => item !== name)),
-  );
+  return withPost(value, {
+    labels: labelsOf(value.post).filter((item) => item !== name),
+  });
 }
 
 function LabelPill({
@@ -108,22 +95,12 @@ function LabelPill({
   );
 }
 
-const STATUS_LABEL: Record<PostChipStatus, string> = {
-  draft: "Draft",
-  in_review: "In review",
-  scheduled: "Ready",
-  published: "Published",
-  failed: "Failed",
-};
-
-const EDITABLE_STATUSES: readonly {
-  status: PostChipStatus;
-  label: string;
-}[] = [
-  { status: "draft", label: "Draft" },
-  { status: "in_review", label: "Review" },
-  { status: "scheduled", label: "Ready" },
-];
+/** The statuses a person sets by hand; publishing and failing happen to a post. */
+const EDITABLE_STATUSES = [
+  "draft",
+  "in_review",
+  "scheduled",
+] as const satisfies readonly PostChipStatus[];
 
 function titleFromBody(body: string): string {
   const firstLine = body.split("\n", 1)[0] ?? "";
@@ -141,7 +118,6 @@ export function PostEditor({
   onOpenAgent,
   onClose,
   onDelete,
-  mediaLibrary,
 }: PostEditorProps) {
   // The only state here is the label field's text before it becomes a label.
   const [labelInput, setLabelInput] = useState("");
@@ -169,12 +145,7 @@ export function PostEditor({
     <div className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden bg-imagine-surface">
       <div className="mx-auto flex w-full max-w-6xl shrink-0 flex-row items-center gap-s px-l py-m">
         <h2 className="type-body font-semibold">Edit post</h2>
-        <span
-          style={postChipStyle(value.post.status)}
-          className="rounded-control bg-[color-mix(in_srgb,var(--chip-color)_18%,transparent)] px-s py-xxs type-caption text-imagine-foreground-muted"
-        >
-          {STATUS_LABEL[value.post.status]}
-        </span>
+        <PostStatusPill status={value.post.status} />
         <Button
           type="button"
           variant="outline"
@@ -203,7 +174,6 @@ export function PostEditor({
             <LinkedInPostEditor
               post={value.post}
               body={body}
-              mediaLibrary={mediaLibrary}
               onBodyChange={(nextBody) => {
                 updatePost({
                   title: titleFromBody(nextBody),
@@ -222,24 +192,20 @@ export function PostEditor({
           <div className="mt-l flex items-center gap-s pt-m">
             {value.post.engagement === undefined ? (
               <>
-                <Avatar
+                <PersonAvatar
+                  name={author?.name ?? value.post.profile}
+                  avatarUrl={author?.avatarUrl}
                   shape={author?.kind === "company" ? "square" : "circle"}
                   className="size-7"
-                >
-                  {author?.avatarUrl === undefined ? null : (
-                    <AvatarImage src={author.avatarUrl} alt="" />
-                  )}
-                  <AvatarFallback>
-                    {initials(author?.name ?? value.post.profile)}
-                  </AvatarFallback>
-                </Avatar>
+                />
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Input
-                      aria-label="Schedule first comment"
-                      placeholder="Schedule first comment"
-                      className="border-0 bg-transparent shadow-none"
-                    />
+                    {/* The first comment is not wired up yet, so it reads as
+                        the promise it is rather than a field that loses what
+                        you type. */}
+                    <span className="min-w-0 flex-1 truncate type-body text-imagine-foreground-faint">
+                      Schedule first comment
+                    </span>
                   </TooltipTrigger>
                   <TooltipContent>
                     This comment will go out when your post is scheduled
@@ -279,20 +245,18 @@ export function PostEditor({
               Status
             </legend>
             <div className="grid grid-cols-3 gap-xs">
-              {EDITABLE_STATUSES.map((item) => (
+              {EDITABLE_STATUSES.map((status) => (
                 <Button
-                  key={item.status}
+                  key={status}
                   type="button"
-                  variant={
-                    value.post.status === item.status ? "soft" : "outline"
-                  }
-                  aria-pressed={value.post.status === item.status}
+                  variant={value.post.status === status ? "soft" : "outline"}
+                  aria-pressed={value.post.status === status}
                   onClick={() => {
-                    updatePost({ status: item.status });
+                    updatePost({ status });
                   }}
                   className="min-w-0"
                 >
-                  {item.label}
+                  {POST_STATUS_LABEL[status]}
                 </Button>
               ))}
             </div>

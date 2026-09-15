@@ -3,6 +3,8 @@
 import { cn } from "cn";
 import type { ReactNode } from "react";
 
+import { MAIN_LANDMARK_ID } from "@/lib/landmark";
+
 /**
  * The frame every workspace page sits in, after the header divider. Padding
  * lives on the scrollport, not the clip around it. `overflow-y-auto` makes
@@ -30,14 +32,15 @@ export function WorkspacePageFrame({
       {overlay === undefined ? null : (
         <div aria-hidden="true" className="h-9 shrink-0" />
       )}
-      <div
+      <main
+        id={MAIN_LANDMARK_ID}
         className={cn(
           "@container/frame flex min-h-0 min-w-0 flex-1 flex-col overflow-x-clip overflow-y-auto",
           className,
         )}
       >
         {children}
-      </div>
+      </main>
       {overlay}
     </div>
   );
@@ -62,21 +65,6 @@ export function WorkspaceInsetPage({
       {...(overlay === undefined ? {} : { overlay })}
       className="px-page pt-l pb-l md:pt-xxl md:pb-xxl"
     >
-      {children}
-    </WorkspacePageFrame>
-  );
-}
-
-/** Pane-based workspaces, like files and the calendar, frame themselves. */
-export function WorkspaceFlushPage({
-  children,
-  overlay,
-}: {
-  children: ReactNode;
-  overlay?: ReactNode;
-}) {
-  return (
-    <WorkspacePageFrame {...(overlay === undefined ? {} : { overlay })}>
       {children}
     </WorkspacePageFrame>
   );

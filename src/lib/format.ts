@@ -61,6 +61,9 @@ function weekdayShort(date: Date): string {
   return WEEKDAYS_SHORT[date.getUTCDay()] ?? "";
 }
 
+/** "1,208". Counts as LinkedIn spells them out, grouped. */
+export const COUNT = new Intl.NumberFormat("en-US");
+
 /** "12.4k". Thousands only; nothing in the mock reaches a million. */
 export function formatCompact(value: number): string {
   if (value < 1000) return String(Math.round(value));

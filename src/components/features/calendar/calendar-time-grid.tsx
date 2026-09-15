@@ -5,6 +5,7 @@ import { motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 
 import { AddPostButton } from "@/components/features/calendar/add-post-button";
+import { CalendarDayNumber } from "@/components/features/calendar/calendar-day-number";
 import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
 import {
   EventChip,
@@ -39,7 +40,7 @@ const LAST_HOUR = 18;
 
 /** "9:00" to 9. Chips carry their time as text, which is all a row needs. */
 function toHour(time: string): number | null {
-  const hour = Number(time.split(":", 1)[0]);
+  const hour = Number.parseInt(time, 10);
   return Number.isNaN(hour) ? null : hour;
 }
 
@@ -173,16 +174,7 @@ function CalendarTimeGridHeading({
       <span className="type-micro text-imagine-foreground-muted">
         {children}
       </span>
-      <span
-        className={cn(
-          "flex size-5 items-center justify-center rounded-full type-small tabular-nums",
-          day.isToday
-            ? "bg-imagine-primary font-semibold text-imagine-primary-foreground"
-            : "text-imagine-foreground-muted",
-        )}
-      >
-        {day.dayNumber}
-      </span>
+      <CalendarDayNumber day={day} />
     </span>
   );
 }

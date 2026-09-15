@@ -10,6 +10,7 @@ import {
   type ChatAttachment,
 } from "@/components/features/agent/chat-provider";
 import {
+  ALL_PREVIEWS,
   ComposerAttachButton,
   ComposerAttachments,
   ComposerDropZone,
@@ -30,7 +31,6 @@ import {
 } from "@/components/features/agent/resource-context";
 import { ChartPreviewCard } from "@/components/features/analytics/chart-card";
 import { CalendarPreview } from "@/components/features/calendar/calendar-grid";
-import type { EventChipData } from "@/components/features/calendar/event-chip";
 import { useFilesPanelApi } from "@/components/layout/files-panel";
 
 /**
@@ -43,7 +43,7 @@ export const PREVIEW_LAYOUT_ID: Record<ComposerPreview, string> = {
 };
 
 /** The composer's one box, wherever the chat is: the shell's column or the page. */
-export const COMPOSER_LAYOUT_ID = "composer";
+const COMPOSER_LAYOUT_ID = "composer";
 
 const PREVIEW_PAGE: Record<ComposerPreview, string> = {
   calendar: "/calendar",
@@ -134,9 +134,9 @@ function ChatAttachments({ className }: { className: string }) {
               return (
                 <PostContext
                   key={item.post.id}
-                  posts={[item.post]}
+                  post={item.post}
                   onRemove={chat.clearAttached}
-                  className="shrink-0 flex-nowrap"
+                  className="shrink-0"
                 />
               );
             }
@@ -228,13 +228,18 @@ interface ThreadChatDockProps {
  * `Activity`, so their cells and bars keep their state between opens; the
  * surface only shows the one whose chip is on.
  */
-export function ThreadChatDock({ previews, className }: ThreadChatDockProps) {
+export function ThreadChatDock({
+  previews = ALL_PREVIEWS,
+  className,
+}: ThreadChatDockProps) {
   const router = useRouter();
   const chat = useChat();
-  const shown = chat.lastPreview;
-  const attachedPosts = chat.attached.flatMap((item) =>
-    item.kind === "post" ? [item.post] : [],
-  );
+  // Only ever one of the offered previews: a filtered-out one would still
+  // hold its page's shared layout id while that page held it too.
+  const shown = previews.includes(chat.lastPreview)
+    ? chat.lastPreview
+    : (previews[0] ?? "calendar");
+  const attachedPosts = chat.attachedPosts;
 
   return (
     <ChatComposerProvider>
@@ -258,13 +263,7 @@ export function ThreadChatDock({ previews, className }: ThreadChatDockProps) {
               onOpenPost={(post) => {
                 chat.toggleAttached({ kind: "post", post });
               }}
-              onOpenEvent={(event: EventChipData) => {
-                const where =
-                  event.location === undefined ? "" : ` at ${event.location}`;
-                chat.setDraft(
-                  `Write a LinkedIn post about ${event.title}${where} (${event.whenLabel}).`,
-                );
-              }}
+              onOpenEvent={chat.draftFromEvent}
               {...(attachedPosts.length === 0
                 ? {}
                 : { selectedPostId: attachedPosts.at(-1)?.id })}
@@ -295,7 +294,7 @@ export function ThreadChatDock({ previews, className }: ThreadChatDockProps) {
           </Activity>
         </PreviewSurface>
         <ComposerPreviewChips
-          {...(previews === undefined ? {} : { previews })}
+          previews={previews}
           value={chat.preview}
           onValueChange={chat.setPreview}
         >

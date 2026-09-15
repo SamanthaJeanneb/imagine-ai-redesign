@@ -4,7 +4,6 @@ import { cn } from "cn";
 import { motion } from "motion/react";
 import { useState, type ReactNode } from "react";
 
-import type { ChatPanelMode } from "@/components/layout/chat-context-panel";
 import { searchThreads } from "@/components/layout/chat-search";
 import type { SidebarThread } from "@/components/layout/sidebar";
 import { Button } from "@/components/ui/button";
@@ -23,8 +22,8 @@ import {
 import { pressRow } from "@/styles/motion";
 
 interface ChatControlsProps {
-  panel: ChatPanelMode | null;
-  onPanelChange: (panel: ChatPanelMode | null) => void;
+  filesOpen: boolean;
+  onFilesOpenChange: (open: boolean) => void;
   className?: string;
 }
 
@@ -33,12 +32,10 @@ interface ChatControlsProps {
  * account controls. History lives on the chat name, not here.
  */
 export function ChatControls({
-  panel,
-  onPanelChange,
+  filesOpen,
+  onFilesOpenChange,
   className,
 }: ChatControlsProps) {
-  const filesOpen = panel === "files";
-
   return (
     <div className={cn("flex items-center gap-xs", className)}>
       <Tooltip>
@@ -49,7 +46,7 @@ export function ChatControls({
             aria-label={filesOpen ? "Hide files" : "Show files"}
             aria-pressed={filesOpen}
             onClick={() => {
-              onPanelChange(filesOpen ? null : "files");
+              onFilesOpenChange(!filesOpen);
             }}
             className={cn(
               "text-imagine-foreground-muted hover:text-imagine-foreground",
@@ -219,12 +216,12 @@ export function ChatTitle({
 }) {
   return (
     <div className={cn("flex min-w-0 items-center", className)}>
-      <h1
+      <h2
         title={title}
         className="min-w-0 truncate type-small font-medium text-imagine-foreground"
       >
         {title}
-      </h1>
+      </h2>
       {children}
     </div>
   );

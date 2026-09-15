@@ -25,7 +25,7 @@ export function WorkspaceFilesPanel() {
     orgName,
     orgLogoUrl,
     fileSections,
-    setPanel,
+    setFilesPanelOpen,
     skills,
     setSkillEnabled,
     activeFileId,
@@ -59,7 +59,7 @@ export function WorkspaceFilesPanel() {
         >
           <FilesPanelCloseButton
             onPress={() => {
-              setPanel(null);
+              setFilesPanelOpen(false);
             }}
           />
         </FilesPanelHeader>

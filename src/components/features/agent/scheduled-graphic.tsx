@@ -3,6 +3,7 @@
 import { cn } from "cn";
 import { motion } from "motion/react";
 
+import { WEEKDAYS } from "@/components/features/calendar/calendar-copy";
 import { useLayoutLocked } from "@/components/motion/layout-lock";
 import { Icon } from "@/components/ui/icon";
 import { fade, spring, stagger } from "@/styles/motion";
@@ -22,10 +23,7 @@ interface ScheduledGraphicProps {
   weekdayIndex: number;
   /** Other posts already on the week, by weekday index. */
   occupied?: readonly number[];
-  className?: string;
 }
-
-const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
 /**
  * The confirmation graphic the agent replies with once a post is scheduled:
@@ -41,7 +39,6 @@ export function ScheduledGraphic({
   profileName,
   weekdayIndex,
   occupied = [],
-  className,
 }: ScheduledGraphicProps) {
   const weekStart = dayNumber - weekdayIndex;
   const layoutLocked = useLayoutLocked();
@@ -52,10 +49,7 @@ export function ScheduledGraphic({
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={fade.base}
-      className={cn(
-        "flex w-full max-w-md flex-col gap-l rounded-panel bg-imagine-surface p-l shadow-raised",
-        className,
-      )}
+      className="flex w-full max-w-md flex-col gap-l rounded-panel bg-imagine-surface p-l shadow-raised"
     >
       <div className="flex items-center gap-m">
         <span className="flex size-11 shrink-0 flex-col overflow-hidden rounded-control bg-imagine-surface shadow-control">

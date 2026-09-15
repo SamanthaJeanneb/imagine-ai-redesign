@@ -2,7 +2,7 @@ import type { TimeRange } from "@/entities/analytics";
 import type { AnalyticsSnapshot } from "@/services/analytics";
 
 /** What the page shows before any snapshot matches: every chart empty. */
-export const EMPTY_SNAPSHOT: AnalyticsSnapshot = {
+const EMPTY_SNAPSHOT: AnalyticsSnapshot = {
   range: "1m",
   profileId: "all",
   overview: {
@@ -41,7 +41,23 @@ export function snapshotFor(
 }
 
 /** One CSV field, quoted so a comma or a quote in the text cannot break the row. */
-export function csvCell(value: string | number): string {
+function csvCell(value: string | number): string {
   const text = String(value);
   return `"${text.replaceAll('"', '""')}"`;
+}
+
+/** Hands the rows to the browser as a file, header row first. */
+export function downloadCsv(
+  rows: readonly (readonly (string | number)[])[],
+  filename: string,
+): void {
+  const csv = rows.map((row) => row.map(csvCell).join(",")).join("\n");
+  const url = URL.createObjectURL(
+    new Blob([csv], { type: "text/csv;charset=utf-8" }),
+  );
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
 }

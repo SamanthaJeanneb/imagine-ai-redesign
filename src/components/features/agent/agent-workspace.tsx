@@ -40,7 +40,6 @@ import type {
   ChartSeries,
 } from "@/components/features/analytics/chart-block";
 import type { CalendarDay } from "@/components/features/calendar/calendar-grid";
-import type { EventChipData } from "@/components/features/calendar/event-chip";
 import type { PostChipData } from "@/components/features/calendar/post-chip";
 import type { UpNextItem } from "@/components/features/calendar/up-next-list";
 import { PageAside } from "@/components/layout/page-aside";
@@ -141,21 +140,7 @@ function useLanding(landing: LandingData) {
   // starts a thread with the post in it, so the landing gives way.
   const onLanding = chat.threadId === null || chat.messages.length === 0;
 
-  // No navigation on the first send: the composer has to survive the morph.
-  // The URL catches up instead, so the rail reads as a thread and a reload of
-  // the live one lands back on the page. Coming back to `/agent` with a
-  // conversation open shows it, and the same effect settles the URL then.
-  // An empty new chat keeps the landing's own URL.
-  const settledThreadId =
-    chat.threadId !== null && chat.messages.length > 0 ? chat.threadId : null;
-  useEffect(() => {
-    if (settledThreadId === null) return;
-    window.history.replaceState(null, "", `/agent/${settledThreadId}`);
-  }, [settledThreadId]);
-
-  const selectedPostId = chat.attached
-    .flatMap((item) => (item.kind === "post" ? [item.post.id] : []))
-    .at(-1);
+  const selectedPostId = chat.attachedPosts.at(-1)?.id;
   const pending = landing.timeline.filter(
     (entry) => !handled.includes(entry.id),
   );
@@ -163,13 +148,6 @@ function useLanding(landing: LandingData) {
   /** Picking a post off the landing calendar makes the next message about it. */
   function attachPost(post: PostChipData) {
     chat.toggleAttached({ kind: "post", post });
-  }
-
-  function draftFromEvent(event: EventChipData) {
-    const where = event.location === undefined ? "" : ` at ${event.location}`;
-    chat.setDraft(
-      `Write a LinkedIn post about ${event.title}${where} (${event.whenLabel}).`,
-    );
   }
 
   function handleActivity(entry: TimelineEntry, action: TimelineAction) {
@@ -183,7 +161,6 @@ function useLanding(landing: LandingData) {
     pending,
     selectedPostId,
     attachPost,
-    draftFromEvent,
     handleActivity,
   };
 }
@@ -245,7 +222,6 @@ export function SplitLandingWorkspace({ landing }: LandingWorkspaceProps) {
     pending,
     selectedPostId,
     attachPost,
-    draftFromEvent,
     handleActivity,
   } = useLanding(landing);
 
@@ -300,7 +276,7 @@ export function SplitLandingWorkspace({ landing }: LandingWorkspaceProps) {
               days={landing.days}
               onAction={handleActivity}
               onOpenPost={attachPost}
-              onOpenEvent={draftFromEvent}
+              onOpenEvent={chat.draftFromEvent}
               {...(selectedPostId === undefined ? {} : { selectedPostId })}
             />
           </LandingPiece>
@@ -327,7 +303,6 @@ export function CenteredLandingWorkspace({ landing }: LandingWorkspaceProps) {
     pending,
     selectedPostId,
     attachPost,
-    draftFromEvent,
     handleActivity,
   } = useLanding(landing);
 
@@ -363,7 +338,7 @@ export function CenteredLandingWorkspace({ landing }: LandingWorkspaceProps) {
                 label={landing.month?.label ?? "Next two weeks"}
                 days={landing.month?.days ?? landing.days}
                 onOpenPost={attachPost}
-                onOpenEvent={draftFromEvent}
+                onOpenEvent={chat.draftFromEvent}
                 onOpenCalendar={() => {
                   router.push("/calendar");
                 }}

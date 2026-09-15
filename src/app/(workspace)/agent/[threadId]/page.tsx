@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { AgentThreadWorkspace } from "@/components/features/agent/agent-workspace";
 import { getThread } from "@/services/agent";
+
+export const metadata: Metadata = {
+  title: "Chat",
+  description: "A conversation with the LinkedIn content agent.",
+};
 
 export default async function ThreadPage({
   params,

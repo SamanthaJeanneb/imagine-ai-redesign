@@ -28,20 +28,11 @@ export function TeamStep({ inviteUrl, owner }: TeamStepProps) {
   return (
     <StepFrame
       step={3}
-      total={6}
       title="Who's on your team?"
       description="Add the people who write, review, or approve posts. You can always invite more from settings."
       actions={
         <>
-          <Button
-            variant="link"
-            className="text-imagine-foreground-muted max-md:self-start"
-            onClick={() => {
-              router.push("/onboarding/organization");
-            }}
-          >
-            Back
-          </Button>
+          <StepFrame.Back to="/onboarding/organization" />
           <div className="flex items-center gap-l max-md:w-full max-md:flex-col-reverse max-md:gap-s">
             <Button
               variant="link"

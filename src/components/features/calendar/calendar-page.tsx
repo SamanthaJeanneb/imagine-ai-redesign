@@ -6,6 +6,8 @@ import { useState } from "react";
 
 import { PREVIEW_LAYOUT_ID } from "@/components/features/agent/chat-dock";
 import { useChat } from "@/components/features/agent/chat-provider";
+import { NOTHING_SCHEDULED } from "@/components/features/calendar/calendar-copy";
+import { CalendarDayNumber } from "@/components/features/calendar/calendar-day-number";
 import {
   type CalendarDay,
   CalendarMonthFit,
@@ -40,7 +42,6 @@ import {
   EditorTabStrip,
   type EditorTab,
 } from "@/components/features/files/editor-tab-strip";
-import type { AssetTileData } from "@/components/features/files/asset-tile";
 import type { IconName } from "@/components/ui/icon";
 import type { SearchBoxResult } from "@/components/ui/search-box";
 import {
@@ -57,15 +58,12 @@ import { formatDayShort, formatWeekdayLong } from "@/lib/format";
 import { MOBILE_QUERY, useMediaQuery } from "@/lib/use-media-query";
 import type { NewPostProfile } from "@/services/posts";
 import { fade } from "@/styles/motion";
-import { cn } from "cn";
 
 interface CalendarPageProps {
   postsByDay: PostsByDay;
   eventsByDay?: EventsByDay;
   /** The mock's fixed clock, as a date key. Where "Today" goes back to. */
   today: string;
-  /** Assets the editor can attach to a post. */
-  mediaLibrary?: readonly AssetTileData[];
   /** Who a post drafted from an empty slot goes out as. Without it, the
    * calendar has nothing to create posts as, and the plus stays hidden. */
   newPostProfile?: NewPostProfile;
@@ -105,7 +103,7 @@ function MonthAgenda({
   if (shown.length === 0) {
     return (
       <p className="type-small text-imagine-foreground-muted">
-        Nothing scheduled. Ask the agent to draft something.
+        {NOTHING_SCHEDULED}
       </p>
     );
   }
@@ -117,16 +115,7 @@ function MonthAgenda({
         return (
           <section key={day.date} className="flex flex-col gap-xs">
             <div className="flex items-center gap-s">
-              <span
-                className={cn(
-                  "flex size-6 items-center justify-center rounded-full type-small tabular-nums",
-                  day.isToday
-                    ? "bg-imagine-primary font-semibold text-imagine-primary-foreground"
-                    : "text-imagine-foreground-muted",
-                )}
-              >
-                {day.dayNumber}
-              </span>
+              <CalendarDayNumber day={day} />
               <span className="type-small font-medium">
                 {formatWeekdayLong(day.date)}
               </span>
@@ -161,8 +150,7 @@ function noteFor(query: string, shown: number, total: number): string | null {
     if (shown === 0) return `Nothing here matches "${query}"`;
     return `${String(shown)} of ${String(total)} match "${query}"`;
   }
-  if (shown === 0)
-    return "Nothing scheduled. Ask the agent to draft something.";
+  if (shown === 0) return NOTHING_SCHEDULED;
   return null;
 }
 
@@ -176,7 +164,6 @@ export function CalendarPage({
   postsByDay,
   eventsByDay = {},
   today,
-  mediaLibrary,
   newPostProfile,
 }: CalendarPageProps) {
   const router = useRouter();
@@ -211,9 +198,7 @@ export function CalendarPage({
     visiblePostsByDay[date] = [...(visiblePostsByDay[date] ?? []), post];
   }
 
-  const selected = chat.attached
-    .flatMap((item) => (item.kind === "post" ? [item.post.id] : []))
-    .at(-1);
+  const selected = chat.attachedPosts.at(-1)?.id;
 
   function dateFor(postId: string): string | undefined {
     return Object.entries(visiblePostsByDay).find(([, posts]) =>
@@ -251,14 +236,6 @@ export function CalendarPage({
 
   function savePost(value: PostEditorValue) {
     setEdits((current) => ({ ...current, [value.post.id]: value }));
-  }
-
-  /** An event fills the composer so the next message can be a post about it. */
-  function draftFromEvent(event: EventChipData) {
-    const where = event.location === undefined ? "" : ` at ${event.location}`;
-    chat.setDraft(
-      `Write a LinkedIn post about ${event.title}${where} (${event.whenLabel}).`,
-    );
   }
 
   const range = buildCalendarRange(
@@ -300,7 +277,7 @@ export function CalendarPage({
     if (eventHit === undefined) return;
     setSearch("");
     setAnchor(eventHit.date);
-    draftFromEvent(eventHit.event);
+    chat.draftFromEvent(eventHit.event);
   }
   const shown = countPosts(range.days);
   const note = noteFor(
@@ -343,7 +320,7 @@ export function CalendarPage({
 
   const calendarContent = (
     <div className="@container/page flex min-h-0 flex-1 flex-col gap-s pt-l">
-      <div className="shrink-0 space-y-s px-l md:px-xl">
+      <div className="flex shrink-0 flex-col gap-s px-l md:px-xl">
         <CalendarToolbar>
           <CalendarRange>
             <CalendarRangeStepper
@@ -388,7 +365,7 @@ export function CalendarPage({
           <MonthAgenda
             days={range.days}
             onOpenPost={openPost}
-            onOpenEvent={draftFromEvent}
+            onOpenEvent={chat.draftFromEvent}
             {...(selected === undefined ? {} : { selectedPostId: selected })}
           />
         </div>
@@ -403,7 +380,7 @@ export function CalendarPage({
             // opens on the month.
             layoutId={PREVIEW_LAYOUT_ID.calendar}
             onOpenPost={openPost}
-            onOpenEvent={draftFromEvent}
+            onOpenEvent={chat.draftFromEvent}
             {...(newPostProfile === undefined
               ? {}
               : { onCreatePost: createPost })}
@@ -419,7 +396,7 @@ export function CalendarPage({
               key={day.date}
               day={day}
               onOpenPost={openPost}
-              onOpenEvent={draftFromEvent}
+              onOpenEvent={chat.draftFromEvent}
               {...(newPostProfile === undefined
                 ? {}
                 : { onCreatePost: createPost })}
@@ -433,7 +410,7 @@ export function CalendarPage({
           <CalendarWeekGrid
             days={range.days}
             onOpenPost={openPost}
-            onOpenEvent={draftFromEvent}
+            onOpenEvent={chat.draftFromEvent}
             {...(newPostProfile === undefined
               ? {}
               : { onCreatePost: createPost })}
@@ -450,7 +427,6 @@ export function CalendarPage({
       <PostEditor
         key={editorValue.post.id}
         value={editorValue}
-        {...(mediaLibrary === undefined ? {} : { mediaLibrary })}
         onClose={() => {
           setEditingPostId(null);
           setActiveEditorId("calendar");

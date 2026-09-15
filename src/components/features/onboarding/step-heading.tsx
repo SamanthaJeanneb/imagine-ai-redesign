@@ -4,11 +4,13 @@ interface StepHeadingProps {
   title: string;
   /** One line under the title: what this step is for, or what it unlocks. */
   description?: string;
-  /** 1-based step number and total, counting sign-in as the first step. */
+  /** 1-based, counting sign-in as the first step. */
   step: number;
-  total: number;
   className?: string;
 }
+
+/** Sign-in, then organization, team, and LinkedIn. */
+const TOTAL_STEPS = 4;
 
 /**
  * Onboarding step title: one segment per step above, the question as the
@@ -19,7 +21,6 @@ export function StepHeading({
   title,
   description,
   step,
-  total,
   className,
 }: StepHeadingProps) {
   return (
@@ -28,10 +29,10 @@ export function StepHeading({
       className={cn("flex flex-col gap-xl md:gap-xxxl", className)}
     >
       <ol
-        aria-label={`Step ${String(step)} of ${String(total)}`}
+        aria-label={`Step ${String(step)} of ${String(TOTAL_STEPS)}`}
         className="flex w-64 max-w-full gap-xs"
       >
-        {Array.from({ length: total }, (_, index) => {
+        {Array.from({ length: TOTAL_STEPS }, (_, index) => {
           const number = index + 1;
           return (
             <li

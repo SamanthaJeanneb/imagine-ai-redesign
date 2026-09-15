@@ -22,7 +22,7 @@ export function WorkspaceSidebar({
     useWorkspaceNav();
   const { isMobile, collapsed, setCollapsed, setMobileNavOpen } =
     useWorkspaceChrome();
-  const { setPanel } = useWorkspaceFiles();
+  const { setFilesPanelOpen } = useWorkspaceFiles();
 
   return (
     <Sidebar
@@ -36,7 +36,7 @@ export function WorkspaceSidebar({
       onNavigate={(key) => {
         // A preview left open would follow the chat into its column.
         chat.setPreview(null);
-        setPanel(null);
+        setFilesPanelOpen(false);
         setMobileNavOpen(false);
         router.push(`/${key}`);
       }}
@@ -44,7 +44,7 @@ export function WorkspaceSidebar({
         // Opens as a conversation at once, so the rail lists it as
         // "New chat" and the header carries the name.
         chat.startNew();
-        setPanel(null);
+        setFilesPanelOpen(false);
         setMobileNavOpen(false);
         router.push("/new-chat");
       }}

@@ -9,6 +9,7 @@ import { SignInForm } from "@/components/features/onboarding/sign-in-form";
 import { ThinkerPanel } from "@/components/features/onboarding/thinker-panel";
 import { Wordmark } from "@/components/ui/brand-mark";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { MAIN_LANDMARK_ID } from "@/lib/landmark";
 import { fade, spring } from "@/styles/motion";
 
 /**
@@ -38,7 +39,10 @@ export default function SignInPage() {
         transition={{ ...spring.soft, opacity: fade.slow }}
         className="relative grid w-full max-w-5xl overflow-hidden rounded-surface bg-imagine-surface/75 shadow-floating backdrop-blur-2xl md:min-h-[40rem] md:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] dark:bg-imagine-surface/70"
       >
-        <main className="flex flex-col gap-xxl p-xl md:p-xxl">
+        <main
+          id={MAIN_LANDMARK_ID}
+          className="flex flex-col gap-xxl p-xl md:p-xxl"
+        >
           <div className="flex items-center justify-between">
             <Wordmark className="w-24 text-imagine-foreground" />
             <div className="md:hidden">

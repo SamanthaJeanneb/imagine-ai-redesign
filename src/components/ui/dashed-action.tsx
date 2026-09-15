@@ -2,8 +2,7 @@
 
 // Imagine: the "add one more" affordance. A dashed outline where the next item
 // would sit, so the empty slot itself is the button. `DashedActionRow` sits in
-// a list at control height ("New folder" at the foot of a tree);
-// `DashedActionTile` matches a card as the last tile of a grid.
+// a list at control height ("New folder" at the foot of a tree).
 
 import { cn } from "cn";
 import { motion } from "motion/react";
@@ -51,16 +50,6 @@ export function DashedActionRow({ className, ...props }: DashedActionProps) {
     <DashedActionBase
       data-shape="row"
       className={cn("h-control-sm rounded-control px-s", className)}
-      {...props}
-    />
-  );
-}
-
-export function DashedActionTile({ className, ...props }: DashedActionProps) {
-  return (
-    <DashedActionBase
-      data-shape="tile"
-      className={cn("h-14 rounded-panel px-m", className)}
       {...props}
     />
   );

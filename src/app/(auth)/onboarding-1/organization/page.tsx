@@ -16,7 +16,6 @@ export default function OrganizationStepPage() {
         title="What's your organization called?"
         description="This is the workspace your team and the agent will share. You can change the name and logo later in settings."
         step={2}
-        total={4}
       />
       <OrganizationForm
         name={orgName}

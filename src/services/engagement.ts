@@ -448,13 +448,6 @@ export function getBenchmark(profileId = "all"): BenchmarkData {
         avgComments: Math.round(mean(posts.map((post) => post.comments))),
         avgShares: Math.round(mean(posts.map((post) => post.shares))),
         topics: topTopics(posts.map((post) => post.text)),
-        recent: posts.slice(0, 3).map((post) => ({
-          id: post.id,
-          excerpt: toTitle(post.text, 110),
-          label: formatDayMonth(post.postedAt),
-          reactions: post.likes,
-          comments: post.comments,
-        })),
       };
     })
     .toSorted((a, b) => b.avgReactions - a.avgReactions);

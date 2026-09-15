@@ -1,21 +1,20 @@
 "use client";
 
 import { cn } from "cn";
-import { motion } from "motion/react";
 import type { CSSProperties, ReactNode } from "react";
 
 import {
   LinkedInPost,
   type LinkedInPostContent,
 } from "@/components/features/agent/linkedin-post-draft";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
+  ChipHoverCard,
+  ChipRail,
+  ChipShell,
+  chipStyle,
+} from "@/components/features/calendar/chip-shell";
 import { Icon } from "@/components/ui/icon";
-import { hoverLift, press } from "@/styles/motion";
+import { PersonAvatar } from "@/components/ui/person-avatar";
 
 export type PostChipStatus =
   "draft" | "in_review" | "scheduled" | "published" | "failed";
@@ -27,7 +26,7 @@ export interface PostEngagementPerson {
   avatarUrl?: string;
 }
 
-export interface PostEngagementComment {
+interface PostEngagementComment {
   id: string;
   author: PostEngagementPerson;
   body: string;
@@ -48,9 +47,7 @@ export interface PostChipData {
   /** Short profile label, e.g. initials or first name. */
   profile: string;
   status: PostChipStatus;
-  /** The post's primary label, e.g. "Case study". Shown under the name. */
-  label?: string;
-  /** Every label on the post. The first is also `label`, for the chip. */
+  /** Every label on the post. The first is the one the chip shows. */
   labels?: readonly string[];
   /** When present, hovering the chip previews the post as it will appear. */
   preview?: LinkedInPostContent;
@@ -65,7 +62,7 @@ export interface PostOpenOptions {
   background?: boolean;
 }
 
-interface PostChipBaseProps {
+export interface PostChipBaseProps {
   post: PostChipData;
   selected?: boolean;
   onOpen?: (post: PostChipData, options?: PostOpenOptions) => void;
@@ -81,8 +78,6 @@ interface ChipColor {
   color: string;
   /** Text color that reads on the color when the chip is solid. */
   contrast: string;
-  /** The wash is already too deep for foreground text. */
-  darkWash: boolean;
 }
 
 /**
@@ -94,57 +89,42 @@ const STATUS_COLOR = {
   draft: {
     color: "var(--imagine-tag-4)",
     contrast: "var(--imagine-foreground)",
-    darkWash: false,
   },
   in_review: {
     color: "var(--imagine-tag-3)",
     contrast: "var(--imagine-secondary-foreground)",
-    darkWash: false,
   },
   scheduled: {
     color: "var(--imagine-secondary)",
     contrast: "var(--imagine-secondary-foreground)",
-    darkWash: false,
   },
   published: {
     color: "var(--imagine-tag-2)",
     contrast: "var(--imagine-secondary-foreground)",
-    darkWash: false,
   },
   failed: {
     color: "var(--destructive)",
     contrast: "var(--imagine-secondary-foreground)",
-    darkWash: false,
   },
 } as const satisfies Record<PostChipStatus, ChipColor>;
 
 /**
- * What each status is called where it is spelled out: the hover preview's
- * pill and anything else that names a post's state. A draft is "Planned":
- * it has a slot on the calendar, it just is not written yet.
+ * What each status is called wherever a post's state is spelled out: the
+ * hover preview's pill, the editor's header, its status buttons. The words
+ * follow the timeline's, so the same post reads the same everywhere.
  */
 export const POST_STATUS_LABEL: Record<PostChipStatus, string> = {
-  draft: "Planned",
-  in_review: "In Review",
+  draft: "Draft",
+  in_review: "In review",
   scheduled: "Scheduled",
   published: "Published",
   failed: "Failed",
 };
 
-/**
- * Exposes the chip's colors as `--chip-color` and `--chip-contrast` for
- * `chip-wash`, `chip-solid`, the rail, and anything else that echoes a post.
- */
+/** A post's status as the `--chip-color` / `--chip-contrast` pair. */
 export function postChipStyle(status: PostChipStatus): CSSProperties {
   const { color, contrast } = STATUS_COLOR[status];
-  const style: CSSProperties & {
-    "--chip-color": string;
-    "--chip-contrast": string;
-  } = {
-    "--chip-color": color,
-    "--chip-contrast": contrast,
-  };
-  return style;
+  return chipStyle(color, contrast);
 }
 
 /**
@@ -191,44 +171,40 @@ function toExcerpt(post: PostChipData): string {
     .join(" ");
 }
 
-/** Selected chips go solid, so their text takes the contrast color. */
-function isInverted(post: PostChipData, selected: boolean): boolean {
-  return selected || STATUS_COLOR[post.status].darkWash;
-}
-
 /** The muted text treatment: dimmed on a solid chip, muted on a wash. */
-function mutedClass(inverted: boolean): string {
-  return inverted ? "opacity-80" : "text-imagine-foreground-muted";
+function mutedClass(selected: boolean): string {
+  return selected ? "opacity-80" : "text-imagine-foreground-muted";
 }
 
 /** The author's picture, when the post knows who it goes out as. */
 function PostChipAvatar({ post }: { post: PostChipData }) {
   const author = post.preview?.author;
-  if (author?.avatarUrl === undefined) return null;
+  if (author === undefined) return null;
   return (
-    <Avatar
+    <PersonAvatar
+      name={author.name}
+      avatarUrl={author.avatarUrl}
       shape={author.kind === "company" ? "square" : "circle"}
+      size="sm"
       className="size-4"
-    >
-      <AvatarImage src={author.avatarUrl} alt="" />
-    </Avatar>
+    />
   );
 }
 
 /** A check once published, a warning when it failed. In review has no glyph: its color says so. */
 function PostChipStatusIcon({
   post,
-  inverted,
+  selected,
 }: {
   post: PostChipData;
-  inverted: boolean;
+  selected: boolean;
 }) {
   if (post.status === "published") {
     return (
       <Icon
         name="check"
         size="s"
-        className={cn("shrink-0 @max-[6rem]/chip:hidden", mutedClass(inverted))}
+        className={cn("shrink-0 @max-[6rem]/chip:hidden", mutedClass(selected))}
       />
     );
   }
@@ -239,7 +215,7 @@ function PostChipStatusIcon({
         size="s"
         className={cn(
           "shrink-0 @max-[6rem]/chip:hidden",
-          inverted ? "opacity-80" : "text-destructive",
+          selected ? "opacity-80" : "text-destructive",
         )}
       />
     );
@@ -248,12 +224,11 @@ function PostChipStatusIcon({
 }
 
 /**
- * The chip's chrome, shared by every variant: a flat button with a pastel
- * fill of its color and a solid rail of it at the left, the way a calendar
- * app draws an event, with the text in the foreground. The color is the
- * post's status, so a month reads as scheduled, in review, or published at a
- * glance. Selecting a chip fills it solid and lifts it. When the post has a
- * preview, hovering the chip shows it as it will appear on LinkedIn.
+ * The chip's chrome, shared by every variant: the shell filled with a pastel
+ * wash of the post's status and a solid rail of it at the left, so a month
+ * reads as scheduled, in review, or published at a glance. Selecting a chip
+ * fills it solid and lifts it. When the post has a preview, hovering the chip
+ * shows it as it will appear on LinkedIn.
  */
 function PostChipButton({
   post,
@@ -262,13 +237,8 @@ function PostChipButton({
   className,
   children,
 }: PostChipBaseProps & { children: ReactNode }) {
-  const inverted = isInverted(post, selected);
   const chip = (
-    <motion.button
-      type="button"
-      whileTap={press.whileTap}
-      whileHover={hoverLift.whileHover}
-      transition={press.transition}
+    <ChipShell
       onClick={(event) => {
         onOpen?.(post, {
           background: event.metaKey || event.ctrlKey,
@@ -278,56 +248,46 @@ function PostChipButton({
       data-status={post.status}
       data-selected={selected || undefined}
       aria-current={selected ? "true" : undefined}
-      aria-label={`${post.title}, ${post.time}, ${post.profile}, ${post.status}`}
+      aria-label={`${post.title}, ${post.time}, ${post.profile}, ${POST_STATUS_LABEL[post.status]}`}
       style={postChipStyle(post.status)}
       className={cn(
-        "relative flex w-full min-w-0 overflow-hidden rounded-control px-s pl-m text-left transition-[box-shadow,color] outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-imagine-surface",
-        // In a narrow cell (the chat column's composer preview) the chip
-        // keeps only the avatar and the excerpt, and pulls its padding in.
-        // The cell is the `chip` container; see the calendar grids.
-        "@max-[6rem]/chip:pl-s",
-        selected ? "chip-solid shadow-raised" : "chip-wash",
-        inverted ? "text-[var(--chip-contrast)]" : "text-imagine-foreground",
+        "transition-[box-shadow,color]",
+        selected
+          ? "chip-solid text-[var(--chip-contrast)] shadow-raised"
+          : "chip-wash text-imagine-foreground",
         className,
       )}
     >
-      {selected ? null : (
-        <span
-          aria-hidden="true"
-          className="absolute inset-y-0 left-0 w-1 bg-[var(--chip-color)]"
-        />
-      )}
+      {selected ? null : <ChipRail />}
       {children}
-    </motion.button>
+    </ChipShell>
   );
 
   if (!post.preview) return chip;
 
   return (
-    <HoverCard>
-      <HoverCardTrigger asChild>{chip}</HoverCardTrigger>
-      <HoverCardContent
-        aria-label={`Preview of ${post.title}`}
-        className="w-[32rem]"
-      >
-        <LinkedInPost
-          {...post.preview}
-          timestamp={post.time}
-          marker={<PostStatusPill status={post.status} />}
-          className="shadow-none"
-        />
-      </HoverCardContent>
-    </HoverCard>
+    <ChipHoverCard
+      chip={chip}
+      label={`Preview of ${post.title}`}
+      className="w-[32rem]"
+    >
+      <LinkedInPost
+        {...post.preview}
+        timestamp={post.time}
+        marker={<PostStatusPill status={post.status} />}
+        className="shadow-none"
+      />
+    </ChipHoverCard>
   );
 }
 
 /** The card's first line: the avatar, who it goes out as, and the status glyph. */
 function PostChipHeader({
   post,
-  inverted,
+  selected,
 }: {
   post: PostChipData;
-  inverted: boolean;
+  selected: boolean;
 }) {
   return (
     <span className="flex min-w-0 items-center gap-xs">
@@ -335,7 +295,7 @@ function PostChipHeader({
       <span className="min-w-0 flex-1 truncate type-caption font-semibold @max-[6rem]/chip:hidden">
         {post.profile}
       </span>
-      <PostChipStatusIcon post={post} inverted={inverted} />
+      <PostChipStatusIcon post={post} selected={selected} />
     </span>
   );
 }
@@ -351,8 +311,7 @@ export function PostChip({
   onOpen,
   className,
 }: PostChipProps) {
-  const inverted = isInverted(post, selected);
-  const muted = mutedClass(inverted);
+  const muted = mutedClass(selected);
   return (
     <PostChipButton
       post={post}
@@ -360,10 +319,10 @@ export function PostChip({
       onOpen={onOpen}
       className={cn("flex-col gap-xxs py-xs", className)}
     >
-      <PostChipHeader post={post} inverted={inverted} />
-      {post.label === undefined ? null : (
+      <PostChipHeader post={post} selected={selected} />
+      {post.labels?.[0] === undefined ? null : (
         <span className={cn("truncate type-caption italic", muted)}>
-          {post.label}
+          {post.labels[0]}
         </span>
       )}
       <span className={cn("type-caption break-words", LINE_CLAMP[lines])}>
@@ -387,7 +346,6 @@ export function PostChipDense({
   onOpen,
   className,
 }: PostChipProps) {
-  const inverted = isInverted(post, selected);
   return (
     <PostChipButton
       post={post}
@@ -395,7 +353,7 @@ export function PostChipDense({
       onOpen={onOpen}
       className={cn("flex-col gap-xxs py-xs", className)}
     >
-      <PostChipHeader post={post} inverted={inverted} />
+      <PostChipHeader post={post} selected={selected} />
       <span className={cn("type-caption break-words", LINE_CLAMP[lines])}>
         {toExcerpt(post)}
       </span>
@@ -413,7 +371,6 @@ export function PostChipLine({
   onOpen,
   className,
 }: PostChipBaseProps) {
-  const inverted = isInverted(post, selected);
   return (
     <PostChipButton
       post={post}
@@ -425,7 +382,7 @@ export function PostChipLine({
       <span className="min-w-0 flex-1 truncate type-caption">
         {toExcerpt(post)}
       </span>
-      <PostChipStatusIcon post={post} inverted={inverted} />
+      <PostChipStatusIcon post={post} selected={selected} />
     </PostChipButton>
   );
 }

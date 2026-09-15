@@ -3,9 +3,11 @@
 import { cn } from "cn";
 import { motion } from "motion/react";
 
-import type {
-  TimelineAction,
-  TimelineEntry,
+import {
+  TIMELINE_KIND_LABEL,
+  type TimelineAction,
+  type TimelineEntry,
+  type TimelineKind,
 } from "@/components/features/agent/timeline";
 import {
   type CalendarDay,
@@ -31,13 +33,14 @@ import { hoverLift, pressRow } from "@/styles/motion";
 const CARDS = 3;
 
 /** A glyph for each kind of activity the agent reports. */
-const KIND_ICON: Record<string, IconName> = {
-  Drafted: "file-pen",
-  Scheduled: "calendar",
-  Published: "circle-check",
-  Failed: "triangle-exclamation",
-  "Reply drafted": "comment",
-  "Persona updated": "user",
+const KIND_ICON: Record<TimelineKind, IconName> = {
+  drafted: "file-pen",
+  scheduled: "calendar",
+  published: "circle-check",
+  failed: "triangle-exclamation",
+  reply_drafted: "comment",
+  persona_updated: "user",
+  activity: "imagine",
 };
 
 export function CenteredIntro({
@@ -93,7 +96,7 @@ export function ActivityCards({
       {shown.map((entry) => {
         const primary =
           entry.actions.find((action) => action.primary) ?? entry.actions[0];
-        const icon = KIND_ICON[entry.kind] ?? "imagine";
+        const icon = KIND_ICON[entry.kind];
         return (
           <StaggerItem key={entry.id} className="flex min-w-0">
             <motion.button
@@ -118,7 +121,7 @@ export function ActivityCards({
               </span>
               <span className="flex min-w-0 flex-1 flex-col gap-xxs">
                 <span className="truncate type-small text-imagine-foreground-muted">
-                  {entry.kind}
+                  {TIMELINE_KIND_LABEL[entry.kind]}
                   <span className="text-imagine-foreground-faint"> · </span>
                   {entry.when}
                 </span>

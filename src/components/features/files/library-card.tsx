@@ -2,13 +2,12 @@
 
 import { cn } from "cn";
 import { motion } from "motion/react";
-import {
-  createContext,
-  useContext,
-  type DragEvent,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, type ReactNode } from "react";
 
+import {
+  useFileDrag,
+  useFileDrop,
+} from "@/components/features/files/file-drag";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -30,82 +29,6 @@ const KIND_ICON: Record<LibraryCardKind, IconName> = {
   image: "image",
   video: "video",
 };
-
-/* ------------------------------------------------------------------------ */
-/* Moving: wrap a card to drag it, or to catch what is dragged onto it      */
-/* ------------------------------------------------------------------------ */
-
-const DragContext = createContext<{ dragging: boolean } | null>(null);
-const DropContext = createContext<{ active: boolean } | null>(null);
-
-/**
- * Makes the card inside a native drag source, so it can be moved to a folder
- * in the library. Plain element: motion's own drag props never see it.
- */
-export function LibraryCardDraggable({
-  dragging = false,
-  onDragStart,
-  onDragEnd,
-  className,
-  children,
-}: {
-  /** This card is the one in flight; it fades and stops reacting to hover. */
-  dragging?: boolean;
-  onDragStart: (event: DragEvent<HTMLElement>) => void;
-  onDragEnd: (event: DragEvent<HTMLElement>) => void;
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <DragContext value={{ dragging }}>
-      <div
-        draggable
-        data-slot="library-card-draggable"
-        data-dragging={dragging || undefined}
-        onDragStart={(event) => {
-          event.stopPropagation();
-          onDragStart(event);
-        }}
-        onDragEnd={onDragEnd}
-        className={cn("min-w-0 cursor-grab active:cursor-grabbing", className)}
-      >
-        {children}
-      </div>
-    </DragContext>
-  );
-}
-
-/** Lets a folder card accept a dragged file; `active` lights it up. */
-export function LibraryCardDropTarget({
-  active = false,
-  onDragOver,
-  onDragLeave,
-  onDrop,
-  className,
-  children,
-}: {
-  active?: boolean;
-  onDragOver: (event: DragEvent<HTMLElement>) => void;
-  onDragLeave: (event: DragEvent<HTMLElement>) => void;
-  onDrop: (event: DragEvent<HTMLElement>) => void;
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <DropContext value={{ active }}>
-      <div
-        data-slot="library-card-drop-target"
-        data-drop-active={active || undefined}
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        onDrop={onDrop}
-        className={cn("min-w-0", className)}
-      >
-        {children}
-      </div>
-    </DropContext>
-  );
-}
 
 /* ------------------------------------------------------------------------ */
 /* Menu                                                                     */
@@ -289,7 +212,6 @@ interface ShellProps {
   face?: ReactNode;
   /** The menu, if any. */
   children?: ReactNode;
-  className?: string;
 }
 
 /**
@@ -304,10 +226,9 @@ function Shell({
   onPress,
   face,
   children,
-  className,
 }: ShellProps) {
-  const drag = useContext(DragContext);
-  const drop = useContext(DropContext);
+  const drag = useFileDrag();
+  const drop = useFileDrop();
   const dragging = drag?.dragging ?? false;
   const dropActive = drop?.active ?? false;
   const row = face === undefined;
@@ -335,7 +256,6 @@ function Shell({
           dragging && "opacity-40",
           dropActive &&
             "border-imagine-secondary bg-imagine-secondary-soft shadow-none",
-          className,
         )}
       >
         <button
@@ -381,7 +301,6 @@ interface CardProps {
   onPress: () => void;
   /** A `LibraryCardMenu`. */
   children?: ReactNode;
-  className?: string;
 }
 
 /** A folder in the grid: a single line, no face. */
@@ -390,7 +309,6 @@ export function LibraryCardFolder({
   selected = false,
   onPress,
   children,
-  className,
 }: CardProps) {
   return (
     <Shell
@@ -399,7 +317,6 @@ export function LibraryCardFolder({
       name={name}
       selected={selected}
       onPress={onPress}
-      className={className}
     >
       {children}
     </Shell>
@@ -413,7 +330,6 @@ export function LibraryCardDocument({
   selected = false,
   onPress,
   children,
-  className,
 }: CardProps & {
   /** The document's opening lines. */
   excerpt?: string;
@@ -426,7 +342,6 @@ export function LibraryCardDocument({
       selected={selected}
       onPress={onPress}
       face={<DocumentPreview excerpt={excerpt} />}
-      className={className}
     >
       {children}
     </Shell>
@@ -441,7 +356,6 @@ export function LibraryCardMedia({
   selected = false,
   onPress,
   children,
-  className,
 }: CardProps & {
   kind: "image" | "video";
   src?: string;
@@ -454,7 +368,6 @@ export function LibraryCardMedia({
       selected={selected}
       onPress={onPress}
       face={<MediaPreview kind={kind} src={src} />}
-      className={className}
     >
       {children}
     </Shell>
@@ -468,7 +381,6 @@ export function LibraryCardRow({
   selected = false,
   onPress,
   children,
-  className,
 }: CardProps & { kind: LibraryCardKind }) {
   return (
     <Shell
@@ -477,7 +389,6 @@ export function LibraryCardRow({
       name={name}
       selected={selected}
       onPress={onPress}
-      className={className}
     >
       {children}
     </Shell>

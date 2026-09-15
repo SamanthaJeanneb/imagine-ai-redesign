@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 
 import type { FileSection } from "@/components/features/files/file-tree";
 import type { TreeLocation } from "@/components/features/files/file-tree-nav";
@@ -48,31 +42,21 @@ export function FilesEditorProvider({ children }: { children: ReactNode }) {
   const [previewId, setPreviewId] = useState<string>();
   const drafts = useDocumentDrafts();
 
-  // Escape closes the sheet, unless a dialog above it already took the key.
-  useEffect(() => {
-    if (documentId === undefined) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !event.defaultPrevented) {
-        setDocumentId(undefined);
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [documentId]);
-
   return (
     <FilesEditorContext
       value={{
         documentId,
         previewId,
         drafts,
-        show: setDocumentId,
+        show: (id) => {
+          setDocumentId(id);
+        },
         close: () => {
           setDocumentId(undefined);
         },
-        preview: setPreviewId,
+        preview: (id) => {
+          setPreviewId(id);
+        },
         closePreview: () => {
           setPreviewId(undefined);
         },
@@ -179,11 +163,21 @@ export function FilesBrowseProvider({
           });
           setNavOpen(false);
         },
-        setPlace,
-        setQuery,
-        setFilter,
-        setSort,
-        setView,
+        setPlace: (next) => {
+          setPlace(next);
+        },
+        setQuery: (next) => {
+          setQuery(next);
+        },
+        setFilter: (next) => {
+          setFilter(next);
+        },
+        setSort: (next) => {
+          setSort(next);
+        },
+        setView: (next) => {
+          setView(next);
+        },
         openNav: () => {
           setNavOpen(true);
         },

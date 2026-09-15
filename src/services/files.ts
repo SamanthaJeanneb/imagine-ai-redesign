@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import type {
   FileNode,
   FileSection,
@@ -100,7 +102,7 @@ function toNodes(rows: readonly GroupedFile[]): readonly FileNode[] {
  * without a `clientId` are the org's, the rest sit under the person they belong
  * to, followed by that person's uploaded assets.
  */
-export function getFileSections(): readonly FileSection[] {
+export const getFileSections = cache((): readonly FileSection[] => {
   const db = getDb();
   const org = getOrganization();
   const files = db.mastra.workspace_search;
@@ -187,10 +189,10 @@ export function getFileSections(): readonly FileSection[] {
   });
 
   return [orgSection, ...personSections];
-}
+});
 
 /** Files panel, Skills tab. Each skill is a markdown file the user can edit. */
-export function getSkills(): readonly Skill[] {
+export const getSkills = cache((): readonly Skill[] => {
   return getDb().mastra.mastra_skills.map((skill) => ({
     id: skill.id,
     name: skill.name,
@@ -198,10 +200,10 @@ export function getSkills(): readonly Skill[] {
     enabled: skill.enabled,
     fileName: skill.file_name,
   }));
-}
+});
 
 /** Every workspace and skill file, grouped and ready for the editor. */
-export function getDocuments(): readonly OpenDocument[] {
+export const getDocuments = cache((): readonly OpenDocument[] => {
   const db = getDb();
   const org = getOrganization();
   return [
@@ -218,4 +220,4 @@ export function getDocuments(): readonly OpenDocument[] {
       value: skill.content,
     })),
   ];
-}
+});

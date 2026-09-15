@@ -12,6 +12,7 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
+import { Separator } from "@/components/ui/separator";
 import { initials } from "@/lib/initials";
 import { fade, spring } from "@/styles/motion";
 
@@ -219,7 +220,9 @@ export function WorkspaceMock({
           </ul>
         </div>
 
-        <span className="-mx-s mt-s mb-s h-px shrink-0 bg-imagine-foreground/12" />
+        {/* `w-auto` so the rule stretches into the negative margins, as a
+            plain block would; the primitive's own width is 100%. */}
+        <Separator className="-mx-s mt-s mb-s w-auto! shrink-0 bg-imagine-foreground/12" />
         <RailRow
           icon={<Icon name="circle-info" size="s" />}
           label={

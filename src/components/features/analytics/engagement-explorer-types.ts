@@ -9,6 +9,10 @@ export const EXPLORER_METRICS: readonly ExplorerMetric[] = [
   "posts",
 ];
 
+export function isExplorerMetric(value: string): value is ExplorerMetric {
+  return EXPLORER_METRICS.some((metric) => metric === value);
+}
+
 /** One day in the window. Rates are percentages, already × 100. */
 export interface ExplorerPoint {
   /** Axis text, e.g. "2 Sep". */
