@@ -5,9 +5,10 @@ import {
   AnimatePresence,
   motion,
   stagger as staggerChildren,
+  type Transition,
   type Variants,
 } from "motion/react";
-import { useId, useState } from "react";
+import { useId, useState, type ReactNode } from "react";
 
 import { ChatSearchDialog } from "@/components/layout/chat-search-dialog";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
@@ -25,6 +26,35 @@ import { fade, spring, stagger } from "@/styles/motion";
 /** The rail's width when open, and how far it can be dragged. */
 const RAIL_WIDTH = { default: 224, min: 184, max: 360 } as const;
 const RAIL_COLLAPSED = 56;
+
+/** Clips with the rail and fades as it collapses, so labels aren't covered. */
+function SidebarLabel({
+  visible,
+  children,
+  className,
+  transition,
+}: {
+  visible: boolean;
+  children: ReactNode;
+  className?: string;
+  transition: Transition;
+}) {
+  return (
+    <motion.span
+      initial={false}
+      animate={{ opacity: visible ? 1 : 0 }}
+      transition={transition}
+      aria-hidden={visible ? undefined : true}
+      className={cn(
+        "min-w-0 overflow-hidden whitespace-nowrap",
+        !visible && "pointer-events-none",
+        className,
+      )}
+    >
+      {children}
+    </motion.span>
+  );
+}
 
 export type SidebarNavKey = "agent" | "calendar" | "analytics" | "files";
 
@@ -146,8 +176,9 @@ export function Sidebar({
   const [helpOpen, setHelpOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const helpId = useId();
-  // Width follows `collapsed` immediately; the icon-only chrome waits until
-  // the clip finishes so labels stay on one line and slide out of view.
+  // Width follows `collapsed` immediately. Labels stay mounted so they can
+  // clip and fade with the rail; icon-only chrome (tooltips, no chats)
+  // waits until the spring finishes.
   const [iconsOnly, setIconsOnly] = useState(collapsed);
   if (!collapsed && iconsOnly) {
     setIconsOnly(false);
@@ -165,27 +196,50 @@ export function Sidebar({
       className={cn(
         "flex h-8 shrink-0 items-center gap-xs rounded-control text-left text-imagine-foreground-muted transition-colors outline-none select-none hover:bg-imagine-foreground/5 hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40",
         helpOpen && "text-imagine-foreground",
-        iconsOnly ? "w-8 justify-center" : "pr-s pl-xs",
+        "w-full overflow-hidden pr-s pl-xs",
       )}
     >
       <span className="flex size-6 shrink-0 items-center justify-center">
         <Icon name="circle-info" size="s" active={helpOpen} />
       </span>
-      {iconsOnly ? null : (
-        <>
-          <span className="flex-1 whitespace-nowrap type-small font-medium">
-            Help center
-          </span>
-          <motion.span
-            aria-hidden="true"
-            animate={{ rotate: helpOpen ? 180 : 0 }}
-            transition={spring.snappy}
-            className="flex text-imagine-foreground-faint"
-          >
-            <Icon name="chevron-up" size="s" />
-          </motion.span>
-        </>
-      )}
+      <SidebarLabel
+        visible={!collapsed}
+        transition={resize.transition}
+        className="flex-1 type-small font-medium"
+      >
+        Help center
+      </SidebarLabel>
+      <motion.span
+        aria-hidden="true"
+        animate={{
+          rotate: helpOpen ? 180 : 0,
+          opacity: collapsed ? 0 : 1,
+        }}
+        transition={resize.transition}
+        className="flex shrink-0 text-imagine-foreground-faint"
+      >
+        <Icon name="chevron-up" size="s" />
+      </motion.span>
+    </button>
+  );
+
+  const newChatButton = (
+    <button
+      type="button"
+      aria-label="New chat"
+      onClick={onNewPost}
+      className="flex h-8 w-full items-center gap-xs overflow-hidden rounded-control pr-s pl-xs text-left text-imagine-foreground-muted transition-colors outline-none select-none hover:bg-imagine-foreground/5 hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
+    >
+      <span className="flex size-6 shrink-0 items-center justify-center">
+        <Icon name="pen-to-square" size="s" />
+      </span>
+      <SidebarLabel
+        visible={!collapsed}
+        transition={resize.transition}
+        className="type-small font-medium"
+      >
+        New chat
+      </SidebarLabel>
     </button>
   );
 
@@ -208,26 +262,15 @@ export function Sidebar({
           exit="hidden"
           // Content pins to the bottom of the clip, so the item nearest the
           // line shows first and the rest emerge above it as the height grows.
-          className={cn(
-            "flex shrink-0 flex-col justify-end overflow-hidden",
-            iconsOnly && "items-center",
-          )}
+          className="flex shrink-0 flex-col justify-end overflow-hidden"
         >
-          <div
-            className={cn(
-              "flex flex-col gap-px pt-s",
-              iconsOnly && "items-center",
-            )}
-          >
+          <div className="flex flex-col gap-px pt-s">
             {/* The menu's own top edge. It rides up with the items and is the
                 last thing to surface, so the group arrives capped. */}
             <motion.span
               aria-hidden="true"
               variants={HELP_ITEM}
-              className={cn(
-                "mb-s h-px shrink-0 self-stretch bg-imagine-foreground/12",
-                iconsOnly ? "-mx-m" : "-mx-s",
-              )}
+              className="-mx-s mb-s h-px shrink-0 self-stretch bg-imagine-foreground/12"
             />
             {HELP_ITEMS.map((item) => {
               const row = (
@@ -241,17 +284,19 @@ export function Sidebar({
                   }}
                   className={cn(
                     "flex h-7 items-center gap-xs rounded-control text-left text-imagine-foreground-muted transition-colors outline-none select-none hover:bg-imagine-foreground/5 hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40",
-                    iconsOnly ? "w-8 justify-center" : "pr-s pl-xs",
+                    "w-full overflow-hidden pr-s pl-xs",
                   )}
                 >
                   <span className="flex size-6 shrink-0 items-center justify-center">
                     <Icon name={item.icon} size="s" />
                   </span>
-                  {iconsOnly ? null : (
-                    <span className="whitespace-nowrap type-small">
-                      {item.label}
-                    </span>
-                  )}
+                  <SidebarLabel
+                    visible={!collapsed}
+                    transition={resize.transition}
+                    className="type-small"
+                  >
+                    {item.label}
+                  </SidebarLabel>
                 </motion.button>
               );
 
@@ -280,7 +325,7 @@ export function Sidebar({
       }}
       data-collapsed={iconsOnly || undefined}
       className={cn(
-        "relative h-full shrink-0 overflow-x-hidden bg-imagine-background text-imagine-foreground",
+        "relative h-full min-w-0 shrink-0 overflow-x-hidden bg-imagine-background text-imagine-foreground",
         className,
       )}
     >
@@ -292,59 +337,38 @@ export function Sidebar({
           label="Resize sidebar"
         />
       )}
-      <div
-        style={{ width: iconsOnly ? RAIL_COLLAPSED : resize.width }}
-        className={cn(
-          "flex h-full min-h-0 shrink-0 flex-col",
-          iconsOnly ? "items-center px-m py-m" : "px-s py-m",
-        )}
-      >
-        <div className={cn("flex flex-col gap-m", iconsOnly && "items-center")}>
-        {/* Organization */}
-        <div
-          className={cn(
-            "flex h-8 items-center gap-s",
-            iconsOnly ? "justify-center" : "px-xs",
-          )}
-        >
-          {orgLogoUrl ? (
-            // Org logos are user uploads from arbitrary hosts; next/image needs a domain list.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={orgLogoUrl}
-              alt=""
-              className="size-6 shrink-0 rounded-control object-cover shadow-control"
-            />
-          ) : (
-            <span className="flex size-6 shrink-0 items-center justify-center rounded-control accent-gradient text-imagine-secondary-foreground">
-              <Icon name="imagine" size="s" active />
-            </span>
-          )}
-          <AnimatePresence initial={false} mode="popLayout">
-            {iconsOnly ? null : (
-              <motion.span
-                key="org"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={fade.fast}
-                className="min-w-0 flex-1 truncate type-small font-semibold"
-              >
-                {orgName}
-              </motion.span>
+      <div className="flex h-full min-h-0 w-full min-w-0 flex-col overflow-x-hidden px-s py-m">
+        <div className="flex flex-col gap-m">
+          {/* Organization */}
+          <div className="flex h-8 items-center gap-s overflow-hidden px-xs">
+            {orgLogoUrl ? (
+              // Org logos are user uploads from arbitrary hosts; next/image needs a domain list.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={orgLogoUrl}
+                alt=""
+                className="size-6 shrink-0 rounded-control object-cover shadow-control"
+              />
+            ) : (
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-control accent-gradient text-imagine-secondary-foreground">
+                <Icon name="imagine" size="s" active />
+              </span>
             )}
-          </AnimatePresence>
-          {/* Only while expanded. Collapsed, the rail is icons alone and the
+            <SidebarLabel
+              visible={!collapsed}
+              transition={resize.transition}
+              className="flex-1 type-small font-semibold"
+            >
+              {orgName}
+            </SidebarLabel>
+            {/* Only while expanded. Collapsed, the rail is icons alone and the
               page carries the control; see `SidebarExpandButton`. */}
-          <AnimatePresence initial={false} mode="popLayout">
             {onCollapsedChange && !iconsOnly ? (
               <motion.span
-                key="collapse"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={fade.fast}
-                className="ml-auto flex"
+                initial={false}
+                animate={{ opacity: collapsed ? 0 : 1 }}
+                transition={resize.transition}
+                className="ml-auto flex shrink-0"
               >
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -364,229 +388,207 @@ export function Sidebar({
                 </Tooltip>
               </motion.span>
             ) : null}
-          </AnimatePresence>
+          </div>
+
+          {iconsOnly ? (
+            <Tooltip>
+              <TooltipTrigger asChild>{newChatButton}</TooltipTrigger>
+              <TooltipContent side="right">New chat</TooltipContent>
+            </Tooltip>
+          ) : (
+            newChatButton
+          )}
         </div>
 
-        {iconsOnly ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
+        {/* Primary navigation */}
+        <nav aria-label="Workspace" className="mt-l flex flex-col gap-px">
+          {SIDEBAR_NAV.map((item) => {
+            const selected = item.key === active;
+            const button = (
               <button
+                key={item.key}
                 type="button"
-                aria-label="New chat"
-                onClick={onNewPost}
-                className="flex h-8 w-8 items-center justify-center rounded-control text-imagine-foreground-muted transition-colors outline-none select-none hover:bg-imagine-foreground/5 hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
+                aria-current={selected ? "page" : undefined}
+                onClick={() => onNavigate?.(item.key)}
+                className={cn(
+                  "group/nav relative flex h-8 w-full items-center gap-xs overflow-hidden rounded-control pr-s pl-xs text-left transition-colors outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/40",
+                  selected
+                    ? "text-imagine-foreground"
+                    : "text-imagine-foreground-muted hover:bg-imagine-foreground/5 hover:text-imagine-foreground",
+                )}
               >
-                <Icon name="pen-to-square" size="s" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right">New chat</TooltipContent>
-          </Tooltip>
-        ) : (
-          <button
-            type="button"
-            onClick={onNewPost}
-            className="flex h-8 items-center gap-xs rounded-control pr-s pl-xs text-left text-imagine-foreground-muted transition-colors outline-none select-none hover:bg-imagine-foreground/5 hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
-          >
-            <span className="flex size-6 shrink-0 items-center justify-center">
-              <Icon name="pen-to-square" size="s" />
-            </span>
-            <span className="whitespace-nowrap type-small font-medium">
-              New chat
-            </span>
-          </button>
-        )}
-      </div>
-
-      {/* Primary navigation */}
-      <nav
-        aria-label="Workspace"
-        className={cn("mt-l flex flex-col gap-px", iconsOnly && "items-center")}
-      >
-        {SIDEBAR_NAV.map((item) => {
-          const selected = item.key === active;
-          const button = (
-            <button
-              key={item.key}
-              type="button"
-              aria-current={selected ? "page" : undefined}
-              onClick={() => onNavigate?.(item.key)}
-              className={cn(
-                "group/nav relative flex h-8 items-center gap-xs rounded-control text-left transition-colors outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/40",
-                iconsOnly ? "w-8 justify-center" : "pr-s pl-xs",
-                selected
-                  ? "text-imagine-foreground"
-                  : "text-imagine-foreground-muted hover:bg-imagine-foreground/5 hover:text-imagine-foreground",
-              )}
-            >
-              {selected ? (
-                <motion.span
-                  layoutId={indicatorId}
-                  layoutDependency={item.key}
-                  aria-hidden="true"
-                  transition={spring.snappy}
-                  className="absolute inset-0 rounded-control bg-imagine-foreground/8"
-                />
-              ) : null}
-              <span className="relative z-10 flex size-6 shrink-0 items-center justify-center">
-                <Icon
-                  name={item.icon}
-                  size="s"
-                  active={
-                    selected && item.key !== "agent" && item.key !== "analytics"
-                  }
-                />
-              </span>
-              {iconsOnly ? null : (
-                <span
+                {selected ? (
+                  <motion.span
+                    layoutId={indicatorId}
+                    layoutDependency={item.key}
+                    aria-hidden="true"
+                    transition={spring.snappy}
+                    className="absolute inset-0 rounded-control bg-imagine-foreground/8"
+                  />
+                ) : null}
+                <span className="relative z-10 flex size-6 shrink-0 items-center justify-center">
+                  <Icon
+                    name={item.icon}
+                    size="s"
+                    active={
+                      selected &&
+                      item.key !== "agent" &&
+                      item.key !== "analytics"
+                    }
+                  />
+                </span>
+                <SidebarLabel
+                  visible={!collapsed}
+                  transition={resize.transition}
                   className={cn(
-                    "relative z-10 whitespace-nowrap type-small",
+                    "relative z-10 type-small",
                     selected ? "font-semibold" : "font-medium",
                   )}
                 >
                   {item.label}
-                </span>
-              )}
-            </button>
-          );
+                </SidebarLabel>
+              </button>
+            );
 
-          if (!iconsOnly) return button;
-          return (
-            <Tooltip key={item.key}>
-              <TooltipTrigger asChild>{button}</TooltipTrigger>
-              <TooltipContent side="right">{item.label}</TooltipContent>
-            </Tooltip>
-          );
-        })}
-      </nav>
-
-      {/* Recent chats. Collapsed keeps the spacer so the Help center stays pinned. */}
-      <AnimatePresence initial={false} mode="popLayout">
-        {iconsOnly ? (
-          <motion.div
-            key="spacer"
-            className="flex-1"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={fade.fast}
-          />
-        ) : (
-          <motion.div
-            key="chats"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={fade.base}
-            className="group/chats mt-l flex min-h-0 flex-1 flex-col"
-          >
-            <div className="flex h-7 shrink-0 items-center px-xs">
-              <span className="whitespace-nowrap type-micro font-medium text-imagine-foreground-muted">
-                Chats
-              </span>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    size="icon-xs"
-                    variant="ghost"
-                    aria-label="Search chats"
-                    aria-haspopup="dialog"
-                    aria-expanded={searchOpen}
-                    onClick={() => {
-                      setSearchOpen(true);
-                    }}
-                    className="ml-auto text-imagine-foreground-muted opacity-0 transition-opacity group-hover/chats:opacity-100 hover:text-imagine-foreground focus-visible:opacity-100"
-                  >
-                    <Icon name="magnifying-glass" size="s" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="right">Search chats</TooltipContent>
+            if (!iconsOnly) return button;
+            return (
+              <Tooltip key={item.key}>
+                <TooltipTrigger asChild>{button}</TooltipTrigger>
+                <TooltipContent side="right">{item.label}</TooltipContent>
               </Tooltip>
-            </div>
-            <Stagger
-              kind="list"
-              className="flex min-h-0 flex-1 flex-col overflow-y-auto"
+            );
+          })}
+        </nav>
+
+        {/* Recent chats. Collapsed keeps the spacer so the Help center stays pinned. */}
+        <AnimatePresence initial={false} mode="popLayout">
+          {iconsOnly ? (
+            <motion.div
+              key="spacer"
+              className="flex-1"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={fade.fast}
+            />
+          ) : (
+            <motion.div
+              key="chats"
+              initial={false}
+              animate={{ opacity: collapsed ? 0 : 1 }}
+              exit={{ opacity: 0 }}
+              transition={resize.transition}
+              className="group/chats mt-l flex min-h-0 flex-1 flex-col overflow-hidden"
             >
-              {threads.map((thread) => {
-                const selected = thread.id === activeThreadId;
-                return (
-                  <StaggerItem key={thread.id}>
-                    <button
-                      type="button"
-                      aria-current={selected ? "true" : undefined}
-                      onClick={() => onOpenThread?.(thread.id)}
-                      className={cn(
-                        "relative flex h-7 w-full items-center gap-xs rounded-control pr-s pl-xs text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
-                        selected
-                          ? "text-imagine-foreground"
-                          : "text-imagine-foreground-muted hover:bg-imagine-foreground/5 hover:text-imagine-foreground",
-                      )}
+              <div className="flex h-7 shrink-0 items-center overflow-hidden px-xs">
+                <SidebarLabel
+                  visible={!collapsed}
+                  transition={resize.transition}
+                  className="type-micro font-medium text-imagine-foreground-muted"
+                >
+                  Chats
+                </SidebarLabel>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon-xs"
+                      variant="ghost"
+                      aria-label="Search chats"
+                      aria-haspopup="dialog"
+                      aria-expanded={searchOpen}
+                      onClick={() => {
+                        setSearchOpen(true);
+                      }}
+                      className="ml-auto text-imagine-foreground-muted opacity-0 transition-opacity group-hover/chats:opacity-100 hover:text-imagine-foreground focus-visible:opacity-100"
                     >
-                      {selected ? (
-                        <motion.span
-                          layoutId={threadIndicatorId}
-                          layoutDependency={thread.id}
-                          aria-hidden="true"
-                          transition={spring.snappy}
-                          className="absolute inset-0 rounded-control bg-imagine-foreground/8"
-                        />
-                      ) : null}
-                      <span className="relative z-10 flex size-6 shrink-0 items-center justify-center">
-                        <span
-                          aria-hidden="true"
-                          className={cn(
-                            "size-1.5 rounded-full",
-                            // Read is an outline; unread fills it pink.
-                            thread.unread
-                              ? "bg-imagine-secondary"
-                              : "border border-imagine-foreground-faint/70",
-                          )}
-                        />
-                      </span>
-                      <span
+                      <Icon name="magnifying-glass" size="s" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Search chats</TooltipContent>
+                </Tooltip>
+              </div>
+              <Stagger
+                kind="list"
+                className="flex min-h-0 flex-1 flex-col overflow-y-auto"
+              >
+                {threads.map((thread) => {
+                  const selected = thread.id === activeThreadId;
+                  return (
+                    <StaggerItem key={thread.id}>
+                      <button
+                        type="button"
+                        aria-current={selected ? "true" : undefined}
+                        onClick={() => onOpenThread?.(thread.id)}
                         className={cn(
-                          "relative z-10 truncate type-small",
-                          thread.unread && "font-medium",
+                          "relative flex h-7 w-full items-center gap-xs overflow-hidden rounded-control pr-s pl-xs text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+                          selected
+                            ? "text-imagine-foreground"
+                            : "text-imagine-foreground-muted hover:bg-imagine-foreground/5 hover:text-imagine-foreground",
                         )}
                       >
-                        {thread.title}
-                      </span>
-                    </button>
-                  </StaggerItem>
-                );
-              })}
-            </Stagger>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                        {selected ? (
+                          <motion.span
+                            layoutId={threadIndicatorId}
+                            layoutDependency={thread.id}
+                            aria-hidden="true"
+                            transition={spring.snappy}
+                            className="absolute inset-0 rounded-control bg-imagine-foreground/8"
+                          />
+                        ) : null}
+                        <span className="relative z-10 flex size-6 shrink-0 items-center justify-center">
+                          <span
+                            aria-hidden="true"
+                            className={cn(
+                              "size-1.5 rounded-full",
+                              // Read is an outline; unread fills it pink.
+                              thread.unread
+                                ? "bg-imagine-secondary"
+                                : "border border-imagine-foreground-faint/70",
+                            )}
+                          />
+                        </span>
+                        <span
+                          className={cn(
+                            "relative z-10 truncate type-small",
+                            thread.unread && "font-medium",
+                          )}
+                        >
+                          {thread.title}
+                        </span>
+                      </button>
+                    </StaggerItem>
+                  );
+                })}
+              </Stagger>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* Help center, pinned to the foot. Two hairlines: this one is the
+        {/* Help center, pinned to the foot. Two hairlines: this one is the
           row's top edge and holds still; the menu carries its own above the
           items, so opening reads as a second line rising out of this one. */}
-      {helpMenu}
-      <span
-        aria-hidden="true"
-        className={cn(
-          "mt-s mb-s h-px shrink-0 self-stretch bg-imagine-foreground/12",
-          iconsOnly ? "-mx-m" : "-mx-s",
+        {helpMenu}
+        <span
+          aria-hidden="true"
+          className="-mx-s mt-s mb-s h-px shrink-0 self-stretch bg-imagine-foreground/12"
+        />
+        {iconsOnly ? (
+          <Tooltip>
+            <TooltipTrigger asChild>{helpTrigger}</TooltipTrigger>
+            <TooltipContent side="right">Help center</TooltipContent>
+          </Tooltip>
+        ) : (
+          helpTrigger
         )}
-      />
-      {iconsOnly ? (
-        <Tooltip>
-          <TooltipTrigger asChild>{helpTrigger}</TooltipTrigger>
-          <TooltipContent side="right">Help center</TooltipContent>
-        </Tooltip>
-      ) : (
-        helpTrigger
-      )}
-      <ChatSearchDialog
-        open={searchOpen}
-        onOpenChange={setSearchOpen}
-        threads={threads}
-        {...(activeThreadId === undefined ? {} : { activeThreadId })}
-        onSelect={(id) => {
-          onOpenThread?.(id);
-        }}
-      />
+        <ChatSearchDialog
+          open={searchOpen}
+          onOpenChange={setSearchOpen}
+          threads={threads}
+          {...(activeThreadId === undefined ? {} : { activeThreadId })}
+          onSelect={(id) => {
+            onOpenThread?.(id);
+          }}
+        />
       </div>
     </motion.aside>
   );
