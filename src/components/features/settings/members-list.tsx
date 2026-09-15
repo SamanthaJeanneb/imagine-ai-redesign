@@ -136,7 +136,7 @@ export function MembersList({
                   <SelectTrigger
                     size="sm"
                     aria-label={`Role for ${member.name}`}
-                    className="w-28 border-transparent bg-transparent shadow-none hover:bg-imagine-surface-raised"
+                    className="w-28 justify-center gap-1 border-transparent bg-imagine-border px-2.5 text-imagine-foreground shadow-none hover:bg-imagine-foreground/12 dark:bg-imagine-surface-raised dark:hover:bg-imagine-foreground/16"
                   >
                     <SelectValue />
                   </SelectTrigger>

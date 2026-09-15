@@ -15,6 +15,7 @@ import { ResourceContext } from "@/components/features/agent/resource-context";
 import { ChartCard } from "@/components/features/analytics/chart-card";
 import { CalendarGrid } from "@/components/features/calendar/calendar-grid";
 import type { EventChipData } from "@/components/features/calendar/event-chip";
+import { useFilesPanelApi } from "@/components/layout/files-panel";
 
 /**
  * Shared between each preview and the block on its page, so expanding morphs
@@ -63,6 +64,7 @@ export function ChatDock({
 }: ChatDockProps) {
   const router = useRouter();
   const chat = useChat();
+  const filesPanel = useFilesPanelApi();
   const isDock = variant === "dock";
   const shown = chat.lastPreview;
   const attached = chat.attached;
@@ -129,6 +131,11 @@ export function ChatDock({
       onValueChange={chat.setDraft}
       onSend={chat.send}
       onResourceDrop={chat.attach}
+      {...(filesPanel === null
+        ? {}
+        : {
+            onAttach: filesPanel.open,
+          })}
       animateLayout={animateLayout}
       layoutId={COMPOSER_LAYOUT_ID}
       className={className}

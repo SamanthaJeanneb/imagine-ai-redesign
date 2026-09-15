@@ -51,6 +51,7 @@ export const ICON_NAMES = [
   "folder-open",
   "folder-plus",
   "gear",
+  "globe",
   "google",
   "grip",
   "handshake",

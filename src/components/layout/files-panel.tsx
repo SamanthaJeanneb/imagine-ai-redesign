@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "cn";
-import { useState } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 
 import { type AssetTileData } from "@/components/features/files/asset-tile";
 import {
@@ -51,6 +51,29 @@ interface FilesPanelProps {
 }
 
 const DEFAULT_WIDTH = 400;
+
+interface FilesPanelApi {
+  open: () => void;
+  close: () => void;
+}
+
+const FilesPanelApiContext = createContext<FilesPanelApi | null>(null);
+
+export function FilesPanelApiProvider({
+  open,
+  close,
+  children,
+}: FilesPanelApi & { children: ReactNode }) {
+  return (
+    <FilesPanelApiContext.Provider value={{ open, close }}>
+      {children}
+    </FilesPanelApiContext.Provider>
+  );
+}
+
+export function useFilesPanelApi() {
+  return useContext(FilesPanelApiContext);
+}
 
 /**
  * The right column that pushes the workspace when open: search, Files and

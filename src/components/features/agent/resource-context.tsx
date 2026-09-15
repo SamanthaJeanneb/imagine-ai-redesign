@@ -7,7 +7,7 @@ import type { DraggableResource } from "@/components/features/files/resource-dra
 import { useLayoutLocked } from "@/components/motion/layout-lock";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import { spring } from "@/styles/motion";
+import { fade } from "@/styles/motion";
 
 interface ResourceContextProps {
   resource: DraggableResource;
@@ -30,10 +30,10 @@ export function ResourceContext({
   return (
     <motion.div
       layout={layoutLocked ? false : "position"}
-      initial={{ opacity: 0, transform: "translateY(6px) scale(0.96)" }}
-      animate={{ opacity: 1, transform: "translateY(0px) scale(1)" }}
-      exit={{ opacity: 0, transform: "translateY(4px) scale(0.96)" }}
-      transition={spring.snappy}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={fade.fast}
       data-slot="resource-context"
       data-kind={resource.kind}
       className={cn(
@@ -62,8 +62,10 @@ export function ResourceContext({
         </span>
       )}
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate type-small font-medium">{title}</span>
-        <span className="text-xs text-imagine-foreground-muted">
+        <span className="truncate type-small font-medium [line-height:1.15]">
+          {title}
+        </span>
+        <span className="type-caption text-imagine-foreground-muted [line-height:1.15]">
           {isFile
             ? "Workspace file"
             : resource.asset.kind === "video"

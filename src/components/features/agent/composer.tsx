@@ -5,14 +5,14 @@ import { AnimatePresence, motion } from "motion/react";
 import { useLayoutEffect, useRef, useState } from "react";
 
 import {
-  hasResourceDrag,
-  readResourceDrag,
+  hasComposerDrag,
+  readComposerDrop,
   type DraggableResource,
 } from "@/components/features/files/resource-drag";
 import { useLayoutLocked } from "@/components/motion/layout-lock";
 import { Button } from "@/components/ui/button";
 import { Icon, type IconName } from "@/components/ui/icon";
-import { spring } from "@/styles/motion";
+import { fade, spring } from "@/styles/motion";
 
 export type ComposerPreview = "calendar" | "analytics";
 
@@ -158,7 +158,7 @@ export function Composer({
 
   return (
     <motion.div
-      layout={layoutActive}
+      layout={layoutActive ? "position" : false}
       layoutId={layoutActive ? layoutId : undefined}
       // Morph hero ↔ dock, not every time a sidebar resizes around us.
       layoutDependency={variant}
@@ -169,7 +169,7 @@ export function Composer({
       onDragEnter={(event) => {
         if (
           onResourceDrop === undefined ||
-          !hasResourceDrag(Array.from(event.dataTransfer.types))
+          !hasComposerDrag(Array.from(event.dataTransfer.types))
         ) {
           return;
         }
@@ -180,7 +180,7 @@ export function Composer({
       onDragOver={(event) => {
         if (
           onResourceDrop === undefined ||
-          !hasResourceDrag(Array.from(event.dataTransfer.types))
+          !hasComposerDrag(Array.from(event.dataTransfer.types))
         ) {
           return;
         }
@@ -188,18 +188,18 @@ export function Composer({
         event.dataTransfer.dropEffect = "copy";
       }}
       onDragLeave={(event) => {
-        if (!hasResourceDrag(Array.from(event.dataTransfer.types))) return;
+        if (!hasComposerDrag(Array.from(event.dataTransfer.types))) return;
         dragDepth.current = Math.max(0, dragDepth.current - 1);
         if (dragDepth.current === 0) setDropActive(false);
       }}
       onDrop={(event) => {
         if (onResourceDrop === undefined) return;
-        const resource = readResourceDrag(event.dataTransfer);
-        if (resource === null) return;
+        const resources = readComposerDrop(event.dataTransfer);
+        if (resources.length === 0) return;
         event.preventDefault();
         dragDepth.current = 0;
         setDropActive(false);
-        onResourceDrop(resource);
+        for (const resource of resources) onResourceDrop(resource);
       }}
       className={cn(
         "relative isolate flex w-full min-w-0 max-w-full flex-col rounded-panel bg-imagine-surface shadow-floating transition-shadow",
@@ -293,13 +293,22 @@ export function Composer({
         </div>
       ) : null}
 
-      {attachments ? (
-        <div
-          className={cn("empty:hidden", isDock ? "px-xs pt-xs" : "px-s pt-s")}
-        >
-          {attachments}
-        </div>
-      ) : null}
+      <AnimatePresence initial={false}>
+        {attachments ? (
+          <motion.div
+            key="attachments"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={fade.fast}
+            className="overflow-hidden"
+          >
+            <div className={isDock ? "px-xs pt-xs" : "px-s pt-s"}>
+              {attachments}
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       <div
         className={cn(
@@ -307,16 +316,14 @@ export function Composer({
           isDock ? "p-xs" : "p-xs pl-s",
         )}
       >
-        {isDock ? (
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            aria-label="Attach"
-            onClick={onAttach}
-          >
-            <Icon name="paperclip" />
-          </Button>
-        ) : null}
+        <Button
+          size={isDock ? "icon-sm" : "icon"}
+          variant="ghost"
+          aria-label="Attach"
+          onClick={onAttach}
+        >
+          <Icon name="paperclip" />
+        </Button>
         <textarea
           ref={fieldRef}
           rows={1}

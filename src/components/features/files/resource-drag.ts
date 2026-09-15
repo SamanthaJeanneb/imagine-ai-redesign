@@ -33,6 +33,22 @@ export function hasResourceDrag(types: readonly string[]): boolean {
   return types.includes(RESOURCE_DRAG_TYPE);
 }
 
+/** Workspace files/assets, or files from the desktop. */
+export function hasComposerDrag(types: readonly string[]): boolean {
+  return hasResourceDrag(types) || types.includes("Files");
+}
+
+export function readComposerDrop(
+  dataTransfer: DataTransfer,
+): readonly DraggableResource[] {
+  const resource = readResourceDrag(dataTransfer);
+  if (resource !== null) return [resource];
+  return Array.from(dataTransfer.files, (file) => ({
+    kind: "file" as const,
+    file: { id: `local:${file.name}`, title: file.name },
+  }));
+}
+
 /** Treat drag payloads as untrusted input even though the current source is local. */
 export function readResourceDrag(
   dataTransfer: DataTransfer,

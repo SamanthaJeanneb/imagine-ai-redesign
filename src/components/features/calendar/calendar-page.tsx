@@ -243,9 +243,6 @@ export function CalendarPage({
 
   function savePost(value: PostEditorValue) {
     setEdits((current) => ({ ...current, [value.post.id]: value }));
-    // Replace a stale attached copy with the edited one.
-    chat.clearAttached(value.post.id);
-    chat.attach({ kind: "post", post: value.post });
   }
 
   /** An event fills the composer so the next message can be a post about it. */
@@ -429,12 +426,9 @@ export function CalendarPage({
           setEditingPostId(null);
           setActiveEditorId("calendar");
         }}
-        onSave={savePost}
+        onChange={savePost}
         onOpenAgent={(value) => {
-          setEdits((current) => ({
-            ...current,
-            [value.post.id]: value,
-          }));
+          savePost(value);
           chat.startPostChat(value.post);
           router.push("/agent");
         }}

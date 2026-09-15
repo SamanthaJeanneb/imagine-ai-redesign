@@ -15,6 +15,11 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export interface PostEditorValue {
   post: PostChipData;
@@ -24,7 +29,8 @@ export interface PostEditorValue {
 
 interface PostEditorProps {
   value: PostEditorValue;
-  onSave: (value: PostEditorValue) => void;
+  /** Persist the current draft. Called as the post changes (autosave). */
+  onChange: (value: PostEditorValue) => void;
   onOpenAgent: (value: PostEditorValue) => void;
   /** The editor asking for its tab to go away, after a delete. */
   onClose: () => void;
@@ -108,7 +114,7 @@ function titleFromBody(body: string): string {
  */
 export function PostEditor({
   value,
-  onSave,
+  onChange,
   onOpenAgent,
   onClose,
   onDelete,
@@ -121,11 +127,16 @@ export function PostEditor({
   const body = preview?.body ?? draft.post.title;
   const labels = labelsOf(draft.post);
 
+  function commit(next: PostEditorValue) {
+    setDraft(next);
+    onChange(next);
+  }
+
   function updatePost(patch: Partial<PostChipData>) {
-    setDraft((current) => ({
-      ...current,
-      post: { ...current.post, ...patch },
-    }));
+    commit({
+      ...draft,
+      post: { ...draft.post, ...patch },
+    });
   }
 
   function addLabel() {
@@ -211,11 +222,18 @@ export function PostEditor({
                     {initials(author?.name ?? draft.post.profile)}
                   </AvatarFallback>
                 </Avatar>
-                <Input
-                  aria-label="First comment"
-                  placeholder="Add a first comment"
-                  className="border-0 bg-transparent shadow-none"
-                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Input
+                      aria-label="Schedule first comment"
+                      placeholder="Schedule first comment"
+                      className="border-0 bg-transparent shadow-none"
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    This comment will go out when your post is scheduled
+                  </TooltipContent>
+                </Tooltip>
               </>
             ) : null}
             <span className="ml-auto shrink-0 type-caption text-imagine-foreground-muted tabular-nums">
@@ -233,10 +251,7 @@ export function PostEditor({
               type="date"
               value={draft.date}
               onChange={(event) => {
-                setDraft((current) => ({
-                  ...current,
-                  date: event.target.value,
-                }));
+                commit({ ...draft, date: event.target.value });
               }}
             />
             <Input
@@ -310,10 +325,7 @@ export function PostEditor({
             <Textarea
               value={draft.internalNotes}
               onChange={(event) => {
-                setDraft((current) => ({
-                  ...current,
-                  internalNotes: event.target.value,
-                }));
+                commit({ ...draft, internalNotes: event.target.value });
               }}
               placeholder="Add a note for your team"
               className="min-h-32 resize-none"
@@ -340,19 +352,14 @@ export function PostEditor({
           type="button"
           variant="outline"
           onClick={() => {
-            onSave({ ...draft, post: { ...draft.post, status: "published" } });
+            commit({
+              ...draft,
+              post: { ...draft.post, status: "published" },
+            });
           }}
           className="ml-auto"
         >
           Publish now
-        </Button>
-        <Button
-          type="button"
-          onClick={() => {
-            onSave(draft);
-          }}
-        >
-          Save
         </Button>
       </footer>
     </div>

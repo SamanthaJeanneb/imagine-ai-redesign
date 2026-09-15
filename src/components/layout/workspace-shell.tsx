@@ -27,7 +27,10 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { type ChatPanelMode } from "@/components/layout/chat-context-panel";
 import { ChatControls, ChatTitle } from "@/components/layout/chat-controls";
-import { FilesPanel } from "@/components/layout/files-panel";
+import {
+  FilesPanel,
+  FilesPanelApiProvider,
+} from "@/components/layout/files-panel";
 import { PageAsideHostProvider } from "@/components/layout/page-aside";
 import { ResizeHandle } from "@/components/ui/resize-handle";
 import { useResizable } from "@/lib/use-resizable";
@@ -689,9 +692,7 @@ function WorkspaceFrame({
       />
     );
   const contextPanel =
-    panel !== "files" ||
-    chatTitle === undefined ||
-    !(chatOpen || docked) ? null : (
+    panel !== "files" || !(activeKey === "agent" || docked) ? null : (
       <motion.div
         key="files-panel"
         initial={{ width: 0, opacity: 0 }}
@@ -780,7 +781,15 @@ function WorkspaceFrame({
   );
 
   return (
-    <LayoutGroup>
+    <FilesPanelApiProvider
+      open={() => {
+        changePanel("files");
+      }}
+      close={() => {
+        changePanel(null);
+      }}
+    >
+      <LayoutGroup>
       <div className="flex h-dvh overflow-hidden bg-imagine-background">
         <div
           className={cn(
@@ -896,6 +905,7 @@ function WorkspaceFrame({
           </AnimatePresence>
         </div>
       </div>
-    </LayoutGroup>
+      </LayoutGroup>
+    </FilesPanelApiProvider>
   );
 }
