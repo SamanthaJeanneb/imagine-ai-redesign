@@ -10,11 +10,17 @@ import {
 } from "motion/react";
 import { useId, useState, type ReactNode } from "react";
 
-import { ChatSearchDialog } from "@/components/layout/chat-search-dialog";
+import { searchThreads } from "@/components/layout/chat-search";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Button } from "@/components/ui/button";
 import { Icon, type IconName } from "@/components/ui/icon";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { ResizeHandle } from "@/components/ui/resize-handle";
+import { SearchBox } from "@/components/ui/search-box";
 import {
   Tooltip,
   TooltipContent,
@@ -25,7 +31,9 @@ import { fade, spring, stagger } from "@/styles/motion";
 
 /** The rail's width when open, and how far it can be dragged. */
 const RAIL_WIDTH = { default: 224, min: 184, max: 360 } as const;
-const RAIL_COLLAPSED = 56;
+/** Left pad + icon + matching right pad. Labels collapse to zero width. */
+const RAIL_COLLAPSED = 48;
+const LABEL_MAX_WIDTH = 280;
 
 /** Clips with the rail and fades as it collapses, so labels aren't covered. */
 function SidebarLabel({
@@ -42,7 +50,10 @@ function SidebarLabel({
   return (
     <motion.span
       initial={false}
-      animate={{ opacity: visible ? 1 : 0 }}
+      animate={{
+        opacity: visible ? 1 : 0,
+        maxWidth: visible ? LABEL_MAX_WIDTH : 0,
+      }}
       transition={transition}
       aria-hidden={visible ? undefined : true}
       className={cn(
@@ -175,6 +186,7 @@ export function Sidebar({
 
   const [helpOpen, setHelpOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [search, setSearch] = useState("");
   const helpId = useId();
   // Width follows `collapsed` immediately. Labels stay mounted so they can
   // clip and fade with the rail; icon-only chrome (tooltips, no chats)
@@ -182,6 +194,10 @@ export function Sidebar({
   const [iconsOnly, setIconsOnly] = useState(collapsed);
   if (!collapsed && iconsOnly) {
     setIconsOnly(false);
+  }
+  if (collapsed && searchOpen) {
+    setSearchOpen(false);
+    setSearch("");
   }
   const targetWidth = collapsed ? RAIL_COLLAPSED : resize.width;
 
@@ -194,7 +210,7 @@ export function Sidebar({
         setHelpOpen((current) => !current);
       }}
       className={cn(
-        "flex h-8 shrink-0 items-center gap-xs rounded-control text-left text-imagine-foreground-muted transition-colors outline-none select-none hover:bg-imagine-foreground/5 hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40",
+        "flex h-8 shrink-0 items-center rounded-control text-left text-imagine-foreground-muted transition-colors outline-none select-none hover:bg-imagine-foreground/5 hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40",
         helpOpen && "text-imagine-foreground",
         "w-full overflow-hidden pr-s pl-xs",
       )}
@@ -205,7 +221,7 @@ export function Sidebar({
       <SidebarLabel
         visible={!collapsed}
         transition={resize.transition}
-        className="flex-1 type-small font-medium"
+        className="flex-1 pl-xs type-small font-medium"
       >
         Help center
       </SidebarLabel>
@@ -214,9 +230,10 @@ export function Sidebar({
         animate={{
           rotate: helpOpen ? 180 : 0,
           opacity: collapsed ? 0 : 1,
+          maxWidth: collapsed ? 0 : 24,
         }}
         transition={resize.transition}
-        className="flex shrink-0 text-imagine-foreground-faint"
+        className="flex shrink-0 overflow-hidden text-imagine-foreground-faint"
       >
         <Icon name="chevron-up" size="s" />
       </motion.span>
@@ -228,7 +245,7 @@ export function Sidebar({
       type="button"
       aria-label="New chat"
       onClick={onNewPost}
-      className="flex h-8 w-full items-center gap-xs overflow-hidden rounded-control pr-s pl-xs text-left text-imagine-foreground-muted transition-colors outline-none select-none hover:bg-imagine-foreground/5 hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
+      className="flex h-8 w-full items-center overflow-hidden rounded-control pr-s pl-xs text-left text-imagine-foreground-muted transition-colors outline-none select-none hover:bg-imagine-foreground/5 hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
     >
       <span className="flex size-6 shrink-0 items-center justify-center">
         <Icon name="pen-to-square" size="s" />
@@ -236,7 +253,7 @@ export function Sidebar({
       <SidebarLabel
         visible={!collapsed}
         transition={resize.transition}
-        className="type-small font-medium"
+        className="pl-xs type-small font-medium"
       >
         New chat
       </SidebarLabel>
@@ -283,7 +300,7 @@ export function Sidebar({
                     onHelp?.(item.key);
                   }}
                   className={cn(
-                    "flex h-7 items-center gap-xs rounded-control text-left text-imagine-foreground-muted transition-colors outline-none select-none hover:bg-imagine-foreground/5 hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40",
+                    "flex h-7 items-center rounded-control text-left text-imagine-foreground-muted transition-colors outline-none select-none hover:bg-imagine-foreground/5 hover:text-imagine-foreground focus-visible:ring-2 focus-visible:ring-ring/40",
                     "w-full overflow-hidden pr-s pl-xs",
                   )}
                 >
@@ -293,7 +310,7 @@ export function Sidebar({
                   <SidebarLabel
                     visible={!collapsed}
                     transition={resize.transition}
-                    className="type-small"
+                    className="pl-xs type-small"
                   >
                     {item.label}
                   </SidebarLabel>
@@ -340,7 +357,7 @@ export function Sidebar({
       <div className="flex h-full min-h-0 w-full min-w-0 flex-col overflow-x-hidden px-s py-m">
         <div className="flex flex-col gap-m">
           {/* Organization */}
-          <div className="flex h-8 items-center gap-s overflow-hidden px-xs">
+          <div className="flex h-8 items-center overflow-hidden px-xs">
             {orgLogoUrl ? (
               // Org logos are user uploads from arbitrary hosts; next/image needs a domain list.
               // eslint-disable-next-line @next/next/no-img-element
@@ -357,7 +374,7 @@ export function Sidebar({
             <SidebarLabel
               visible={!collapsed}
               transition={resize.transition}
-              className="flex-1 type-small font-semibold"
+              className="flex-1 pl-s type-small font-semibold"
             >
               {orgName}
             </SidebarLabel>
@@ -366,9 +383,12 @@ export function Sidebar({
             {onCollapsedChange && !iconsOnly ? (
               <motion.span
                 initial={false}
-                animate={{ opacity: collapsed ? 0 : 1 }}
+                animate={{
+                  opacity: collapsed ? 0 : 1,
+                  maxWidth: collapsed ? 0 : 32,
+                }}
                 transition={resize.transition}
-                className="ml-auto flex shrink-0"
+                className="ml-auto flex shrink-0 overflow-hidden"
               >
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -411,7 +431,7 @@ export function Sidebar({
                 aria-current={selected ? "page" : undefined}
                 onClick={() => onNavigate?.(item.key)}
                 className={cn(
-                  "group/nav relative flex h-8 w-full items-center gap-xs overflow-hidden rounded-control pr-s pl-xs text-left transition-colors outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/40",
+                  "group/nav relative flex h-8 w-full items-center overflow-hidden rounded-control pr-s pl-xs text-left transition-colors outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/40",
                   selected
                     ? "text-imagine-foreground"
                     : "text-imagine-foreground-muted hover:bg-imagine-foreground/5 hover:text-imagine-foreground",
@@ -441,7 +461,7 @@ export function Sidebar({
                   visible={!collapsed}
                   transition={resize.transition}
                   className={cn(
-                    "relative z-10 type-small",
+                    "relative z-10 pl-xs type-small",
                     selected ? "font-semibold" : "font-medium",
                   )}
                 >
@@ -488,24 +508,53 @@ export function Sidebar({
                 >
                   Chats
                 </SidebarLabel>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      size="icon-xs"
-                      variant="ghost"
-                      aria-label="Search chats"
-                      aria-haspopup="dialog"
-                      aria-expanded={searchOpen}
-                      onClick={() => {
-                        setSearchOpen(true);
+                <Popover
+                  open={searchOpen}
+                  onOpenChange={(open) => {
+                    setSearchOpen(open);
+                    if (!open) setSearch("");
+                  }}
+                >
+                  <Tooltip open={searchOpen ? false : undefined}>
+                    <TooltipTrigger asChild>
+                      <PopoverTrigger asChild>
+                        <Button
+                          size="icon-xs"
+                          variant="ghost"
+                          aria-label="Search chats"
+                          className={cn(
+                            "ml-auto text-imagine-foreground-muted opacity-0 transition-opacity group-hover/chats:opacity-100 hover:text-imagine-foreground focus-visible:opacity-100",
+                            searchOpen && "opacity-100",
+                          )}
+                        >
+                          <Icon name="magnifying-glass" size="s" />
+                        </Button>
+                      </PopoverTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">Search chats</TooltipContent>
+                  </Tooltip>
+                  <PopoverContent
+                    align="start"
+                    side="right"
+                    sideOffset={8}
+                    className="w-80 p-s"
+                  >
+                    <SearchBox
+                      value={search}
+                      onValueChange={setSearch}
+                      results={searchThreads(threads, search)}
+                      onSelect={(id) => {
+                        onOpenThread?.(id);
+                        setSearchOpen(false);
+                        setSearch("");
                       }}
-                      className="ml-auto text-imagine-foreground-muted opacity-0 transition-opacity group-hover/chats:opacity-100 hover:text-imagine-foreground focus-visible:opacity-100"
-                    >
-                      <Icon name="magnifying-glass" size="s" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">Search chats</TooltipContent>
-                </Tooltip>
+                      placeholder="Search chats"
+                      emptyLabel={`No chats match “${search.trim()}”`}
+                      listLabel="Chats"
+                      autoFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
               <Stagger
                 kind="list"
@@ -580,15 +629,6 @@ export function Sidebar({
         ) : (
           helpTrigger
         )}
-        <ChatSearchDialog
-          open={searchOpen}
-          onOpenChange={setSearchOpen}
-          threads={threads}
-          {...(activeThreadId === undefined ? {} : { activeThreadId })}
-          onSelect={(id) => {
-            onOpenThread?.(id);
-          }}
-        />
       </div>
     </motion.aside>
   );
