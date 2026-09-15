@@ -61,6 +61,7 @@ import {
 import { PageAsideHostProvider } from "@/components/layout/page-aside";
 import { ResizeHandle } from "@/components/ui/resize-handle";
 import { useResizable } from "@/lib/use-resizable";
+import { useDocumentDrafts } from "@/lib/use-document-drafts";
 import {
   Sidebar,
   SidebarExpandButton,
@@ -196,19 +197,7 @@ function WorkspaceFrame({
   const [activeFileId, setActiveFileId] = useState<string>();
   const [openDocumentIds, setOpenDocumentIds] = useState<readonly string[]>([]);
   const [activeEditorId, setActiveEditorId] = useState(WORKSPACE_TAB_ID);
-  const [documentValues, setDocumentValues] = useState<Record<string, string>>(
-    () =>
-      Object.fromEntries(
-        documents.map((document) => [document.id, document.value]),
-      ),
-  );
-  const [savedDocumentValues, setSavedDocumentValues] = useState<
-    Record<string, string>
-  >(() =>
-    Object.fromEntries(
-      documents.map((document) => [document.id, document.value]),
-    ),
-  );
+  const drafts = useDocumentDrafts();
 
   // Frame and route changes reset what they made room for. Adjusted during
   // render against the last seen value, so there is no frame in between.
@@ -284,15 +273,7 @@ function WorkspaceFrame({
     const document = documents.find((candidate) => candidate.id === id);
     return document === undefined
       ? []
-      : [
-          {
-            id,
-            label: document.meta.title,
-            dirty:
-              (documentValues[id] ?? document.value) !==
-              (savedDocumentValues[id] ?? document.value),
-          },
-        ];
+      : [{ id, label: document.meta.title, dirty: drafts.isDirty(document) }];
   });
   const attachedAssetId = chat.attached
     .flatMap((item) => (item.kind === "asset" ? [item.asset.id] : []))
@@ -441,26 +422,13 @@ function WorkspaceFrame({
                 >
                   <MarkdownEditor
                     meta={activeDocument.meta}
-                    value={
-                      documentValues[activeDocument.id] ?? activeDocument.value
-                    }
-                    savedValue={
-                      savedDocumentValues[activeDocument.id] ??
-                      activeDocument.value
-                    }
+                    value={drafts.valueOf(activeDocument)}
+                    savedValue={drafts.savedValueOf(activeDocument)}
                     onValueChange={(value) => {
-                      setDocumentValues((current) => ({
-                        ...current,
-                        [activeDocument.id]: value,
-                      }));
+                      drafts.change(activeDocument, value);
                     }}
                     onSave={() => {
-                      setSavedDocumentValues((current) => ({
-                        ...current,
-                        [activeDocument.id]:
-                          documentValues[activeDocument.id] ??
-                          activeDocument.value,
-                      }));
+                      drafts.save(activeDocument);
                     }}
                     className="mx-auto p-xxl"
                   />

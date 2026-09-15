@@ -96,6 +96,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { MOBILE_QUERY, useMediaQuery } from "@/lib/use-media-query";
 import { useResizable } from "@/lib/use-resizable";
+import { useDocumentDrafts } from "@/lib/use-document-drafts";
 import type { OpenDocument } from "@/services/files";
 import { fade, spring } from "@/styles/motion";
 
@@ -226,8 +227,7 @@ export function FilesLibrary({
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
   const isMobile = useMediaQuery(MOBILE_QUERY);
   const [navOpen, setNavOpen] = useState(false);
-  const [values, setValues] = useState<Record<string, string>>({});
-  const [savedValues, setSavedValues] = useState<Record<string, string>>({});
+  const drafts = useDocumentDrafts();
   const resize = useResizable({
     defaultWidth: 256,
     min: 208,
@@ -474,8 +474,6 @@ export function FilesLibrary({
       ...current,
       { id, meta: { title: name }, value },
     ]);
-    setValues((current) => ({ ...current, [id]: value }));
-    setSavedValues((current) => ({ ...current, [id]: value }));
     setDocumentId(id);
   };
 
@@ -1307,22 +1305,13 @@ export function FilesLibrary({
                     >
                       <MarkdownEditor
                         meta={openDocument.meta}
-                        value={values[openDocument.id] ?? openDocument.value}
-                        savedValue={
-                          savedValues[openDocument.id] ?? openDocument.value
-                        }
+                        value={drafts.valueOf(openDocument)}
+                        savedValue={drafts.savedValueOf(openDocument)}
                         onValueChange={(value) => {
-                          setValues((current) => ({
-                            ...current,
-                            [openDocument.id]: value,
-                          }));
+                          drafts.change(openDocument, value);
                         }}
                         onSave={() => {
-                          setSavedValues((current) => ({
-                            ...current,
-                            [openDocument.id]:
-                              values[openDocument.id] ?? openDocument.value,
-                          }));
+                          drafts.save(openDocument);
                         }}
                         className="mx-auto max-w-3xl"
                       />

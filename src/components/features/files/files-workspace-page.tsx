@@ -43,6 +43,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { OpenDocument } from "@/services/files";
 import { fade, pressRow } from "@/styles/motion";
 import { initials } from "@/lib/initials";
+import { useDocumentDrafts } from "@/lib/use-document-drafts";
 
 interface FilesWorkspacePageProps {
   title: string;
@@ -103,16 +104,7 @@ export function FilesWorkspacePage({
     const first = documents[0];
     return first === undefined ? null : { kind: "document", id: first.id };
   });
-  const [values, setValues] = useState<Record<string, string>>(() =>
-    Object.fromEntries(
-      documents.map((document) => [document.id, document.value]),
-    ),
-  );
-  const [savedValues, setSavedValues] = useState<Record<string, string>>(() =>
-    Object.fromEntries(
-      documents.map((document) => [document.id, document.value]),
-    ),
-  );
+  const drafts = useDocumentDrafts();
   const activeDocument =
     selection?.kind === "document"
       ? documents.find((document) => document.id === selection.id)
@@ -582,22 +574,13 @@ export function FilesWorkspacePage({
                 >
                   <MarkdownEditor
                     meta={activeDocument.meta}
-                    value={values[activeDocument.id] ?? activeDocument.value}
-                    savedValue={
-                      savedValues[activeDocument.id] ?? activeDocument.value
-                    }
+                    value={drafts.valueOf(activeDocument)}
+                    savedValue={drafts.savedValueOf(activeDocument)}
                     onValueChange={(value) => {
-                      setValues((current) => ({
-                        ...current,
-                        [activeDocument.id]: value,
-                      }));
+                      drafts.change(activeDocument, value);
                     }}
                     onSave={() => {
-                      setSavedValues((current) => ({
-                        ...current,
-                        [activeDocument.id]:
-                          values[activeDocument.id] ?? activeDocument.value,
-                      }));
+                      drafts.save(activeDocument);
                     }}
                   />
                 </motion.div>
