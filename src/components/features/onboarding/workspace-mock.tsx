@@ -2,9 +2,7 @@
 
 import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
-import { usePathname } from "next/navigation";
 
-import { useOnboarding } from "@/app/(auth)/onboarding/onboarding-provider";
 import type { ProfileSummary } from "@/components/features/settings/profile-list";
 import { SIDEBAR_NAV, type SidebarThread } from "@/components/layout/sidebar";
 import {
@@ -14,20 +12,11 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
-import { fade, spring } from "@/styles/motion";
 import { initials } from "@/lib/initials";
+import { fade, spring } from "@/styles/motion";
 
 /** Which part of the mock the current step fills in; `none` for the meeting. */
-type Focus = "organization" | "team" | "linkedin" | "none";
-
-function focusFor(pathname: string): Focus {
-  if (pathname.endsWith("/team")) return "team";
-  if (pathname.endsWith("/linkedin") || pathname.endsWith("/accounts")) {
-    return "linkedin";
-  }
-  if (pathname.endsWith("/meeting")) return "none";
-  return "organization";
-}
+export type Focus = "organization" | "team" | "linkedin" | "none";
 
 /** How many faces the header shows before it counts the rest, as the app does. */
 const FACES = 3;
@@ -91,7 +80,7 @@ function RailRow({
  * The name, logo, and connected accounts fill in as each step sets them; the
  * ring moves to the part the current step is about.
  */
-function WorkspaceMock({
+export function WorkspaceMock({
   orgName,
   orgLogoUrl,
   accounts,
@@ -321,43 +310,5 @@ function WorkspaceMock({
         </div>
       </div>
     </div>
-  );
-}
-
-interface PreviewPaneProps {
-  /** Recent chats, for the rail. */
-  threads: readonly SidebarThread[];
-  /** The person setting up, for the account at the header's right. */
-  owner: { name: string; avatarUrl?: string };
-}
-
-/**
- * The right half of the split. Sticks to the viewport while a long step
- * scrolls beside it. On a laptop the mock runs off the right and bottom
- * edges like a window behind the form. On a wide monitor it would stretch
- * into a tall empty slab, so there it stops at a desktop's worth of width
- * and height, rounds all four corners, and floats centered in the pane.
- */
-export function PreviewPane({ threads, owner }: PreviewPaneProps) {
-  const pathname = usePathname();
-  const { orgName, orgLogoUrl, accounts } = useOnboarding();
-
-  return (
-    <aside
-      aria-label="Workspace preview"
-      className="hidden min-w-0 flex-col overflow-hidden bg-imagine-secondary-soft pt-section pl-xxl lg:sticky lg:top-0 lg:flex lg:h-svh lg:rounded-l-surface xl:pl-xxxl 2xl:items-center 2xl:justify-center 2xl:px-section 2xl:py-section"
-    >
-      <div className="flex min-h-0 w-full max-w-5xl flex-1 flex-col 2xl:max-h-[60rem] 2xl:max-w-[80rem]">
-        <WorkspaceMock
-          orgName={orgName}
-          orgLogoUrl={orgLogoUrl}
-          accounts={accounts}
-          threads={threads}
-          owner={owner}
-          focus={focusFor(pathname)}
-          className="min-h-0 flex-1 2xl:rounded-surface"
-        />
-      </div>
-    </aside>
   );
 }

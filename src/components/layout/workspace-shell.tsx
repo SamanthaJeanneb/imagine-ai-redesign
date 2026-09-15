@@ -11,7 +11,6 @@ import {
   type PreviewData,
   useChat,
 } from "@/components/features/agent/chat-provider";
-import type { ComposerPreview } from "@/components/features/agent/composer";
 import {
   ProfileSelector,
   ProfileSelectorLabel,
@@ -42,8 +41,6 @@ import {
   OverlayChatColumn,
   SheetChatColumn,
 } from "@/components/layout/chat-column";
-import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/ui/icon";
 import { type ChatPanelMode } from "@/components/layout/chat-context-panel";
 import {
   ChatControls,
@@ -67,20 +64,31 @@ import { useResizable } from "@/lib/use-resizable";
 import {
   Sidebar,
   SidebarExpandButton,
-  type SidebarNavKey,
   type SidebarThread,
 } from "@/components/layout/sidebar";
-import { toTitle } from "@/lib/format";
+import {
+  ChatOverlayToggle,
+  MobileNavButton,
+  WorkspaceHeaderBar,
+  WorkspaceHeaderEnd,
+  WorkspaceHeaderTitle,
+} from "@/components/layout/workspace-header";
+import {
+  WorkspaceFlushPage,
+  WorkspaceInsetPage,
+} from "@/components/layout/workspace-page-frame";
+import {
+  chatColumnFor,
+  navKeyFor,
+  threadIdFor,
+  titleFrom,
+} from "@/components/layout/workspace-routes";
 import {
   COMPACT_QUERY,
   MOBILE_QUERY,
   useMediaQuery,
 } from "@/lib/use-media-query";
-import type {
-  AgentMessage,
-  ReplyIntent,
-  ScriptedReply,
-} from "@/services/agent";
+import type { ReplyIntent, ScriptedReply } from "@/services/agent";
 import type { OpenDocument } from "@/services/files";
 import { fade } from "@/styles/motion";
 
@@ -104,246 +112,7 @@ interface WorkspaceShellProps {
   children: ReactNode;
 }
 
-const NAV_KEYS: readonly SidebarNavKey[] = [
-  "agent",
-  "calendar",
-  "analytics",
-  "files",
-];
-
-/** `/calendar` and `/agent/t1` both resolve to their nav item; `/settings` to none. */
-function navKeyFor(pathname: string): SidebarNavKey | undefined {
-  // The alternate agent landing is still the agent.
-  if (pathname === "/landing-2") return "agent";
-  // The alternate file manager is still Files.
-  if (pathname === "/files-2") return "files";
-  // The engagement analytics page is still Analytics.
-  if (pathname === "/analytics-2") return "analytics";
-  return NAV_KEYS.find(
-    (key) => pathname === `/${key}` || pathname.startsWith(`/${key}/`),
-  );
-}
-
-/** `/agent/t1` → `t1`. */
-function threadIdFor(pathname: string): string | undefined {
-  const [, base, threadId] = pathname.split("/");
-  return base === "agent" ? threadId : undefined;
-}
-
-/**
- * Where the chat goes. It fills the page on `/agent`; beside the calendar and
- * analytics it is a column on the right; everywhere else it is put away.
- */
-function chatColumnFor(pathname: string): ComposerPreview | undefined {
-  if (pathname.startsWith("/calendar")) return "calendar";
-  if (pathname.startsWith("/analytics")) return "analytics";
-  return undefined;
-}
-
-/** The first thing the user said, as a name for a thread that has none yet. */
-function titleFrom(messages: readonly AgentMessage[]): string | undefined {
-  for (const message of messages) {
-    if (message.role !== "user") continue;
-    for (const part of message.parts) {
-      if (part.type === "text" && part.text.trim() !== "") {
-        return toTitle(part.text, 40);
-      }
-    }
-  }
-  return undefined;
-}
-
-/** The header's right end swaps between the account and the chat's controls. */
-const HEADER_SWAP = {
-  initial: { opacity: 0, y: -4 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -4 },
-  transition: fade.fast,
-} as const;
-
 const WORKSPACE_TAB_ID = "workspace";
-
-/**
- * The page header row: what the shell puts in it is assembled in
- * `WorkspaceFrame`. The space below the divider is the page, not this row.
- */
-function WorkspaceHeaderBar({ children }: { children: ReactNode }) {
-  return (
-    <div className="relative mt-m mb-m flex h-8 min-w-0 shrink-0 items-center gap-s overflow-x-clip px-l after:pointer-events-none after:absolute after:inset-x-0 after:-bottom-m after:border-b after:border-imagine-border md:px-xxl">
-      {children}
-    </div>
-  );
-}
-
-/** The way into the phone's nav sheet. */
-function MobileNavButton({
-  open,
-  onClick,
-}: {
-  open: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <Button
-      size="icon-sm"
-      variant="ghost"
-      aria-label="Open menu"
-      aria-expanded={open}
-      onClick={onClick}
-      className="-ml-2.5 text-imagine-foreground-faint hover:text-imagine-foreground md:hidden"
-    >
-      <Icon name="sidebar" />
-    </Button>
-  );
-}
-
-/** The open conversation's name, sliding in after the profile faces. */
-function WorkspaceHeaderTitle({ children }: { children: ReactNode }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -8 }}
-      animate={{
-        opacity: 1,
-        x: 0,
-        transition: { ...fade.base, delay: 0.1 },
-      }}
-      exit={{ opacity: 0, x: -8, transition: fade.fast }}
-      className="min-w-0"
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-/**
- * The header's right end. Render one keyed cluster inside an
- * `AnimatePresence mode="wait"`: the account, or the chat's controls. Both end
- * on the same glyph edge, pulled in by the icon button's own padding.
- */
-function WorkspaceHeaderEnd({
-  className,
-  children,
-}: {
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <motion.div
-      {...HEADER_SWAP}
-      className={cn("-mr-s ml-auto flex shrink-0", className)}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-/** The way into the docked chat where it overlays the page. */
-function ChatOverlayToggle({
-  open,
-  onOpenChange,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
-  return (
-    <Button
-      size="icon-sm"
-      variant="ghost"
-      aria-label={open ? "Hide chat" : "Open chat"}
-      aria-pressed={open}
-      onClick={() => {
-        onOpenChange(!open);
-      }}
-      className={cn(
-        "xl:hidden",
-        open
-          ? "bg-imagine-surface-raised text-imagine-foreground"
-          : "text-imagine-foreground-muted hover:text-imagine-foreground",
-      )}
-    >
-      <Icon name="message" />
-    </Button>
-  );
-}
-
-/**
- * The frame every workspace page sits in, after the header divider. Padding
- * lives on the scrollport, not the clip around it. `overflow-y-auto` makes
- * the inner box clip on x as well, and the landing composer sits flush to
- * that edge — its shadow and left radius disappear if the inset is outside.
- *
- * The scrollport is the `frame` container so a page can ask whether it is
- * running narrower than the frame (`@page/frame`) and drop a bleed that no
- * longer reaches an edge.
- */
-function WorkspacePageFrame({
-  children,
-  overlay,
-  className,
-}: {
-  children: ReactNode;
-  /** File tabs and the editor, over the page. */
-  overlay?: ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-      {/* The overlay's tab strip; this spacer keeps the thread from sliding
-          under it. */}
-      {overlay === undefined ? null : (
-        <div aria-hidden="true" className="h-9 shrink-0" />
-      )}
-      <div
-        className={cn(
-          "@container/frame flex min-h-0 min-w-0 flex-1 flex-col overflow-x-clip overflow-y-auto",
-          className,
-        )}
-      >
-        {children}
-      </div>
-      {overlay}
-    </div>
-  );
-}
-
-/**
- * The inset most pages start in. Pages do not set their own top or side
- * padding; this is the one frame. The side inset is `px-page`: the gutter on
- * a laptop, and on a wide monitor the space left over once the page is a
- * centered `max-w-page` column. The header above keeps its controls at the
- * frame's edges, as chrome does.
- */
-function WorkspaceInsetPage({
-  children,
-  overlay,
-}: {
-  children: ReactNode;
-  overlay?: ReactNode;
-}) {
-  return (
-    <WorkspacePageFrame
-      {...(overlay === undefined ? {} : { overlay })}
-      className="px-page pt-l pb-l md:pt-xxl md:pb-xxl"
-    >
-      {children}
-    </WorkspacePageFrame>
-  );
-}
-
-/** Pane-based workspaces, like files and the calendar, frame themselves. */
-function WorkspaceFlushPage({
-  children,
-  overlay,
-}: {
-  children: ReactNode;
-  overlay?: ReactNode;
-}) {
-  return (
-    <WorkspacePageFrame {...(overlay === undefined ? {} : { overlay })}>
-      {children}
-    </WorkspacePageFrame>
-  );
-}
 
 /**
  * The signed-in shell: rail on the background, page on a surface that rounds
@@ -422,8 +191,7 @@ function WorkspaceFrame({
   const chatColumn = chatColumnFor(pathname);
   const docked = chatColumn !== undefined;
   const [panel, setPanel] = useState<ChatPanelMode | null>(null);
-  const [railBeforeFiles, setRailBeforeFiles] = useState(false);
-  const [railBeforeCalendar, setRailBeforeCalendar] = useState(false);
+  const [railBefore, setRailBefore] = useState(false);
   const [skills, setSkills] = useState(initialSkills);
   const [activeFileId, setActiveFileId] = useState<string>();
   const [openDocumentIds, setOpenDocumentIds] = useState<readonly string[]>([]);
@@ -455,31 +223,28 @@ function WorkspaceFrame({
     setSeenMobile(isMobile);
     if (!isMobile) setMobileNavOpen(false);
   }
-  // Calendar needs the full width: tuck the rail away on entry and put it
-  // back how the user had it when they leave, unless the files panel owns it.
   const [seenPathname, setSeenPathname] = useState(pathname);
   if (pathname !== seenPathname) {
     setSeenPathname(pathname);
     setMobileNavOpen(false);
     setChatOverlayOpen(false);
-    const wasOnCalendar = seenPathname.startsWith("/calendar");
-    const onCalendar = pathname.startsWith("/calendar");
-    if (onCalendar && !wasOnCalendar) {
-      setRailBeforeCalendar(collapsed);
-      setCollapsed(true);
-    } else if (!onCalendar && wasOnCalendar && panel !== "files") {
-      setCollapsed(railBeforeCalendar);
-    }
   }
 
-  function changePanel(next: ChatPanelMode | null) {
-    if (next === "files" && panel !== "files") {
-      setRailBeforeFiles(collapsed);
+  // The calendar and the files panel both need the full width, so either can
+  // tuck the rail away. They share one memory of how the reader had it, taken
+  // on the way in and given back only once neither still wants the width: with
+  // a memory each, leaving the calendar with the files panel open would hand
+  // the panel the calendar's own collapsed rail and leave it stuck shut.
+  const railTaken = pathname.startsWith("/calendar") || panel === "files";
+  const [seenRailTaken, setSeenRailTaken] = useState(railTaken);
+  if (railTaken !== seenRailTaken) {
+    setSeenRailTaken(railTaken);
+    if (railTaken) {
+      setRailBefore(collapsed);
       setCollapsed(true);
-    } else if (panel === "files" && next !== "files") {
-      setCollapsed(railBeforeFiles);
+    } else {
+      setCollapsed(railBefore);
     }
-    setPanel(next);
   }
 
   /**
@@ -605,7 +370,7 @@ function WorkspaceFrame({
       <AnimatePresence initial={false} mode="wait">
         {chatOpen ? (
           <WorkspaceHeaderEnd key="chat">
-            <ChatControls panel={panel} onPanelChange={changePanel} />
+            <ChatControls panel={panel} onPanelChange={setPanel} />
           </WorkspaceHeaderEnd>
         ) : (
           <WorkspaceHeaderEnd key="account" className="items-center gap-xxs">
@@ -784,7 +549,7 @@ function WorkspaceFrame({
           >
             <FilesPanelCloseButton
               onPress={() => {
-                changePanel(null);
+                setPanel(null);
               }}
             />
           </FilesPanelHeader>
@@ -854,7 +619,7 @@ function WorkspaceFrame({
       onNavigate={(key) => {
         // A preview left open would follow the chat into its column.
         chat.setPreview(null);
-        changePanel(null);
+        setPanel(null);
         setMobileNavOpen(false);
         router.push(`/${key}`);
       }}
@@ -862,7 +627,7 @@ function WorkspaceFrame({
         // Opens as a conversation at once, so the rail lists it as
         // "New chat" and the header carries the name.
         chat.startNew();
-        changePanel(null);
+        setPanel(null);
         setMobileNavOpen(false);
         router.push("/landing-2");
       }}
@@ -876,10 +641,10 @@ function WorkspaceFrame({
   return (
     <FilesPanelApiProvider
       open={() => {
-        changePanel("files");
+        setPanel("files");
       }}
       close={() => {
-        changePanel(null);
+        setPanel(null);
       }}
     >
       <LayoutGroup>
@@ -982,7 +747,7 @@ function WorkspaceFrame({
                   transition={fade.fast}
                   className="absolute inset-0 z-40 flex justify-end bg-imagine-foreground/10"
                   onClick={() => {
-                    changePanel(null);
+                    setPanel(null);
                   }}
                 >
                   <div

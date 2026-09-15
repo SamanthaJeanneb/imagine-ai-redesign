@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import { OnboardingProvider } from "@/app/(auth)/onboarding/onboarding-provider";
-import { PreviewPane } from "@/app/(auth)/onboarding/preview-pane";
+import { PreviewPane } from "@/components/features/onboarding/preview-pane";
 import { getThreads } from "@/services/agent";
 import { getOwner } from "@/services/onboarding";
 
